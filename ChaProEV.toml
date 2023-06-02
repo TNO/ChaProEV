@@ -85,3 +85,50 @@ latitude_min = 36
 latitude_max = 68
 longitude_min = -11
 longitude_max = 60
+
+# Those parameters are used to processed the raw weather data into
+# data useful for the model.
+[weather.processed_data]
+raw_data_folder = 'input/cds_weather_data'
+processed_folder = 'input/processed_weather_data'
+weather_database_file_name = 'weather.sqlite3'
+# This parameter is there to avoid issues when writing a too large DataFrame
+# at once (instead, we split it into chunks).
+chunk_size = 100000
+quantities = [
+    '2m_temperature',
+    'skin_temperature',
+    'surface_solar_radiation_downwards',
+    'total_precipitation',
+]
+
+
+KELVIN_TO_CELSIUS = -273.15
+quantity_tags = ['t2m', 'skt', 'ssrd', 'tp']
+
+quantity_processed_names = [
+    'Temperature at 2 meters (°C)',
+    'Skin temperature (°C)',
+    'Surface solar radiation downwards (J/m2)',
+    'Total precipitation (m)'
+]
+
+cumulative_quantities = [
+    'surface_solar_radiation_downwards',
+    'total_precipitation',
+]
+
+queries_for_cumulative_quantities = [
+    "SELECT * FROM 'Surface solar radiation downwards (J/m2)';",
+    "SELECT * FROM 'Total precipitation (m)';"
+]
+
+temperature_quantities = ['2m_temperature', 'skin_temperature']
+
+processed_index_tags = ['Timetag', 'Latitude', 'Longitude']
+# These define the area of the processed data in the weather database
+latitude_min = 50.6
+latitude_max = 53.5
+longitude_min = 3.4
+longitude_max = 7.2
+coordinate_step = 0.1

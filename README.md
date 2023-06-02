@@ -207,11 +207,14 @@ This function takes a grib file and converts it to a DataFrame.
 
 ### **weather.py**
 This module contains functions related to weather data and factors.
-It contains the following functions:
-1. **download_cds_weather_quantity:**
-Downloads CDS ERA-5 weather data for a given quantity in a given area.
-2. **download_all_cds_weather_data:**
-Downloads all the necessary CDS weather data.
+The weather data is pulled from the [CDS (Climate Data Store) ERA-5 weather
+data from the Copernicus institute](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=form).
+This data contains many quantities (such as temperature, precipitation,
+or solar radiation) at an hourly level (starting in 1950) for the whole
+world, at a one-decimal resolution for latitudes and longitudes.
+Note that the data sometimes has trailing digits, but the resolution
+still seems to be to the first decimal. This is the reason why we round the
+coordinate values in our processing functions.
 
 
 ## **Context, goals, and future developments**
