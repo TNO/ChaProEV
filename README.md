@@ -59,6 +59,17 @@ uses the [MIT license](https://opensource.org/license/mit/)
 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
 12. [requests](https://pypi.org/project/requests/) uses
 the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+13. [ecmwflibs](https://pypi.org/project/ecmwflibs/) uses
+the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (See note below)
+14. [xarray](https://pypi.org/project/xarray/) uses
+the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (See note below)
+15. [cfgrib](https://pypi.org/project/cfgrib/) uses
+the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (See note below)
+
+**Important note:**
+You need to have ecmwflibs installed for the grib converter to work. Installing
+xarray (and cfrgrib to have the right engine) is not enough!
+See [here](https://github.com/ecmwf/eccodes-python/issues/54#issuecomment-925036724)
 
 ### Dependencies of installed libraries
 These libraries are installed when the above libraries are installed.
@@ -128,6 +139,8 @@ the [MIT license](https://opensource.org/license/mit/) and the
 [Mozilla Public Licence 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
 26. [urllib3](https://pypi.org/project/urllib3/) uses 
 the [MIT license](https://opensource.org/license/mit/)
+27. [xarray](https://pypi.org/project/xarray/) uses an 
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
 
 ### Non-compulsory libraries
 The following libraries are also in requirements.txt, but are not strictly
@@ -189,6 +202,8 @@ It contains the following functions:
 14. **query_list_from_file:** This returns a list of queries from an SQL file
 15. **dataframes_from_query_list:** This returns a list of dataframes,
     each obtained from a query in the list
+16. **from_grib_to_dataframe:**
+This function takes a grib file and converts it to a DataFrame.
 
 ### **weather.py**
 This module contains functions related to weather data and factors.
@@ -197,6 +212,7 @@ It contains the following functions:
 Downloads CDS ERA-5 weather data for a given quantity in a given area.
 2. **download_all_cds_weather_data:**
 Downloads all the necessary CDS weather data.
+
 
 ## **Context, goals, and future developments**
 

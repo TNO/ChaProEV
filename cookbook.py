@@ -33,6 +33,8 @@ It contains the following functions:
 14. **query_list_from_file:** This returns a list of queries from an SQL file
 15. **dataframes_from_query_list:**This returns a list of dataframes,
     each obtained from a query in the list
+16. **from_grib_to_dataframe:**
+This function takes a grib file and converts it to a DataFrame.
 '''
 
 import os
@@ -49,6 +51,7 @@ import numpy as np
 import openpyxl
 import pandas as pd
 import matplotlib
+import xarray as xr
 
 
 def check_if_folder_exists(folder_to_check):
@@ -599,6 +602,28 @@ def dataframes_from_query_list(query_list, sql_connection):
     ]
 
     return dataframe_list
+
+
+def from_grib_to_dataframe(grib_file):
+    '''
+    This function takes a grib file and converts it to a DataFrame.
+    It is part of a series of functions that read raw grib data and convert it
+    to a weather-related coefficients DataFrame. The series needs to be run
+    if you add/change locations,  if you change your run range,
+    if you have updated your raw data (grib files), or if you
+    change things in the way quantities are processed.
+    **Important note:**
+    You need to have ecmwflibs installed for the grib converter to work.
+    Installing xarray (and cfrgrib to have the right engine) is not enough!
+    See:
+    https://github.com/ecmwf/eccodes-python/issues/54#issuecomment-925036724
+    '''
+    grib_engine = 'cfgrib'
+
+    source_data = xr.load_dataset(grib_file, engine=grib_engine)
+    source_dataframe = source_data.to_dataframe()
+
+    return source_dataframe
 
 
 if __name__ == '__main__':

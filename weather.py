@@ -8,9 +8,9 @@ Downloads CDS ERA-5 weather data for a given quantity in a given area.
 Downloads all the necessary CDS weather data.
 '''
 
-import cookbook as cook
-
 import cdsapi
+
+import cookbook as cook
 
 
 def download_cds_weather_quantity(
@@ -94,4 +94,6 @@ def download_all_cds_weather_data(parameters_file_name):
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    download_all_cds_weather_data(parameters_file_name)
+    grib_file = 'input/cds_weather_data/2m_temperature_2020_01.grib'
+    output_dataframe = cook.from_grib_to_dataframe(grib_file)
+    print(output_dataframe)
