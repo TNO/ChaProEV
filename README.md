@@ -65,6 +65,9 @@ the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (See note below)
 the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (See note below)
 15. [cfgrib](https://pypi.org/project/cfgrib/) uses
 the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) (See note below)
+16. [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) uses 
+the [MIT license](https://opensource.org/license/mit/) (it is imported with 
+'bs4', which can also be used to install the library)
 
 **Important note:**
 You need to have ecmwflibs installed for the grib converter to work. Installing
@@ -141,6 +144,8 @@ the [MIT license](https://opensource.org/license/mit/) and the
 the [MIT license](https://opensource.org/license/mit/)
 27. [xarray](https://pypi.org/project/xarray/) uses an 
 [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
+28. [soupsieve](https://pypi.org/project/soupsieve/) uses 
+the [MIT license](https://opensource.org/license/mit/)
 
 ### Non-compulsory libraries
 The following libraries are also in requirements.txt, but are not strictly
@@ -230,6 +235,9 @@ given weather quantity. If this is a cumulative quantity, it adds hourly
 values to it.
 6. **get_all_hourly_values:** This functions adds hourly values to
 cumulative quantities in the weather database.
+7. **get_EV_tool_data:**: This gets the temperature efficiency data from the
+EV tool made by 
+[geotab](https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html).
 
 
 ## **Context, goals, and future developments**

@@ -24,6 +24,9 @@ given weather quantity. If this is a cumulative quantity, it adds hourly
 values to it.
 6. **get_all_hourly_values:** This functions adds hourly values to
 cumulative quantities in the weather database.
+7. **get_EV_tool_data:**: This gets the temperature efficiency data from the
+     EV tool made by geotab.
+    https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
 '''
 
 import os
@@ -32,6 +35,8 @@ import sqlite3
 import numpy as np
 import pandas as pd
 import cdsapi
+import requests
+from bs4 import BeautifulSoup as bs
 
 import cookbook as cook
 
@@ -395,7 +400,73 @@ def get_all_hourly_values(parameters_file_name):
             )
 
 
+def get_EV_tool_data(parameters_file_name):
+    '''
+    This gets the temperature efficiency data from the EV tool made
+    by geotab.
+    https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
+    '''
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    file_parameters = parameters['files']
+    groupfile_name = file_parameters['groupfile_name']
+    EV_tool_parameters = parameters[
+        'weather']['EV_tool']
+
+    EV_tool_url = EV_tool_parameters['EV_tool_url']
+    user_agent = EV_tool_parameters['user_agent']
+
+    EV_tool_session = requests.Session()
+    EV_tool_session.headers['User-Agent'] = user_agent
+    EV_tool_html_content = EV_tool_session.get(EV_tool_url).content
+    EV_tool_soup = bs(EV_tool_html_content, 'html.parser')
+
+    EV_tool_scripts = []
+    for script in EV_tool_soup.find_all('script'):
+        EV_tool_scripts.append(script)
+
+    efficiency_curve_script_index = EV_tool_parameters[
+        'efficiency_curve_script_index'
+    ]
+    efficiency_curve_script = EV_tool_scripts[efficiency_curve_script_index]
+    efficiency_curve_script_text = efficiency_curve_script.get_text()
+    data_splitter = EV_tool_parameters['data_splitter']
+    efficiency_curve_script_data = efficiency_curve_script_text.split(
+        data_splitter
+    )
+
+    temperatures = []
+    efficiency_factors = []
+
+    for data_point in efficiency_curve_script_data:
+        data_values = data_point.split(',')
+        if len(data_values) > 1:
+            # Some entries are not actual data entries and are empty
+            temperature = float(
+                data_values[0].strip(" '")
+            )
+            temperatures.append(temperature)
+            raw_efficiency_factor = data_values[1].split(':')[1]
+            efficiency_factor = float(
+                raw_efficiency_factor.split("'")[1]
+            )
+            efficiency_factors.append(efficiency_factor)
+
+    temperature_efficiencies = pd.DataFrame(
+        efficiency_factors, columns=['Relative efficiency'],
+        index=temperatures
+    )
+
+    temperature_efficiencies.index.name = 'Temperature (°C)'
+    # This tag creates issues with xml files (and a warning with
+    # stata), so we need to remove the xml output (or change things).
+    file_name = EV_tool_parameters['file_name']
+    folder = EV_tool_parameters['folder']
+    cook.save_dataframe(
+        temperature_efficiencies, file_name, groupfile_name, folder,
+        parameters_file_name)
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    get_all_hourly_values(parameters_file_name)
+    get_EV_tool_data(parameters_file_name)
