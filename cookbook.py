@@ -23,7 +23,7 @@ It contains the following functions:
     in a parameter file, creates them and makes them available.
 10. **get_season:** This function takes a datetime timestamp and tells us
     in which season it is.
-11. **save_figure:** Saves a Mtplotlib figure to a number of file formats set
+11. **save_figure:** Saves a Matplotlib figure to a number of file formats set
     by the user.
 12. **save_dataframe:** Saves a pandas dataframe to a number of file formats
     set by the user.

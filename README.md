@@ -124,6 +124,41 @@ is the version used for developping  and testing the model))
 
 ## **List of relevant files and modules**
 
+### **Cookbook**
+
+This module is a cookbook with useful auxiliary functions.
+It contains the following functions:
+
+1. **check_if_folder_exists:** Checks if a folder exists.
+    If it does not, it creates it.
+2. **parameters_from_TOML:**  Reads a TOML parameters file name and returns
+    a parameters dictionary.
+3. **reference_scale:** This function takes a list of numbers an returns
+    a scale (lower and upper boundary) they are in.
+4. **dataframe_from_Excel_table_name:** This function looks up a given table
+    name in an Excel file and returns a DataFrame containing the values of
+    that table.
+5. **dataframe_to_Excel:** This function takes a DataFrame and puts it into
+    a new sheet in an Excel workbook.
+6. **get_extra_colors:** This function gets the user-defined extra colors
+    from a file.
+7. **get_RGB_from_name:** This function takes a color name and returns
+    its RGB values (0 to 1).
+8. **rgb_color_list:** Gets a list of RGB codes for a list of color names.
+9. **register_color_bars:** This function reads the user-defined color bars
+    in a parameter file, creates them and makes them available.
+10. **get_season:** This function takes a datetime timestamp and tells us
+    in which season it is.
+11. **save_figure:** Saves a Matplotlib figure to a number of file formats set
+    by the user.
+12. **save_dataframe:** Saves a pandas dataframe to a number of file formats
+    set by the user.
+13. **put_dataframe_in_sql_in_chunks:** This function takes a Dataframe and
+    writes it into the table of an SQL database.
+    It does so in chunks to avoid memory issues.
+14. **query_list_from_file:** This returns a list of queries from an SQL file
+15. **dataframes_from_query_list:**This returns a list of dataframes,
+    each obtained from a query in the list
 
 
 
