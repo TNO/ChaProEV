@@ -6,6 +6,11 @@
 This repository contains the ChaProEV (Charging Profiles of Electric Vehicles)
 model.
 
+## Status
+The ChaProEV model is under construction and not yet ready for use.
+Please contact the authors below if you have questions or requests to get
+model runs at some point.
+
 ## Authors and contact
 Omar Usmani (Omar.Usmani@TNO.nl)
 
