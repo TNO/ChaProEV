@@ -55,6 +55,10 @@ uses the [MIT license](https://opensource.org/license/mit/)
     note that you need to
     install 'tables'  (i.e. use 'pip install tables') though the package 
     is sometimes referred to as pytables
+11. [cdsapi](https://pypi.org/project/cdsapi/) uses the 
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
+12. [requests](https://pypi.org/project/requests/) uses
+the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ### Dependencies of installed libraries
 These libraries are installed when the above libraries are installed.
@@ -109,7 +113,21 @@ uses the [MIT license](https://opensource.org/license/mit/)
 [MIT license](https://opensource.org/license/mit/)
 20. [tzdata](https://pypi.org/project/tzdata/) uses
 the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
-
+21. [certifi](https://pypi.org/project/certifi/) uses the 
+[Mozilla Public Licence 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
+22. [charset-normalizer](https://pypi.org/project/charset-normalizer/)
+uses the [MIT license](https://opensource.org/license/mit/)
+23. [colorama](https://pypi.org/project/colorama/) uses 
+a [BSD](https://opensource.org/license/bsd-1-clause/) license 
+(version not specified)
+24. [idna](https://pypi.org/project/idna/) uses 
+a [BSD](https://opensource.org/license/bsd-1-clause/) license 
+(version not specified)
+25. [tqdm](https://pypi.org/project/tqdm/) uses 
+the [MIT license](https://opensource.org/license/mit/) and the
+[Mozilla Public Licence 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
+26. [urllib3](https://pypi.org/project/urllib3/) uses 
+the [MIT license](https://opensource.org/license/mit/)
 
 ### Non-compulsory libraries
 The following libraries are also in requirements.txt, but are not strictly
@@ -157,10 +175,14 @@ It contains the following functions:
     writes it into the table of an SQL database.
     It does so in chunks to avoid memory issues.
 14. **query_list_from_file:** This returns a list of queries from an SQL file
-15. **dataframes_from_query_list:**This returns a list of dataframes,
+15. **dataframes_from_query_list:** This returns a list of dataframes,
     each obtained from a query in the list
 
-
+### **Weather**
+This module contains functions related to weather data and factors.
+It contains the following functions:
+1. **download_cds_weather_quantity:**
+Downloads CDS ERA-5 weather data for a given quantity in a given area.
 
 ## **Context, goals, and future developments**
 
