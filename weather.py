@@ -29,6 +29,8 @@ cumulative quantities in the weather database.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
 8. **temperature_efficiency_factor:**This function returns the temperature
 efficiency factor that corrects the baseline vehicle efficiency.
+9. **plot_temperature_efficiency:** Plots the temperature efficiency 
+correction factor (source data versus interpolation)of electric vehicles.
 '''
 
 import os
@@ -39,6 +41,7 @@ import pandas as pd
 import cdsapi
 import requests
 from bs4 import BeautifulSoup as bs
+import matplotlib.pyplot as plt
 
 import cookbook as cook
 
@@ -507,7 +510,57 @@ def temperature_efficiency_factor(temperature, parameters_file_name):
     return (efficiency_factor)
 
 
+def plot_temperature_efficiency(parameters_file_name):
+    '''
+    Plots the temperature efficiency correction factor 
+    (source data versus interpolation)
+    of electric vehicles.
+    '''
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+
+    plot_colors = cook.get_extra_colors(parameters_file_name)
+
+    plot_parameters = parameters["plots"]['temperature_efficiency']
+    plot_style = plot_parameters['style']
+    geotab_data_color = plot_colors.loc[plot_parameters['geotab_data_color']]
+    geotab_data_size = plot_parameters['geotab_data_size']
+    fit_color = plot_colors.loc[plot_parameters['fit_color']]
+    fit_line_size = plot_parameters['fit_line_size']
+    title_size = plot_parameters['title_size']
+    plt.style.use(plot_style)
+    source_data_folder = plot_parameters['source_data_folder']
+    source_data_file = plot_parameters['source_data_file']
+    source_data = pd.read_pickle(f'{source_data_folder}/{source_data_file}')
+    temperatures = source_data.index.values
+    geotab_data_efficiencies = source_data['Relative efficiency'].values
+    fitted_efficiencies = temperature_efficiency_factor(
+                            temperatures, parameters_file_name
+                        )
+
+    temeprature_efficiency_figure, temperature_efficiency_plot = (
+        plt.subplots(1, 1)
+    )
+    temperature_efficiency_plot.plot(
+        temperatures, geotab_data_efficiencies, label='geotab_data',
+        marker='.', markersize=geotab_data_size, color=geotab_data_color,
+        linestyle='none')
+    temperature_efficiency_plot.plot(
+        temperatures, fitted_efficiencies, label='fit',
+        linewidth=fit_line_size, color=fit_color)
+    temperature_efficiency_plot.legend()
+    temperature_efficiency_plot.set_xlabel('Temperature (°C)')
+    temperature_efficiency_plot.set_ylabel('Efficiency factor')
+    temperature_efficiency_plot.set_title(
+        'Temperature correction factor of range/efficiency of BEVs',
+        fontsize=title_size)
+    temeprature_efficiency_figure.tight_layout()
+    cook.save_figure(
+        temeprature_efficiency_figure,
+        'Temperature_correction_factor',
+        source_data_folder, parameters_file_name
+    )
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    print(temperature_efficiency_factor(0, parameters_file_name))
+    plot_temperature_efficiency(parameters_file_name)

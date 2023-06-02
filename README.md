@@ -170,6 +170,7 @@ It contains the following sections:
 what we want to download from various sources, where we store weather data,
 how we process it, 
 or how we want to label quantititis
+- **plots:** Parameters for plots (colors, sizes, etc.)
 
 
 ### **cookbook.py**
@@ -240,6 +241,8 @@ EV tool made by
 [geotab](https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html).
 8. **temperature_efficiency_factor:**This function returns the temperature
 efficiency factor that corrects the baseline vehicle efficiency.
+9. **plot_temperature_efficiency:** Plots the temperature efficiency 
+correction factor (source data versus interpolation)of electric vehicles.
 
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects
@@ -253,6 +256,10 @@ $$
 where T is the ambient temparture (in the weather data, it's the temperature
 at 2 meters), and C is the efficiency correction factor.
 
+Plotting the fit verus the data shows that thisi a great fit:
+<center>
+<img src=Temperature_correction_factor.svg>
+</center>
 
 ## **Context, goals, and future developments**
 

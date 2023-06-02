@@ -148,3 +148,16 @@ folder = 'input'
 file_name = 'temperature_efficiencies.pkl'
 values_header = 'Relative efficiency'
 fitting_polynomial_order = 6
+
+
+# Parameters for plots (colors, sizes, etc.)
+[plots]
+[plots.temperature_efficiency]
+style = 'fivethirtyeight'
+source_data_folder = "input"
+source_data_file = 'temperature_efficiencies.pkl'
+fit_color = 'kraken_ice_blue'
+fit_line_size = 1
+geotab_data_color = 'kraken_deep_sea_blue'
+geotab_data_size = 8
+title_size = 14
