@@ -18,7 +18,10 @@ Downloads all the necessary CDS weather data.
 3. **make_weather_dataframe:** This function makes a weather DataFrame
 into one we can use by
 removing empty data and processing data into forms useful for the model.
+4. **write_weather_database"** This function writes the weather database.
 '''
+
+import os
 
 import numpy as np
 import pandas as pd
@@ -111,7 +114,7 @@ def make_weather_dataframe(
         ):
     '''
     This function makes a weather DataFrame into one we can use by
-    removing empty data and processing data into forms useful for the model.
+    processing data into forms useful for the model.
     The processed DataFrame can then be added to the weather database.
     This weather database has an area given by latitude and longitude
     ranges. Note that these ranges correspond to the general region of the run,
@@ -201,17 +204,60 @@ def make_weather_dataframe(
     return processed_weather_dataframe
 
 
+def write_weather_database(parameters_file_name):
+    '''
+    This function writes the weather database.
+    It iterates over desired quantities, processes
+    the corresponding .grib source files into dataframes
+    (including some processing), and writes them to a database.
+    '''
+
+    parameters = cook.parameters_from_TOML(
+        parameters_file_name)['weather']['processed_data']
+    raw_data_folder = parameters['raw_data_folder']
+    processed_folder = parameters['processed_folder']
+    weather_database_file_name = parameters['weather_database_file_name']
+    quantities = parameters['quantities']
+    quantity_tags = parameters['quantity_tags']
+    quantity_processed_names = parameters['quantity_processed_names']
+    chunk_size = parameters['chunk_size']
+    cook.check_if_folder_exists(processed_folder)
+    weather_database_file = f'{processed_folder}/{weather_database_file_name}'
+
+    for quantity, quantity_tag, quantity_name in zip(
+            quantities, quantity_tags, quantity_processed_names):
+        # We create a new table for each quantity
+        clear_table = True
+        print(quantity)
+        for file_name in os.listdir(raw_data_folder):
+            if file_name.split('.')[-1] == 'grib':
+                file_header = file_name.split('.')[0]
+                if file_header[0:len(quantity)] == quantity:
+                    file_year = file_header[len(quantity):].split('_')[1]
+                    file_month = file_header[len(quantity):].split('_')[2]
+
+                    source_file = f'{raw_data_folder}/{file_name}'
+                    quantity_dataframe = cook.from_grib_to_dataframe(
+                        source_file)
+                    quantity_dataframe = quantity_dataframe.dropna(
+                        subset=[quantity_tag]
+                    )
+
+                    processed_weather_dataframe = make_weather_dataframe(
+                        quantity_dataframe, quantity, quantity_tag,
+                        quantity_name, parameters_file_name
+                    )
+                    cook.put_dataframe_in_sql_in_chunks(
+                        processed_weather_dataframe, weather_database_file,
+                        quantity_name, chunk_size,
+                        drop_existing_table=clear_table
+                    )
+                    # In following iteraions, we just want to
+                    # append data to an existing table.
+                    clear_table = False
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    grib_file = 'input/cds_weather_data/2m_temperature_2020_01.grib'
-    raw_dataframe = cook.from_grib_to_dataframe(grib_file)
-    processed_dataframe = make_weather_dataframe(
-        raw_dataframe, '2m_temperature', 't2m', 'Temperature at 2 meters (°C)',
-        parameters_file_name
-    )
-    processed_dataframe = processed_dataframe.dropna(
-        subset=['Temperature at 2 meters (°C)']
-    )
-    print(processed_dataframe)
-    print(raw_dataframe)
+    write_weather_database(parameters_file_name)

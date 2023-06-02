@@ -216,6 +216,16 @@ Note that the data sometimes has trailing digits, but the resolution
 still seems to be to the first decimal. This is the reason why we round the
 coordinate values in our processing functions.
 
+It contains the following functions:
+1. **download_cds_weather_quantity:**
+Downloads CDS ERA-5 weather data for a given quantity in a given area.
+2. **download_all_cds_weather_data:**
+Downloads all the necessary CDS weather data.
+3. **make_weather_dataframe:** This function makes a weather DataFrame
+into one we can use by
+removing empty data and processing data into forms useful for the model.
+4. **write_weather_database"** This function writes the weather database.
+
 
 ## **Context, goals, and future developments**
 
