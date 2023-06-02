@@ -63,3 +63,25 @@ first_hour_number = 1
 # Put 0 if you start counting at 0, 1 if you start counting at 1
 # The SPINE toolbox uses 1
 # This is only for the hour number list (and related lists)
+
+# Weather-related parameters
+[weather]
+
+# These parameters define what we want to get from the source
+# (CDS ERA-5)
+[weather.source_data]
+start_year = 2020
+end_year = 2022
+quantities = [
+    '2m_temperature',
+    'skin_temperature',
+    'surface_solar_radiation_downwards',
+    'total_precipitation',
+]
+raw_data_folder = 'input/cds_weather_data'
+# The following define the area over which the raw weather data will be
+# downloaded. The corresponding in the processed weather database is below.
+latitude_min = 36
+latitude_max = 68
+longitude_min = -11
+longitude_max = 60

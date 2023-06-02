@@ -148,6 +148,10 @@ It contains the following sections:
 - **files:** File-related parameters (folders, output type choices, etc.)
 - **colors:** Color-related parameters(defining new ones, as well as color bars)
 - **time:** Time-related parameters and constants needed in formulas
+- **weather:** Parameters related to the weather, such as elements to define
+what we want to download from various sources, where we store weather data,
+how we process it, 
+or how we want to label quantititis
 
 
 ### **cookbook.py**
@@ -191,6 +195,8 @@ This module contains functions related to weather data and factors.
 It contains the following functions:
 1. **download_cds_weather_quantity:**
 Downloads CDS ERA-5 weather data for a given quantity in a given area.
+2. **download_all_cds_weather_data:**
+Downloads all the necessary CDS weather data.
 
 ## **Context, goals, and future developments**
 

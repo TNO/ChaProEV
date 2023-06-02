@@ -2,3 +2,4 @@ input/
 output/
 devel/
 ChaProEV/
+__pycache__/
