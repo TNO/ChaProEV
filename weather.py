@@ -553,6 +553,7 @@ def plot_temperature_efficiency(parameters_file_name):
     temperature_efficiency_plot.set_title(
         'Temperature correction factor of range/efficiency of BEVs',
         fontsize=title_size)
+    temperature_efficiency_plot.set_ylim(0, 1.05)
     temeprature_efficiency_figure.tight_layout()
     cook.save_figure(
         temeprature_efficiency_figure,
