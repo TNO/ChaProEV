@@ -18,10 +18,16 @@ Downloads all the necessary CDS weather data.
 3. **make_weather_dataframe:** This function makes a weather DataFrame
 into one we can use by
 removing empty data and processing data into forms useful for the model.
-4. **write_weather_database"** This function writes the weather database.
+4. **write_weather_database:** This function writes the weather database.
+5. **get_hourly_values:** This function takes a Dataframe for a
+given weather quantity. If this is a cumulative quantity, it adds hourly
+values to it.
+6. **get_all_hourly_values:** This functions adds hourly values to
+cumulative quantities in the weather database.
 '''
 
 import os
+import sqlite3
 
 import numpy as np
 import pandas as pd
@@ -257,7 +263,139 @@ def write_weather_database(parameters_file_name):
                     clear_table = False
 
 
+def get_hourly_values(
+        quantity_dataframe, quantity, quantity_name, parameters_file_name):
+    '''
+    This function takes a Dataframe for a give weather quantity.
+    If this is a cumulative quantity, it adds hourly values to it.
+    '''
+    parameters = cook.parameters_from_TOML(
+        parameters_file_name)['weather']['processed_data']
+    cumulative_quantities = parameters['cumulative_quantities']
+
+    latitudes = np.unique(
+        quantity_dataframe.index.get_level_values('Latitude')
+    )
+    longitudes = np.unique(
+        quantity_dataframe.index.get_level_values('Longitude')
+    )
+
+    if quantity in cumulative_quantities:
+        quantity_dataframe[f'Shifted {quantity_name}'] = (
+            [np.nan] * len(quantity_dataframe.index)
+        )
+        quantity_dataframe[f'Hourly {quantity_name}'] = (
+         [np.nan] * len(quantity_dataframe.index)
+        )
+        # We need to do this for each latitude/longitude combination
+        # We will take a slice and fill it with values
+        # This will also update the main dataframe
+
+        for latitude in latitudes:
+            for longitude in longitudes:
+
+                # We need to check if the latitude/longitude combination
+                # has data
+                if (latitude, longitude) in quantity_dataframe.index:
+
+                    location_dataframe = quantity_dataframe.loc[
+                        latitude, longitude
+                    ]
+
+                    cumulative_values = location_dataframe[
+                        quantity_name].values
+                    shifted_cumulative_values = np.roll(cumulative_values, -1)
+                    location_dataframe.loc[:, f'Shifted {quantity_name}'] = (
+                        shifted_cumulative_values
+                    )
+
+                    location_dataframe.loc[:, f'Hourly {quantity_name}'] = (
+                        shifted_cumulative_values
+                        - cumulative_values
+                        * (location_dataframe.index.get_level_values(
+                            'Timetag').hour != 0)
+                        # At midnight, the shifted value is equal to the
+                        # hourly value (it's the cumulative value
+                        # of the time from 00.00  and 01.00).
+                    )
+
+                    # The data seems to have some issues
+                    # where the cumulative values
+                    # sometimes decrease (slightly), so we change these to zero
+                    location_dataframe.loc[
+                                location_dataframe[
+                                    f'Hourly {quantity_name}'
+                                ] < 0,
+                                f'Hourly {quantity_name}'
+                                ] = 0
+
+                    # The last value needs to be set to zero,
+                    # as it will be based on the first value
+                    # (but needs to be based
+                    # on the following year, which is not in the data)
+                    location_dataframe.at[
+                        location_dataframe.index.values[-1],
+                        f'Hourly {quantity_name}'] = 0
+
+    return quantity_dataframe
+
+
+def get_all_hourly_values(parameters_file_name):
+    '''
+    This functions adds hourly values to cumulative quantities
+    in the weather database.
+    '''
+    parameters = cook.parameters_from_TOML(
+        parameters_file_name)['weather']['processed_data']
+
+    quantities = parameters['quantities']
+    cumulative_quantities = parameters['cumulative_quantities']
+    processed_index_tags = parameters['processed_index_tags']
+    processed_folder = parameters['processed_folder']
+    weather_database_file_name = parameters['weather_database_file_name']
+    weather_database = f'{processed_folder}/{weather_database_file_name}'
+    quantity_names = parameters['quantity_processed_names']
+    chunk_size = parameters['chunk_size']
+    queries_for_cumulative_quantities = parameters[
+        'queries_for_cumulative_quantities'
+    ]
+
+    query_dictionary = dict(
+        zip(cumulative_quantities, queries_for_cumulative_quantities)
+    )
+
+    for quantity, quantity_name in zip(quantities, quantity_names):
+        if quantity in cumulative_quantities:
+
+            with sqlite3.connect(weather_database) as sql_connection:
+                sql_query = query_dictionary[quantity]
+                quantity_dataframe = pd.read_sql(
+                    sql_query, sql_connection
+                )
+                quantity_dataframe['Timetag'] = pd.to_datetime(
+                    quantity_dataframe['Timetag']
+                )
+                quantity_dataframe = quantity_dataframe.set_index(
+                    processed_index_tags
+                )
+
+            print('Avoid swap by arranging before? And explain/improve')
+            quantity_dataframe = quantity_dataframe.swaplevel(0, 2)
+            quantity_dataframe = quantity_dataframe.swaplevel(0, 1)
+            quantity_dataframe = quantity_dataframe.sort_index()
+
+            quantity_dataframe = get_hourly_values(
+                quantity_dataframe, quantity,
+                quantity_name, parameters_file_name
+            )
+
+            cook.put_dataframe_in_sql_in_chunks(
+                quantity_dataframe, weather_database, quantity_name,
+                chunk_size
+            )
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    write_weather_database(parameters_file_name)
+    get_all_hourly_values(parameters_file_name)

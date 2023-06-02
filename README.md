@@ -225,6 +225,11 @@ Downloads all the necessary CDS weather data.
 into one we can use by
 removing empty data and processing data into forms useful for the model.
 4. **write_weather_database"** This function writes the weather database.
+5. **get_hourly_values:** This function takes a Dataframe for a 
+given weather quantity. If this is a cumulative quantity, it adds hourly 
+values to it.
+6. **get_all_hourly_values:** This functions adds hourly values to
+cumulative quantities in the weather database.
 
 
 ## **Context, goals, and future developments**
