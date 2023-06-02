@@ -607,11 +607,6 @@ def dataframes_from_query_list(query_list, sql_connection):
 def from_grib_to_dataframe(grib_file):
     '''
     This function takes a grib file and converts it to a DataFrame.
-    It is part of a series of functions that read raw grib data and convert it
-    to a weather-related coefficients DataFrame. The series needs to be run
-    if you add/change locations,  if you change your run range,
-    if you have updated your raw data (grib files), or if you
-    change things in the way quantities are processed.
     **Important note:**
     You need to have ecmwflibs installed for the grib converter to work.
     Installing xarray (and cfrgrib to have the right engine) is not enough!
