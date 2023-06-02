@@ -23,24 +23,99 @@ Creative Commons BY-SA 4.0 license.
     [standard library](https://docs.python.org/3/library/) use the 
     [PSF licence](https://docs.python.org/3/license.html). ChaProEV uses the
     following modules:
-
+     1. [math](https://docs.python.org/3/library/math.html)
+     2. [datetime](https://docs.python.org/3/library/datetime.html)
+     3. [os](https://docs.python.org/3/library/os.html)
+     4. [tomlib](https://docs.python.org/3/library/tomllib.html)
+     5. [sqlite3](https://docs.python.org/3/library/sqlite3.html)
+2. [tomli](https://pypi.org/project/tomli/) uses the 
+    [MIT license](https://opensource.org/license/mit/) (only when using Python <3.11)
+3. [pandas](https://pandas.pydata.org/) uses the
+    [BSD 3 license](https://github.com/pandas-dev/pandas/blob/main/LICENSE)
+4. [numpy](https://numpy.org/) 
+[uses the BSD 3 license](https://github.com/numpy/numpy/blob/main/LICENSE.txt)
+5. [matplotlib](https://matplotlib.org/) 
+    only uses BSD compatible code, and its 
+[license](https://matplotlib.org/stable/devel/license.html#license-discussion)
+    is based on the PSF license.
+6. [openpyxl](https://pypi.org/project/openpyxl/) 
+uses the [MIT license](https://opensource.org/license/mit/)
+7.  [Jinja2](https://pypi.org/project/Jinja2/) uses a
+ [BSD-3-Clause](https://pypi.org/project/Jinja2/) license
+8. [PyArrow](https://arrow.apache.org/docs/python/index.html) uses the 
+ [Apache 2.0 license](https://arrow.apache.org/docs/_modules/pyarrow.html)
+9. [lxml](https://lxml.de/) is shipped under a [BSD license](https://lxml.de/)
+10. [tables](https://www.pytables.org/) uses 
+    a [BSD-3 clause license](https://github.com/PyTables/PyTables/blob/master/LICENSE.txt) 
+    note that you need to
+    install 'tables'  (i.e. use 'pip install tables') though the package 
+    is sometimes referred to as pytables
 
 ### Dependencies of installed libraries
 These libraries are installed when the above libraries are installed.
 
+1. [six](https://pypi.org/project/six/) 
+uses the [MIT license](https://opensource.org/license/mit/)
+2. [pytz](https://pypi.org/project/pytz/) 
+uses the [MIT license](https://opensource.org/license/mit/)
+3. [python-dateutil](https://pypi.org/project/python-dateutil/) uses
+either the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) or the
+[BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause) licenses, 
+depending on the contribution.
+4. [contourpy](https://pypi.org/project/contourpy/) uses the 
+[BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause) license
+5. [cycler](https://pypi.org/project/cycler/) uses 
+a [BSD](https://opensource.org/license/bsd-1-clause/) license 
+(version not specified)
+6. [fontTools](https://pypi.org/project/fonttools/) 
+uses the [MIT license](https://opensource.org/license/mit/)
+7. [importlib-resources](https://pypi.org/project/importlib-resources/) 
+(only in earlier Python versions)
+uses the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license 
+(actual version not specified).
+8. [kiwisolver](https://pypi.org/project/kiwisolver/) a 
+[BSD](https://opensource.org/license/bsd-1-clause/) license 
+(version not specified)
+9. [packaging](https://pypi.org/project/packaging/) uses  a 
+[BSD](https://opensource.org/license/bsd-1-clause/) license 
+(version not specified) and an 
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license 
+(actual version not specified).
+10. [Pillow](https://pypi.org/project/Pillow/) uses
+[HPND (Historical Permission Notice and Disclaimer)](https://spdx.org/licenses/HPND.html)
+11. [pyParsing](https://pypi.org/project/pyparsing/) 
+uses the [MIT license](https://opensource.org/license/mit/)
+12. [zipp](https://pypi.org/project/zipp/) (only in earlier Python versions)
+uses the [MIT license](https://opensource.org/license/mit/)
+13. [et-xmlfile](https://pypi.org/project/et-xmlfile/)
+uses the [MIT license](https://opensource.org/license/mit/)
+14. [MarkupSafe](https://pypi.org/project/MarkupSafe/) uses the 
+[BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause) license
+15. [blosc2](https://pypi.org/project/blosc2/) uses the 
+[BSD 3-Clause](https://opensource.org/licenses/BSD-3-Clause) license
+16. [Cython](https://pypi.org/project/Cython/) uses an 
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license 
+(actual version not specified).
+17. [MessagePack](https://pypi.org/project/msgpack/) uses an 
+[Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
+18. [numexpr](https://pypi.org/project/numexpr/) uses the 
+[MIT license](https://opensource.org/license/mit/)
+19. [py-cpuinfo](https://pypi.org/project/py-cpuinfo/)  uses the 
+[MIT license](https://opensource.org/license/mit/)
+20. [tzdata](https://pypi.org/project/tzdata/) uses
+the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 
 ### Non-compulsory libraries
 The following libraries are also in requirements.txt, but are not strictly
 needed to run ChaProEV:
+1. [pycodestyle](https://pypi.org/project/pycodestyle/) uses the
+[MIT license](https://opensource.org/license/mit/) License (Expat license). 
+This is used to check if the code follows
+proper style guidelines
 
-
-See requirements.txt file for versions (corresponding to Python 3.11.1, which
-is the version used for developping and tetsing the model). 
-To install all the required libraries, you can type
-pip install -r requirements.txt
-in your command prompt (note that this can also take into account 
-your Python version, as in the case of tomllib/tomli)
+(See requirements.txt file for versions (corresponding to Python 3.11.1, which
+is the version used for developping  and testing the model))
 
 ## **List of relevant files and modules**
 
