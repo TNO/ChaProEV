@@ -1,0 +1,65 @@
+#  Created by Omar Usmai (Omar.Usmani@TNO.nl).
+#  This file contains configuration parameters for ChaProEV
+
+# File-related parameters
+[files]
+# General parameters
+input_folder = 'input'
+output_folder = 'output'
+# For files that group data (such as (sqlite) databases or Excel workbooks)
+groupfile_name = 'ChaProEV'
+
+[files.figures]
+# Parameters for plots/figures
+dpi = 240
+# Indicate below if you want to save your (Matplotlib) figures
+# In the given formats, and the dpi you want to use (common for all)
+[files.figures.outputs]
+png = true
+pdf = true
+svg = true
+eps = true
+
+
+# Indicate below if you want to save your Pandas DataFrames in the
+# listed formats (put a true if you want to do so, false if you don't)
+[files.dataframe_outputs]
+csv = true
+json = true
+html = true
+latex = true
+xml = true
+clipboard = true  # This saves the file to the local clipboard
+excel = true
+hdf = true
+feather = true
+parquet = true
+stata = true
+pickle = true
+sql = true
+
+# Defining custome colors with the RGB values
+[colors]
+kraken_deep_sea_blue = [0, 22, 40]
+kraken_ice_blue = [153, 217, 217]
+kraken_boundless_blue = [53, 84, 100]
+kraken_shadow_blue = [104, 162, 185]
+kraken_red_alert = [233, 7, 43]
+
+# Defining color bars with lists of colors they use
+[color_bars]
+kraken = [
+    'kraken_deep_sea_blue', 'kraken_boundless_blue',
+    'kraken_shadow_blue', 'kraken_ice_blue']
+
+
+# time-related parameters/constants
+[time]
+SECONDS_PER_HOUR = 3600
+HOURS_IN_A_DAY = 24
+MONTHS_IN_A_YEAR = 12
+MAX_DAYS_IN_A_MONTH = 31
+first_hour_number = 1
+# Put 0 if you start counting at 0, 1 if you start counting at 1
+# The SPINE toolbox uses 1
+# This is only for the hour number list (and related lists)

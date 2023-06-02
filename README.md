@@ -142,7 +142,15 @@ is the version used for developping  and testing the model))
 
 ## **List of relevant files and modules**
 
-### **Cookbook**
+### **ChaProEV.toml**
+This file contains the model's parameters.
+It contains the following sections:
+- **files:** File-related parameters (folders, output type choices, etc.)
+- **colors:** Color-related parameters(defining new ones, as well as color bars)
+- **time:** Time-related parameters and constants needed in formulas
+
+
+### **cookbook.py**
 
 This module is a cookbook with useful auxiliary functions.
 It contains the following functions:
@@ -178,7 +186,7 @@ It contains the following functions:
 15. **dataframes_from_query_list:** This returns a list of dataframes,
     each obtained from a query in the list
 
-### **Weather**
+### **weather.py**
 This module contains functions related to weather data and factors.
 It contains the following functions:
 1. **download_cds_weather_quantity:**
