@@ -238,6 +238,20 @@ cumulative quantities in the weather database.
 7. **get_EV_tool_data:**: This gets the temperature efficiency data from the
 EV tool made by 
 [geotab](https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html).
+8. **temperature_efficiency_factor:**This function returns the temperature
+efficiency factor that corrects the baseline vehicle efficiency.
+
+#### Temperature efficiency
+This function returns the temperature efficiency factor that corrects
+the baseline vehicle efficiency. It uses a data file (extracted from
+EV tool made by 
+[geotab](https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html).
+The degree 6 polynomial fit is:
+$$
+C(T)=0.7078+0.01751T+0.0001611T^2-1.036e-05T^3-3.581e-07T^4+1.746e-09T^5+1.07e-10T^6,
+$$
+where T is the ambient temparture (in the weather data, it's the temperature
+at 2 meters), and C is the efficiency correction factor.
 
 
 ## **Context, goals, and future developments**

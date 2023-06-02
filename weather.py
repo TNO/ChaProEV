@@ -27,6 +27,8 @@ cumulative quantities in the weather database.
 7. **get_EV_tool_data:**: This gets the temperature efficiency data from the
      EV tool made by geotab.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
+8. **temperature_efficiency_factor:**This function returns the temperature
+efficiency factor that corrects the baseline vehicle efficiency.
 '''
 
 import os
@@ -466,7 +468,46 @@ def get_EV_tool_data(parameters_file_name):
         parameters_file_name)
 
 
+def temperature_efficiency_factor(temperature, parameters_file_name):
+    '''
+    This function returns the temperature efficiency factor that corrects
+    the baseline vehicle efficiency. It uses a data file (extracted from
+    here https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html).
+    It then uses a fitting function. This is done for the following reasons:
+    1) We can go beyond the temperature range provided by the data
+    2) A function works better than a data lookup for future uses
+    3) Consistency between the temparatures in and out of data range.
+    '''
+
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    temperature_efficiencies_parameters = parameters[
+        'weather']['temperature_efficiencies']
+
+    source_folder = temperature_efficiencies_parameters['folder']
+    source_file = temperature_efficiencies_parameters['file_name']
+    values_header = temperature_efficiencies_parameters['values_header']
+    fitting_polynomial_order = temperature_efficiencies_parameters[
+        'fitting_polynomial_order'
+    ]
+
+    temperature_efficiencies_data = pd.read_pickle(
+        f'{source_folder}/{source_file}'
+    )
+    data_temperature_range = temperature_efficiencies_data.index
+    data_efficiencies = temperature_efficiencies_data[values_header]
+    fitting_function_coefficients = np.polyfit(
+        data_temperature_range,
+        data_efficiencies,
+        fitting_polynomial_order
+    )
+    fitting_function = np.poly1d(fitting_function_coefficients)
+
+    efficiency_factor = fitting_function(temperature)
+
+    return (efficiency_factor)
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    get_EV_tool_data(parameters_file_name)
+    print(temperature_efficiency_factor(0, parameters_file_name))
