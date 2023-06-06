@@ -29,7 +29,7 @@ cumulative quantities in the weather database.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
 8. **temperature_efficiency_factor:**This function returns the temperature
 efficiency factor that corrects the baseline vehicle efficiency.
-9. **plot_temperature_efficiency:** Plots the temperature efficiency 
+9. **plot_temperature_efficiency:** Plots the temperature efficiency
 correction factor (source data versus interpolation)of electric vehicles.
 '''
 
@@ -512,7 +512,7 @@ def temperature_efficiency_factor(temperature, parameters_file_name):
 
 def plot_temperature_efficiency(parameters_file_name):
     '''
-    Plots the temperature efficiency correction factor 
+    Plots the temperature efficiency correction factor
     (source data versus interpolation)
     of electric vehicles.
     '''
@@ -561,7 +561,46 @@ def plot_temperature_efficiency(parameters_file_name):
         source_data_folder, parameters_file_name
     )
 
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    plot_temperature_efficiency(parameters_file_name)
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    processed_data_parameters = parameters['weather']['processed_data']
+    processed_folder = processed_data_parameters['processed_folder']
+    weather_database_file_name = processed_data_parameters[
+        'weather_database_file_name'
+    ]
+    weather_database_connection = sqlite3.connect(
+        f'{processed_folder}/{weather_database_file_name}'
+    )
+    quantities_to_display_no_spaces = ['Timetag', 'Latitude', 'Longitude']
+    quantities_to_display_spaces = [
+        'Hourly Surface solar radiation downwards (J/m2)'
+    ]
+    quantities_to_display_spaces = [
+        f'"{quantity}"' for quantity in quantities_to_display_spaces
+    ]
+    list_of_quantities_to_display = (
+        quantities_to_display_no_spaces + quantities_to_display_spaces
+    )
+    quantities_to_display = ','.join(list_of_quantities_to_display)
+    source_table = f'"Surface solar radiation downwards (J/m2)"'
+    query_filter_quantities = [
+        ('Latitude', 'Longitude'), 'Timetag',
+        '"Hourly Surface solar radiation downwards (J/m2)"'
+    ]
+    query_filter_types = ['in', 'between', '<>']
+    query_filter_values = [
+        [(52.1, 4.9), (52.0, 5.1)],
+        ['"2020-05-08 00:00:00"', '"2020-06-26 16:00:00"'],
+        0
+    ]
+    test_query = cook.sql_query_generator(
+        quantities_to_display, source_table, query_filter_quantities,
+        query_filter_types, query_filter_values)
+
+    test_df = pd.read_sql(
+        test_query, weather_database_connection
+        ).set_index(['Latitude', 'Longitude', 'Timetag'])
+    print(test_df)

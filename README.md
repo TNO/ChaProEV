@@ -210,6 +210,8 @@ It contains the following functions:
     each obtained from a query in the list
 16. **from_grib_to_dataframe:**
 This function takes a grib file and converts it to a DataFrame.
+17. **sql_query_generator:** This function returns an sql query string that 
+    can be used (for example) in Panda's read_sql.
 
 ### **weather.py**
 This module contains functions related to weather data and factors.

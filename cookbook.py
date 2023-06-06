@@ -35,6 +35,8 @@ It contains the following functions:
     each obtained from a query in the list
 16. **from_grib_to_dataframe:**
 This function takes a grib file and converts it to a DataFrame.
+17. **sql_query_generator:** This function returns an sql query string that
+    can be used (for example) in Panda's read_sql.
 '''
 
 import os
@@ -619,6 +621,100 @@ def from_grib_to_dataframe(grib_file):
     source_dataframe = source_data.to_dataframe()
 
     return source_dataframe
+
+
+def sql_query_generator(
+        quantities_to_display, source_table, query_filter_quantities,
+        query_filter_types, query_filter_values):
+    '''
+    This function returns an sql query string that can be used
+    (for example) in Panda's read_sql.
+    The input parameters are:
+    - quantities_to_display: A string list of table column names
+    (as strings, in
+    single quotes), separated by commas. If the user
+    wants all columns displayed, then they should use a '*'. If one (or more)
+    of the column names have spaces, then the user needs to use f strings and
+    double quotes, as in the following example:
+    quantity_1 = 'Time'
+    quantity_2 =  'Surveyed Area'
+    quantity_2_with_quotes = f'"quantity_2"'
+    quantities_to_display = f'{quantity_1}, {quantity_2_with_quotes}'
+    This latter variable is the input for the function
+    - source table is the name of the source table. Note that it has a similar
+    need if the name has spaces, so use:
+    source_table = f'"My Table"'
+    as an input
+    - query_filter_quntities: A list of strings each representing a column
+    name the user wants to filter. Again, names with spaces require
+    f strings and double quotes, so add:
+    f'"Surveyed Area"' to your list of filter names
+    - query_filter_types: This list (that has to be the same length as the
+    above liste of quantities)
+    says which filter to use. Currently supported options are:
+        - '='       (equal to)
+        - '<'       (smaller than)
+        - '>'       (larger than)
+        - '!='      (not equal)
+        - '<>'      (not equal)
+        - '<='      (smalller or equal)
+        - '>='      (larger or equal)
+        - like      (matches)
+        - between   (between two  values)
+        - in        (between two tuple values)
+    - query_filter_values: The comparison values used for the filter.
+    The three special cases are:
+        1) Like: This needs to be a double quote string (since it will be
+        nested into a single-quote string) with percentage signs,
+        such as '"%2020-05-08%"' for timestamps for May 8th, 2020
+        2) Between: Provide the two  values  into a
+        list. If the values arte strings that contain spaces,
+        you need nested quotes, such as:
+        ['"2020-05-08 00:00:00"','"2020-06-26 16:00:00"']
+        3) In provide the two tuple values into a list.,
+        e.g: [(52.1,4.9),(52.0,5.1)]
+
+    '''
+
+    first_filter = True
+    query_filter = ''
+    for filter_quantity, filter_type, filter_value in zip(
+        query_filter_quantities, query_filter_types, query_filter_values
+    ):
+
+        if first_filter:
+            query_filter = f'where '
+            first_filter = False
+        else:
+            query_filter = f'{query_filter} and'
+
+        if filter_type.lower() == 'between':
+            query_filter = (
+                f'{query_filter} {filter_quantity} between {filter_value[0]} '
+                f'and {filter_value[1]}'
+            )
+        elif filter_type.lower() == 'in':
+            # We need the filter to be a string without (single) quotes
+            # between brackets
+            tuple_content_string = ','.join(filter_quantity)
+            filter_quantity = f'({tuple_content_string})'
+
+            query_filter = (
+                f'{query_filter} {filter_quantity} in (values '
+                f'{filter_value[0]},{filter_value[1]})'
+            )
+        else:
+            query_filter = (
+                f'{query_filter} {filter_quantity} '
+                f'{filter_type} {filter_value}'
+            )
+
+    output_query = (
+        f'select {quantities_to_display} from {source_table} '
+        f'{query_filter};'
+    )
+
+    return output_query
 
 
 if __name__ == '__main__':
