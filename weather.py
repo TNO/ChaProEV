@@ -587,12 +587,12 @@ if __name__ == '__main__':
     quantities_to_display = ','.join(list_of_quantities_to_display)
     source_table = f'"Surface solar radiation downwards (J/m2)"'
     query_filter_quantities = [
-        ('Latitude', 'Longitude'), 'Timetag',
+        ('Latitude'), 'Timetag',
         '"Hourly Surface solar radiation downwards (J/m2)"'
     ]
     query_filter_types = ['in', 'between', '<>']
     query_filter_values = [
-        [(52.1, 4.9), (52.0, 5.1)],
+        [52.1, 52.0],
         ['"2020-05-08 00:00:00"', '"2020-06-26 16:00:00"'],
         0
     ]

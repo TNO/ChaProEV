@@ -659,9 +659,9 @@ def sql_query_generator(
         - '<>'      (not equal)
         - '<='      (smalller or equal)
         - '>='      (larger or equal)
-        - like      (matches)
+        - like      (matches/ searches for a pattern)
         - between   (between two  values)
-        - in        (between two tuple values)
+        - in        (to select multiple values for one or several columns)
     - query_filter_values: The comparison values used for the filter.
     The three special cases are:
         1) Like: This needs to be a double quote string (since it will be
@@ -695,14 +695,26 @@ def sql_query_generator(
             )
         elif filter_type.lower() == 'in':
             # We need the filter to be a string without (single) quotes
-            # between brackets
-            tuple_content_string = ','.join(filter_quantity)
-            filter_quantity = f'({tuple_content_string})'
+            # between brackets and the syntax and procedure are
+            # different for tuples
 
-            query_filter = (
-                f'{query_filter} {filter_quantity} in (values '
-                f'{filter_value[0]},{filter_value[1]})'
-            )
+            if type(filter_quantity) is tuple:
+
+                tuple_content_string = ','.join(filter_quantity)
+                filter_quantity = f'({tuple_content_string})'
+
+                query_filter = (
+                    f'{query_filter} {filter_quantity} in (values '
+                    f'{filter_value[0]},{filter_value[1]})'
+                )
+            else:
+                filter_value = [f'{my_value}' for my_value in filter_value]
+                filter_value = ','.join(filter_value)
+                query_filter = (
+                    f'{query_filter} {filter_quantity} '
+                    f'in ({filter_value})'
+                )
+
         else:
             query_filter = (
                 f'{query_filter} {filter_quantity} '
