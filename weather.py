@@ -620,7 +620,7 @@ def get_run_location_weather_quantity(
     # (they are all the same and are our input)
     weather_values = weather_values.drop(columns=['Latitude', 'Longitude'])
 
-    weather_values = weather_values.set_index('Timetag')
+    # weather_values = weather_values.set_index('Timetag')
 
     return weather_values
 
@@ -630,6 +630,7 @@ def get_run_weather_data(parameters_file_name):
     Fetches the weather data and efficiency factors and puts it into
     a table that is saved to files/databases.
     '''
+    weather_dataframe = pd.DataFrame()
     parameters = cook.parameters_from_TOML(parameters_file_name)
 
     weather_processed_data_parameters = parameters['weather']['processed_data']
@@ -658,9 +659,13 @@ def get_run_weather_data(parameters_file_name):
     )
 
     location_parameters = parameters['locations']
+
     for location in location_parameters:
+        location_weather_dataframe = pd.DataFrame()
+        location_first_quantity = True
         location_latitude = location_parameters[location]['latitude']
         location_longitude = location_parameters[location]['longitude']
+        
         for quantity in quantity_processed_names:
             source_table = quantity
             if quantity in cumulative_quantity_processed_names:
@@ -672,13 +677,35 @@ def get_run_weather_data(parameters_file_name):
                 location_latitude, location_longitude, run_start, run_end,
                 source_table, weather_quantity, parameters_file_name
             )
+            # weather_values['Location'] = [location]*len(weather_values.index)
+            if location_first_quantity:
+                location_weather_dataframe['Location'] = (
+                    [location]*len(weather_values.index)
+                )
+                location_weather_dataframe['Timetag'] = (
+                    weather_values['Timetag']
+                )
+                location_weather_dataframe = (
+                    location_weather_dataframe.set_index(
+                    ['Location', 'Timetag']
+                    )
+                )
+                location_first_quantity = False
 
-            print(weather_values)
-            weather_values.plot()
-            plt.show()
+            location_weather_dataframe[weather_quantity] = (
+                weather_values[weather_quantity].values
+            )
 
+
+        weather_dataframe = pd.concat(
+            [weather_dataframe, location_weather_dataframe],
+            ignore_index=False
+        )
+        
+    return weather_dataframe
 
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    get_run_weather_data(parameters_file_name)
+    run_weather_data = get_run_weather_data(parameters_file_name)
+    print(run_weather_data)
