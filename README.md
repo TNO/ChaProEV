@@ -247,6 +247,8 @@ EV tool made by
 efficiency factor that corrects the baseline vehicle efficiency.
 9. **plot_temperature_efficiency:** Plots the temperature efficiency 
 correction factor (source data versus interpolation)of electric vehicles.
+10. **get_run_location_weather_quantity:** Returns a chosen weather quantity
+    for a given location and a given runtime.
 
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects

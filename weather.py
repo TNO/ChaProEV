@@ -31,10 +31,13 @@ cumulative quantities in the weather database.
 efficiency factor that corrects the baseline vehicle efficiency.
 9. **plot_temperature_efficiency:** Plots the temperature efficiency
 correction factor (source data versus interpolation)of electric vehicles.
+10. **get_run_location_weather_quantity:** Returns a chosen weather quantity
+    for a given location and a given runtime.
 '''
 
 import os
 import sqlite3
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -562,9 +565,17 @@ def plot_temperature_efficiency(parameters_file_name):
     )
 
 
-if __name__ == '__main__':
-
-    parameters_file_name = 'ChaProEV.toml'
+def get_run_location_weather_quantity(
+        location_latitude, location_longitude, run_start, run_end,
+        source_table, weather_quantity, parameters_file_name):
+    '''
+    Returns a chosen weather quantity for a given location and a given
+    runtime.
+    The run_start and run_end inputs are datetime objects,
+    source_table and waether_quantity sometimes have the same name,
+    but not always (e.g. for hourly values of a cumulative quantity
+    such as the solar radiation downwards)
+    '''
     parameters = cook.parameters_from_TOML(parameters_file_name)
     processed_data_parameters = parameters['weather']['processed_data']
     processed_folder = processed_data_parameters['processed_folder']
@@ -574,39 +585,66 @@ if __name__ == '__main__':
     weather_database_connection = sqlite3.connect(
         f'{processed_folder}/{weather_database_file_name}'
     )
-    quantities_to_display_no_spaces = ['Timetag', 'Latitude', 'Longitude']
-    quantities_to_display_spaces = [
-        'Hourly Surface solar radiation downwards (J/m2)'
+
+    # We need to avoid issues with spaces in column names, so we need
+    # nested double quotes
+    source_table = f'"{source_table}"'
+    weather_quantity = f'"{weather_quantity}"'
+    run_start = f'"{run_start}"'
+    run_end = f'"{run_end}"'
+
+    list_columns_to_fetch = [
+        'Latitude', 'Longitude', 'Timetag', weather_quantity
     ]
-    quantities_to_display_spaces = [
-        f'"{quantity}"' for quantity in quantities_to_display_spaces
-    ]
-    list_of_quantities_to_display = (
-        quantities_to_display_no_spaces + quantities_to_display_spaces
-    )
-    quantities_to_display = ','.join(list_of_quantities_to_display)
-    source_table = f'"Surface solar radiation downwards (J/m2)"'
-    query_filter_quantities = [
-        ('Latitude'), 'Timetag',
-        '"Hourly Surface solar radiation downwards (J/m2)"'
-    ]
-    query_filter_types = ['in', 'between', '<>']
+    # We need to convert this into a string for a query
+    columns_to_fetch = ','.join(list_columns_to_fetch)
+
+    query_filter_quantities = ['Latitude', 'Longitude', 'Timetag']
+    query_filter_types = ['=', '=', 'between']
     query_filter_values = [
-        [52.1, 52.0],
-        ['"2020-05-08 00:00:00"', '"2020-06-26 16:00:00"'],
-        0
+        location_latitude, location_longitude, [run_start, run_end]
     ]
-    test_query = cook.sql_query_generator(
-        quantities_to_display, source_table, query_filter_quantities,
-        query_filter_types, query_filter_values)
 
-    test_df = pd.read_sql(
-        test_query, weather_database_connection
-        ).set_index(['Latitude', 'Longitude', 'Timetag'])
-    print(test_df)
-
-    print(
-        cook.database_tables_columns(
-            f'{processed_folder}/{weather_database_file_name}'
-        )
+    location_run_query = cook.sql_query_generator(
+        columns_to_fetch, source_table, query_filter_quantities,
+        query_filter_types, query_filter_values
     )
+
+    weather_values = pd.read_sql(
+        location_run_query, weather_database_connection
+    )
+
+    # We don't need the latitude and longitude values in columns
+    # (they are all the same and are our input)
+    weather_values = weather_values.drop(columns=['Latitude', 'Longitude'])
+
+    weather_values = weather_values.set_index('Timetag')
+
+    return weather_values
+
+
+if __name__ == '__main__':
+
+    parameters_file_name = 'ChaProEV.toml'
+
+    location_latitude = 52.0
+    location_longitude = 4.2
+    # source_table = 'Temperature at 2 meters (°C)'
+    # weather_quantity =  'Temperature at 2 meters (°C)'
+    # source_table = 'Skin temperature (°C)'
+    # weather_quantity =  'Skin temperature (°C)'
+    # source_table = 'Total precipitation (m)'
+    # weather_quantity = 'Hourly Total precipitation (m)'
+    source_table = 'Surface solar radiation downwards (J/m2)'
+    weather_quantity = 'Hourly Surface solar radiation downwards (J/m2)'
+
+    run_start = datetime.datetime(2020, 5, 8, 0)
+    run_end = datetime.datetime(2020, 6, 26, 16)
+    weather_values = get_run_location_weather_quantity(
+        location_latitude, location_longitude, run_start, run_end,
+        source_table, weather_quantity, parameters_file_name
+    )
+
+    print(weather_values)
+    weather_values.plot()
+    plt.show()
