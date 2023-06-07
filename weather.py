@@ -33,6 +33,8 @@ efficiency factor that corrects the baseline vehicle efficiency.
 correction factor (source data versus interpolation)of electric vehicles.
 10. **get_run_location_weather_quantity:** Returns a chosen weather quantity
     for a given location and a given runtime.
+11. **get_run_weather_data:** Fetches the weather data and efficiency factors
+    and puts it into a table that is saved to files/databases.
 '''
 
 import os
@@ -623,28 +625,60 @@ def get_run_location_weather_quantity(
     return weather_values
 
 
+def get_run_weather_data(parameters_file_name):
+    '''
+    Fetches the weather data and efficiency factors and puts it into
+    a table that is saved to files/databases.
+    '''
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+
+    weather_processed_data_parameters = parameters['weather']['processed_data']
+    quantity_processed_names = weather_processed_data_parameters[
+        'quantity_processed_names'
+    ]
+
+    cumulative_quantity_processed_names = weather_processed_data_parameters[
+        'cumulative_quantity_processed_names'
+    ]
+
+    run_parameters = parameters['run']
+    run_start = datetime.datetime(
+        run_parameters['start']['year'],
+        run_parameters['start']['month'],
+        run_parameters['start']['day'],
+        run_parameters['start']['hour'],
+        run_parameters['start']['minute']
+    )
+    run_end = datetime.datetime(
+        run_parameters['end']['year'],
+        run_parameters['end']['month'],
+        run_parameters['end']['day'],
+        run_parameters['end']['hour'],
+        run_parameters['end']['minute']
+    )
+
+    location_parameters = parameters['locations']
+    for location in location_parameters:
+        location_latitude = location_parameters[location]['latitude']
+        location_longitude = location_parameters[location]['longitude']
+        for quantity in quantity_processed_names:
+            source_table = quantity
+            if quantity in cumulative_quantity_processed_names:
+                weather_quantity = f'Hourly {quantity}'
+            else:
+                weather_quantity = quantity
+
+            weather_values = get_run_location_weather_quantity(
+                location_latitude, location_longitude, run_start, run_end,
+                source_table, weather_quantity, parameters_file_name
+            )
+
+            print(weather_values)
+            weather_values.plot()
+            plt.show()
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-
-    location_latitude = 52.0
-    location_longitude = 4.2
-    # source_table = 'Temperature at 2 meters (°C)'
-    # weather_quantity =  'Temperature at 2 meters (°C)'
-    # source_table = 'Skin temperature (°C)'
-    # weather_quantity =  'Skin temperature (°C)'
-    # source_table = 'Total precipitation (m)'
-    # weather_quantity = 'Hourly Total precipitation (m)'
-    source_table = 'Surface solar radiation downwards (J/m2)'
-    weather_quantity = 'Hourly Surface solar radiation downwards (J/m2)'
-
-    run_start = datetime.datetime(2020, 5, 8, 0)
-    run_end = datetime.datetime(2020, 6, 26, 16)
-    weather_values = get_run_location_weather_quantity(
-        location_latitude, location_longitude, run_start, run_end,
-        source_table, weather_quantity, parameters_file_name
-    )
-
-    print(weather_values)
-    weather_values.plot()
-    plt.show()
+    get_run_weather_data(parameters_file_name)

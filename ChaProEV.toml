@@ -64,6 +64,51 @@ first_hour_number = 1
 # The SPINE toolbox uses 1
 # This is only for the hour number list (and related lists)
 
+
+# Run parameters
+[run]
+[run.get_extra_downloads]
+download_weather_data = false
+# Put true if you want to download the weather data. In principle,
+# you only to do this oonce, unless you add years and/or areas
+download_EV_tool_data = false
+# Put true if you want to download the data from the EV tool by geootab
+# This should only be needed once and is independentr of the case
+[run.start]
+year = 2020
+month = 5
+day = 8
+hour = 8
+minute = 0
+[run.end]
+year = 2020
+month = 6
+day = 26
+hour = 18
+minute = 0
+[run.frequency]
+size = 1  # Put the size of the interval here
+type = 'H'  # 'min'
+# Put the interval type here, use 'H' for hours, 'min' for minutes,
+# 'S' for seconds, 'D' for days. For more info and other types, see here:
+# https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
+
+
+[locations]
+# Add locations following the syntax below:
+# [location.code] <--use the the code/alias you want for the location
+# and put the desired properties below
+[locations.home]
+connectivity = 1
+charging_power = 8.9  # kW
+latitude = 52
+longitude = 6.2
+[locations.work]
+connectivity = 0.42
+charging_power = 11  # kW
+latitude = 52.1
+longitude = 5.8
+
 # Weather-related parameters
 [weather]
 
@@ -109,6 +154,11 @@ quantity_tags = ['t2m', 'skt', 'ssrd', 'tp']
 quantity_processed_names = [
     'Temperature at 2 meters (°C)',
     'Skin temperature (°C)',
+    'Surface solar radiation downwards (J/m2)',
+    'Total precipitation (m)'
+]
+
+cumulative_quantity_processed_names = [
     'Surface solar radiation downwards (J/m2)',
     'Total precipitation (m)'
 ]

@@ -166,6 +166,8 @@ It contains the following sections:
 - **files:** File-related parameters (folders, output type choices, etc.)
 - **colors:** Color-related parameters(defining new ones, as well as color bars)
 - **time:** Time-related parameters and constants needed in formulas
+- **run:** Parameters related to the run, such as timing, and elements such
+as locations, vehicles, legs, trips, etc.
 - **weather:** Parameters related to the weather, such as elements to define
 what we want to download from various sources, where we store weather data,
 how we process it, 
@@ -249,6 +251,8 @@ efficiency factor that corrects the baseline vehicle efficiency.
 correction factor (source data versus interpolation)of electric vehicles.
 10. **get_run_location_weather_quantity:** Returns a chosen weather quantity
     for a given location and a given runtime.
+11. **get_run_weather_data:** Fetches the weather data and efficiency factors
+    and puts it into a table that is saved to files/databases.
 
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects
