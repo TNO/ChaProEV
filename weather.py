@@ -665,7 +665,7 @@ def get_run_weather_data(parameters_file_name):
         location_first_quantity = True
         location_latitude = location_parameters[location]['latitude']
         location_longitude = location_parameters[location]['longitude']
-        
+
         for quantity in quantity_processed_names:
             source_table = quantity
             if quantity in cumulative_quantity_processed_names:
@@ -687,7 +687,7 @@ def get_run_weather_data(parameters_file_name):
                 )
                 location_weather_dataframe = (
                     location_weather_dataframe.set_index(
-                    ['Location', 'Timetag']
+                        ['Location', 'Timetag']
                     )
                 )
                 location_first_quantity = False
@@ -696,13 +696,20 @@ def get_run_weather_data(parameters_file_name):
                 weather_values[weather_quantity].values
             )
 
-
         weather_dataframe = pd.concat(
             [weather_dataframe, location_weather_dataframe],
             ignore_index=False
         )
-        
+
+        weather_dataframe['Vehicle efficiency factor'] = (
+            temperature_efficiency_factor(
+                weather_dataframe['Temperature at 2 meters (°C)'].values,
+                parameters_file_name
+            )
+        )
+
     return weather_dataframe
+
 
 if __name__ == '__main__':
 
