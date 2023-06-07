@@ -37,6 +37,8 @@ It contains the following functions:
 This function takes a grib file and converts it to a DataFrame.
 17. **sql_query_generator:** This function returns an sql query string that
     can be used (for example) in Panda's read_sql.
+18. **database_tables_columns:** Returns a dictionary with the tables of a
+    database as keys and their columns as values.
 '''
 
 import os
@@ -727,6 +729,30 @@ def sql_query_generator(
     )
 
     return output_query
+
+
+def database_tables_columns(database):
+    '''
+    Returns a dictionary with the tables of a database as keys and their
+    columns as values.
+    '''
+    database_connection = sqlite3.connect(database)
+    tables_query = 'select name from sqlite_master where type="table";'
+    database_cursor = database_connection.cursor()
+    database_cursor.execute(tables_query)
+    database_tables = database_cursor.fetchall()
+    tables_columns = {}
+    for table in database_tables:
+        table_name = table[0]
+        # table_name = f'"{table[0]}"'
+        table_cursor = database_connection.execute(
+            f'select * from "{table_name}"'
+        )
+        tables_columns[table_name] = [
+            description[0] for description in table_cursor.description
+        ]
+
+    return tables_columns
 
 
 if __name__ == '__main__':

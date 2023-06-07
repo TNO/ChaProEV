@@ -604,3 +604,9 @@ if __name__ == '__main__':
         test_query, weather_database_connection
         ).set_index(['Latitude', 'Longitude', 'Timetag'])
     print(test_df)
+
+    print(
+        cook.database_tables_columns(
+            f'{processed_folder}/{weather_database_file_name}'
+        )
+    )
