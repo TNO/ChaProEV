@@ -624,8 +624,6 @@ def get_run_location_weather_quantity(
     # (they are all the same and are our input)
     weather_values = weather_values.drop(columns=['Latitude', 'Longitude'])
 
-    # weather_values = weather_values.set_index('Timetag')
-
     return weather_values
 
 
@@ -636,6 +634,13 @@ def get_run_weather_data(parameters_file_name):
     '''
     weather_dataframe = pd.DataFrame()
     parameters = cook.parameters_from_TOML(parameters_file_name)
+
+    weather_factors_table_name = parameters[
+        'run']['weather_factors_table_name']
+
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_name = file_parameters['groupfile_name']
 
     weather_processed_data_parameters = parameters['weather']['processed_data']
     quantity_processed_names = weather_processed_data_parameters[
@@ -722,6 +727,11 @@ def get_run_weather_data(parameters_file_name):
             )
             / JOULES_IN_A_KWH
         )
+
+    cook.save_dataframe(
+        weather_dataframe, weather_factors_table_name, groupfile_name,
+        output_folder, parameters_file_name
+    )
 
     return weather_dataframe
 

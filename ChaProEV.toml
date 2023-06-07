@@ -70,6 +70,7 @@ first_hour_number = 1
 
 # Run parameters
 [run]
+weather_factors_table_name = 'run_weather_factors'
 [run.get_extra_downloads]
 download_weather_data = false
 # Put true if you want to download the weather data. In principle,
