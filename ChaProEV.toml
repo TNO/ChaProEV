@@ -1,6 +1,9 @@
 #  Created by Omar Usmai (Omar.Usmani@TNO.nl).
 #  This file contains configuration parameters for ChaProEV
 
+[unit_conversions]
+JOULES_IN_A_KWH = 3.6e6
+
 # File-related parameters
 [files]
 # General parameters

@@ -35,6 +35,10 @@ correction factor (source data versus interpolation)of electric vehicles.
     for a given location and a given runtime.
 11. **get_run_weather_data:** Fetches the weather data and efficiency factors
     and puts it into a table that is saved to files/databases.
+12. **solar_efficiency_factor:*** This gives us the efficiency factor of solar
+     panels (i.e. how much of the solar radiation is converted into
+     electricity).
+    THIS IS A PLACEHOLDER FUNCTION
 '''
 
 import os
@@ -708,7 +712,29 @@ def get_run_weather_data(parameters_file_name):
             )
         )
 
+        JOULES_IN_A_KWH = parameters['unit_conversions']['JOULES_IN_A_KWH']
+        weather_dataframe['Vehicle solar panels production (kWhe/m2)'] = (
+            weather_dataframe[
+                'Hourly Surface solar radiation downwards (J/m2)'
+            ]
+            *solar_panels_efficiency_factor(
+                weather_dataframe['Temperature at 2 meters (°C)']
+            )
+            /JOULES_IN_A_KWH
+        )
+
     return weather_dataframe
+
+def solar_panels_efficiency_factor(temperature):
+    '''
+    This gives us the efficiency factor of soalr panels (i.e. how
+    much of the solar radiation is converted into electricity).
+    THIS IS A PLACEHOLDER FUNCTION
+    '''
+    # THIS IS A PLACEHOLDER VALUE
+    efficiency_factor = np.exp(-((temperature-25)**2)/(100))/3
+
+    return efficiency_factor
 
 
 if __name__ == '__main__':
@@ -716,3 +742,4 @@ if __name__ == '__main__':
     parameters_file_name = 'ChaProEV.toml'
     run_weather_data = get_run_weather_data(parameters_file_name)
     print(run_weather_data)
+

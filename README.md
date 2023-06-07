@@ -163,6 +163,7 @@ is the version used for developping  and testing the model))
 ### **ChaProEV.toml**
 This file contains the model's parameters.
 It contains the following sections:
+- **unit_conversions:** Parameters to convert units
 - **files:** File-related parameters (folders, output type choices, etc.)
 - **colors:** Color-related parameters(defining new ones, as well as color bars)
 - **time:** Time-related parameters and constants needed in formulas
@@ -253,6 +254,10 @@ correction factor (source data versus interpolation)of electric vehicles.
     for a given location and a given runtime.
 11. **get_run_weather_data:** Fetches the weather data and efficiency factors
     and puts it into a table that is saved to files/databases.
+12. **solar_efficiency_factor:*** This gives us the efficiency factor of solar
+     panels (i.e. how much of the solar radiation is converted into
+     electricity).
+    THIS IS A PLACEHOLDER FUNCTION
 
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects
