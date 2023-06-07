@@ -717,13 +717,14 @@ def get_run_weather_data(parameters_file_name):
             weather_dataframe[
                 'Hourly Surface solar radiation downwards (J/m2)'
             ]
-            *solar_panels_efficiency_factor(
+            * solar_panels_efficiency_factor(
                 weather_dataframe['Temperature at 2 meters (°C)']
             )
-            /JOULES_IN_A_KWH
+            / JOULES_IN_A_KWH
         )
 
     return weather_dataframe
+
 
 def solar_panels_efficiency_factor(temperature):
     '''
@@ -740,6 +741,3 @@ def solar_panels_efficiency_factor(temperature):
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
-    run_weather_data = get_run_weather_data(parameters_file_name)
-    print(run_weather_data)
-

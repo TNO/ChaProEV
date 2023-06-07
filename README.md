@@ -160,6 +160,9 @@ is the version used for developping  and testing the model))
 
 ## **List of relevant files and modules**
 
+### **ChaProEV.py**
+ Where you run the model
+
 ### **ChaProEV.toml**
 This file contains the model's parameters.
 It contains the following sections:
