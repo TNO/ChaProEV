@@ -280,7 +280,7 @@ at 2 meters), and C is the efficiency correction factor.
 
 Plotting the fit verus the data shows that thisi a great fit:
 <center>
-<img src=Temperature_correction_factor.svg>
+<img src=Vehicle_Temperature_correction_factor.svg>
 </center>
 
 ## **Context, goals, and future developments**

@@ -39,6 +39,8 @@ correction factor (source data versus interpolation)of electric vehicles.
      panels (i.e. how much of the solar radiation is converted into
      electricity).
     THIS IS A PLACEHOLDER FUNCTION
+13. **setup_weather:** This runs all the functions necessary to get the run
+    weather factors for a given case.
 '''
 
 import os
@@ -258,8 +260,6 @@ def write_weather_database(parameters_file_name):
             if file_name.split('.')[-1] == 'grib':
                 file_header = file_name.split('.')[0]
                 if file_header[0:len(quantity)] == quantity:
-                    file_year = file_header[len(quantity):].split('_')[1]
-                    file_month = file_header[len(quantity):].split('_')[2]
 
                     source_file = f'{raw_data_folder}/{file_name}'
                     quantity_dataframe = cook.from_grib_to_dataframe(
@@ -422,7 +422,7 @@ def get_EV_tool_data(parameters_file_name):
     '''
     parameters = cook.parameters_from_TOML(parameters_file_name)
     file_parameters = parameters['files']
-    groupfile_name = file_parameters['groupfile_name']
+
     EV_tool_parameters = parameters[
         'weather']['EV_tool']
 
@@ -464,9 +464,11 @@ def get_EV_tool_data(parameters_file_name):
                 raw_efficiency_factor.split("'")[1]
             )
             efficiency_factors.append(efficiency_factor)
-
+    efficiency_factor_column_name = EV_tool_parameters[
+        'efficiency_factor_column_name'
+    ]
     temperature_efficiencies = pd.DataFrame(
-        efficiency_factors, columns=['Relative efficiency'],
+        efficiency_factors, columns=[efficiency_factor_column_name],
         index=temperatures
     )
 
@@ -474,6 +476,7 @@ def get_EV_tool_data(parameters_file_name):
     # This tag creates issues with xml files (and a warning with
     # stata), so we need to remove the xml output (or change things).
     file_name = EV_tool_parameters['file_name']
+    groupfile_name = EV_tool_parameters['groupfile_name']
     folder = EV_tool_parameters['folder']
     cook.save_dataframe(
         temperature_efficiencies, file_name, groupfile_name, folder,
@@ -492,13 +495,18 @@ def temperature_efficiency_factor(temperature, parameters_file_name):
     '''
 
     parameters = cook.parameters_from_TOML(parameters_file_name)
-    temperature_efficiencies_parameters = parameters[
-        'weather']['temperature_efficiencies']
+    EV_tool_parameters = parameters[
+        'weather']['EV_tool']
 
-    source_folder = temperature_efficiencies_parameters['folder']
-    source_file = temperature_efficiencies_parameters['file_name']
-    values_header = temperature_efficiencies_parameters['values_header']
-    fitting_polynomial_order = temperature_efficiencies_parameters[
+    vehicle_temperature_efficiencies_parameters = parameters[
+        'weather']['vehicle_temperature_efficiencies']
+
+    source_folder = vehicle_temperature_efficiencies_parameters['folder']
+    source_file = vehicle_temperature_efficiencies_parameters['file_name']
+    values_header = EV_tool_parameters[
+        'efficiency_factor_column_name'
+    ]
+    fitting_polynomial_order = vehicle_temperature_efficiencies_parameters[
         'fitting_polynomial_order'
     ]
 
@@ -526,10 +534,12 @@ def plot_temperature_efficiency(parameters_file_name):
     of electric vehicles.
     '''
     parameters = cook.parameters_from_TOML(parameters_file_name)
+    EV_tool_parameters = parameters[
+        'weather']['EV_tool']
 
     plot_colors = cook.get_extra_colors(parameters_file_name)
 
-    plot_parameters = parameters["plots"]['temperature_efficiency']
+    plot_parameters = parameters['plots']['vehicle_temperature_efficiency']
     plot_style = plot_parameters['style']
     geotab_data_color = plot_colors.loc[plot_parameters['geotab_data_color']]
     geotab_data_size = plot_parameters['geotab_data_size']
@@ -541,7 +551,10 @@ def plot_temperature_efficiency(parameters_file_name):
     source_data_file = plot_parameters['source_data_file']
     source_data = pd.read_pickle(f'{source_data_folder}/{source_data_file}')
     temperatures = source_data.index.values
-    geotab_data_efficiencies = source_data['Relative efficiency'].values
+    values_header = EV_tool_parameters[
+        'efficiency_factor_column_name'
+    ]
+    geotab_data_efficiencies = source_data[values_header].values
     fitted_efficiencies = temperature_efficiency_factor(
                             temperatures, parameters_file_name
                         )
@@ -566,7 +579,7 @@ def plot_temperature_efficiency(parameters_file_name):
     temeprature_efficiency_figure.tight_layout()
     cook.save_figure(
         temeprature_efficiency_figure,
-        'Temperature_correction_factor',
+        'Vehicle_Temperature_correction_factor',
         source_data_folder, parameters_file_name
     )
 
@@ -748,6 +761,41 @@ def solar_panels_efficiency_factor(temperature):
     return efficiency_factor
 
 
+def setup_weather(parameters_file_name):
+    '''
+    This runs all the functions necessary to get the run weather factors
+    for a given case. Downloading CDS weather data
+    (which is in principle only done once, but can be repeated if we add
+    new years or new areas) is an option. The same holds for the EV tool
+    temperature curve data.
+    Creating the weather database is also optional (it should happen less
+    often than updates related to runs, but more often than the above
+    downloads).
+    Creating the run weather data factors is also optional (for example if
+    you only change things that do not impact the run weather factors/data,
+    such as mobility data).
+    '''
+
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    get_extra_downloads = parameters['run']['get_extra_downloads']
+    download_weather_data = get_extra_downloads['download_weather_data']
+    download_EV_tool_data = get_extra_downloads['download_EV_tool_data']
+    make_weather_database = get_extra_downloads['make_weather_database']
+    setup_run_weather_data = get_extra_downloads['setup_run_weather_data']
+
+    if download_weather_data:
+        download_all_cds_weather_data(parameters_file_name)
+    if download_EV_tool_data:
+        get_EV_tool_data(parameters_file_name)
+        plot_temperature_efficiency(parameters_file_name)
+    if make_weather_database:
+        write_weather_database(parameters_file_name)
+        get_all_hourly_values(parameters_file_name)
+    if setup_run_weather_data:
+        get_run_weather_data(parameters_file_name)
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
+    setup_weather(parameters_file_name)

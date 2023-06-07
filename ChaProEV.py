@@ -7,5 +7,7 @@ import weather
 
 if __name__ == '__main__':
     parameters_file_name = 'ChaProEV.toml'
-    run_weather_data = weather.get_run_weather_data(parameters_file_name)
-    print(run_weather_data)
+    print('Do solar panel efficiency')
+    print('Multiple runs in output files/DB')
+    print('Avoid swap by arranging before? And explain/improve in all hourly')
+    weather.setup_weather(parameters_file_name)

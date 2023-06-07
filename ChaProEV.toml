@@ -74,10 +74,18 @@ weather_factors_table_name = 'run_weather_factors'
 [run.get_extra_downloads]
 download_weather_data = false
 # Put true if you want to download the weather data. In principle,
-# you only to do this oonce, unless you add years and/or areas
+# you only to do this once, unless you add years and/or areas
+make_weather_database = false
+# Put true if you want to remake the weather database. In principle,
+# you only to do this once, unless you add years and/or areas. Note
+# that this refers to other years ans areas than the weather download.
 download_EV_tool_data = false
 # Put true if you want to download the data from the EV tool by geootab
 # This should only be needed once and is independentr of the case
+setup_run_weather_data = true
+# Put false if you want to keep the run weather factors (for example if
+# you only change things that do not impact the run weather factors/data,
+# such as mobility data)
 [run.start]
 year = 2020
 month = 5
@@ -193,23 +201,24 @@ EV_tool_url = 'https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.h
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.57'
 efficiency_curve_script_index = 2
 data_splitter = 'Temp:'
-file_name = 'temperature_efficiencies'
+file_name = 'vehicle_temperature_efficiencies'
+groupfile_name = 'vehicle_temperature_efficiencies'
 folder = 'input'
+efficiency_factor_column_name = 'Vehicle Relative efficiency factor'
 
 # Temperature efficiency fit factors
-[weather.temperature_efficiencies]
+[weather.vehicle_temperature_efficiencies]
 folder = 'input'
-file_name = 'temperature_efficiencies.pkl'
-values_header = 'Relative efficiency'
+file_name = 'vehicle_temperature_efficiencies.pkl'
 fitting_polynomial_order = 6
 
 
 # Parameters for plots (colors, sizes, etc.)
 [plots]
-[plots.temperature_efficiency]
+[plots.vehicle_temperature_efficiency]
 style = 'fivethirtyeight'
-source_data_folder = "input"
-source_data_file = 'temperature_efficiencies.pkl'
+source_data_folder = 'input'
+source_data_file = 'vehicle_temperature_efficiencies.pkl'
 fit_color = 'kraken_ice_blue'
 fit_line_size = 1
 geotab_data_color = 'kraken_deep_sea_blue'
