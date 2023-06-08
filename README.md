@@ -276,6 +276,18 @@ correction factor (source data versus interpolation)of electric vehicles.
 14. **get_location_weather_quantity:** Returns the value a a chosen
     weather quantity for a given location and time tag.
 
+
+### **run_time.py:**
+This module defines time structures.
+
+It contains the following functions:
+1. **get_time_range:** This function returns the time range of the run, and the
+    associated hour numbers, based on values found in the
+    parameters file.
+
+
+
+    
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects
 the baseline vehicle efficiency. It uses a data file (extracted from
