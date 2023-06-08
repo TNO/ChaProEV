@@ -221,6 +221,13 @@ This function takes a grib file and converts it to a DataFrame.
 18. **database_tables_columns:** Returns a dictionary with the tables of a
     database as keys and their columns as values.
 
+
+### **define.py:**
+This module defines and declares classes for the different objects 
+that define the system (the parameters/defintions come from a parameters file),
+namely:
+
+
 ### **weather.py**
 This module contains functions related to weather data and factors.
 The weather data is pulled from the [CDS (Climate Data Store) ERA-5 weather
