@@ -228,6 +228,7 @@ that define the system (the parameters/defintions come from a parameters file),
 namely:
 1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
+2. **Vehicles:** Each vehicle type (or subtype) is defined in this class.
 
 
 ### **weather.py**
@@ -270,6 +271,10 @@ correction factor (source data versus interpolation)of electric vehicles.
      panels (i.e. how much of the solar radiation is converted into
      electricity).
     THIS IS A PLACEHOLDER FUNCTION
+13. **setup_weather:** This runs all the functions necessary to get the run
+    weather factors for a given case.
+14. **get_location_weather_quantity:** Returns the value a a chosen
+    weather quantity for a given location and time tag.
 
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects

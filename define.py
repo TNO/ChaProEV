@@ -3,6 +3,9 @@ Author: Omar Usmani (Omar.Usmani@TNO.nl)
 This module defines and declares classes for the different objects
 that define the system (the parameters/defintions come from a parameters file),
 namely:
+1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
+    the vehicle goes from a start location and ends/stops at an end location).
+2. **Vehicles:** Each vehicle type (or subtype) is defined in this class.
 '''
 
 import datetime
@@ -105,3 +108,27 @@ class Leg:
         )
 
         return electricity_use_kWh
+
+
+class Vehicle:
+    '''
+    This class defines the vehicles and their properties, from a parameters
+    file that contains a list of instances and their porperties.
+    '''
+
+    class_name = 'vehicles'
+
+    def __init__(vehicle,  name, parameters_file_name):
+        vehicle.name = name
+
+        parameters = cook.parameters_from_TOML(parameters_file_name)
+        vehicle_parameters = parameters['vehicles'][name]
+        vehicle.base_consumption = vehicle_parameters['base_consumption']
+        vehicle.battery_capacity = vehicle_parameters['battery_capacity']
+        vehicle.solar_panel_size_kWp = vehicle_parameters[
+            'solar_panel_size_kWp']
+
+        road_factor_parameters = vehicle_parameters['road_factors']
+        vehicle.road_factors = {}
+        for road_type in road_factor_parameters:
+            vehicle.road_factors[road_type] = road_factor_parameters[road_type]
