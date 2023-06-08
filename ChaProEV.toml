@@ -105,6 +105,9 @@ type = 'H'  # 'min'
 # 'S' for seconds, 'D' for days. For more info and other types, see here:
 # https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
 
+[transport_factors]
+road_types = ['highway', 'city']
+
 
 [locations]
 # Add locations following the syntax below:
@@ -185,6 +188,20 @@ end = 'home'
 city = 0.8
 highway = 0.2
 
+[vehicles]
+
+[vehicles.car]
+base_consumption = 0.2  # kWh/km
+battery_capacity = 80  # kWh
+solar_panel_size_kWp = 0  # kWp
+
+
+[vehicles.car.road_factors]
+# These road factors mutliply the consumption
+# We need a value for each of the road_types (see above in [transport_factors])
+# The default value (if nothing changes) is 1.
+highway = 1.2
+city = 1
 
 # Weather-related parameters
 [weather]

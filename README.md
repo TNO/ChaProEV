@@ -276,6 +276,9 @@ This function returns the temperature efficiency factor that corrects
 the baseline vehicle efficiency. It uses a data file (extracted from
 EV tool made by 
 [geotab](https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html).
+
+[This information](https://www.geotab.com/blog/ev-range/) is
+based on 5.2 million trips by 4200 vehicles.
 The degree 6 polynomial fit is:
 
 $$
