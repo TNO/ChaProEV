@@ -6,6 +6,8 @@ namely:
 1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
 2. **Vehicles:** Each vehicle type (or subtype) is defined in this class.
+3. **Location:** This class defines the locations where the vehicles are
+(available charger power, connectivity, latitude, longitude, etc.).
 '''
 
 import datetime
@@ -132,3 +134,23 @@ class Vehicle:
         vehicle.road_factors = {}
         for road_type in road_factor_parameters:
             vehicle.road_factors[road_type] = road_factor_parameters[road_type]
+
+
+class Location:
+    '''
+    This class defines the locations where the vehicles are
+    and their properties,  from a parameters
+    file that contains a list of instances and their properties.
+    '''
+
+    class_name = 'locations'
+
+    def __init__(location,  name, parameters_file_name):
+        location.name = name
+
+        parameters = cook.parameters_from_TOML(parameters_file_name)
+        location_parameters = parameters['locations'][name]
+        location.connectivity = location_parameters['connectivity']
+        location.charging_power = location_parameters['charging_power']
+        location.latitude = location_parameters["latitude"]
+        location.longitude = location_parameters["longitude"]
