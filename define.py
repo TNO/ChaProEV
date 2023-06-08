@@ -68,8 +68,27 @@ class Leg:
 
         # For the temperature factor, we take an average of the factor at
         # the start and end locations.
-        temperature_factor_start_location = 1  # Placeholder
-        temperature_factor_end_location = 1  # Placeholder
+        temperature_factor_start_location = (
+            weather.get_location_weather_quantity(
+                leg.start_location.latitude,
+                leg.start_location.longitude,
+                time_stamp,
+                'Temperature at 2 meters (°C)',
+                'Temperature at 2 meters (°C)',
+                parameters_file_name
+            )
+        )
+        temperature_factor_end_location = (
+            weather.get_location_weather_quantity(
+                leg.end_location.latitude,
+                leg.end_location.longitude,
+                time_stamp,
+                'Temperature at 2 meters (°C)',
+                'Temperature at 2 meters (°C)',
+                parameters_file_name
+            )
+        )
+
         temperature_factor_leg = (
             (
                 temperature_factor_start_location

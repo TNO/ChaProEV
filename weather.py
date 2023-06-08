@@ -41,6 +41,8 @@ correction factor (source data versus interpolation)of electric vehicles.
     THIS IS A PLACEHOLDER FUNCTION
 13. **setup_weather:** This runs all the functions necessary to get the run
     weather factors for a given case.
+14. **get_location_weather_quantity:** Returns the value a a chosen
+    weather quantity for a given location and time tag.
 '''
 
 import os
@@ -795,7 +797,64 @@ def setup_weather(parameters_file_name):
         get_run_weather_data(parameters_file_name)
 
 
+def get_location_weather_quantity(
+        location_latitude, location_longitude, timetag,
+        source_table, weather_quantity, parameters_file_name):
+    '''
+    Returns the value a a chosen weather quantity for a given location and
+    time tag.
+    '''
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    processed_data_parameters = parameters['weather']['processed_data']
+    processed_folder = processed_data_parameters['processed_folder']
+    weather_database_file_name = processed_data_parameters[
+        'weather_database_file_name'
+    ]
+    weather_database_connection = sqlite3.connect(
+        f'{processed_folder}/{weather_database_file_name}'
+    )
+    # We need to avoid issues with spaces in column names, so we need
+    # nested double quotes
+    source_table = f'"{source_table}"'
+    weather_quantity = f'"{weather_quantity}"'
+    timetag = f'"{timetag}"'
+
+    list_columns_to_fetch = [
+        'Latitude', 'Longitude', 'Timetag', weather_quantity
+    ]
+    # We need to convert this into a string for a query
+    columns_to_fetch = ','.join(list_columns_to_fetch)
+
+    query_filter_quantities = ['Latitude', 'Longitude', 'Timetag']
+    query_filter_types = ['=', '=', '=']
+    query_filter_values = [
+        location_latitude, location_longitude, timetag
+    ]
+
+    run_query = cook.sql_query_generator(
+        columns_to_fetch, source_table, query_filter_quantities,
+        query_filter_types, query_filter_values
+    )
+
+    weather_values = pd.read_sql(
+        run_query, weather_database_connection
+    )
+
+    # The column does not contain double quotes and we need
+    # the value (hence [0])
+    value_of_weather_quantity = weather_values[weather_quantity.strip('"')][0]
+
+    return value_of_weather_quantity
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
     setup_weather(parameters_file_name)
+    print(
+        get_location_weather_quantity(
+            52.0, 4.2, datetime.datetime(2020, 5, 8, 8, 0),
+            'Temperature at 2 meters (°C)', 'Temperature at 2 meters (°C)',
+            parameters_file_name
+        )
+    )
