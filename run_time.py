@@ -6,6 +6,8 @@ It contains the following functions:
 1. **get_time_range:** This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
     parameters file.
+2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
+timestamps of the run as index (and hour numbers as a column).
 '''
 
 
@@ -79,7 +81,34 @@ def get_time_range(parameters_file_name):
     return run_range, run_hour_numbers
 
 
+def get_time_stamped_dataframe(parameters_file_name):
+    '''
+    This function creates a DataFrame with the timestamps of the
+    run as index (and hour numbers as a column).
+    '''
+
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+
+    run_range, run_hour_numbers = get_time_range(parameters_file_name)
+    time_stamped_dataframe = pd.DataFrame(
+        run_hour_numbers, columns=['Hour Number'], index=run_range
+    )
+    time_stamped_dataframe.index.name = 'Timestamp'
+
+    time_stamped_dataframe['SPINE_hour_number'] = (
+        [f't{hour_number:04}' for hour_number in run_hour_numbers]
+    )
+
+    location_parameters = parameters['locations']
+    locations = list(location_parameters.keys())
+    time_stamped_dataframe[locations] = np.empty(
+        (len(run_range), len(locations)))
+    time_stamped_dataframe[locations] = np.nan
+    return time_stamped_dataframe
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'ChaProEV.toml'
     print(get_time_range(parameters_file_name))
+    print(get_time_stamped_dataframe(parameters_file_name))

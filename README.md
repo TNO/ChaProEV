@@ -284,10 +284,12 @@ It contains the following functions:
 1. **get_time_range:** This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
     parameters file.
+2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
+timestamps of the run as index (and hour numbers as a column).
 
 
 
-    
+
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects
 the baseline vehicle efficiency. It uses a data file (extracted from
