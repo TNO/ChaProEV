@@ -207,12 +207,12 @@ city = 1
 [trips.commute_to_work]
 vehicle = 'car'
 day_start_hour = 6
-legs = ['home_to_work','work_to_home']
+legs = ['home_to_work', 'work_to_home']
 percentage_station_users = 0.9
 start_probabilities = [
-    0,0,0,0,0,0,0,0.25,
-    1,0.25,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0
+    0, 0, 0, 0, 0, 0, 0, 0.25,
+    1, 0.25, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
 ]
 
 # Weather-related parameters

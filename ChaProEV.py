@@ -4,6 +4,7 @@ This is where you run the model
 '''
 
 import weather
+import define
 
 if __name__ == '__main__':
     parameters_file_name = 'ChaProEV.toml'
@@ -15,3 +16,5 @@ if __name__ == '__main__':
     print('Implement road and hour in day factors')
     print('Go through class definitions (espcially Trip')
     weather.setup_weather(parameters_file_name)
+    legs, vehicles, locations, trips = define.declare_all_instances(
+        parameters_file_name)

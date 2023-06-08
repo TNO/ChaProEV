@@ -12,6 +12,9 @@ namely:
     Note that this day does not necessarily start (and end) at minight,
     but can start (and end) at an hour that is more logical/significant for the
     vehicle user (it could for example be 06:00 for car drivers).
+
+This module also includes two functions to declare a chosen class, and
+to run that function for all class types.
 '''
 
 import datetime
@@ -230,4 +233,74 @@ class Trip:
         trip.battery_space_kWh = trip.base_dataframe.copy()
         trip.drawn_charge_kWh = trip.base_dataframe.copy()
         trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
-    
+
+
+def declare_class_instances(Chosen_class, parameters_file_name):
+    '''
+    This function creates the instances of a class (Chosen_class),
+    based on a parameters file name where the instances and their properties
+    are given.
+    '''
+
+    class_name = Chosen_class.class_name
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+
+    class_names = parameters[class_name]
+    instances = []
+
+    for class_name in class_names:
+        instances.append(Chosen_class(class_name, parameters_file_name))
+
+    return instances
+
+
+def declare_all_instances(parameters_file_name):
+    '''
+    This declares all instances of the various objects
+    (legs,  vehicles,  locations,  trips).
+    '''
+    legs = declare_class_instances(Leg, parameters_file_name)
+
+    vehicles = declare_class_instances(Vehicle, parameters_file_name)
+
+    locations = declare_class_instances(Location, parameters_file_name)
+
+    trips = declare_class_instances(Trip, parameters_file_name)
+
+    return legs, vehicles, locations, trips
+
+
+if __name__ == '__main__':
+
+    parameters_file_name = 'CHAPROEV.toml'
+
+    legs, vehicles, locations, trips = declare_all_instances(
+        parameters_file_name)
+
+    for leg in legs:
+        print(
+            leg.name, leg.distance, leg.duration, leg.hour_in_day_factors,
+            leg.start_location, leg.end_location,
+            leg.road_type_mix
+        )
+
+    for vehicle in vehicles:
+        print(
+            vehicle.name, vehicle.base_consumption, vehicle.battery_capacity,
+            vehicle.road_factors
+        )
+
+    for location in locations:
+        print(
+            location.name,
+            location.connectivity,
+            location.charging_power
+        )
+
+    for trip in trips:
+
+        print(
+            trip.name, trip.legs, trip.percentage_station_users,
+            trip.start_probabilities, trip.vehicle, trip.day_start_hour,
+        )
+        print(trip.base_dataframe)
