@@ -121,6 +121,71 @@ charging_power = 11  # kW
 latitude = 52.1
 longitude = 5.8
 
+[legs]
+# You can add legs here by copying existing legs,
+# changing the name of the leg (in [legs.home_to_work], home_to_work is
+# the name of the leg) and changing the relevant values
+# Note that you need to change the leg name in all parts where it occurs
+# (i.e. also in [legs.home_to_work.locations],[legs.home_to_work.road_types],
+# etc.
+[legs.home_to_work]
+distance = 22  # km
+duration = 0.25  # hours
+
+
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.home_to_work.locations]
+start = 'home'
+end = 'work'
+[legs.home_to_work.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
+[legs.work_to_home]
+distance = 22  # km
+duration = 0.25  # hours
+
+
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.work_to_home.locations]
+start = 'work'
+end = 'home'
+[legs.work_to_home.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
 # Weather-related parameters
 [weather]
 

@@ -226,6 +226,8 @@ This function takes a grib file and converts it to a DataFrame.
 This module defines and declares classes for the different objects 
 that define the system (the parameters/defintions come from a parameters file),
 namely:
+1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
+    the vehicle goes from a start location and ends/stops at an end location).
 
 
 ### **weather.py**
