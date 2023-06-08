@@ -13,4 +13,5 @@ if __name__ == '__main__':
     print('Clarrify what theperature efficiency of vehicles actually is')
     print('Test leg.electricity_use_kWh')
     print('Implement road and hour in day factors')
+    print('Go through class definitions (espcially Trip')
     weather.setup_weather(parameters_file_name)

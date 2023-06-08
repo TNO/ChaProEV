@@ -203,6 +203,18 @@ solar_panel_size_kWp = 0  # kWp
 highway = 1.2
 city = 1
 
+[trips]
+[trips.commute_to_work]
+vehicle = 'car'
+day_start_hour = 6
+legs = ['home_to_work','work_to_home']
+percentage_station_users = 0.9
+start_probabilities = [
+    0,0,0,0,0,0,0,0.25,
+    1,0.25,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0
+]
+
 # Weather-related parameters
 [weather]
 

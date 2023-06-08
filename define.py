@@ -8,6 +8,10 @@ namely:
 2. **Vehicles:** Each vehicle type (or subtype) is defined in this class.
 3. **Location:** This class defines the locations where the vehicles are
 (available charger power, connectivity, latitude, longitude, etc.).
+4. **Trips:** Trips are collections of legs that take place on a given day.
+    Note that this day does not necessarily start (and end) at minight,
+    but can start (and end) at an hour that is more logical/significant for the
+    vehicle user (it could for example be 06:00 for car drivers).
 '''
 
 import datetime
@@ -154,3 +158,76 @@ class Location:
         location.charging_power = location_parameters['charging_power']
         location.latitude = location_parameters["latitude"]
         location.longitude = location_parameters["longitude"]
+
+
+class Trip:
+    '''
+    This class defines the  trips and their properties, from a parameters
+    file that contains a list of instances and their properties.
+    Trips are collections of legs that take place on a given day.
+    Note that this day does not necessarily start (and end) at minight,
+    but can start (and end) at an hour that is more logical/significant for the
+    vehicle user (it could for example be 06:00 for car drivers).
+    This value is set in the parameters files.
+    '''
+
+    class_name = 'trips'
+
+    def __init__(trip,  name, parameters_file_name):
+        trip.name = name
+
+        parameters = cook.parameters_from_TOML(parameters_file_name)
+        location_parameters = parameters['locations']
+        location_names = [
+            location_name for location_name in location_parameters
+        ]
+        trip_parameters = parameters['trips'][name]
+        trip.vehicle = trip_parameters['vehicle']
+        trip.legs = trip_parameters['legs']
+        trip.percentage_station_users = trip_parameters[
+            'percentage_station_users'
+        ]
+        trip.start_probabilities = trip_parameters[
+            'start_probabilities'
+        ]
+        trip.day_start_hour = trip_parameters['day_start_hour']
+
+        frequency_parameters = parameters['run']['frequency']
+        trip_frequency_size = frequency_parameters['size']
+        trip_frequency_type = frequency_parameters['type']
+        trip_frequency = f'{trip_frequency_size}{trip_frequency_type}'
+
+        # For these, the year, month and day are not important,
+        # as they will be omitted, so we put generic values.
+        trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
+        trip_end = datetime.datetime(2001, 1, 2, trip.day_start_hour)
+        trip_time_stamps = pd.date_range(
+            start=trip_start, end=trip_end, freq=trip_frequency,
+            inclusive='left'
+            # We want the start timestamp, but not the end one, so we need
+            # to say it is closed left
+        )
+        trip_time_index_tuples = [
+            (time_stamp.hour, time_stamp.minute, time_stamp.second)
+            for time_stamp in trip_time_stamps
+        ]
+
+        trip.time_index = pd.MultiIndex.from_tuples(
+            trip_time_index_tuples, name=['Hour', 'Minute', 'Second']
+        )
+
+        trip.base_dataframe = pd.DataFrame(index=trip.time_index)
+
+        location_parameters = parameters['locations']
+        locations = list(location_parameters.keys())
+
+        empty_values = np.empty((len(trip.time_index), len(locations)))
+        empty_values[:] = np.nan
+        trip.base_dataframe[location_names] = empty_values
+        trip.located_at = trip.base_dataframe.copy()
+        trip.connected = trip.base_dataframe.copy()
+        trip.available_power_kW = trip.base_dataframe.copy()
+        trip.battery_space_kWh = trip.base_dataframe.copy()
+        trip.drawn_charge_kWh = trip.base_dataframe.copy()
+        trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
+    
