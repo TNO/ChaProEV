@@ -31,16 +31,16 @@ cumulative quantities in the weather database.
 efficiency factor that corrects the baseline vehicle efficiency.
 9. **plot_temperature_efficiency:** Plots the temperature efficiency
 correction factor (source data versus interpolation)of electric vehicles.
-10. **get_run_location_weather_quantity:** Returns a chosen weather quantity
-    for a given location and a given runtime.
-11. **get_run_weather_data:** Fetches the weather data and efficiency factors
-    and puts it into a table that is saved to files/databases.
+10. **get_scenario_location_weather_quantity:** Returns a chosen weather
+    quantity for a given location and a given runtime.
+11. **get_scenario_weather_data:** Fetches the weather data and efficiency
+    factors and puts it into a table that is saved to files/databases.
 12. **solar_efficiency_factor:*** This gives us the efficiency factor of solar
      panels (i.e. how much of the solar radiation is converted into
      electricity).
     THIS IS A PLACEHOLDER FUNCTION
-13. **setup_weather:** This runs all the functions necessary to get the run
-    weather factors for a given case.
+13. **setup_weather:** This runs all the functions necessary to get the
+    scenario weather factors for a given case.
 14. **get_location_weather_quantity:** Returns the value a a chosen
     weather quantity for a given location and time tag.
 '''
@@ -146,14 +146,14 @@ def make_weather_dataframe(
     processing data into forms useful for the model.
     The processed DataFrame can then be added to the weather database.
     This weather database has an area given by latitude and longitude
-    ranges. Note that these ranges correspond to the general region of the run,
-    and thus can be different from the download range
-    (which can be for example the whole of Europe) and from the run range
-    (which corresponds to all locations in the run).
+    ranges. Note that these ranges correspond to the general region of the
+    scenario, and thus can be different from the download range
+    (which can be for example the whole of Europe) and from the scenario range
+    (which corresponds to all locations in the scenario).
     Typically, you will want to have a large range for the downlaoded data
     (which you would do only once), a medium range for the processed weather
-    data (which would cover the range of locations in the runs you are
-    planning to do in the mid-term), and run-specific locations (with
+    data (which would cover the range of locations in the scenarios you are
+    planning to do in the mid-term), and scenario-specific locations (with
     their own latitudes and longitudes).
     '''
 
@@ -586,7 +586,7 @@ def plot_temperature_efficiency(parameters_file_name):
     )
 
 
-def get_run_location_weather_quantity(
+def get_scenario_location_weather_quantity(
         location_latitude, location_longitude, run_start, run_end,
         source_table, weather_quantity, parameters_file_name):
     '''
@@ -626,13 +626,13 @@ def get_run_location_weather_quantity(
         location_latitude, location_longitude, [run_start, run_end]
     ]
 
-    location_run_query = cook.sql_query_generator(
+    location_scenario_query = cook.sql_query_generator(
         columns_to_fetch, source_table, query_filter_quantities,
         query_filter_types, query_filter_values
     )
 
     weather_values = pd.read_sql(
-        location_run_query, weather_database_connection
+        location_scenario_query, weather_database_connection
     )
 
     # We don't need the latitude and longitude values in columns
@@ -642,20 +642,26 @@ def get_run_location_weather_quantity(
     return weather_values
 
 
-def get_run_weather_data(parameters_file_name):
+def get_scenario_weather_data(parameters_file_name):
     '''
     Fetches the weather data and efficiency factors and puts it into
     a table that is saved to files/databases.
     '''
     weather_dataframe = pd.DataFrame()
     parameters = cook.parameters_from_TOML(parameters_file_name)
+    scenario = parameters['scenario']
+    case_name = parameters['case_name']
 
-    weather_factors_table_name = parameters[
-        'run']['weather_factors_table_name']
+    weather_factors_table_root_name = parameters[
+        'run']['weather_factors_table_root_name']
+    weather_factors_table_name = (
+        f'{scenario}_{weather_factors_table_root_name}'
+    )
 
     file_parameters = parameters['files']
     output_folder = file_parameters['output_folder']
-    groupfile_name = file_parameters['groupfile_name']
+    groupfile_root = file_parameters['groupfile_root']
+    groupfile_name = f'{groupfile_root}_{case_name}'
 
     weather_processed_data_parameters = parameters['weather']['processed_data']
     quantity_processed_names = weather_processed_data_parameters[
@@ -697,7 +703,7 @@ def get_run_weather_data(parameters_file_name):
             else:
                 weather_quantity = quantity
 
-            weather_values = get_run_location_weather_quantity(
+            weather_values = get_scenario_location_weather_quantity(
                 location_latitude, location_longitude, run_start, run_end,
                 source_table, weather_quantity, parameters_file_name
             )
@@ -765,17 +771,14 @@ def solar_panels_efficiency_factor(temperature):
 
 def setup_weather(parameters_file_name):
     '''
-    This runs all the functions necessary to get the run weather factors
+    This runs all the functions necessary to get the scenario weather factors
     for a given case. Downloading CDS weather data
     (which is in principle only done once, but can be repeated if we add
     new years or new areas) is an option. The same holds for the EV tool
     temperature curve data.
     Creating the weather database is also optional (it should happen less
-    often than updates related to runs, but more often than the above
+    often than updates related to scenarios, but more often than the above
     downloads).
-    Creating the run weather data factors is also optional (for example if
-    you only change things that do not impact the run weather factors/data,
-    such as mobility data).
     '''
 
     parameters = cook.parameters_from_TOML(parameters_file_name)
@@ -783,7 +786,6 @@ def setup_weather(parameters_file_name):
     download_weather_data = get_extra_downloads['download_weather_data']
     download_EV_tool_data = get_extra_downloads['download_EV_tool_data']
     make_weather_database = get_extra_downloads['make_weather_database']
-    setup_run_weather_data = get_extra_downloads['setup_run_weather_data']
 
     if download_weather_data:
         download_all_cds_weather_data(parameters_file_name)
@@ -793,8 +795,8 @@ def setup_weather(parameters_file_name):
     if make_weather_database:
         write_weather_database(parameters_file_name)
         get_all_hourly_values(parameters_file_name)
-    if setup_run_weather_data:
-        get_run_weather_data(parameters_file_name)
+
+    get_scenario_weather_data(parameters_file_name)
 
 
 def get_location_weather_quantity(
@@ -831,13 +833,13 @@ def get_location_weather_quantity(
         location_latitude, location_longitude, timetag
     ]
 
-    run_query = cook.sql_query_generator(
+    scenario_query = cook.sql_query_generator(
         columns_to_fetch, source_table, query_filter_quantities,
         query_filter_types, query_filter_values
     )
 
     weather_values = pd.read_sql(
-        run_query, weather_database_connection
+        scenario_query, weather_database_connection
     )
 
     # The column does not contain double quotes and we need
@@ -849,7 +851,8 @@ def get_location_weather_quantity(
 
 if __name__ == '__main__':
 
-    parameters_file_name = 'ChaProEV.toml'
+    scenario = 'baseline'
+    parameters_file_name = f'scenarios/{scenario}.toml'
     setup_weather(parameters_file_name)
     print(
         get_location_weather_quantity(

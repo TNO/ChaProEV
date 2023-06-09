@@ -104,11 +104,12 @@ def get_time_stamped_dataframe(parameters_file_name):
     time_stamped_dataframe[locations] = np.empty(
         (len(run_range), len(locations)))
     time_stamped_dataframe[locations] = np.nan
+
     return time_stamped_dataframe
 
 
 if __name__ == '__main__':
 
-    parameters_file_name = 'ChaProEV.toml'
+    parameters_file_name = 'scenarios/baseline.toml'
     print(get_time_range(parameters_file_name))
     print(get_time_stamped_dataframe(parameters_file_name))

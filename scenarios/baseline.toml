@@ -1,5 +1,16 @@
-#  Created by Omar Usmai (Omar.Usmani@TNO.nl).
-#  This file contains configuration parameters for ChaProEV
+# Created by Omar Usmai (Omar.Usmani@TNO.nl).
+# This file contains configuration parameters for running a
+# ChaProEV scenario. To add a new scenario, copy one of the existing files
+# in this folder (scenarios), and add/remove/modify paramters as
+# required, including the first parameter below, which is the scenario name,
+# which should be the same as the file name (it might work with another name,
+# but this is not tested and there is no reason to have different names for the
+# same scenario).
+scenario = 'baseline'
+
+# This is a case name, which is the grouping of all your scenarios.
+# This is principally used to label your output files.
+case_name = 'local_impact_BEVs'
 
 [unit_conversions]
 JOULES_IN_A_KWH = 3.6e6
@@ -10,7 +21,7 @@ JOULES_IN_A_KWH = 3.6e6
 input_folder = 'input'
 output_folder = 'output'
 # For files that group data (such as (sqlite) databases or Excel workbooks)
-groupfile_name = 'ChaProEV'
+groupfile_root = 'ChaProEV'
 
 [files.figures]
 # Parameters for plots/figures
@@ -70,7 +81,7 @@ first_hour_number = 1
 
 # Run parameters
 [run]
-weather_factors_table_name = 'run_weather_factors'
+weather_factors_table_root_name = 'weather_factors'
 [run.get_extra_downloads]
 download_weather_data = false
 # Put true if you want to download the weather data. In principle,
@@ -82,10 +93,7 @@ make_weather_database = false
 download_EV_tool_data = false
 # Put true if you want to download the data from the EV tool by geootab
 # This should only be needed once and is independentr of the case
-setup_run_weather_data = true
-# Put false if you want to keep the run weather factors (for example if
-# you only change things that do not impact the run weather factors/data,
-# such as mobility data)
+
 [run.start]
 year = 2020
 month = 5
@@ -119,10 +127,25 @@ charging_power = 8.9  # kW
 latitude = 52
 longitude = 6.2
 [locations.work]
-connectivity = 0.42
+connectivity = 0.25
 charging_power = 11  # kW
 latitude = 52.1
 longitude = 5.8
+[locations.leisure]
+connectivity = 0.25
+charging_power = 22  # kW
+latitude = 52.1
+longitude = 6.2
+[locations.weekend]
+connectivity = 0.1
+charging_power = 22  # kW
+latitude = 51.8
+longitude = 6.2
+[locations.holidays]
+connectivity = 0.1
+charging_power = 22  # kW
+latitude = 53.0
+longitude = 6.2
 
 [legs]
 # You can add legs here by copying existing legs,

@@ -7,9 +7,9 @@ import weather
 import define
 
 if __name__ == '__main__':
-    parameters_file_name = 'ChaProEV.toml'
+    parameters_file_name = 'scenarios/baseline.toml'
     print('Do solar panel efficiency')
-    print('Multiple runs in output files/DB')
+    print('Multiple runs/cases in output files/DB')
     print('Avoid swap by arranging before? And explain/improve in all hourly')
     print('Clarrify what theperature efficiency of vehicles actually is')
     print('Test leg.electricity_use_kWh')

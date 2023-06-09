@@ -163,9 +163,15 @@ is the version used for developping  and testing the model))
 ### **ChaProEV.py**
  Where you run the model
 
-### **ChaProEV.toml**
-This file contains the model's parameters.
-It contains the following sections:
+### **scenarios folder**
+This folder contains scenario configuration files. There is one per scenario,
+containing all necessary parameters to run the scenatio. To add a scenario,
+copy one of the existing files and add/remove/modify parasmeters paramters as
+required, including the first parameter, which is the scenario name,
+which should be the same as the file name (it might work with another name,
+but this is not tested and there is no reason to have different names for the
+same scenario).
+These scenario files contain the following sections:
 - **unit_conversions:** Parameters to convert units
 - **files:** File-related parameters (folders, output type choices, etc.)
 - **colors:** Color-related parameters(defining new ones, as well as color bars)

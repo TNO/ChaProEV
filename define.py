@@ -272,7 +272,7 @@ def declare_all_instances(parameters_file_name):
 
 if __name__ == '__main__':
 
-    parameters_file_name = 'CHAPROEV.toml'
+    parameters_file_name = 'scenarios/baseline.toml'
 
     legs, vehicles, locations, trips = declare_all_instances(
         parameters_file_name)
