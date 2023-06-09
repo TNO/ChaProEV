@@ -525,10 +525,29 @@ def save_dataframe(
                         file_to_use,
                         key=dataframe_name)
                 elif file_type == 'excel':
-                    file_function(
-                        file_to_use,
-                        sheet_name=dataframe_name
-                    )
+                    # If we want to append a sheet to an Excel file
+                    # instead of replacing the existing file, we need
+                    # to use Excelwriter, but that gives an error if the
+                    # file does not exist, so we need to check if the file
+                    # exists
+                    if os.path.exists(file_to_use):
+                        writer_to_use = pd.ExcelWriter(
+                            file_to_use, engine='openpyxl', mode='a',
+                            if_sheet_exists='replace'
+                            )
+                        with writer_to_use:
+                            file_function(
+                                writer_to_use,
+                                sheet_name=dataframe_name
+                            )
+                    else:
+                        # If the file does not exist, we need to use the
+                        # function, which is to_excel() with the file name,
+                        # not with a writer
+                        file_function(
+                            file_to_use,
+                            sheet_name=dataframe_name
+                            )
 
                 elif file_type == 'sql':
                     with sqlite3.connect(file_to_use) as sql_connection:
