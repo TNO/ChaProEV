@@ -293,7 +293,12 @@ It contains the following functions:
 2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
 timestamps of the run as index (and hour numbers as a column).
 
-
+### **writing.py:**
+This contains functions related to writting outputs.
+It contains the following functions:
+1. **write_scenario_parameters:** This function writes the scenario parameters
+    to the output files (either as separate files, or as tables/sheets
+    in groupfiles.)
 
 
 #### Temperature efficiency

@@ -12,6 +12,8 @@ scenario = 'baseline'
 # This is principally used to label your output files.
 case_name = 'local_impact_BEVs'
 
+scenario_parameter_categories = ['locations', 'legs', 'vehicles', 'trips']
+
 [unit_conversions]
 JOULES_IN_A_KWH = 3.6e6
 
