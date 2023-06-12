@@ -591,8 +591,8 @@ title_size = 14
 # These parameters are used for the ChaProEV mobility module
 [mobility_module]
 day_types = [
-    'workday_in_work_week', 'weekend_in_work_week'.
-    'workday_in_holiday_week', 'weekend_in_holiday_week'.
+    'workday_in_work_week', 'weekend_in_work_week',
+    'workday_in_holiday_week', 'weekend_in_holiday_week',
 ]
 day_start_hour = 6
 
