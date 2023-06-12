@@ -151,16 +151,14 @@ longitude = 6.2
 
 [legs]
 # You can add legs here by copying existing legs,
-# changing the name of the leg (in [legs.home_to_work], home_to_work is
+# changing the name of the leg (in [legs.go_to_work], go_to_work is
 # the name of the leg) and changing the relevant values
 # Note that you need to change the leg name in all parts where it occurs
-# (i.e. also in [legs.home_to_work.locations],[legs.home_to_work.road_types],
+# (i.e. also in [legs.go_to_work.locations],[legs.go_to_work.road_types],
 # etc.
-[legs.home_to_work]
+[legs.go_to_work]
 distance = 22  # km
 duration = 0.25  # hours
-
-
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -172,10 +170,10 @@ hour_in_day_factors = [
     1.2, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1
 ]
-[legs.home_to_work.locations]
+[legs.go_to_work.locations]
 start = 'home'
 end = 'work'
-[legs.home_to_work.road_type_mix]
+[legs.go_to_work.road_type_mix]
 # Give the road type mix
 # We need a value for each of the road_types (see above in [transport_factors])
 # If the road type does not occur in the leg, simply put 0
@@ -185,11 +183,9 @@ city = 0.8
 highway = 0.2
 
 
-[legs.work_to_home]
+[legs.come_from_work]
 distance = 22  # km
 duration = 0.25  # hours
-
-
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -201,10 +197,171 @@ hour_in_day_factors = [
     1.2, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1
 ]
-[legs.work_to_home.locations]
+[legs.come_from_work.locations]
 start = 'work'
 end = 'home'
-[legs.work_to_home.road_type_mix]
+[legs.come_from_work.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
+[legs.home_to_leisure]
+distance = 6  # km
+duration = 0.15  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.home_to_leisure.locations]
+start = 'home'
+end = 'leisure'
+[legs.home_to_leisure.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
+[legs.leisure_to_home]
+distance = 6  # km
+duration = 0.15  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.leisure_to_homee.locations]
+start = 'leisure'
+end = 'home'
+[legs.leisure_to_home.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
+[legs.home_to_weekend]
+distance = 6  # km
+duration = 0.15  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.home_to_weekend.locations]
+start = 'home'
+end = 'weekend'
+[legs.home_to_weekend.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
+[legs.weekend_to_home]
+distance = 6  # km
+duration = 0.15  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.weekend_to_home.locations]
+start = 'weekend'
+end = 'home'
+[legs.weekend_to_home.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+[legs.home_to_holiday]
+distance = 6  # km
+duration = 0.15  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.home_to_holiday.locations]
+start = 'home'
+end = 'holiday'
+[legs.home_to_holiday.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+city = 0.8
+highway = 0.2
+
+
+[legs.holiday_to_home]
+distance = 6  # km
+duration = 0.15  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.holiday_to_homee.locations]
+start = 'holiday'
+end = 'home'
+[legs.holiday_to_home.road_type_mix]
 # Give the road type mix
 # We need a value for each of the road_types (see above in [transport_factors])
 # If the road type does not occur in the leg, simply put 0
@@ -232,13 +389,100 @@ city = 1
 [trips.commute_to_work]
 vehicle = 'car'
 day_start_hour = 6
-legs = ['home_to_work', 'work_to_home']
-percentage_station_users = 0.9
+legs = ['go_to_work', 'come_from_work']
+percentage_station_users = 0
 start_probabilities = [
     0, 0, 0, 0, 0, 0, 0, 0.25,
     1, 0.25, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]
+starting_location = 'home'
+
+[trips.commute_to_work_and_leisure]
+vehicle = 'car'
+day_start_hour = 6
+legs = ['go_to_work', 'come_from_work', 'home_to_leisure', 'leisure_to_home']
+percentage_station_users = 0
+start_probabilities = [
+    0, 0, 0, 0, 0, 0, 0, 0.25,
+    1, 0.25, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'home'
+
+[trips.leisure_only]
+vehicle = 'car'
+day_start_hour = 6
+legs = ['home_to_leisure', 'leisure_to_home']
+percentage_station_users = 0
+start_probabilities = [
+   0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625,
+   0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0,
+   0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'home'
+
+[trips.weekend_trip]
+vehicle = 'car'
+day_start_hour = 6
+legs = ['home_to_weekend', 'weekend_to_home']
+percentage_station_users = 0
+start_probabilities = [
+   0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625,
+   0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0,
+   0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'home'
+
+[trips.holiday_outward]
+vehicle = 'car'
+day_start_hour = 6
+legs = ['home_to_holiday']
+percentage_station_users = 0
+start_probabilities = [
+   0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375,
+   0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125,
+   0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'home'
+
+
+[trips.holiday_back]
+vehicle = 'car'
+day_start_hour = 6
+legs = ['holiday_to_home']
+percentage_station_users = 0
+start_probabilities = [
+   0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375,
+   0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125,
+   0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'holiday'
+
+[trips.stay_put_home]
+vehicle = 'car'
+day_start_hour = 6
+legs = []
+percentage_station_users = 0
+start_probabilities = [
+   0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'home'
+
+
+[trips.stay_put_holiday]
+vehicle = 'car'
+day_start_hour = 6
+legs = []
+percentage_station_users = 0
+start_probabilities = [
+   0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0
+]
+starting_location = 'holiday'
 
 # Weather-related parameters
 [weather]
@@ -343,3 +587,35 @@ fit_line_size = 1
 geotab_data_color = 'kraken_deep_sea_blue'
 geotab_data_size = 8
 title_size = 14
+
+# These parameters are used for the ChaProEV mobility module
+[mobility_module]
+day_types = [
+    'workday_in_work_week', 'weekend_in_work_week'.
+    'workday_in_holiday_week', 'weekend_in_holiday_week'.
+]
+day_start_hour = 6
+
+holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 42, 52, 53]
+
+time_spent_at_work = 9  # hours
+work_hours_in_a_work_day = 8  # hours
+hours_worked_per_work_week = 31	  # hours
+hours_in_a_standard_work_week = 40  # hours
+percentage_working_on_a_work_week = 1
+worked_hours_per_year = 1434  # hours
+
+leisure_trips_per_weekend = 1
+leisure_trips_per_week_outside_weekends = 2
+maximal_fill_percentage_leisure_trips_on_non_work_weekdays = 1
+weekday_leisure_trips = 2
+percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
+time_at_home_before_going_to_leisure_on_work_day = 2  # hours
+time_spent_at_leisure_on_work_days = 3  # hours
+time_spent_at_leisure_on_non_work_days = 2  # hours
+
+weekend_trips_per_year = 12
+time_spent_at_weekend_destination = 4  # hours
+
+holiday_trips_taken = 2
+time_spent_at_holiday_destination = 14  # days

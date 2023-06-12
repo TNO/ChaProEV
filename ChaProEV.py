@@ -25,6 +25,8 @@ if __name__ == '__main__':
             print('Test leg.electricity_use_kWh')
             print('Implement road and hour in day factors')
             print('Go through class definitions (espcially Trip')
+            print('Day start hour in one place?')
+            print('Fast/station charging')
             weather.setup_weather(parameters_file_name)
             legs, vehicles, legs, trips = define.declare_all_instances(
                 parameters_file_name)
