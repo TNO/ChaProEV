@@ -8,6 +8,9 @@ It contains the following functions:
     parameters file.
 2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
 timestamps of the run as index (and hour numbers as a column).
+3. **get_day_type:** Tells us the date type of a given time_tag.
+4. **add_day_type_to_time_stamped_dataframe:** Adds a column with the date type
+to a time-stamped_dataframe
 '''
 
 
@@ -108,8 +111,49 @@ def get_time_stamped_dataframe(parameters_file_name):
     return time_stamped_dataframe
 
 
+def get_day_type(time_tag, parameters_file_name):
+    '''
+    Tells us the date type of a given time_tag.
+    '''
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    weekend_day_numbers = parameters['time']['weekend_day_numbers']
+    holiday_weeks = parameters['mobility_module']['holiday_weeks']
+    if time_tag.isoweekday() in weekend_day_numbers:
+        day_type = 'weekend'
+    else:
+        day_type = 'weekday'
+
+    if time_tag.isocalendar().week in holiday_weeks:
+        week_type = 'holiday'
+    else:
+        week_type = 'work'
+
+    return f'{day_type}_in_{week_type}_week'
+
+
+def add_day_type_to_time_stamped_dataframe(dataframe, parameters_file_name):
+    '''
+    Adds a column with the date type
+    to a time-stamped_dataframe
+    '''
+    day_types = [
+        get_day_type(time_tag, parameters_file_name)
+        for time_tag in dataframe.index
+    ]
+
+    dataframe['Day Type'] = day_types
+    return dataframe
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'scenarios/baseline.toml'
-    print(get_time_range(parameters_file_name))
-    print(get_time_stamped_dataframe(parameters_file_name))
+    time_range = get_time_range(parameters_file_name)
+    time_dataframe = get_time_stamped_dataframe(parameters_file_name)
+    print(time_dataframe)
+    time_dataframe = (
+        add_day_type_to_time_stamped_dataframe(
+            time_dataframe, parameters_file_name
+        )
+    )
+    print(time_dataframe)
