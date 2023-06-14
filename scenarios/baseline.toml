@@ -75,6 +75,9 @@ SECONDS_PER_HOUR = 3600
 HOURS_IN_A_DAY = 24
 MONTHS_IN_A_YEAR = 12
 MAX_DAYS_IN_A_MONTH = 31
+DAYS_IN_A_YEAR = 365.25
+DAYS_IN_A_WEEK = 7
+weekend_day_numbers = [6, 7]
 first_hour_number = 1
 # Put 0 if you start counting at 0, 1 if you start counting at 1
 # The SPINE toolbox uses 1
@@ -251,7 +254,7 @@ hour_in_day_factors = [
     1.2, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1
 ]
-[legs.leisure_to_homee.locations]
+[legs.leisure_to_home.locations]
 start = 'leisure'
 end = 'home'
 [legs.leisure_to_home.road_type_mix]
@@ -358,7 +361,7 @@ hour_in_day_factors = [
     1.2, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1
 ]
-[legs.holiday_to_homee.locations]
+[legs.holiday_to_home.locations]
 start = 'holiday'
 end = 'home'
 [legs.holiday_to_home.road_type_mix]
@@ -591,12 +594,18 @@ title_size = 14
 # These parameters are used for the ChaProEV mobility module
 [mobility_module]
 day_types = [
-    'workday_in_work_week', 'weekend_in_work_week',
-    'workday_in_holiday_week', 'weekend_in_holiday_week',
+    'weekday_in_work_week', 'weekend_in_work_week',
+    'weekday_in_holiday_week', 'weekend_in_holiday_week',
 ]
 day_start_hour = 6
 
 holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 42, 52, 53]
+# We need to provide the number of holliday weeks seprately,
+# as counting the elements of the list above might not work, such as
+# when the above list contains weeks 1 and 53 (which just represent
+# the fact that years don't necessarily start and/or end at the start/end
+# of a week).
+number_of_holiday_weeks = 10
 
 time_spent_at_work = 9  # hours
 work_hours_in_a_work_day = 8  # hours
@@ -619,3 +628,5 @@ time_spent_at_weekend_destination = 4  # hours
 
 holiday_trips_taken = 2
 time_spent_at_holiday_destination = 14  # days
+percentage_of_outward_holiday_trips_on_weekends = 0.75
+percentage_of_back_holiday_trips_on_weekends = 0.75

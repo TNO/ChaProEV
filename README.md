@@ -299,7 +299,11 @@ It contains the following functions:
 1. **write_scenario_parameters:** This function writes the scenario parameters
     to the output files (either as separate files, or as tables/sheets
     in groupfiles.)
-
+### **mobility.py:**
+This module computes the various functions related to mobility.
+It contains the following functions:
+1. **get_trip_probabilities_per_day_type:** This function computes the trip
+probabilities per day type.
 
 #### Temperature efficiency
 This function returns the temperature efficiency factor that corrects

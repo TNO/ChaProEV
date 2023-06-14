@@ -475,8 +475,9 @@ def get_EV_tool_data(parameters_file_name):
     )
 
     temperature_efficiencies.index.name = 'Temperature (°C)'
-    # This tag creates issues with xml files (and a warning with
-    # stata), so we need to remove the xml output (or change things).
+    # This tag (the ° symbol, probably) creates issues with xml files
+    # (and a warning with stata), so we need to remove the xml output
+    # (or change things).
     file_name = EV_tool_parameters['file_name']
     groupfile_name = EV_tool_parameters['groupfile_name']
     folder = EV_tool_parameters['folder']
