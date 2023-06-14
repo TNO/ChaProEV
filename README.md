@@ -292,6 +292,9 @@ It contains the following functions:
     parameters file.
 2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
 timestamps of the run as index (and hour numbers as a column).
+3. **get_day_type:** Tells us the date type of a given time_tag.
+4. **add_day_type_to_time_stamped_dataframe:** Adds a column with the date type
+to a time-stamped_dataframe
 
 ### **writing.py:**
 This contains functions related to writting outputs.
