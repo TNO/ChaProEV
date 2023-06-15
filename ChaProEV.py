@@ -29,6 +29,7 @@ if __name__ == '__main__':
             print('Go through class definitions (espcially Trip')
             print('Day start hour in one place?')
             print('Fast/station charging')
+            print('Add time fator to location charging price?')
             weather.setup_weather(parameters_file_name)
             legs, vehicles, legs, trips = define.declare_all_instances(
                 parameters_file_name)

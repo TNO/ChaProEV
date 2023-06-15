@@ -159,8 +159,11 @@ class Location:
         location_parameters = parameters['locations'][name]
         location.connectivity = location_parameters['connectivity']
         location.charging_power = location_parameters['charging_power']
-        location.latitude = location_parameters["latitude"]
-        location.longitude = location_parameters["longitude"]
+        location.latitude = location_parameters['latitude']
+        location.longitude = location_parameters['longitude']
+        location.base_charging_price = (
+            location_parameters['location.base_charging_price']
+        )
 
 
 class Trip:
