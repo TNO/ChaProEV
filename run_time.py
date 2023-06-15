@@ -148,12 +148,16 @@ def add_day_type_to_time_stamped_dataframe(dataframe, parameters_file_name):
 if __name__ == '__main__':
 
     parameters_file_name = 'scenarios/baseline.toml'
-    time_range = get_time_range(parameters_file_name)
-    time_dataframe = get_time_stamped_dataframe(parameters_file_name)
-    print(time_dataframe)
-    time_dataframe = (
+    run_range, run_hour_numbers = get_time_range(parameters_file_name)
+    time_stamped_dataframe = get_time_stamped_dataframe(parameters_file_name)
+    print(run_range)
+    print(run_hour_numbers)
+    print(time_stamped_dataframe)
+    day_type_dataframe = pd.DataFrame(index=run_range)
+    day_type_dataframe = (
         add_day_type_to_time_stamped_dataframe(
-            time_dataframe, parameters_file_name
+            day_type_dataframe, parameters_file_name
         )
     )
-    print(time_dataframe)
+
+    print(day_type_dataframe)

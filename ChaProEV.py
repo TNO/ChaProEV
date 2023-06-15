@@ -11,6 +11,7 @@ import define
 import writing
 import cookbook as cook
 import mobility
+import run_time
 
 if __name__ == '__main__':
     for scenario_file in os.listdir('scenarios'):
@@ -31,9 +32,7 @@ if __name__ == '__main__':
             weather.setup_weather(parameters_file_name)
             legs, vehicles, legs, trips = define.declare_all_instances(
                 parameters_file_name)
-            trip_probabilities_per_day_type = (
-                mobility.get_trip_probabilities_per_day_type(
-                    parameters_file_name
-                )
+
+            run_trip_probabilities = (
+                mobility.get_run_trip_probabilities(parameters_file_name)
             )
-            print(trip_probabilities_per_day_type)

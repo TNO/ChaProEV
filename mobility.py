@@ -3,6 +3,8 @@ This module computes the various functions related to mobility.
 It contains the following functions:
 1. **get_trip_probabilities_per_day_type:** This function computes the trip
 probabilities per day type.
+2. **get_run_trip_probabilities:** Gets a DataFrame containing the trip
+probabilities for the whole run.
 '''
 import pandas as pd
 
@@ -450,6 +452,52 @@ def get_trip_probabilities_per_day_type(parameters_file_name):
     return trip_probabilities_per_day_type
 
 
+def get_run_trip_probabilities(parameters_file_name):
+    '''
+    Gets a DataFrame containing the trip probabilities for the whole run.
+    '''
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    trip_list = list(parameters['trips'].keys())
+    scenario = parameters['scenario']
+    case_name = parameters['case_name']
+
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_root = file_parameters['groupfile_root']
+    groupfile_name = f'{groupfile_root}_{case_name}'
+
+    run_range, run_hour_numbers = run_time.get_time_range(parameters_file_name)
+    run_trip_probabilities = pd.DataFrame(index=run_range)
+    run_trip_probabilities.index.name = 'Time Tag'
+
+    run_trip_probabilities = (
+        run_time.add_day_type_to_time_stamped_dataframe(
+            run_trip_probabilities, parameters_file_name
+        )
+    )
+
+    trip_probabilities_per_day_type = (
+                get_trip_probabilities_per_day_type(parameters_file_name)
+    )
+
+    for trip in trip_list:
+        trip_probabilities = (
+            [
+                trip_probabilities_per_day_type[day_type][trip]
+                for day_type in run_trip_probabilities['Day Type']
+            ]
+        )
+        run_trip_probabilities[trip] = trip_probabilities
+
+    table_name = f'{scenario}_trip_probabilities_per_day_type'
+    cook.save_dataframe(
+        run_trip_probabilities,
+        table_name, groupfile_name, output_folder, parameters_file_name
+    )
+
+    return run_trip_probabilities
+
+
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
     trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
@@ -461,3 +509,6 @@ if __name__ == '__main__':
             trip_probabilities_per_day_type[day_type],
             sum(trip_probabilities_per_day_type[day_type])
         )
+
+    run_trip_probabilities = get_run_trip_probabilities(parameters_file_name)
+    print(run_trip_probabilities)
