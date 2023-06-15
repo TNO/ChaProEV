@@ -162,7 +162,10 @@ class Location:
         location.latitude = location_parameters['latitude']
         location.longitude = location_parameters['longitude']
         location.base_charging_price = (
-            location_parameters['location.base_charging_price']
+            location_parameters['base_charging_price']
+        )
+        location.charging_desirability = (
+            location_parameters['charging_desirability']
         )
 
 

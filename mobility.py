@@ -489,7 +489,7 @@ def get_run_trip_probabilities(parameters_file_name):
         )
         run_trip_probabilities[trip] = trip_probabilities
 
-    table_name = f'{scenario}_trip_probabilities_per_day_type'
+    table_name = f'{scenario}_run_trip_probabilities'
     cook.save_dataframe(
         run_trip_probabilities,
         table_name, groupfile_name, output_folder, parameters_file_name

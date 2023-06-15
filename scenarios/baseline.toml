@@ -132,30 +132,40 @@ charging_power = 8.9  # kW
 latitude = 52
 longitude = 6.2
 base_charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
 [locations.work]
 connectivity = 0.25
 charging_power = 11  # kW
 latitude = 52.1
 longitude = 5.8
 base_charging_price = 0  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
 [locations.leisure]
 connectivity = 0.25
 charging_power = 22  # kW
 latitude = 52.1
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
+charging_desirability = 0.25
+# An indicator (0-1) of how much people like to charge at this location
 [locations.weekend]
 connectivity = 0.1
 charging_power = 22  # kW
 latitude = 51.8
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
+charging_desirability = 0.1
+# An indicator (0-1) of how much people like to charge at this location
 [locations.holidays]
 connectivity = 0.1
 charging_power = 22  # kW
 latitude = 53.0
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
+charging_desirability = 0.2
+# An indicator (0-1) of how much people like to charge at this location
 
 [legs]
 # You can add legs here by copying existing legs,
