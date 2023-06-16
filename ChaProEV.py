@@ -19,19 +19,6 @@ if __name__ == '__main__':
         if scenario_file.split('.')[1] == 'toml':
             parameters_file_name = f'scenarios/{scenario_file}'
             writing.write_scenario_parameters(parameters_file_name)
-            print('Do solar panel efficiency')
-            print('Multiple runs/cases in output files/DB')
-            print('Avoid swap by arranging before?')
-            print('And explain/improve in all hourly')
-            print('Clarify what theperature efficiency of vehicles is')
-            print('Test leg.electricity_use_kWh')
-            print('Implement road and hour in day factors')
-            print('Go through class definitions (espcially Trip')
-            print('Day start hour in one place?')
-            print('Fast/station charging')
-            print('Add time fator to location charging price?')
-            print('Connectivity can vary with time? (e.g. due to higher occupancy')
-            print('Max allowed charging time?')
             weather.setup_weather(parameters_file_name)
             legs, vehicles, legs, trips = define.declare_all_instances(
                 parameters_file_name)

@@ -129,6 +129,7 @@ road_types = ['highway', 'city']
 [locations.home]
 connectivity = 1
 charging_power = 8.9  # kW
+charger_efficiency = 0.85
 latitude = 52
 longitude = 6.2
 base_charging_price = 0.25  # €/kWh
@@ -137,6 +138,7 @@ charging_desirability = 1
 [locations.work]
 connectivity = 0.25
 charging_power = 11  # kW
+charger_efficiency = 0.85
 latitude = 52.1
 longitude = 5.8
 base_charging_price = 0  # €/kWh
@@ -145,6 +147,7 @@ charging_desirability = 1
 [locations.leisure]
 connectivity = 0.25
 charging_power = 22  # kW
+charger_efficiency = 0.85
 latitude = 52.1
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
@@ -153,6 +156,7 @@ charging_desirability = 0.25
 [locations.weekend]
 connectivity = 0.1
 charging_power = 22  # kW
+charger_efficiency = 0.85
 latitude = 51.8
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
@@ -161,6 +165,7 @@ charging_desirability = 0.1
 [locations.holidays]
 connectivity = 0.1
 charging_power = 22  # kW
+charger_efficiency = 0.85
 latitude = 53.0
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
