@@ -1,7 +1,9 @@
 # **ChaProEV**
 
 
-
+<center>
+<img src=ChaProEV_overview.svg>
+</center>
 
 This repository contains the ChaProEV (Charging Profiles of Electric Vehicles)
 model.
