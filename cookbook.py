@@ -680,9 +680,9 @@ def sql_query_generator(
         - '<>'      (not equal)
         - '<='      (smalller or equal)
         - '>='      (larger or equal)
-        - like      (matches/ searches for a pattern)
-        - between   (between two  values)
-        - in        (to select multiple values for one or several columns)
+        - 'like'      (matches/ searches for a pattern)
+        - 'between'   (between two  values)
+        - 'in'        (to select multiple values for one or several columns)
     - query_filter_values: The comparison values used for the filter.
     The three special cases are:
         1) Like: This needs to be a double quote string (since it will be
