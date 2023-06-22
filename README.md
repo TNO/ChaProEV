@@ -23,6 +23,35 @@ ChaProEV is released under the Apache 2.0 licence.
 All accompanying documentation and manual are released under the 
 Creative Commons BY-SA 4.0 license.
 
+
+## Installation and Example Usage
+
+Install all dependencies from `requirements.txt`
+```bash
+# prepare and activate your own (virtual) environment in advance
+pip install -r requirements.txt
+```
+
+To run the included `baseline.toml` scenario, perform the following steps:
+
+1. Create an account at [cds.climate.copernicus.eu/](https://cds.climate.copernicus.eu/)
+   if you don't yet have one.
+2. Visit the [licence-to-use-copernicus-products](https://cds.climate.copernicus.eu/cdsapp/#!/terms/licence-to-use-copernicus-products)
+   page, accept the usage terms and click 'submit'
+3. Create a `.cdsapirc` file as per [pypi.org/project/cdsapi/](https://pypi.org/project/cdsapi/)
+   with your User ID and API Key to enable downloading weather data
+4. In the `baseline.toml` config file, ensure the `download_weather_data`,
+   `make_weather_database`, and `download_EV_tool_data` options under
+   `[run.get_extra_downloads]` are set to `true` for this first run (can be set
+   to `false` for later runs)
+5. Select which outputs you want to have generated under
+   `[files.dataframe_outputs]`
+6. run `pyhthon ChaProEV.py`
+
+Note that the initial download of files may take a long time. For Windows users,
+it is not recommended to run this in wsl as quite some RAM is needed to create
+the database.
+
 ## Libraries used and licensing
 
 ### Main libraries to install
