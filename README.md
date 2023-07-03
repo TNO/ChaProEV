@@ -46,7 +46,7 @@ To run the included `baseline.toml` scenario, perform the following steps:
    to `false` for later runs)
 5. Select which outputs you want to have generated under
    `[files.dataframe_outputs]`
-6. run `pyhthon ChaProEV.py`
+6. run `python ChaProEV.py`
 
 Note that the initial download of files may take a long time. For Windows users,
 it is not recommended to run this in wsl as quite some RAM is needed to create
