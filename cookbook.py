@@ -39,23 +39,32 @@ This function takes a grib file and converts it to a DataFrame.
     can be used (for example) in Panda's read_sql.
 18. **database_tables_columns:** Returns a dictionary with the tables of a
     database as keys and their columns as values.
+19. **download_and_save_file:** Downloads a file from an URL and saves it
+20. **string_to_float:** Converts strings to floats,
+    and to zero if the string is not a float.
+21. **get_map_area_data:** Gets area data into a Dataframe
+22. **get_map_borders_data:** Gets borders data into a Dataframe
+23. **get_map_points_data:** Gets points data into a Dataframe
 '''
 
 import os
 import datetime
 import math
 import sqlite3
+import zipfile
 try:
     import tomllib
 except ModuleNotFoundError:
     import tomli as tomllib
 
 
+import requests
 import numpy as np
 import openpyxl
 import pandas as pd
 import matplotlib
 import xarray as xr
+import geopandas as gpd
 
 
 def check_if_folder_exists(folder_to_check):
@@ -774,6 +783,103 @@ def database_tables_columns(database):
     return tables_columns
 
 
+def download_and_save_file(download_url, output_folder):
+    '''
+    Downloads a file from an URL and saves it. If the file is a zip file,
+    the function extracts its contents.
+    '''
+    request_data = requests.get(download_url)
+    file_name = download_url.split('/')[-1]
+
+    with open(f'{output_folder}/{file_name}', 'wb') as output_file:
+        output_file.write(request_data.content)
+
+    if file_name.split('.')[-1] == 'zip':
+        zip_data = zipfile.ZipFile(f'{output_folder}/{file_name}')
+        for zip_info in zip_data.infolist():
+            zip_data.extract(zip_info, path=output_folder)
+
+
+def string_to_float(my_string):
+    '''
+    Converts strings to floats, and to zero if the string is not a float.
+    '''
+    try:
+        my_output = float(my_string)
+    except ValueError:
+        my_output = 0
+
+    return my_output
+
+
+def get_map_area_data(parameters_file_name):
+    '''
+    This function gets and processes the area data and sets it
+    into a DataFrame. It contains polygons/multipolygons
+    (they are at a given granularity level, but also have references to higher
+    levels).
+    '''
+    parameters = parameters_from_TOML(parameters_file_name)
+    maps_parameters = parameters['maps']
+    map_data_folder = maps_parameters['map_data_folder']
+    # This file contains data at NUTS level 3. The reason for this is so that
+    # we can remove the outer regions (such as Svalbard or French overseas
+    # territories).
+    area_data_file_name = maps_parameters['area_data_file_name']
+
+    area_data = gpd.read_file(f'{map_data_folder}/{area_data_file_name}')
+
+    # This is the list of regions to remove from the map.
+    # These are the outer regions (such as Svalbard or French overseas
+    # territories).
+    general_exclusion_codes = maps_parameters['general_exclusion_codes']
+
+    # This removes the excluded areas. The ~ flips the boolean values
+    # so that we keep the areas that are not in the exclusion list.
+    area_data = area_data[~area_data['NUTS_ID'].isin(general_exclusion_codes)]
+
+    return area_data
+
+
+def get_map_borders(NUTS_level, parameters_file_name):
+    '''
+    This function gets the borders/contours of regions at a specified NUTS
+    level.
+    '''
+    parameters = parameters_from_TOML(parameters_file_name)
+    maps_parameters = parameters['maps']
+    map_data_folder = maps_parameters['map_data_folder']
+    border_data_file_prefix = maps_parameters['border_data_file_prefix']
+    border_data_file_suffix = maps_parameters['border_data_file_suffix']
+
+    border_data_file = (
+        f'{border_data_file_prefix}{NUTS_level}{border_data_file_suffix}')
+
+    border_data = gpd.read_file(f'{map_data_folder}/{border_data_file}')
+
+    return border_data
+
+
+def get_map_points(NUTS_level, parameters_file_name):
+    '''
+    This function gets the points/labels of regions at a specified NUTS
+    level.
+    '''
+    parameters = parameters_from_TOML(parameters_file_name)
+    maps_parameters = parameters['maps']
+    map_data_folder = maps_parameters['map_data_folder']
+    points_data_file_prefix = maps_parameters['points_data_file_prefix']
+    points_data_file_suffix = maps_parameters['points_data_file_suffix']
+
+    points_data_file = (
+        f'{points_data_file_prefix}{NUTS_level}{points_data_file_suffix}')
+
+    points_data = gpd.read_file(f'{map_data_folder}/{points_data_file}')
+
+    return points_data
+
+
 if __name__ == '__main__':
 
     parameters_file_name = 'YAL.toml'
+
