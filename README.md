@@ -1,6 +1,12 @@
 # **ChaProEV**
 
 
+
+
+<center>
+<img src=MOPO_logo_chaproev.svg>
+</center>
+
 <center>
 <img src=ChaProEV_overview.svg>
 </center>
@@ -385,6 +391,7 @@ relevant and apprpriate within the context of these projects.
 <tr>
 <td valign="middle" width=100px>
 <img src=eu-emblem-low-res.jpg alt="EU emblem" width=100%></td>
+<img src=MOPO_logo_main.svg width = 25%>
 <td valign="middle">This project has received funding from European Climate, 
 Infrastructure and Environment Executive Agency under the European Union’s 
 HORIZON Research and Innovation Actions under grant agreement N°101095998.</td>
