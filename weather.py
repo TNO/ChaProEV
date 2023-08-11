@@ -94,7 +94,7 @@ def download_cds_weather_quantity(
     )
 
 
-def download_all_cds_weather_data(parameters_file_name):
+def download_all_cds_weather_data(parameters):
     '''
     Downloads all the necessary CDS ERA-5 weather data.
     You only need to use this function at the start of your project,
@@ -102,8 +102,6 @@ def download_all_cds_weather_data(parameters_file_name):
     (say, if you add locations in places for which you don't have data yet),
     or if you want to gather other quantities, or look at other years.
     '''
-
-    parameters = cook.parameters_from_TOML(parameters_file_name)
 
     time_parameters = parameters['time']
     HOURS_IN_A_DAY = time_parameters['HOURS_IN_A_DAY']
@@ -139,7 +137,7 @@ def download_all_cds_weather_data(parameters_file_name):
 
 def make_weather_dataframe(
         raw_weather_dataframe, quantity, quantity_tag, quantity_name,
-        parameters_file_name
+        parameters
         ):
     '''
     This function makes a weather DataFrame into one we can use by
@@ -157,13 +155,12 @@ def make_weather_dataframe(
     their own latitudes and longitudes).
     '''
 
-    parameters = cook.parameters_from_TOML(
-        parameters_file_name)['weather']['processed_data']
-    latitude_min = parameters['latitude_min']
-    latitude_max = parameters['latitude_max']
-    longitude_min = parameters['longitude_min']
-    longitude_max = parameters['longitude_max']
-    coordinate_step = parameters['coordinate_step']
+    weather_parameters = parameters['weather']['processed_data']
+    latitude_min = weather_parameters['latitude_min']
+    latitude_max = weather_parameters['latitude_max']
+    longitude_min = weather_parameters['longitude_min']
+    longitude_max = weather_parameters['longitude_max']
+    coordinate_step = weather_parameters['coordinate_step']
     # We round the coordinates to the first decimal,
     # as this is the data resolution (but with trailing digits).
     # (See general module exaplanation).
@@ -179,10 +176,10 @@ def make_weather_dataframe(
             longitude_min, longitude_max+coordinate_step, coordinate_step
         )
     ]
-    KELVIN_TO_CELSIUS = parameters['KELVIN_TO_CELSIUS']
+    KELVIN_TO_CELSIUS = weather_parameters['KELVIN_TO_CELSIUS']
 
-    temperature_quantities = parameters['temperature_quantities']
-    processed_index_tags = parameters['processed_index_tags']
+    temperature_quantities = weather_parameters['temperature_quantities']
+    processed_index_tags = weather_parameters['processed_index_tags']
 
     # We slice the latitudes and longitudes
     # Note that we round the values to the first decimal,
@@ -233,7 +230,7 @@ def make_weather_dataframe(
     return processed_weather_dataframe
 
 
-def write_weather_database(parameters_file_name):
+def write_weather_database(parameters):
     '''
     This function writes the weather database.
     It iterates over desired quantities, processes
@@ -241,15 +238,16 @@ def write_weather_database(parameters_file_name):
     (including some processing), and writes them to a database.
     '''
 
-    parameters = cook.parameters_from_TOML(
-        parameters_file_name)['weather']['processed_data']
-    raw_data_folder = parameters['raw_data_folder']
-    processed_folder = parameters['processed_folder']
-    weather_database_file_name = parameters['weather_database_file_name']
-    quantities = parameters['quantities']
-    quantity_tags = parameters['quantity_tags']
-    quantity_processed_names = parameters['quantity_processed_names']
-    chunk_size = parameters['chunk_size']
+    weather_parameters = parameters['weather']['processed_data']
+    raw_data_folder = weather_parameters['raw_data_folder']
+    processed_folder = weather_parameters['processed_folder']
+    weather_database_file_name = (
+        weather_parameters['weather_database_file_name']
+    )
+    quantities = weather_parameters['quantities']
+    quantity_tags = weather_parameters['quantity_tags']
+    quantity_processed_names = weather_parameters['quantity_processed_names']
+    chunk_size = weather_parameters['chunk_size']
     cook.check_if_folder_exists(processed_folder)
     weather_database_file = f'{processed_folder}/{weather_database_file_name}'
 
@@ -272,7 +270,7 @@ def write_weather_database(parameters_file_name):
 
                     processed_weather_dataframe = make_weather_dataframe(
                         quantity_dataframe, quantity, quantity_tag,
-                        quantity_name, parameters_file_name
+                        quantity_name, parameters
                     )
                     cook.put_dataframe_in_sql_in_chunks(
                         processed_weather_dataframe, weather_database_file,
@@ -285,14 +283,13 @@ def write_weather_database(parameters_file_name):
 
 
 def get_hourly_values(
-        quantity_dataframe, quantity, quantity_name, parameters_file_name):
+        quantity_dataframe, quantity, quantity_name, parameters):
     '''
     This function takes a Dataframe for a give weather quantity.
     If this is a cumulative quantity, it adds hourly values to it.
     '''
-    parameters = cook.parameters_from_TOML(
-        parameters_file_name)['weather']['processed_data']
-    cumulative_quantities = parameters['cumulative_quantities']
+    weather_parameters = parameters['weather']['processed_data']
+    cumulative_quantities = weather_parameters['cumulative_quantities']
 
     latitudes = np.unique(
         quantity_dataframe.index.get_level_values('Latitude')
@@ -361,23 +358,24 @@ def get_hourly_values(
     return quantity_dataframe
 
 
-def get_all_hourly_values(parameters_file_name):
+def get_all_hourly_values(parameters):
     '''
     This functions adds hourly values to cumulative quantities
     in the weather database.
     '''
-    parameters = cook.parameters_from_TOML(
-        parameters_file_name)['weather']['processed_data']
+    weather_parameters = parameters['weather']['processed_data']
 
-    quantities = parameters['quantities']
-    cumulative_quantities = parameters['cumulative_quantities']
-    processed_index_tags = parameters['processed_index_tags']
-    processed_folder = parameters['processed_folder']
-    weather_database_file_name = parameters['weather_database_file_name']
+    quantities = weather_parameters['quantities']
+    cumulative_quantities = weather_parameters['cumulative_quantities']
+    processed_index_tags = weather_parameters['processed_index_tags']
+    processed_folder = weather_parameters['processed_folder']
+    weather_database_file_name = (
+        weather_parameters['weather_database_file_name']
+    )
     weather_database = f'{processed_folder}/{weather_database_file_name}'
-    quantity_names = parameters['quantity_processed_names']
-    chunk_size = parameters['chunk_size']
-    queries_for_cumulative_quantities = parameters[
+    quantity_names = weather_parameters['quantity_processed_names']
+    chunk_size = weather_parameters['chunk_size']
+    queries_for_cumulative_quantities = weather_parameters[
         'queries_for_cumulative_quantities'
     ]
 
@@ -407,7 +405,7 @@ def get_all_hourly_values(parameters_file_name):
 
             quantity_dataframe = get_hourly_values(
                 quantity_dataframe, quantity,
-                quantity_name, parameters_file_name
+                quantity_name, parameters
             )
 
             cook.put_dataframe_in_sql_in_chunks(
@@ -416,13 +414,13 @@ def get_all_hourly_values(parameters_file_name):
             )
 
 
-def get_EV_tool_data(parameters_file_name):
+def get_EV_tool_data(parameters):
     '''
     This gets the temperature efficiency data from the EV tool made
     by geotab.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     file_parameters = parameters['files']
 
     EV_tool_parameters = parameters[
@@ -483,10 +481,10 @@ def get_EV_tool_data(parameters_file_name):
     folder = EV_tool_parameters['folder']
     cook.save_dataframe(
         temperature_efficiencies, file_name, groupfile_name, folder,
-        parameters_file_name)
+        parameters)
 
 
-def temperature_efficiency_factor(temperature, parameters_file_name):
+def temperature_efficiency_factor(temperature, parameters):
     '''
     This function returns the temperature efficiency factor that corrects
     the baseline vehicle efficiency. It uses a data file (extracted from
@@ -497,7 +495,6 @@ def temperature_efficiency_factor(temperature, parameters_file_name):
     3) Consistency between the temparatures in and out of data range.
     '''
 
-    parameters = cook.parameters_from_TOML(parameters_file_name)
     EV_tool_parameters = parameters[
         'weather']['EV_tool']
 
@@ -530,17 +527,17 @@ def temperature_efficiency_factor(temperature, parameters_file_name):
     return (efficiency_factor)
 
 
-def plot_temperature_efficiency(parameters_file_name):
+def plot_temperature_efficiency(parameters):
     '''
     Plots the temperature efficiency correction factor
     (source data versus interpolation)
     of electric vehicles.
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     EV_tool_parameters = parameters[
         'weather']['EV_tool']
 
-    plot_colors = cook.get_extra_colors(parameters_file_name)
+    plot_colors = cook.get_extra_colors(parameters)
 
     plot_parameters = parameters['plots']['vehicle_temperature_efficiency']
     plot_style = plot_parameters['style']
@@ -559,7 +556,7 @@ def plot_temperature_efficiency(parameters_file_name):
     ]
     geotab_data_efficiencies = source_data[values_header].values
     fitted_efficiencies = temperature_efficiency_factor(
-                            temperatures, parameters_file_name
+                            temperatures, parameters
                         )
 
     temeprature_efficiency_figure, temperature_efficiency_plot = (
@@ -583,13 +580,13 @@ def plot_temperature_efficiency(parameters_file_name):
     cook.save_figure(
         temeprature_efficiency_figure,
         'Vehicle_Temperature_correction_factor',
-        source_data_folder, parameters_file_name
+        source_data_folder, parameters
     )
 
 
 def get_scenario_location_weather_quantity(
         location_latitude, location_longitude, run_start, run_end,
-        source_table, weather_quantity, parameters_file_name):
+        source_table, weather_quantity, parameters):
     '''
     Returns a chosen weather quantity for a given location and a given
     runtime.
@@ -598,7 +595,7 @@ def get_scenario_location_weather_quantity(
     but not always (e.g. for hourly values of a cumulative quantity
     such as the solar radiation downwards)
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     processed_data_parameters = parameters['weather']['processed_data']
     processed_folder = processed_data_parameters['processed_folder']
     weather_database_file_name = processed_data_parameters[
@@ -643,13 +640,13 @@ def get_scenario_location_weather_quantity(
     return weather_values
 
 
-def get_scenario_weather_data(parameters_file_name):
+def get_scenario_weather_data(parameters):
     '''
     Fetches the weather data and efficiency factors and puts it into
     a table that is saved to files/databases.
     '''
     weather_dataframe = pd.DataFrame()
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     scenario = parameters['scenario']
     case_name = parameters['case_name']
 
@@ -706,7 +703,7 @@ def get_scenario_weather_data(parameters_file_name):
 
             weather_values = get_scenario_location_weather_quantity(
                 location_latitude, location_longitude, run_start, run_end,
-                source_table, weather_quantity, parameters_file_name
+                source_table, weather_quantity, parameters
             )
             # weather_values['Location'] = [location]*len(weather_values.index)
             if location_first_quantity:
@@ -735,7 +732,7 @@ def get_scenario_weather_data(parameters_file_name):
         weather_dataframe['Vehicle efficiency factor'] = (
             temperature_efficiency_factor(
                 weather_dataframe['Temperature at 2 meters (°C)'].values,
-                parameters_file_name
+                parameters
             )
         )
 
@@ -752,7 +749,7 @@ def get_scenario_weather_data(parameters_file_name):
 
     cook.save_dataframe(
         weather_dataframe, weather_factors_table_name, groupfile_name,
-        output_folder, parameters_file_name
+        output_folder, parameters
     )
 
     return weather_dataframe
@@ -770,7 +767,7 @@ def solar_panels_efficiency_factor(temperature):
     return efficiency_factor
 
 
-def setup_weather(parameters_file_name):
+def setup_weather(parameters):
     '''
     This runs all the functions necessary to get the scenario weather factors
     for a given case. Downloading CDS weather data
@@ -782,32 +779,31 @@ def setup_weather(parameters_file_name):
     downloads).
     '''
 
-    parameters = cook.parameters_from_TOML(parameters_file_name)
     get_extra_downloads = parameters['run']['get_extra_downloads']
     download_weather_data = get_extra_downloads['download_weather_data']
     download_EV_tool_data = get_extra_downloads['download_EV_tool_data']
     make_weather_database = get_extra_downloads['make_weather_database']
 
     if download_weather_data:
-        download_all_cds_weather_data(parameters_file_name)
+        download_all_cds_weather_data(parameters)
     if download_EV_tool_data:
-        get_EV_tool_data(parameters_file_name)
-        plot_temperature_efficiency(parameters_file_name)
+        get_EV_tool_data(parameters)
+        plot_temperature_efficiency(parameters)
     if make_weather_database:
-        write_weather_database(parameters_file_name)
-        get_all_hourly_values(parameters_file_name)
+        write_weather_database(parameters)
+        get_all_hourly_values(parameters)
 
-    get_scenario_weather_data(parameters_file_name)
+    get_scenario_weather_data(parameters)
 
 
 def get_location_weather_quantity(
         location_latitude, location_longitude, timetag,
-        source_table, weather_quantity, parameters_file_name):
+        source_table, weather_quantity, parameters):
     '''
     Returns the value a a chosen weather quantity for a given location and
     time tag.
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     processed_data_parameters = parameters['weather']['processed_data']
     processed_folder = processed_data_parameters['processed_folder']
     weather_database_file_name = processed_data_parameters[
@@ -854,11 +850,12 @@ if __name__ == '__main__':
 
     scenario = 'baseline'
     parameters_file_name = f'scenarios/{scenario}.toml'
-    setup_weather(parameters_file_name)
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    setup_weather(parameters)
     print(
         get_location_weather_quantity(
             52.0, 4.2, datetime.datetime(2020, 5, 8, 8, 0),
             'Temperature at 2 meters (°C)', 'Temperature at 2 meters (°C)',
-            parameters_file_name
+            parameters
         )
     )

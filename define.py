@@ -37,10 +37,9 @@ class Leg:
 
     class_name = 'legs'
 
-    def __init__(leg, name, parameters_file_name):
+    def __init__(leg, name, parameters):
         leg.name = name
 
-        parameters = cook.parameters_from_TOML(parameters_file_name)
         leg_parameters = parameters['legs'][name]
         leg.distance = leg_parameters['distance']
         leg.duration = leg_parameters['duration']
@@ -54,15 +53,13 @@ class Leg:
             leg.road_type_mix[road_type] = road_type_parameters[road_type]
 
     @staticmethod
-    def electricity_use_kWh(leg, time_stamp, vehicle, parameters_file_name):
+    def electricity_use_kWh(leg, time_stamp, vehicle, parameters):
         '''
         This function tells us how much electricity a given leg uses.
         This will depend on the distance, the vehicle's base conusmption,
         and correction factors such as the temperature, the mix of road types,
         and the time of the day.
         '''
-
-        parameters = cook.parameters_from_TOML(parameters_file_name)
 
         road_types = parameters['transport_factors']['road_types']
 
@@ -87,7 +84,7 @@ class Leg:
                 time_stamp,
                 'Temperature at 2 meters (°C)',
                 'Temperature at 2 meters (°C)',
-                parameters_file_name
+                parameters
             )
         )
         temperature_factor_end_location = (
@@ -97,7 +94,7 @@ class Leg:
                 time_stamp,
                 'Temperature at 2 meters (°C)',
                 'Temperature at 2 meters (°C)',
-                parameters_file_name
+                parameters
             )
         )
 
@@ -127,10 +124,9 @@ class Vehicle:
 
     class_name = 'vehicles'
 
-    def __init__(vehicle,  name, parameters_file_name):
+    def __init__(vehicle,  name, parameters):
         vehicle.name = name
 
-        parameters = cook.parameters_from_TOML(parameters_file_name)
         vehicle_parameters = parameters['vehicles'][name]
         vehicle.base_consumption = vehicle_parameters['base_consumption']
         vehicle.battery_capacity = vehicle_parameters['battery_capacity']
@@ -152,10 +148,9 @@ class Location:
 
     class_name = 'locations'
 
-    def __init__(location,  name, parameters_file_name):
+    def __init__(location,  name, parameters):
         location.name = name
 
-        parameters = cook.parameters_from_TOML(parameters_file_name)
         location_parameters = parameters['locations'][name]
         location.connectivity = location_parameters['connectivity']
         location.charging_power = location_parameters['charging_power']
@@ -182,10 +177,9 @@ class Trip:
 
     class_name = 'trips'
 
-    def __init__(trip,  name, parameters_file_name):
+    def __init__(trip,  name, parameters):
         trip.name = name
 
-        parameters = cook.parameters_from_TOML(parameters_file_name)
         location_parameters = parameters['locations']
         location_names = [
             location_name for location_name in location_parameters
@@ -241,7 +235,7 @@ class Trip:
         trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
 
 
-def declare_class_instances(Chosen_class, parameters_file_name):
+def declare_class_instances(Chosen_class, parameters):
     '''
     This function creates the instances of a class (Chosen_class),
     based on a parameters file name where the instances and their properties
@@ -249,29 +243,28 @@ def declare_class_instances(Chosen_class, parameters_file_name):
     '''
 
     class_name = Chosen_class.class_name
-    parameters = cook.parameters_from_TOML(parameters_file_name)
 
     class_names = parameters[class_name]
     instances = []
 
     for class_name in class_names:
-        instances.append(Chosen_class(class_name, parameters_file_name))
+        instances.append(Chosen_class(class_name, parameters))
 
     return instances
 
 
-def declare_all_instances(parameters_file_name):
+def declare_all_instances(parameters):
     '''
     This declares all instances of the various objects
     (legs,  vehicles,  locations,  trips).
     '''
-    legs = declare_class_instances(Leg, parameters_file_name)
+    legs = declare_class_instances(Leg, parameters)
 
-    vehicles = declare_class_instances(Vehicle, parameters_file_name)
+    vehicles = declare_class_instances(Vehicle, parameters)
 
-    locations = declare_class_instances(Location, parameters_file_name)
+    locations = declare_class_instances(Location, parameters)
 
-    trips = declare_class_instances(Trip, parameters_file_name)
+    trips = declare_class_instances(Trip, parameters)
 
     return legs, vehicles, locations, trips
 
@@ -279,9 +272,9 @@ def declare_all_instances(parameters_file_name):
 if __name__ == '__main__':
 
     parameters_file_name = 'scenarios/baseline.toml'
-
+    parameters = cook.parameters_from_TOML(parameters_file_name)
     legs, vehicles, locations, trips = declare_all_instances(
-        parameters_file_name)
+        parameters)
 
     for leg in legs:
         print(

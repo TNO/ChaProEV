@@ -12,12 +12,11 @@ import pandas as pd
 import cookbook as cook
 
 
-def write_scenario_parameters(parameters_file_name):
+def write_scenario_parameters(parameters):
     '''
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
     scenario_parameter_categories = parameters['scenario_parameter_categories']
     case_name = parameters['case_name']
     scenario = parameters['scenario']
@@ -35,5 +34,5 @@ def write_scenario_parameters(parameters_file_name):
         parameter_dataframe_name = f'{scenario}_{parameter_category}'
         cook.save_dataframe(
             parameter_dataframe, parameter_dataframe_name,
-            groupfile_name, output_folder, parameters_file_name
+            groupfile_name, output_folder, parameters
         )

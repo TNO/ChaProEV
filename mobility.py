@@ -13,12 +13,11 @@ import cookbook as cook
 import run_time
 
 
-def get_trip_probabilities_per_day_type(parameters_file_name):
+def get_trip_probabilities_per_day_type(parameters):
     '''
     This function computes the trip probabilities per day type.
     '''
 
-    parameters = cook.parameters_from_TOML(parameters_file_name)
     trip_list = list(parameters['trips'].keys())
     scenario = parameters['scenario']
     case_name = parameters['case_name']
@@ -446,17 +445,17 @@ def get_trip_probabilities_per_day_type(parameters_file_name):
 
     cook.save_dataframe(
         trip_probabilities_per_day_type, table_name, groupfile_name,
-        output_folder, parameters_file_name
+        output_folder, parameters
     )
 
     return trip_probabilities_per_day_type
 
 
-def get_run_trip_probabilities(parameters_file_name):
+def get_run_trip_probabilities(parameters):
     '''
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     trip_list = list(parameters['trips'].keys())
     scenario = parameters['scenario']
     case_name = parameters['case_name']
@@ -466,18 +465,18 @@ def get_run_trip_probabilities(parameters_file_name):
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
 
-    run_range, run_hour_numbers = run_time.get_time_range(parameters_file_name)
+    run_range, run_hour_numbers = run_time.get_time_range(parameters)
     run_trip_probabilities = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
     run_trip_probabilities = (
         run_time.add_day_type_to_time_stamped_dataframe(
-            run_trip_probabilities, parameters_file_name
+            run_trip_probabilities, parameters
         )
     )
 
     trip_probabilities_per_day_type = (
-                get_trip_probabilities_per_day_type(parameters_file_name)
+                get_trip_probabilities_per_day_type(parameters)
     )
 
     for trip in trip_list:
@@ -492,7 +491,7 @@ def get_run_trip_probabilities(parameters_file_name):
     table_name = f'{scenario}_run_trip_probabilities'
     cook.save_dataframe(
         run_trip_probabilities,
-        table_name, groupfile_name, output_folder, parameters_file_name
+        table_name, groupfile_name, output_folder, parameters
     )
 
     return run_trip_probabilities
@@ -500,8 +499,9 @@ def get_run_trip_probabilities(parameters_file_name):
 
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
+    parameters = cook.parameters_from_TOML(parameters_file_name)
     trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
-        parameters_file_name
+        parameters
     )
     print(trip_probabilities_per_day_type)
     for day_type in trip_probabilities_per_day_type.columns:
@@ -510,5 +510,5 @@ if __name__ == '__main__':
             sum(trip_probabilities_per_day_type[day_type])
         )
 
-    run_trip_probabilities = get_run_trip_probabilities(parameters_file_name)
+    run_trip_probabilities = get_run_trip_probabilities(parameters)
     print(run_trip_probabilities)

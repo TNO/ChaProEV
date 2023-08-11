@@ -18,11 +18,13 @@ if __name__ == '__main__':
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
             parameters_file_name = f'scenarios/{scenario_file}'
-            writing.write_scenario_parameters(parameters_file_name)
-            weather.setup_weather(parameters_file_name)
+            parameters = cook.parameters_from_TOML(parameters_file_name)
+
+            writing.write_scenario_parameters(parameters)
+            weather.setup_weather(parameters)
             legs, vehicles, legs, trips = define.declare_all_instances(
-                parameters_file_name)
+                parameters)
 
             run_trip_probabilities = (
-                mobility.get_run_trip_probabilities(parameters_file_name)
+                mobility.get_run_trip_probabilities(parameters)
             )

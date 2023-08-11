@@ -189,7 +189,7 @@ def dataframe_to_Excel(dataframe_to_append, Excel_workbook, my_sheet):
         )
 
 
-def get_extra_colors(parameters_file_name):
+def get_extra_colors(parameters):
     '''
     This function gets the user-defined extra colors from a file.
     This file contains the names of the colors, and their RGB values
@@ -197,9 +197,8 @@ def get_extra_colors(parameters_file_name):
     color names as index, and their RGB codes (between 0 and 1)
     as values.
     '''
-    parameters = parameters_from_TOML(parameters_file_name)
-    colors = parameters['colors']
 
+    colors = parameters['colors']
     extra_colors = pd.DataFrame(columns=['R', 'G', 'B'])
     for color in colors:
         extra_colors.loc[color] = colors[color]
@@ -208,14 +207,14 @@ def get_extra_colors(parameters_file_name):
     return extra_colors
 
 
-def get_rgb_from_name(color_name, parameters_file_name):
+def get_rgb_from_name(color_name, parameters):
     '''
     This function takes a color name and returns its RGB values (0 to 1).
     If the color name is in the extra colors, then, we use
     the values given.
     If it is a matplotlib color, then we use the matplotlib function.
     '''
-    extra_colors = get_extra_colors(parameters_file_name)
+    extra_colors = get_extra_colors(parameters)
 
     if color_name in extra_colors.index.values:
         return extra_colors.loc[color_name].values
@@ -223,19 +222,19 @@ def get_rgb_from_name(color_name, parameters_file_name):
         return matplotlib.colors.to_rgb(color_name)
 
 
-def rgb_color_list(color_names, parameters_file_name):
+def rgb_color_list(color_names, parameters):
     '''
     Gets a list of RGB codes for a list of color names.
     '''
     rgb_codes = [
-        get_rgb_from_name(color_name, parameters_file_name)
+        get_rgb_from_name(color_name, parameters)
         for color_name in color_names
     ]
 
     return rgb_codes
 
 
-def register_color_bars(parameters_file_name):
+def register_color_bars(parameters):
     '''
     This function reads the user-defined color bars in a parameter file
     (names for the bars, and a list of the colors they contain, with the
@@ -244,7 +243,6 @@ def register_color_bars(parameters_file_name):
     in the list of available color maps.
     '''
 
-    parameters = parameters_from_TOML(parameters_file_name)
     color_bars = parameters['color_bars']
 
     # This dictionary stores the dictionaries for each color bar
@@ -278,7 +276,7 @@ def register_color_bars(parameters_file_name):
                 # We get the ton by getting the RGB values of the
                 # color bar color and taking the corresponding base index
                 color_bar_color_tone = get_rgb_from_name(
-                    color_bar_color, parameters_file_name)[
+                    color_bar_color, parameters)[
                     base_color_index]
 
                 base_color_entries.append(
@@ -365,7 +363,7 @@ def get_season(time_stamp):
             return season
 
 
-def save_figure(figure, figure_name, output_folder, parameters_file_name):
+def save_figure(figure, figure_name, output_folder, parameters):
     '''
     This function saves a Matplolib figure to a number of
     file formats and an output folder that are all specified in a
@@ -373,7 +371,6 @@ def save_figure(figure, figure_name, output_folder, parameters_file_name):
     '''
 
     check_if_folder_exists(output_folder)
-    parameters = parameters_from_TOML(parameters_file_name)
     file_parameters = parameters['files']
     figure_parameters = file_parameters['figures']
     dpi_to_use = figure_parameters['dpi']
@@ -389,7 +386,7 @@ def save_figure(figure, figure_name, output_folder, parameters_file_name):
 
 def save_dataframe(
         dataframe, dataframe_name, groupfile_name,
-        output_folder, parameters_file_name
+        output_folder, parameters
         ):
     '''
     This function saves a pandas dataframe to a number of
@@ -421,7 +418,6 @@ def save_dataframe(
     '''
 
     check_if_folder_exists(output_folder)
-    parameters = parameters_from_TOML(parameters_file_name)
     file_parameters = parameters['files']
     dataframe_outputs = file_parameters['dataframe_outputs']
 
@@ -812,14 +808,13 @@ def string_to_float(my_string):
     return my_output
 
 
-def get_map_area_data(parameters_file_name):
+def get_map_area_data(parameters):
     '''
     This function gets and processes the area data and sets it
     into a DataFrame. It contains polygons/multipolygons
     (they are at a given granularity level, but also have references to higher
     levels).
     '''
-    parameters = parameters_from_TOML(parameters_file_name)
     maps_parameters = parameters['maps']
     map_data_folder = maps_parameters['map_data_folder']
     # This file contains data at NUTS level 3. The reason for this is so that
@@ -841,12 +836,11 @@ def get_map_area_data(parameters_file_name):
     return area_data
 
 
-def get_map_borders(NUTS_level, parameters_file_name):
+def get_map_borders(NUTS_level, parameters):
     '''
     This function gets the borders/contours of regions at a specified NUTS
     level.
     '''
-    parameters = parameters_from_TOML(parameters_file_name)
     maps_parameters = parameters['maps']
     map_data_folder = maps_parameters['map_data_folder']
     border_data_file_prefix = maps_parameters['border_data_file_prefix']
@@ -860,12 +854,11 @@ def get_map_borders(NUTS_level, parameters_file_name):
     return border_data
 
 
-def get_map_points(NUTS_level, parameters_file_name):
+def get_map_points(NUTS_level, parameters):
     '''
     This function gets the points/labels of regions at a specified NUTS
     level.
     '''
-    parameters = parameters_from_TOML(parameters_file_name)
     maps_parameters = parameters['maps']
     map_data_folder = maps_parameters['map_data_folder']
     points_data_file_prefix = maps_parameters['points_data_file_prefix']
@@ -881,5 +874,4 @@ def get_map_points(NUTS_level, parameters_file_name):
 
 if __name__ == '__main__':
 
-    parameters_file_name = 'YAL.toml'
-
+    print()

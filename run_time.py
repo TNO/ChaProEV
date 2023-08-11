@@ -22,14 +22,12 @@ import numpy as np
 import cookbook as cook
 
 
-def get_time_range(parameters_file_name):
+def get_time_range(parameters):
     '''
     This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
     parameters file.
     '''
-
-    parameters = cook.parameters_from_TOML(parameters_file_name)
 
     run_start_parameters = parameters['run']['start']
     run_start_year = run_start_parameters['year']
@@ -84,15 +82,13 @@ def get_time_range(parameters_file_name):
     return run_range, run_hour_numbers
 
 
-def get_time_stamped_dataframe(parameters_file_name):
+def get_time_stamped_dataframe(parameters):
     '''
     This function creates a DataFrame with the timestamps of the
     run as index (and hour numbers as a column).
     '''
 
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-
-    run_range, run_hour_numbers = get_time_range(parameters_file_name)
+    run_range, run_hour_numbers = get_time_range(parameters)
     time_stamped_dataframe = pd.DataFrame(
         run_hour_numbers, columns=['Hour Number'], index=run_range
     )
@@ -111,11 +107,11 @@ def get_time_stamped_dataframe(parameters_file_name):
     return time_stamped_dataframe
 
 
-def get_day_type(time_tag, parameters_file_name):
+def get_day_type(time_tag, parameters):
     '''
     Tells us the date type of a given time_tag.
     '''
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+
     weekend_day_numbers = parameters['time']['weekend_day_numbers']
     holiday_weeks = parameters['mobility_module']['holiday_weeks']
     if time_tag.isoweekday() in weekend_day_numbers:
@@ -131,13 +127,13 @@ def get_day_type(time_tag, parameters_file_name):
     return f'{day_type}_in_{week_type}_week'
 
 
-def add_day_type_to_time_stamped_dataframe(dataframe, parameters_file_name):
+def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
     '''
     Adds a column with the date type
     to a time-stamped_dataframe
     '''
     day_types = [
-        get_day_type(time_tag, parameters_file_name)
+        get_day_type(time_tag, parameters)
         for time_tag in dataframe.index
     ]
 
@@ -148,15 +144,16 @@ def add_day_type_to_time_stamped_dataframe(dataframe, parameters_file_name):
 if __name__ == '__main__':
 
     parameters_file_name = 'scenarios/baseline.toml'
-    run_range, run_hour_numbers = get_time_range(parameters_file_name)
-    time_stamped_dataframe = get_time_stamped_dataframe(parameters_file_name)
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    run_range, run_hour_numbers = get_time_range(parameters)
+    time_stamped_dataframe = get_time_stamped_dataframe(parameters)
     print(run_range)
     print(run_hour_numbers)
     print(time_stamped_dataframe)
     day_type_dataframe = pd.DataFrame(index=run_range)
     day_type_dataframe = (
         add_day_type_to_time_stamped_dataframe(
-            day_type_dataframe, parameters_file_name
+            day_type_dataframe, parameters
         )
     )
 
