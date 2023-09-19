@@ -78,7 +78,7 @@ def download_cds_weather_quantity(
     or if you want to gather other quantities, or look at other years.
     '''
     quantity_download = cdsapi.Client()
-
+    cook.check_if_folder_exists(download_folder)
     quantity_download.retrieve(
         'reanalysis-era5-land',
         {
@@ -790,10 +790,34 @@ def setup_weather(parameters):
         get_EV_tool_data(parameters)
         plot_temperature_efficiency(parameters)
     if make_weather_database:
-        write_weather_database(parameters)
+        try:
+            write_weather_database(parameters)
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                'Data files for writing the weather database not found.'
+                'You can download them by setting download_weather_data as'
+                'true (lowercase is required by toml) under the'
+                '[run.get_extra_downloads] in your scenario file.'
+            )
+        
         get_all_hourly_values(parameters)
-
-    get_scenario_weather_data(parameters)
+    try:
+        get_scenario_weather_data(parameters)
+    except sqlite3.OperationalError:
+        raise FileNotFoundError(
+            'Weather database could not be opened, it may not exist.'
+            'A possible solution is to create the weather database. '
+            'To do so, set make_weather_database as true'
+            '(lowercase is required by toml) under [run.get_extra_downloads]'
+            'in your scenario file.'
+        )
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            'Vehicle Efficiency data not found.'
+            'A possible solution is to set download_EV_tool_data as true'
+            '(lowercase is required by toml) under [run.get_extra_downloads]'
+            'in your scenario file.'
+        )
 
 
 def get_location_weather_quantity(
