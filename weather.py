@@ -41,7 +41,7 @@ correction factor (source data versus interpolation)of electric vehicles.
     THIS IS A PLACEHOLDER FUNCTION
 13. **setup_weather:** This runs all the functions necessary to get the
     scenario weather factors for a given case.
-14. **get_location_weather_quantity:** Returns the value a a chosen
+14. **get_location_weather_quantity:** Returns the value of a chosen
     weather quantity for a given location and time tag.
 '''
 
@@ -65,10 +65,10 @@ def download_cds_weather_quantity(
     Downloads CDS (Climate Data Store) ERA-5 weather data for a given quantity
     in a given area (given by a list with:
     [latitude_min, latitude_max, longitude_min, longitude_max]).
-    The days, months, hours numbers need two digits (so a trailing zero is
+    The days, months, hours numbers need two digits (so a leading zero is
     needed if the number only has one digit).
     Because of restrictions on the amount of data that can be downloaded at
-    once (number of time points), we restrictt this function to a given month
+    once (number of time points), we restrict this function to a given month
     (but hours and day can be all the hours and days in that month).
     To download data for a larger time span (say a year), you need
     to iterate.
@@ -148,7 +148,7 @@ def make_weather_dataframe(
     scenario, and thus can be different from the download range
     (which can be for example the whole of Europe) and from the scenario range
     (which corresponds to all locations in the scenario).
-    Typically, you will want to have a large range for the downlaoded data
+    Typically, you will want to have a large range for the downloaded data
     (which you would do only once), a medium range for the processed weather
     data (which would cover the range of locations in the scenarios you are
     planning to do in the mid-term), and scenario-specific locations (with
@@ -591,7 +591,7 @@ def get_scenario_location_weather_quantity(
     Returns a chosen weather quantity for a given location and a given
     runtime.
     The run_start and run_end inputs are datetime objects,
-    source_table and waether_quantity sometimes have the same name,
+    source_table and weather_quantity sometimes have the same name,
     but not always (e.g. for hourly values of a cumulative quantity
     such as the solar radiation downwards)
     '''
@@ -757,7 +757,7 @@ def get_scenario_weather_data(parameters):
 
 def solar_panels_efficiency_factor(temperature):
     '''
-    This gives us the efficiency factor of soalr panels (i.e. how
+    This gives us the efficiency factor of solar panels (i.e. how
     much of the solar radiation is converted into electricity).
     THIS IS A PLACEHOLDER FUNCTION
     '''

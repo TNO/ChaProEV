@@ -61,12 +61,18 @@ kraken_ice_blue = [153, 217, 217]
 kraken_boundless_blue = [53, 84, 100]
 kraken_shadow_blue = [104, 162, 185]
 kraken_red_alert = [233, 7, 43]
+Mopo_darkest = [10, 10, 70]
+Mopo_dark = [9, 9, 124]
+Mopo_light = [0, 88, 143]
+Mopo_lightest = [102, 177, 206]
 
 # Defining color bars with lists of colors they use
 [color_bars]
 kraken = [
     'kraken_deep_sea_blue', 'kraken_boundless_blue',
     'kraken_shadow_blue', 'kraken_ice_blue']
+Mopo_to_light = ['Mopo_darkest', 'Mopo_dark', 'Mopo_light', 'Mopo_lightest']
+Mopo_to_dark = ['Mopo_lightest', 'Mopo_light', 'Mopo_dark', 'Mopo_darkest']
 
 
 # time-related parameters/constants
@@ -650,3 +656,21 @@ holiday_trips_taken = 2
 time_spent_at_holiday_destination = 14  # days
 percentage_of_outward_holiday_trips_on_weekends = 0.75
 percentage_of_back_holiday_trips_on_weekends = 0.75
+
+
+[maps]
+map_data_folder = 'input/map_data'
+area_data_file_name = 'NUTS_RG_01M_2021_3857_LEVL_3.json'
+general_exclusion_codes = [
+ 'ES703', 'ES704', 'ES705', 'ES706', 'ES707', 'ES708', 'ES709',
+ 'PT200', 'PT300',
+ 'FRY10', 'FRY20', 'FRY30', 'FRY40', 'FRY50',
+ 'NO0B1', 'NO0B2'
+]
+border_data_file_prefix = 'NUTS_BN_01M_2021_3857_LEVL_'
+border_data_file_suffix = '.json'
+points_data_file_prefix = 'NUTS_LB_2021_3857_LEVL_'
+points_data_file_suffix = '.json'
+country_code_header = 'Map country'
+country_code_header_in_map_data = 'CNTR_CODE'
+heat_bar_map = 'Mopo_to_dark'

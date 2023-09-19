@@ -45,6 +45,7 @@ This function takes a grib file and converts it to a DataFrame.
 21. **get_map_area_data:** Gets area data into a Dataframe
 22. **get_map_borders_data:** Gets borders data into a Dataframe
 23. **get_map_points_data:** Gets points data into a Dataframe
+24. **make_spider__chart:** Makes a spider/radar chart
 '''
 
 import os
@@ -65,6 +66,7 @@ import pandas as pd
 import matplotlib
 import xarray as xr
 import geopandas as gpd
+import matplotlib.pyplot as plt
 
 
 def check_if_folder_exists(folder_to_check):
@@ -872,6 +874,63 @@ def get_map_points(NUTS_level, parameters):
     return points_data
 
 
+def make_spider_chart(
+        spider_plot,
+        series_label,
+        data_labels, data_values, markers, marker_labels,
+        spider_color, spider_marker, spider_linewidth,
+        spider_alpha
+        ):
+
+    angles = np.linspace(0, 2*np.pi, len(data_labels), endpoint=False)
+
+    angles = np.concatenate((angles, [angles[0]]))
+    data_labels = np.concatenate((data_labels, [data_labels[0]]))
+    data_values = np.concatenate((data_values, [data_values[0]]))
+
+    spider_plot.plot(
+        angles, data_values, marker=spider_marker,
+        linewidth=spider_linewidth, color=spider_color,
+        label=series_label
+    )
+    spider_plot.fill(
+        angles, data_values, alpha=spider_alpha, color=spider_color
+    )
+    spider_plot.set_thetagrids(angles * 180/np.pi, data_labels)
+    spider_plot.set_yticks(markers)
+    spider_plot.set_yticklabels(marker_labels)
+    spider_plot.legend()
+
+    return spider_plot
+
+
 if __name__ == '__main__':
 
-    print()
+    series_label = 'SFC'
+    data_values = [0.1, 0.26, 0.42, 0.89, 0.77, 0.66]
+    data_labels = ['Mango', 'Mapo', 'Lacrosse', 'Floorball', 'Switch', 'NDS']
+    markers = [0, 0.25, 0.50, 0.75, 1.0]
+    marker_labels = ['0%', '25%', '50%', '75%', '100%']
+    spider_color = 'fuchsia'
+    spider_marker = 'o'
+    spider_linewidth = 2
+
+    spider_figure = plt.figure()
+    spider_plot = spider_figure.add_subplot(111, polar=True)
+    spider_alpha = 0.26
+    spider_plot = make_spider_chart(
+        spider_plot,
+        series_label,
+        data_labels, data_values, markers, marker_labels,
+        spider_color, spider_marker, spider_linewidth, spider_alpha
+    )
+    spider_color = 'dodgerblue'
+    series_label = 'GSHC'
+    data_values = [0.52, 0.18, 0.29, 0.39, 0.66, 0.42]
+    spider_plot = make_spider_chart(
+        spider_plot,
+        series_label,
+        data_labels, data_values, markers, marker_labels,
+        spider_color, spider_marker, spider_linewidth, spider_alpha
+    )
+    plt.show()
