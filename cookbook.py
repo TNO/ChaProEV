@@ -35,7 +35,7 @@ It contains the following functions:
     each obtained from a query in the list
 16. **from_grib_to_dataframe:**
 This function takes a grib file and converts it to a DataFrame.
-17. **sql_query_generator:** This function returns an sql query string that
+17. **read_query_generator:** This function returns an sql query string that
     can be used (for example) in Panda's read_sql.
 18. **database_tables_columns:** Returns a dictionary with the tables of a
     database as keys and their columns as values.
@@ -651,11 +651,11 @@ def from_grib_to_dataframe(grib_file):
     return source_dataframe
 
 
-def sql_query_generator(
+def read_query_generator(
         quantities_to_display, source_table, query_filter_quantities,
         query_filter_types, query_filter_values):
     '''
-    This function returns an sql query string that can be used
+    This function returns an sql read/select query string that can be used
     (for example) in Panda's read_sql.
     The input parameters are:
     - quantities_to_display: A string list of table column names

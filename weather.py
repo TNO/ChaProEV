@@ -624,7 +624,7 @@ def get_scenario_location_weather_quantity(
         location_latitude, location_longitude, [run_start, run_end]
     ]
 
-    location_scenario_query = cook.sql_query_generator(
+    location_scenario_query = cook.read_query_generator(
         columns_to_fetch, source_table, query_filter_quantities,
         query_filter_types, query_filter_values
     )
@@ -854,7 +854,7 @@ def get_location_weather_quantity(
         location_latitude, location_longitude, timetag
     ]
 
-    scenario_query = cook.sql_query_generator(
+    scenario_query = cook.read_query_generator(
         columns_to_fetch, source_table, query_filter_quantities,
         query_filter_types, query_filter_values
     )
