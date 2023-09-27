@@ -46,6 +46,13 @@ This function takes a grib file and converts it to a DataFrame.
 22. **get_map_borders_data:** Gets borders data into a Dataframe
 23. **get_map_points_data:** Gets points data into a Dataframe
 24. **make_spider__chart:** Makes a spider/radar chart
+25. **update_database_table:**
+    This function updates the values
+    of one row of a table in a database.
+    If you want to change multiple rows (with
+    a different value for each row), then you need to iterate over the rows.
+26. **update_database_table:** Returns a query filter stringthat can be used
+in an SQL query.
 '''
 
 import os
@@ -704,50 +711,10 @@ def read_query_generator(
 
     '''
 
-    first_filter = True
-    query_filter = ''
-    for filter_quantity, filter_type, filter_value in zip(
-        query_filter_quantities, query_filter_types, query_filter_values
-    ):
-
-        if first_filter:
-            query_filter = f'where '
-            first_filter = False
-        else:
-            query_filter = f'{query_filter} and'
-
-        if filter_type.lower() == 'between':
-            query_filter = (
-                f'{query_filter} {filter_quantity} between {filter_value[0]} '
-                f'and {filter_value[1]}'
-            )
-        elif filter_type.lower() == 'in':
-            # We need the filter to be a string without (single) quotes
-            # between brackets and the syntax and procedure are
-            # different for tuples
-
-            if type(filter_quantity) is tuple:
-
-                tuple_content_string = ','.join(filter_quantity)
-                filter_quantity = f'({tuple_content_string})'
-
-                query_filter = (
-                    f'{query_filter} {filter_quantity} in (values '
-                    f'{filter_value[0]},{filter_value[1]})'
-                )
-            else:
-                filter_value = [f'{my_value}' for my_value in filter_value]
-                filter_value = ','.join(filter_value)
-                query_filter = (
-                    f'{query_filter} {filter_quantity} '
-                    f'in ({filter_value})'
-                )
-
-        else:
-            query_filter = (
-                f'{query_filter} {filter_quantity} '
-                f'{filter_type} {filter_value}'
-            )
+    query_filter = make_query_filter(
+        query_filter_quantities,
+        query_filter_types, query_filter_values
+    )
 
     output_query = (
         f'select {quantities_to_display} from {source_table} '
@@ -902,6 +869,165 @@ def make_spider_chart(
     spider_plot.legend()
 
     return spider_plot
+
+
+def update_database_table(
+        database_to_update, table_to_update, columns_to_update, new_values,
+        query_filter_quantities,
+        query_filter_types, query_filter_values):
+    '''
+    This function updates the values
+    of one row of a table in a database.
+    If you want to change multiple rows (with
+    a different value for each row), then you need to iterate over the rows.
+    The input parameters are:
+    - database_to_update: The database you want to update (an sqlite3 file)
+    - table to update: The table we want to change
+    - columns to update: a list of quantities to change (column headers). Note
+    that if one of the elements has a space, then it needs double quoting:
+    [..., f'"{My column name with spaces}"', ...]
+    - new values: a list of values (one per column to update). This function
+    creates the query to update one row. To update more rows, iterate.
+    - query_filter_quntities: A list of strings each representing a column
+    name the user wants to filter. Again, names with spaces require
+    f strings and double quotes, so add:
+    f'"Surveyed Area"' to your list of filter names
+    - query_filter_types: This list (that has to be the same length as the
+    above liste of quantities)
+    says which filter to use. Currently supported options are:
+        - '='       (equal to)
+        - '<'       (smaller than)
+        - '>'       (larger than)
+        - '!='      (not equal)
+        - '<>'      (not equal)
+        - '<='      (smalller or equal)
+        - '>='      (larger or equal)
+        - 'like'      (matches/ searches for a pattern)
+        - 'between'   (between two  values)
+        - 'in'        (to select multiple values for one or several columns)
+    - query_filter_values: The comparison values used for the filter.
+    The three special cases are:
+        1) Like: This needs to be a double quote string (since it will be
+        nested into a single-quote string) with percentage signs,
+        such as '"%2020-05-08%"' for timestamps for May 8th, 2020
+        2) Between: Provide the two  values  into a
+        list. If the values arte strings that contain spaces,
+        you need nested quotes, such as:
+        ['"2020-05-08 00:00:00"','"2020-06-26 16:00:00"']
+        3) In provide the two tuple values into a list.,
+        e.g: [(52.1,4.9),(52.0,5.1)]
+
+    '''
+    first_set = True
+    set_query = ''
+    for set_element, element_values in zip(columns_to_update, new_values):
+
+        if first_set:
+            set_query += f'set '
+            first_set = False
+        else:
+            set_query += f', '
+
+        set_query += f'{set_element} = {element_values}'
+
+    query_filter = make_query_filter(
+        query_filter_quantities,
+        query_filter_types, query_filter_values
+        )
+
+    update_query = (
+        f'update {table_to_update} '
+        f'{set_query} '
+        f'{query_filter};'
+    )
+
+    with sqlite3.connect(database_to_update) as database_connection:
+        update_cursor = database_connection.cursor()
+        update_cursor.execute(update_query)
+        database_connection.commit()
+
+
+def make_query_filter(
+        query_filter_quantities,
+        query_filter_types, query_filter_values):
+    '''
+    Returns a query filter stringthat can be used in an SQL query.
+     The input parameters are:
+    - query_filter_quntities: A list of strings each representing a column
+    name the user wants to filter. Again, names with spaces require
+    f strings and double quotes, so add:
+    f'"Surveyed Area"' to your list of filter names
+    - query_filter_types: This list (that has to be the same length as the
+    above liste of quantities)
+    says which filter to use. Currently supported options are:
+        - '='       (equal to)
+        - '<'       (smaller than)
+        - '>'       (larger than)
+        - '!='      (not equal)
+        - '<>'      (not equal)
+        - '<='      (smalller or equal)
+        - '>='      (larger or equal)
+        - 'like'      (matches/ searches for a pattern)
+        - 'between'   (between two  values)
+        - 'in'        (to select multiple values for one or several columns)
+    - query_filter_values: The comparison values used for the filter.
+    The three special cases are:
+        1) Like: This needs to be a double quote string (since it will be
+        nested into a single-quote string) with percentage signs,
+        such as '"%2020-05-08%"' for timestamps for May 8th, 2020
+        2) Between: Provide the two  values  into a
+        list. If the values arte strings that contain spaces,
+        you need nested quotes, such as:
+        ['"2020-05-08 00:00:00"','"2020-06-26 16:00:00"']
+        3) In provide the two tuple values into a list.,
+        e.g: [(52.1,4.9),(52.0,5.1)]
+    '''
+    first_filter = True
+    query_filter = ''
+    for filter_quantity, filter_type, filter_value in zip(
+        query_filter_quantities, query_filter_types, query_filter_values
+    ):
+
+        if first_filter:
+            query_filter = f'where '
+            first_filter = False
+        else:
+            query_filter = f'{query_filter} and'
+
+        if filter_type.lower() == 'between':
+            query_filter = (
+                f'{query_filter} {filter_quantity} between {filter_value[0]} '
+                f'and {filter_value[1]}'
+            )
+        elif filter_type.lower() == 'in':
+            # We need the filter to be a string without (single) quotes
+            # between brackets and the syntax and procedure are
+            # different for tuples
+
+            if type(filter_quantity) is tuple:
+
+                tuple_content_string = ','.join(filter_quantity)
+                filter_quantity = f'({tuple_content_string})'
+
+                query_filter = (
+                    f'{query_filter} {filter_quantity} in (values '
+                    f'{filter_value[0]},{filter_value[1]})'
+                )
+            else:
+                filter_value = [f'{my_value}' for my_value in filter_value]
+                filter_value = ','.join(filter_value)
+                query_filter = (
+                    f'{query_filter} {filter_quantity} '
+                    f'in ({filter_value})'
+                )
+
+        else:
+            query_filter = (
+                f'{query_filter} {filter_quantity} '
+                f'{filter_type} {filter_value}'
+            )
+
+    return query_filter
 
 
 if __name__ == '__main__':
