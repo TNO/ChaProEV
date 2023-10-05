@@ -1,0 +1,28 @@
+[build-system]
+requires = ['hatchling']
+build-backend = 'hatchling.build'
+
+# [tool.hatch.build]
+# include = [
+
+# ]
+# exclude = [
+# ]
+
+[project]
+name = 'ChaProEV'
+version = '0.1.0'
+authors = [
+  { name='Omar Usmani', email='Omar.Usmani@TNO.nl' },
+]
+description = 'ChaProEV: Charging Profiles of Electric Vehicles'
+readme = 'README.md'
+requires-python = '>=3.11'
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: OS Independent',
+]
+
+[project.urls]
+'Homepage' = 'https://github.com/TNO/ChaProEV'
