@@ -25,7 +25,11 @@ import pandas as pd
 
 from ETS_CookBook import ETS_CookBook as cook
 
-import weather
+try:
+    import weather
+except ModuleNotFoundError:
+    from ChaProEV import weather
+# So that it works both as a standalone (1st) and as a package (2nd)
 
 
 class Leg:

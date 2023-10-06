@@ -8,11 +8,31 @@ import pandas as pd
 
 from ETS_CookBook import ETS_CookBook as cook
 
-import weather
-import define
-import writing
-import mobility
-import run_time
+try:
+    import weather
+except ModuleNotFoundError:
+    from ChaProEV import weather
+# So that it works both as a standalone (1st) and as a package (2nd)
+try:
+    import define
+except ModuleNotFoundError:
+    from ChaProEV import define
+# So that it works both as a standalone (1st) and as a package (2nd)
+try:
+    import writing
+except ModuleNotFoundError:
+    from ChaProEV import writing
+# So that it works both as a standalone (1st) and as a package (2nd)
+try:
+    import mobility
+except ModuleNotFoundError:
+    from ChaProEV import mobility
+# So that it works both as a standalone (1st) and as a package (2nd)
+try:
+    import run_time
+except ModuleNotFoundError:
+    from ChaProEV import run_time
+# So that it works both as a standalone (1st) and as a package (2nd)
 
 if __name__ == '__main__':
     for scenario_file in os.listdir('scenarios'):

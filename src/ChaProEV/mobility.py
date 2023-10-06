@@ -10,7 +10,11 @@ import pandas as pd
 
 from ETS_CookBook import ETS_CookBook as cook
 
-import run_time
+try:
+    import run_time
+except ModuleNotFoundError:
+    from ChaProEV import run_time
+# So that it works both as a standalone (1st) and as a package (2nd)
 
 
 def get_trip_probabilities_per_day_type(parameters):
