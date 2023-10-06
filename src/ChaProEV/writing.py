@@ -9,7 +9,7 @@ It contains the following functions:
 
 import pandas as pd
 
-import cookbook as cook
+from ETS_CookBook import ETS_CookBook as cook
 
 
 def write_scenario_parameters(parameters):

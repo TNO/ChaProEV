@@ -23,7 +23,8 @@ import datetime
 import numpy as np
 import pandas as pd
 
-import cookbook as cook
+from ETS_CookBook import ETS_CookBook as cook
+
 import weather
 
 

@@ -19,7 +19,7 @@ import datetime
 import pandas as pd
 import numpy as np
 
-import cookbook as cook
+from ETS_CookBook import ETS_CookBook as cook
 
 
 def get_time_range(parameters):

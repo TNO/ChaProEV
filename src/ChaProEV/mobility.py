@@ -8,8 +8,8 @@ probabilities for the whole run.
 '''
 import pandas as pd
 
+from ETS_CookBook import ETS_CookBook as cook
 
-import cookbook as cook
 import run_time
 
 

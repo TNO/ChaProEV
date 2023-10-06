@@ -56,7 +56,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 import matplotlib.pyplot as plt
 
-import cookbook as cook
+from ETS_CookBook import ETS_CookBook as cook
 
 
 def download_cds_weather_quantity(

@@ -23,6 +23,9 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
 ]
+dynamic = ["dependencies"]
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
 'Homepage' = 'https://github.com/TNO/ChaProEV'

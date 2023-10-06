@@ -6,10 +6,11 @@ This is where you run the model
 import os
 import pandas as pd
 
+from ETS_CookBook import ETS_CookBook as cook
+
 import weather
 import define
 import writing
-import cookbook as cook
 import mobility
 import run_time
 
