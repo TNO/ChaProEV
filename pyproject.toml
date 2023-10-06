@@ -1,13 +1,6 @@
 [build-system]
-requires = ['hatchling']
-build-backend = 'hatchling.build'
-
-# [tool.hatch.build]
-# include = [
-
-# ]
-# exclude = [
-# ]
+requires = ['setuptools', 'setuptools-scm']
+build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'ChaProEV'
@@ -23,9 +16,11 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
 ]
-dynamic = ["dependencies"]
+dynamic = ['dependencies']
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
+dependencies = {file = ['requirements.txt']}
 
 [project.urls]
 'Homepage' = 'https://github.com/TNO/ChaProEV'
+
+
