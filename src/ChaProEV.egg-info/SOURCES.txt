@@ -12,8 +12,8 @@ eu-emblem-low-res.jpg
 pyproject.toml
 requirements.txt
 comparisons/comparison_template.toml
-dist/chaproev-0.1.0-py3-none-any.whl
-dist/chaproev-0.1.0.tar.gz
+dist/ChaProEV-0.1.0-py3-none-any.whl
+dist/ChaProEV-0.1.0.tar.gz
 scenarios/baseline.toml
 src/ChaProEV/ChaProEV.py
 src/ChaProEV/__init__.py
