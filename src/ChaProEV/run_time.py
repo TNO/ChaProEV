@@ -97,9 +97,8 @@ def get_time_stamped_dataframe(parameters):
     time_stamped_dataframe['SPINE_hour_number'] = (
         [f't{hour_number:04}' for hour_number in run_hour_numbers]
     )
-
     time_stamped_dataframe = (
-        add_day_week_type_to_time_stamped_dataframe(
+        add_day_type_to_time_stamped_dataframe(
             time_stamped_dataframe, parameters
         )
     )
@@ -113,9 +112,9 @@ def get_time_stamped_dataframe(parameters):
     return time_stamped_dataframe
 
 
-def get_day_week_type(time_tag, parameters):
+def get_day_type(time_tag, parameters):
     '''
-    Tells us the day and week type of a given time_tag.
+    Tells us the date type of a given time_tag.
     '''
 
     weekend_day_numbers = parameters['time']['weekend_day_numbers']
@@ -130,25 +129,20 @@ def get_day_week_type(time_tag, parameters):
     else:
         week_type = 'work'
 
-    return day_type, week_type
+    return f'{day_type}_in_{week_type}_week'
 
 
-def add_day_week_type_to_time_stamped_dataframe(dataframe, parameters):
+def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
     '''
-    Adds a column with the date type and one wit the week type
+    Adds a column with the date type
     to a time-stamped_dataframe
     '''
     day_types = [
-        get_day_week_type(time_tag, parameters)[0]
-        for time_tag in dataframe.index
-    ]
-    week_types = [
-        get_day_week_type(time_tag, parameters)[1]
+        get_day_type(time_tag, parameters)
         for time_tag in dataframe.index
     ]
 
     dataframe['Day Type'] = day_types
-    dataframe['Week Type'] = week_types
     return dataframe
 
 
