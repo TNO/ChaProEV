@@ -168,7 +168,7 @@ longitude = 6.2
 base_charging_price = 0.35  # €/kWh
 charging_desirability = 0.1
 # An indicator (0-1) of how much people like to charge at this location
-[locations.holidays]
+[locations.holiday]
 connectivity = 0.1
 charging_power = 22  # kW
 charger_efficiency = 0.85
@@ -294,8 +294,8 @@ highway = 0.2
 
 
 [legs.home_to_weekend]
-distance = 6  # km
-duration = 0.15  # hours
+distance = 100  # km
+duration = 1  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -321,8 +321,8 @@ highway = 0.2
 
 
 [legs.weekend_to_home]
-distance = 6  # km
-duration = 0.15  # hours
+distance = 100  # km
+duration = 1  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -347,8 +347,8 @@ city = 0.8
 highway = 0.2
 
 [legs.home_to_holiday]
-distance = 6  # km
-duration = 0.15  # hours
+distance = 400  # km
+duration = 4 # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -374,8 +374,8 @@ highway = 0.2
 
 
 [legs.holiday_to_home]
-distance = 6  # km
-duration = 0.15  # hours
+distance = 400  # km
+duration = 4  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -425,8 +425,8 @@ time_between_legs = [9]
 # the amount of legs
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0, 0, 0, 0, 0, 0.25,
-    0.5, 0.25, 0, 0, 0, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ] # Start at day start hour
 starting_location = 'home'
@@ -440,8 +440,8 @@ time_between_legs = [9, 2, 3]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0, 0, 0, 0, 0, 0.25,
-    0.5, 0.25, 0, 0, 0, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ] # Start at day start hour
 starting_location = 'home'

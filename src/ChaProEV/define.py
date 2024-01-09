@@ -137,32 +137,77 @@ class Trip:
             'start_probabilities'
         ]
 
-        # We want to put the probablity starts of all legs into a dictionary
+        # We want to know how many departures from and arrivals to there are
+        # at each location
+        hour_numbers = np.zeros(parameters['time']['HOURS_IN_A_DAY'])
+        trip.departures_from = {
+            location_name:hour_numbers for location_name in location_names}
+        # Starts at day start hour
+        trip.arrivals_to = {
+            location_name:hour_numbers for location_name in location_names}
+        # Starts at day start hour
+ 
+        # We want to put the probablity starts and ends of all legs into
+        # dictionaries
         trip.leg_start_probabilities = {}
-        prior_leg_start_probability = trip.start_probabilities
+        trip.leg_end_probabilities = {}
+        previous_leg_start_probability = trip.start_probabilities
+        time_driving_previous_leg = 0
+
         for leg_index, leg_name in enumerate(trip.legs):
+            leg_parameters = parameters['legs'][leg_name]
+            start_location = leg_parameters['locations']['start']
+            end_location = leg_parameters['locations']['end']
+            time_driving = leg_parameters['duration']
             if leg_index > 0:
-                # We want to know hoe much time there is between legs
+                # We want to know how much time there is between legs
                 # so that we can shift the start probabilities accordingly.
                 # To get the time between a leg and the previous leg, we need
-                # to know two things: the time spent driving, and the
+                # to know two things: the time spent driving in the
+                # previous leg, and the
                 # time spent between legs (i.e. the idle time)
-                time_driving = parameters['legs'][leg_name]['duration']
                 time_spent_at_location = trip.time_between_legs[leg_index-1]
-                time_between_legs = time_driving + time_spent_at_location
-                time_shift = int(time_between_legs)
+                time_shift = time_driving_previous_leg + time_spent_at_location
+                
             else:
                 # The first leg is not shifted, by definition of the trip
                 # start probabilities, as the trip starts with the first leg
                 time_shift = 0
 
             # Each leg starts with the computed time shift
+            # and ends with the time shift plus the time time driving
+            # in the current leg
+            # We need to use int() to use the roll function
+            # A possibler improvement would be to proportionally spread
+            # the departures and arrivals with the remainder
             trip.leg_start_probabilities[leg_name] = (
-                np.roll(prior_leg_start_probability, time_shift)
+                np.roll(previous_leg_start_probability, int(time_shift))
             )
-            prior_leg_start_probability = (
+            trip.leg_end_probabilities[leg_name] = (
+                np.roll(
+                    previous_leg_start_probability, 
+                    int(time_shift+time_driving))
+            )
+ 
+            # We can now update the arrivals and departures:
+            # We cannot use += for some reason 
+            # (it updates the whole dictionary)
+            trip.departures_from[start_location] = (
+                trip.departures_from[start_location] 
+                + trip.leg_start_probabilities[leg_name]
+            )
+
+            trip.arrivals_to[end_location] = (
+                trip.arrivals_to[end_location]
+                + trip.leg_end_probabilities[leg_name]
+            )
+
+            # We update the previous leg values
+            previous_leg_start_probability = (
                 trip.leg_start_probabilities[leg_name]
             )
+            time_driving_previous_leg = time_driving
+
         trip.day_start_hour = trip_parameters['day_start_hour']
 
         frequency_parameters = parameters['run']['frequency']
@@ -191,10 +236,8 @@ class Trip:
 
         trip.base_dataframe = pd.DataFrame(index=trip.time_index)
 
-        location_parameters = parameters['locations']
-        locations = list(location_parameters.keys())
 
-        empty_values = np.empty((len(trip.time_index), len(locations)))
+        empty_values = np.empty((len(trip.time_index), len(location_names)))
         empty_values[:] = np.nan
         trip.base_dataframe[location_names] = empty_values
         trip.located_at = trip.base_dataframe.copy()
@@ -273,12 +316,16 @@ if __name__ == '__main__':
 
     for trip in trips:
 
-        print(
-            trip.name, trip.legs, trip.percentage_station_users,
-            trip.start_probabilities, trip.vehicle, trip.day_start_hour,
-            trip.leg_start_probabilities,
-        )
-        for leg_name in trip.legs:
-            print(leg_name)
-            print(trip.leg_start_probabilities[leg_name])
-        print(trip.base_dataframe)
+        # print(
+        #     trip.name, trip.legs, trip.percentage_station_users,
+        #     trip.start_probabilities, trip.vehicle, trip.day_start_hour,
+        #     trip.leg_start_probabilities,
+        # )
+        # for leg_name in trip.legs:
+        #     print(leg_name)
+        #     print(trip.leg_start_probabilities[leg_name])
+        # print(trip.base_dataframe)
+        print(trip.name)
+        print(trip.departures_from)
+        print(trip.arrivals_to)
+
