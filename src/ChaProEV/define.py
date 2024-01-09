@@ -137,15 +137,34 @@ class Trip:
             'start_probabilities'
         ]
 
-        # We want to know how many departures from and arrivals to there are
-        # at each location
+        # We want to know how many departures and arrivals from to there are
+        # at each location. Each will be at Dataframe with all location,
+        # so that we we have the start and end locations of departures
+        # and arrivals (so we can track where vehicles leave and arrive
+        # for the mobility module)
         hour_numbers = np.zeros(parameters['time']['HOURS_IN_A_DAY'])
+        daily_location_dataframe = pd.DataFrame(
+            np.zeros(
+                (parameters['time']['HOURS_IN_A_DAY'],len (location_names))
+                ),
+            columns=location_names
+        )
+        daily_location_dataframe.index.name = (
+            'Hour number (start at day start)'
+        )
+  
+        
         trip.departures_from = {
-            location_name:hour_numbers for location_name in location_names}
-        # Starts at day start hour
-        trip.arrivals_to = {
-            location_name:hour_numbers for location_name in location_names}
-        # Starts at day start hour
+            location_name:daily_location_dataframe.copy()
+            # Need to use a copy, otherwise thr original dataframe gets updated
+            for location_name in location_names
+        }
+        trip.arrivals_from = {
+            location_name:daily_location_dataframe.copy()
+            # Need to use a copy, otherwise thr original dataframe gets updated
+            for location_name in location_names
+        }
+    
  
         # We want to put the probablity starts and ends of all legs into
         # dictionaries
@@ -190,16 +209,14 @@ class Trip:
             )
  
             # We can now update the arrivals and departures:
-            # We cannot use += for some reason 
-            # (it updates the whole dictionary)
-            trip.departures_from[start_location] = (
-                trip.departures_from[start_location] 
-                + trip.leg_start_probabilities[leg_name]
+
+            trip.departures_from[start_location][end_location] += (
+                trip.leg_start_probabilities[leg_name]
             )
 
-            trip.arrivals_to[end_location] = (
-                trip.arrivals_to[end_location]
-                + trip.leg_end_probabilities[leg_name]
+            
+            trip.arrivals_from[start_location][end_location] += (
+                trip.leg_end_probabilities[leg_name]
             )
 
             # We update the previous leg values
@@ -207,7 +224,7 @@ class Trip:
                 trip.leg_start_probabilities[leg_name]
             )
             time_driving_previous_leg = time_driving
-
+ 
         trip.day_start_hour = trip_parameters['day_start_hour']
 
         frequency_parameters = parameters['run']['frequency']
@@ -316,16 +333,17 @@ if __name__ == '__main__':
 
     for trip in trips:
 
-        # print(
-        #     trip.name, trip.legs, trip.percentage_station_users,
-        #     trip.start_probabilities, trip.vehicle, trip.day_start_hour,
-        #     trip.leg_start_probabilities,
-        # )
-        # for leg_name in trip.legs:
-        #     print(leg_name)
-        #     print(trip.leg_start_probabilities[leg_name])
-        # print(trip.base_dataframe)
+        print(
+            trip.name, trip.legs, trip.percentage_station_users,
+            trip.start_probabilities, trip.vehicle, trip.day_start_hour,
+            trip.leg_start_probabilities,
+        )
+        for leg_name in trip.legs:
+            print(leg_name)
+            print(trip.leg_start_probabilities[leg_name])
+        print(trip.base_dataframe)
         print(trip.name)
         print(trip.departures_from)
-        print(trip.arrivals_to)
+        print(trip.arrivals_from)
+
 

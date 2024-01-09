@@ -515,7 +515,6 @@ if __name__ == '__main__':
         )
 
     run_trip_probabilities = get_run_trip_probabilities(parameters)
-    print(run_trip_probabilities)
 
     mobility_dataframe = run_time.get_time_stamped_dataframe(parameters)
     print(mobility_dataframe)
@@ -535,6 +534,7 @@ if __name__ == '__main__':
         kilometers_from[location] = (
             run_time.get_time_stamped_dataframe(parameters)
         )
+    print(departures_from)
     print('Arrivals from departures, and kilometers for both ')
     print('Use np.roll? How to deal with arrivals across hour?')
     print('Assume evenly distributed and shift proportionally')
