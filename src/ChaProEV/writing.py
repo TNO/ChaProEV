@@ -27,9 +27,9 @@ def write_scenario_parameters(parameters):
     for parameter_category in scenario_parameter_categories:
         parameter_values = parameters[parameter_category]
         parameter_dataframe = pd.DataFrame(parameter_values)
-        # Some types (suc as lists) creat issues with some file formats,
+        # Some types (such as lists) create issues with some file formats,
         # and we only need to show the values anyway, so we
-        # convert the DataFRame contents to strings
+        # convert the DataFrame contents to strings
         parameter_dataframe = parameter_dataframe.astype('str')
         parameter_dataframe_name = f'{scenario}_{parameter_category}'
         cook.save_dataframe(
