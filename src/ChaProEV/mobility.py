@@ -7,6 +7,7 @@ probabilities per day type.
 probabilities for the whole run.
 '''
 import pandas as pd
+import numpy as np
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -490,6 +491,9 @@ def get_run_trip_probabilities(parameters):
                 for day_type in run_trip_probabilities['Day Type']
             ]
         )
+        day_start_hour = parameters['trips'][trip]['day_start_hour']
+        # The trips might not start at midnight
+        trip_probabilities = np.roll(trip_probabilities, day_start_hour)
         run_trip_probabilities[trip] = trip_probabilities
 
     table_name = f'{scenario}_run_trip_probabilities'
@@ -515,7 +519,8 @@ if __name__ == '__main__':
         )
 
     run_trip_probabilities = get_run_trip_probabilities(parameters)
-    # print(run_trip_probabilities)
+    print(run_trip_probabilities[0:60])
+    exit()
     # for trip in trips:
     #     for location in locations:
     #         departures_from[location].loc[time_tag] += (
