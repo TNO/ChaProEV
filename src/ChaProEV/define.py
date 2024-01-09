@@ -53,9 +53,8 @@ class Leg:
         leg.start_location = locations['start']
         leg.end_location = locations['end']
         road_type_parameters = leg_parameters['road_type_mix']
-        leg.road_type_mix = {}
-        for road_type in road_type_parameters:
-            leg.road_type_mix[road_type] = road_type_parameters[road_type]
+        leg.road_type_mix = leg_parameters['road_type_mix']['mix']
+
 
 
 class Vehicle:
@@ -142,7 +141,8 @@ class Trip:
         # so that we we have the start and end locations of departures
         # and arrivals (so we can track where vehicles leave and arrive
         # for the mobility module)
-        hour_numbers = np.zeros(parameters['time']['HOURS_IN_A_DAY'])
+        # We also want the corresponding (weighted) distance, i.e.
+        # the total amount of (weighted) kilometers of the dpartures/arrivals
         daily_location_dataframe = pd.DataFrame(
             np.zeros(
                 (parameters['time']['HOURS_IN_A_DAY'],len (location_names))
@@ -164,6 +164,28 @@ class Trip:
             # Need to use a copy, otherwise thr original dataframe gets updated
             for location_name in location_names
         }
+
+        trip.distance_departures_from = {
+            location_name:daily_location_dataframe.copy()
+            # Need to use a copy, otherwise thr original dataframe gets updated
+            for location_name in location_names
+        }
+        trip.distance_arrivals_from = {
+            location_name:daily_location_dataframe.copy()
+            # Need to use a copy, otherwise thr original dataframe gets updated
+            for location_name in location_names
+        }
+
+        trip.weighted_distance_departures_from = {
+            location_name:daily_location_dataframe.copy()
+            # Need to use a copy, otherwise thr original dataframe gets updated
+            for location_name in location_names
+        }
+        trip.weighted_distance_arrivals_from = {
+            location_name:daily_location_dataframe.copy()
+            # Need to use a copy, otherwise thr original dataframe gets updated
+            for location_name in location_names
+        }
     
  
         # We want to put the probablity starts and ends of all legs into
@@ -178,6 +200,13 @@ class Trip:
             start_location = leg_parameters['locations']['start']
             end_location = leg_parameters['locations']['end']
             time_driving = leg_parameters['duration']
+            distance = leg_parameters['distance']
+            road_type_mix = np.array(leg_parameters['road_type_mix']['mix'])
+            road_type_weights = np.array(
+                parameters['transport_factors']['weights'])
+            road_type_factor = sum(road_type_mix * road_type_mix)
+            weighted_distance = road_type_factor * distance
+       
             if leg_index > 0:
                 # We want to know how much time there is between legs
                 # so that we can shift the start probabilities accordingly.
@@ -213,10 +242,22 @@ class Trip:
             trip.departures_from[start_location][end_location] += (
                 trip.leg_start_probabilities[leg_name]
             )
-
-            
             trip.arrivals_from[start_location][end_location] += (
                 trip.leg_end_probabilities[leg_name]
+            )
+            trip.distance_departures_from[start_location][end_location] += (
+                distance * trip.leg_start_probabilities[leg_name]
+            )
+            trip.distance_arrivals_from[start_location][end_location] += (
+                distance * trip.leg_end_probabilities[leg_name]
+            )
+            trip.weighted_distance_departures_from[
+                start_location][end_location] += (
+                    weighted_distance * trip.leg_start_probabilities[leg_name]
+            )
+            trip.weighted_distance_arrivals_from[
+                start_location][end_location] += (
+                    weighted_distance * trip.leg_end_probabilities[leg_name]
             )
 
             # We update the previous leg values
@@ -312,6 +353,38 @@ def declare_all_instances(parameters):
                 f'arrivals_from_{location.name}'
             )
             trip_arrivals_from_table = trip.arrivals_from[location.name]
+            trip_distance_departures_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip.name}_'
+                f'distance_departures_from_{location.name}'
+            )
+            trip_distance_departures_from_table = (
+                trip.distance_departures_from[location.name]
+            )
+            trip_distance_arrivals_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip.name}_'
+                f'distance_arrivals_from_{location.name}'
+            )
+            trip_distance_arrivals_from_table = (
+                trip.distance_arrivals_from[location.name]
+            )
+            trip_weighted_distance_departures_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip.name}_'
+                f'weighted_distance_departures_from_{location.name}'
+            )
+            trip_weighted_distance_departures_from_table = (
+                trip.weighted_distance_departures_from[location.name]
+            )
+            trip_weighted_distance_arrivals_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip.name}_'
+                f'weighted_distance_arrivals_from_{location.name}'
+            )
+            trip_weighted_distance_arrivals_from_table = (
+                trip.weighted_distance_arrivals_from[location.name]
+            )
             cook.save_dataframe(
                 trip_departures_from_table, trip_departures_from_table_name,
                 parameters['files']['groupfile_root'],
@@ -319,6 +392,30 @@ def declare_all_instances(parameters):
             )
             cook.save_dataframe(
                 trip_arrivals_from_table, trip_arrivals_from_table_name,
+                parameters['files']['groupfile_root'],
+                parameters['files']['output_folder'], parameters
+            )
+            cook.save_dataframe(
+                trip_distance_departures_from_table, 
+                trip_distance_departures_from_table_name,
+                parameters['files']['groupfile_root'],
+                parameters['files']['output_folder'], parameters
+            )
+            cook.save_dataframe(
+                trip_distance_arrivals_from_table, 
+                trip_distance_arrivals_from_table_name,
+                parameters['files']['groupfile_root'],
+                parameters['files']['output_folder'], parameters
+            )
+            cook.save_dataframe(
+                trip_weighted_distance_departures_from_table, 
+                trip_weighted_distance_departures_from_table_name,
+                parameters['files']['groupfile_root'],
+                parameters['files']['output_folder'], parameters
+            )
+            cook.save_dataframe(
+                trip_weighted_distance_arrivals_from_table, 
+                trip_weighted_distance_arrivals_from_table_name,
                 parameters['files']['groupfile_root'],
                 parameters['files']['output_folder'], parameters
             )

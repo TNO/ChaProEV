@@ -515,7 +515,14 @@ if __name__ == '__main__':
         )
 
     run_trip_probabilities = get_run_trip_probabilities(parameters)
-
+    # print(run_trip_probabilities)
+    # for trip in trips:
+    #     for location in locations:
+    #         departures_from[location].loc[time_tag] += (
+    #             run_trip_probabilities.loc[time_tag][trip]
+    #             * trip_departures_from_file.loc[time_tage.hour-day_start_hour]
+    #         )
+    # exit()
     mobility_dataframe = run_time.get_time_stamped_dataframe(parameters)
     print(mobility_dataframe)
     location_parameters = parameters['locations']

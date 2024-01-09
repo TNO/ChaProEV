@@ -126,6 +126,7 @@ type = 'H'  # 'min'
 
 [transport_factors]
 road_types = ['highway', 'city']
+weights = [0.66, 1.6]
 
 
 [locations]
@@ -208,9 +209,8 @@ end = 'work'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
-
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 [legs.come_from_work]
 distance = 22  # km
@@ -235,8 +235,8 @@ end = 'home'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 
 [legs.home_to_leisure]
@@ -262,8 +262,8 @@ end = 'leisure'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 
 [legs.leisure_to_home]
@@ -289,8 +289,8 @@ end = 'home'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 
 [legs.home_to_weekend]
@@ -316,8 +316,8 @@ end = 'weekend'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 
 [legs.weekend_to_home]
@@ -343,8 +343,8 @@ end = 'home'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 [legs.home_to_holiday]
 distance = 400  # km
@@ -369,8 +369,8 @@ end = 'holiday'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 
 [legs.holiday_to_home]
@@ -396,8 +396,8 @@ end = 'home'
 # If the road type does not occur in the leg, simply put 0
 # Note that the total should be 1 (there are not checks to ensure this,
 # so you need to make sure you do this correctly)
-city = 0.8
-highway = 0.2
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
 
 [vehicles]
 
