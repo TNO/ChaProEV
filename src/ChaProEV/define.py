@@ -297,6 +297,32 @@ def declare_all_instances(parameters):
 
     trips = declare_class_instances(Trip, parameters)
 
+    # We want to save the departures and arrivals from
+    for trip in trips:
+        for location in locations:
+            trip_departures_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip.name}_'
+                f'departures_from_{location.name}'
+            )
+            trip_departures_from_table = trip.departures_from[location.name]
+            trip_arrivals_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip.name}_'
+                f'arrivals_from_{location.name}'
+            )
+            trip_arrivals_from_table = trip.arrivals_from[location.name]
+            cook.save_dataframe(
+                trip_departures_from_table, trip_departures_from_table_name,
+                parameters['files']['groupfile_root'],
+                parameters['files']['output_folder'], parameters
+            )
+            cook.save_dataframe(
+                trip_arrivals_from_table, trip_arrivals_from_table_name,
+                parameters['files']['groupfile_root'],
+                parameters['files']['output_folder'], parameters
+            )
+
     return legs, vehicles, locations, trips
 
 
@@ -345,5 +371,6 @@ if __name__ == '__main__':
         print(trip.name)
         print(trip.departures_from)
         print(trip.arrivals_from)
+
 
 
