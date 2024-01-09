@@ -129,12 +129,40 @@ class Trip:
         trip_parameters = parameters['trips'][name]
         trip.vehicle = trip_parameters['vehicle']
         trip.legs = trip_parameters['legs']
+        trip.time_between_legs = trip_parameters['time_between_legs']
         trip.percentage_station_users = trip_parameters[
             'percentage_station_users'
         ]
         trip.start_probabilities = trip_parameters[
             'start_probabilities'
         ]
+
+        # We want to put the probablity starts of all legs into a dictionary
+        trip.leg_start_probabilities = {}
+        prior_leg_start_probability = trip.start_probabilities
+        for leg_index, leg_name in enumerate(trip.legs):
+            if leg_index > 0:
+                # We want to know hoe much time there is between legs
+                # so that we can shift the start probabilities accordingly.
+                # To get the time between a leg and the previous leg, we need
+                # to know two things: the time spent driving, and the
+                # time spent between legs (i.e. the idle time)
+                time_driving = parameters['legs'][leg_name]['duration']
+                time_spent_at_location = trip.time_between_legs[leg_index-1]
+                time_between_legs = time_driving + time_spent_at_location
+                time_shift = int(time_between_legs)
+            else:
+                # The first leg is not shifted, by definition of the trip
+                # start probabilities, as the trip starts with the first leg
+                time_shift = 0
+
+            # Each leg starts with the computed time shift
+            trip.leg_start_probabilities[leg_name] = (
+                np.roll(prior_leg_start_probability, time_shift)
+            )
+            prior_leg_start_probability = (
+                trip.leg_start_probabilities[leg_name]
+            )
         trip.day_start_hour = trip_parameters['day_start_hour']
 
         frequency_parameters = parameters['run']['frequency']
@@ -200,6 +228,7 @@ def declare_all_instances(parameters):
     This declares all instances of the various objects
     (legs,  vehicles,  locations,  trips).
     '''
+
     legs = declare_class_instances(Leg, parameters)
 
     vehicles = declare_class_instances(Vehicle, parameters)
@@ -217,7 +246,11 @@ if __name__ == '__main__':
     parameters = cook.parameters_from_TOML(parameters_file_name)
     legs, vehicles, locations, trips = declare_all_instances(
         parameters)
-
+    # print(legs)
+    # for leg in legs:
+    #     if leg.name == 'home_to_leisure':
+    #         print(leg.duration)
+    # exit()
     for leg in legs:
         print(
             leg.name, leg.distance, leg.duration, leg.hour_in_day_factors,
@@ -243,5 +276,9 @@ if __name__ == '__main__':
         print(
             trip.name, trip.legs, trip.percentage_station_users,
             trip.start_probabilities, trip.vehicle, trip.day_start_hour,
+            trip.leg_start_probabilities,
         )
+        for leg_name in trip.legs:
+            print(leg_name)
+            print(trip.leg_start_probabilities[leg_name])
         print(trip.base_dataframe)

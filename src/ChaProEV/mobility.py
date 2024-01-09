@@ -516,3 +516,28 @@ if __name__ == '__main__':
 
     run_trip_probabilities = get_run_trip_probabilities(parameters)
     print(run_trip_probabilities)
+
+    mobility_dataframe = run_time.get_time_stamped_dataframe(parameters)
+    print(mobility_dataframe)
+    location_parameters = parameters['locations']
+    locations = list(location_parameters.keys())
+    departures_from = {}
+    arrivals_from = {}
+    kilometers_from = {}
+    for location in locations:
+        departures_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        
+        arrivals_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        kilometers_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+    print('Arrivals from departures, and kilometers for both ')
+    print('Use np.roll? How to deal with arrivals across hour?')
+    print('Assume evenly distributed and shift proportionally')
+    print('Then consumptions (in other module) for both')
+    print('One gives demand for next leg, other cosumed energy')
+  
