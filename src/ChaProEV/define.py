@@ -158,6 +158,8 @@ class Trip:
             index=mobility_index
         )
 
+        trip.mobility_matrix = trip.mobility_matrix.sort_index()
+
         # We want to track the probabilities and time driving of previous legs
         previous_leg_start_probabilities = trip.start_probabilities
         time_driving_previous_leg = 0
@@ -259,7 +261,7 @@ class Trip:
             # Fianlly, we update the previous leg values with the current ones
             previous_leg_start_probabilities = current_leg_start_probabilities
             time_driving_previous_leg = time_driving
-        
+
         # We now can create a mobility matrix for the whole run
         run_time_tags = run_time.get_time_range(parameters)[0]
         run_mobility_index_tuples = [
@@ -275,29 +277,28 @@ class Trip:
             parameters['mobility_module']['mobility_quantities']
         )
         trip.run_mobility_matrix = pd.DataFrame(
-            # np.zeros((len(run_mobility_index), len(mobility_quantities))),
             columns=mobility_quantities,
             index=run_mobility_index
         )
+        trip.run_mobility_matrix = trip.run_mobility_matrix.sort_index()
+
         for start_location in location_names:
             for end_location in location_names:
-                for time_tag in run_time_tags:
-                    hour_index_to_use = (
-                        (time_tag.hour-trip.day_start_hour) % HOURS_IN_A_DAY
-                    )
-                    trip.run_mobility_matrix.loc[
-                        (start_location, end_location, time_tag),
-                        mobility_quantities
-                    ] =(
+
+                cloned_mobility_matrix = (
+                    run_time.from_day_to_run(
                         trip.mobility_matrix.loc[
-                            (start_location, end_location, hour_index_to_use),
+                            (start_location, end_location),
                             mobility_quantities
-                        ]
+                        ],
+                        run_time_tags,
+                        trip.day_start_hour, parameters
                     )
-
-        
-
-        
+                )
+                for mobility_quantity in mobility_quantities:
+                    trip.run_mobility_matrix.at[
+                        (start_location, end_location), mobility_quantity
+                        ] = cloned_mobility_matrix[mobility_quantity].values
 
         frequency_parameters = parameters['run']['frequency']
         trip_frequency_size = frequency_parameters['size']
