@@ -520,7 +520,291 @@ if __name__ == '__main__':
 
     run_trip_probabilities = get_run_trip_probabilities(parameters)
     print(run_trip_probabilities[0:60])
+    location_parameters = parameters['locations']
+    trip_list = list(parameters['trips'].keys())
+    locations = list(location_parameters.keys())
+    departures_from = {}
+    arrivals_from = {}
+    distance_departures_from = {}
+    distance_arrivals_from = {}
+    weighted_distance_departures_from = {}
+    weighted_distance_arrivals_from = {}
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_root = file_parameters['groupfile_root']
+    database_file = f'{output_folder}/{groupfile_root}.sqlite3'
+    time_tags = run_time.get_time_range(parameters)[0]
+    destinations = locations.copy()
+    for location in locations:
+        departures_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        departures_from[location][destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+        arrivals_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        arrivals_from[location][destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+        distance_departures_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        distance_departures_from[location][destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+        distance_arrivals_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        distance_arrivals_from[location][destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+        weighted_distance_departures_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        weighted_distance_departures_from[location][destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+        weighted_distance_arrivals_from[location] = (
+            run_time.get_time_stamped_dataframe(parameters)
+        )
+        weighted_distance_arrivals_from[location][destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+
+        for trip in trip_list:
+            day_start_hour = parameters['trips'][trip]['day_start_hour']
+            run_day_hours = [
+                (time_tag.hour-day_start_hour)
+                % parameters['time']['HOURS_IN_A_DAY']
+                for time_tag in time_tags
+            ]
+
+            trip_departures_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip}_'
+                f'departures_from_{location}'
+            )
+            trip_arrivals_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip}_'
+                f'arrivals_from_{location}'
+            )
+            trip_distance_departures_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip}_'
+                f'distance_departures_from_{location}'
+            )
+            trip_distance_arrivals_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip}_'
+                f'distance_arrivals_from_{location}'
+            )
+            trip_weighted_distance_departures_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip}_'
+                f'weighted_distance_departures_from_{location}'
+            )
+            trip_weighted_distance_arrivals_from_table_name = (
+                f'{parameters["case_name"]}_'
+                f'{parameters["scenario"]}_{trip}_'
+                f'weighted_distance_arrivals_from_{location}'
+            )
+
+            trip_departures_from = cook.read_table_from_database(
+                trip_departures_from_table_name, database_file
+            )
+            trip_arrivals_from = cook.read_table_from_database(
+                trip_arrivals_from_table_name, database_file
+            )
+            trip_distance_departures_from = cook.read_table_from_database(
+                trip_distance_departures_from_table_name, database_file
+            )
+            trip_distance_arrivals_from = cook.read_table_from_database(
+                trip_distance_arrivals_from_table_name, database_file
+            )
+            trip_weighted_distance_departures_from = (
+                cook.read_table_from_database(
+                    trip_weighted_distance_departures_from_table_name, 
+                    database_file
+                )
+            )
+            trip_weighted_distance_arrivals_from = (
+                cook.read_table_from_database(
+                    trip_weighted_distance_arrivals_from_table_name, 
+                    database_file
+                )
+            )
+
+            trip_departures_from = (
+                trip_departures_from.set_index(
+                    'Hour number (start at day start)')
+            )
+            trip_arrivals_from = (
+                trip_arrivals_from.set_index(
+                    'Hour number (start at day start)')
+            )
+            trip_distance_departures_from = (
+                trip_distance_departures_from.set_index(
+                    'Hour number (start at day start)')
+            )
+            trip_distance_arrivals_from = (
+                trip_distance_arrivals_from.set_index(
+                    'Hour number (start at day start)')
+            )
+            trip_weighted_distance_departures_from = (
+                trip_weighted_distance_departures_from.set_index(
+                    'Hour number (start at day start)')
+            )
+            trip_weighted_distance_arrivals_from = (
+                trip_weighted_distance_arrivals_from.set_index(
+                    'Hour number (start at day start)')
+            )
+
+            trip_departures_from_in_run = (
+                run_time.get_time_stamped_dataframe(parameters)
+            )
+            trip_arrivals_from_in_run = (
+                run_time.get_time_stamped_dataframe(parameters)
+            )
+            trip_distance_departures_from_in_run = (
+                run_time.get_time_stamped_dataframe(parameters)
+            )
+            trip_distance_arrivals_from_in_run = (
+                run_time.get_time_stamped_dataframe(parameters)
+            )
+            trip_weighted_distance_departures_from_in_run = (
+                run_time.get_time_stamped_dataframe(parameters)
+            )
+            trip_weighted_distance_arrivals_from_in_run = (
+                run_time.get_time_stamped_dataframe(parameters)
+            )
+            
+
+            trip_departures_from_in_run[destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+            trip_arrivals_from_in_run[destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+            trip_distance_departures_from_in_run[destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+            trip_distance_arrivals_from_in_run[destinations] = np.zeros(
+                (len(time_tags), len(destinations))
+            )
+            trip_weighted_distance_departures_from_in_run[destinations] = (
+                np.zeros(
+                    (len(time_tags), len(destinations))
+                )
+            )
+            trip_weighted_distance_arrivals_from_in_run[destinations] = (
+                np.zeros(
+                    (len(time_tags), len(destinations))
+                )
+            )
+
+            for time_tag in time_tags:
+                time_tag_departures_from = (
+                    trip_departures_from.loc[
+                        (time_tag.hour-day_start_hour)
+                        % parameters['time']['HOURS_IN_A_DAY']
+                    ]
+                * run_trip_probabilities.loc[time_tag][trip]
+                )
+                time_tag_arrivals_from = (
+                    trip_arrivals_from.loc[
+                        (time_tag.hour-day_start_hour)
+                        % parameters['time']['HOURS_IN_A_DAY']
+                    ]
+                * run_trip_probabilities.loc[time_tag][trip]
+                )
+                time_tag_distance_departures_from = (
+                    trip_distance_departures_from.loc[
+                        (time_tag.hour-day_start_hour)
+                        % parameters['time']['HOURS_IN_A_DAY']
+                    ]
+                * run_trip_probabilities.loc[time_tag][trip]
+                )
+                time_tag_distance_arrivals_from = (
+                    trip_distance_arrivals_from.loc[
+                        (time_tag.hour-day_start_hour)
+                        % parameters['time']['HOURS_IN_A_DAY']
+                    ]
+                * run_trip_probabilities.loc[time_tag][trip]
+                )
+                time_tag_weighted_distance_departures_from = (
+                    trip_weighted_distance_departures_from.loc[
+                        (time_tag.hour-day_start_hour)
+                        % parameters['time']['HOURS_IN_A_DAY']
+                    ]
+                * run_trip_probabilities.loc[time_tag][trip]
+                )
+                time_tag_weighted_distance_arrivals_from = (
+                    trip_weighted_distance_arrivals_from.loc[
+                        (time_tag.hour-day_start_hour)
+                        % parameters['time']['HOURS_IN_A_DAY']
+                    ]
+                * run_trip_probabilities.loc[time_tag][trip]
+                )
+            
+                trip_departures_from_in_run.loc[time_tag,destinations] = (
+                    time_tag_departures_from
+                )
+                trip_arrivals_from_in_run.loc[time_tag,destinations] = (
+                    time_tag_arrivals_from
+                )
+                trip_distance_departures_from_in_run.loc[
+                    time_tag,destinations] = (
+                        time_tag_distance_departures_from
+                )
+                trip_distance_arrivals_from_in_run.loc[
+                    time_tag,destinations] = (
+                        time_tag_distance_arrivals_from
+                )
+                trip_weighted_distance_departures_from_in_run.loc[
+                    time_tag,destinations] = (
+                        time_tag_weighted_distance_departures_from
+                )
+                trip_weighted_distance_arrivals_from_in_run.loc[
+                    time_tag,destinations] = (
+                        time_tag_weighted_distance_arrivals_from
+                )
+
+                
+            departures_from[location][destinations] += (
+                trip_departures_from_in_run
+            )
+            arrivals_from[location][destinations] += (
+                trip_arrivals_from_in_run
+            )
+            distance_departures_from[location][destinations] += (
+                trip_distance_departures_from_in_run
+            )
+            distance_arrivals_from[location][destinations] += (
+                trip_distance_arrivals_from_in_run
+            )
+            weighted_distance_departures_from[location][destinations] += (
+                trip_weighted_distance_departures_from_in_run
+            )
+            weighted_distance_arrivals_from[location][destinations] += (
+                trip_weighted_distance_arrivals_from_in_run
+            )
+            # print(departures_from[location])
+            # exit()
+        #     departures_from[location] += (
+        #         run_trip_probabilities[trip]
+        #     )
+    print(departures_from['home'].iloc[0:40])
+    print(arrivals_from['home'].iloc[0:40])
+    print(distance_departures_from['home'].iloc[0:40])
+    print(distance_arrivals_from['home'].iloc[0:40])
+    print(weighted_distance_departures_from['home'].iloc[0:40])
+    print(weighted_distance_arrivals_from['home'].iloc[0:40])
+    print('Faster with matrix mult rather than iteration?')
     exit()
+    cook.read_table_from_database
     # for trip in trips:
     #     for location in locations:
     #         departures_from[location].loc[time_tag] += (
