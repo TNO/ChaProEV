@@ -8,6 +8,7 @@ probabilities for the whole run.
 '''
 import pandas as pd
 import numpy as np
+import datetime
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -535,6 +536,7 @@ if __name__ == '__main__':
     database_file = f'{output_folder}/{groupfile_root}.sqlite3'
     time_tags = run_time.get_time_range(parameters)[0]
     destinations = locations.copy()
+    start_time = datetime.datetime.now()
     for location in locations:
         departures_from[location] = (
             run_time.get_time_stamped_dataframe(parameters)
@@ -704,7 +706,8 @@ if __name__ == '__main__':
                     (len(time_tags), len(destinations))
                 )
             )
-
+            
+            
             for time_tag in time_tags:
                 time_tag_departures_from = (
                     trip_departures_from.loc[
@@ -803,6 +806,14 @@ if __name__ == '__main__':
     print(weighted_distance_departures_from['home'].iloc[0:40])
     print(weighted_distance_arrivals_from['home'].iloc[0:40])
     print('Faster with matrix mult rather than iteration?')
+    print((datetime.datetime.now()-start_time).total_seconds())
+    Reduce core llop, but also maybe avoid the trip and/or location one?
+    Maybe with a different DF?
+    Possibly have one big DF instead of dicts?
+    Same in define?
+    Matrix DF with origin, desination, timetag as index
+    and departures, arrivals, *plus km/ weigted kms)
+    All in one big DF
     exit()
     cook.read_table_from_database
     # for trip in trips:

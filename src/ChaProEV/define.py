@@ -56,7 +56,6 @@ class Leg:
         leg.road_type_mix = leg_parameters['road_type_mix']['mix']
 
 
-
 class Vehicle:
     '''
     This class defines the vehicles and their properties, from a parameters
@@ -136,65 +135,34 @@ class Trip:
             'start_probabilities'
         ]
 
-        # We want to know how many departures and arrivals from to there are
-        # at each location. Each will be at Dataframe with all location,
-        # so that we we have the start and end locations of departures
-        # and arrivals (so we can track where vehicles leave and arrive
-        # for the mobility module)
-        # We also want the corresponding (weighted) distance, i.e.
-        # the total amount of (weighted) kilometers of the dpartures/arrivals
-        daily_location_dataframe = pd.DataFrame(
-            np.zeros(
-                (parameters['time']['HOURS_IN_A_DAY'],len (location_names))
-                ),
-            columns=location_names
-        )
-        daily_location_dataframe.index.name = (
-            'Hour number (start at day start)'
-        )
-  
-        
-        trip.departures_from = {
-            location_name:daily_location_dataframe.copy()
-            # Need to use a copy, otherwise thr original dataframe gets updated
-            for location_name in location_names
-        }
-        trip.arrivals_from = {
-            location_name:daily_location_dataframe.copy()
-            # Need to use a copy, otherwise thr original dataframe gets updated
-            for location_name in location_names
-        }
+        # We want to create a mobility matrix for the trip. This matrix will
+        # have start and end locations (plus hour in day, starting
+        # at day start) as an index, and departures, arrivals as columns (
+        # each with amounts, distances, weighted distances)
 
-        trip.distance_departures_from = {
-            location_name:daily_location_dataframe.copy()
-            # Need to use a copy, otherwise thr original dataframe gets updated
-            for location_name in location_names
-        }
-        trip.distance_arrivals_from = {
-            location_name:daily_location_dataframe.copy()
-            # Need to use a copy, otherwise thr original dataframe gets updated
-            for location_name in location_names
-        }
+        mobility_index_tuples = [
+            (start_location, end_location, hour_number)
+            for start_location in location_names
+            for end_location in location_names
+            for hour_number in range(parameters['time']['HOURS_IN_A_DAY'])
+        ]
+        mobility_index = pd.MultiIndex.from_tuples(
+            mobility_index_tuples,
+            names=['From', 'To', 'Hour number (from day start)'])
+        mobility_quantities = (
+            parameters['mobility_module']['mobility_quantities']
+        )
+        trip.mobility_matrix = pd.DataFrame(
+            np.zeros((len(mobility_index), len(mobility_quantities))),
+            columns=mobility_quantities,
+            index=mobility_index
+        )
 
-        trip.weighted_distance_departures_from = {
-            location_name:daily_location_dataframe.copy()
-            # Need to use a copy, otherwise thr original dataframe gets updated
-            for location_name in location_names
-        }
-        trip.weighted_distance_arrivals_from = {
-            location_name:daily_location_dataframe.copy()
-            # Need to use a copy, otherwise thr original dataframe gets updated
-            for location_name in location_names
-        }
-    
- 
-        # We want to put the probablity starts and ends of all legs into
-        # dictionaries
-        trip.leg_start_probabilities = {}
-        trip.leg_end_probabilities = {}
-        previous_leg_start_probability = trip.start_probabilities
+        # We want to track the probabilities and time driving of previous legs
+        previous_leg_start_probabilities = trip.start_probabilities
         time_driving_previous_leg = 0
 
+        # To fill in the mobility matrix, we iterate over the legs of the trip
         for leg_index, leg_name in enumerate(trip.legs):
             leg_parameters = parameters['legs'][leg_name]
             start_location = leg_parameters['locations']['start']
@@ -204,9 +172,10 @@ class Trip:
             road_type_mix = np.array(leg_parameters['road_type_mix']['mix'])
             road_type_weights = np.array(
                 parameters['transport_factors']['weights'])
-            road_type_factor = sum(road_type_mix * road_type_mix)
+            road_type_factor = sum(road_type_mix * road_type_weights)
             weighted_distance = road_type_factor * distance
-       
+            print(distance, weighted_distance)
+
             if leg_index > 0:
                 # We want to know how much time there is between legs
                 # so that we can shift the start probabilities accordingly.
@@ -216,7 +185,7 @@ class Trip:
                 # time spent between legs (i.e. the idle time)
                 time_spent_at_location = trip.time_between_legs[leg_index-1]
                 time_shift = time_driving_previous_leg + time_spent_at_location
-                
+
             else:
                 # The first leg is not shifted, by definition of the trip
                 # start probabilities, as the trip starts with the first leg
@@ -226,46 +195,71 @@ class Trip:
             # and ends with the time shift plus the time time driving
             # in the current leg
             # We need to use int() to use the roll function
-            # A possibler improvement would be to proportionally spread
+            # A possible improvement would be to proportionally spread
             # the departures and arrivals with the remainder
-            trip.leg_start_probabilities[leg_name] = (
-                np.roll(previous_leg_start_probability, int(time_shift))
+            current_leg_start_probabilities = (
+                np.roll(previous_leg_start_probabilities, int(time_shift))
             )
-            trip.leg_end_probabilities[leg_name] = (
+            current_leg_end_probabilities = (
                 np.roll(
-                    previous_leg_start_probability, 
+                    previous_leg_start_probabilities,
                     int(time_shift+time_driving))
             )
- 
-            # We can now update the arrivals and departures:
 
-            trip.departures_from[start_location][end_location] += (
-                trip.leg_start_probabilities[leg_name]
+            # With this, we can add this leg's contribution to the
+            # mobility matrix
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Departures amount'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Departures amount'
+                    ].values
+                    + current_leg_start_probabilities
             )
-            trip.arrivals_from[start_location][end_location] += (
-                trip.leg_end_probabilities[leg_name]
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Departures kilometers'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Departures kilometers'
+                    ].values
+                    + current_leg_start_probabilities * distance
             )
-            trip.distance_departures_from[start_location][end_location] += (
-                distance * trip.leg_start_probabilities[leg_name]
-            )
-            trip.distance_arrivals_from[start_location][end_location] += (
-                distance * trip.leg_end_probabilities[leg_name]
-            )
-            trip.weighted_distance_departures_from[
-                start_location][end_location] += (
-                    weighted_distance * trip.leg_start_probabilities[leg_name]
-            )
-            trip.weighted_distance_arrivals_from[
-                start_location][end_location] += (
-                    weighted_distance * trip.leg_end_probabilities[leg_name]
+            trip.mobility_matrix.loc[
+                (start_location, end_location),
+                'Departures weighted kilometers'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location),
+                        'Departures weighted kilometers'
+                    ].values
+                    + current_leg_start_probabilities * weighted_distance
             )
 
-            # We update the previous leg values
-            previous_leg_start_probability = (
-                trip.leg_start_probabilities[leg_name]
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Arrivals amount'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Arrivals amount'
+                        ].values
+                    + current_leg_end_probabilities
             )
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Arrivals kilometers'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Arrivals kilometers'
+                    ].values
+                    + current_leg_end_probabilities * distance
+            )
+            trip.mobility_matrix.loc[
+                (start_location, end_location),
+                'Arrivals weighted kilometers'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location),
+                        'Arrivals weighted kilometers'
+                    ].values
+                    + current_leg_end_probabilities * weighted_distance
+            )
+
+            # Fianlly, we update the previous leg values with the current ones
+            previous_leg_start_probabilities = current_leg_start_probabilities
             time_driving_previous_leg = time_driving
- 
+
         trip.day_start_hour = trip_parameters['day_start_hour']
 
         frequency_parameters = parameters['run']['frequency']
@@ -293,7 +287,6 @@ class Trip:
         )
 
         trip.base_dataframe = pd.DataFrame(index=trip.time_index)
-
 
         empty_values = np.empty((len(trip.time_index), len(location_names)))
         empty_values[:] = np.nan
@@ -329,7 +322,11 @@ def declare_all_instances(parameters):
     This declares all instances of the various objects
     (legs,  vehicles,  locations,  trips).
     '''
-
+    case_name = parameters['case_name']
+    scenario = parameters['scenario']
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_root = file_parameters['groupfile_root']
     legs = declare_class_instances(Leg, parameters)
 
     vehicles = declare_class_instances(Vehicle, parameters)
@@ -338,87 +335,15 @@ def declare_all_instances(parameters):
 
     trips = declare_class_instances(Trip, parameters)
 
-    # We want to save the departures and arrivals from
+    # We want to save the mbolity matrixes
     for trip in trips:
-        for location in locations:
-            trip_departures_from_table_name = (
-                f'{parameters["case_name"]}_'
-                f'{parameters["scenario"]}_{trip.name}_'
-                f'departures_from_{location.name}'
-            )
-            trip_departures_from_table = trip.departures_from[location.name]
-            trip_arrivals_from_table_name = (
-                f'{parameters["case_name"]}_'
-                f'{parameters["scenario"]}_{trip.name}_'
-                f'arrivals_from_{location.name}'
-            )
-            trip_arrivals_from_table = trip.arrivals_from[location.name]
-            trip_distance_departures_from_table_name = (
-                f'{parameters["case_name"]}_'
-                f'{parameters["scenario"]}_{trip.name}_'
-                f'distance_departures_from_{location.name}'
-            )
-            trip_distance_departures_from_table = (
-                trip.distance_departures_from[location.name]
-            )
-            trip_distance_arrivals_from_table_name = (
-                f'{parameters["case_name"]}_'
-                f'{parameters["scenario"]}_{trip.name}_'
-                f'distance_arrivals_from_{location.name}'
-            )
-            trip_distance_arrivals_from_table = (
-                trip.distance_arrivals_from[location.name]
-            )
-            trip_weighted_distance_departures_from_table_name = (
-                f'{parameters["case_name"]}_'
-                f'{parameters["scenario"]}_{trip.name}_'
-                f'weighted_distance_departures_from_{location.name}'
-            )
-            trip_weighted_distance_departures_from_table = (
-                trip.weighted_distance_departures_from[location.name]
-            )
-            trip_weighted_distance_arrivals_from_table_name = (
-                f'{parameters["case_name"]}_'
-                f'{parameters["scenario"]}_{trip.name}_'
-                f'weighted_distance_arrivals_from_{location.name}'
-            )
-            trip_weighted_distance_arrivals_from_table = (
-                trip.weighted_distance_arrivals_from[location.name]
-            )
-            cook.save_dataframe(
-                trip_departures_from_table, trip_departures_from_table_name,
-                parameters['files']['groupfile_root'],
-                parameters['files']['output_folder'], parameters
-            )
-            cook.save_dataframe(
-                trip_arrivals_from_table, trip_arrivals_from_table_name,
-                parameters['files']['groupfile_root'],
-                parameters['files']['output_folder'], parameters
-            )
-            cook.save_dataframe(
-                trip_distance_departures_from_table, 
-                trip_distance_departures_from_table_name,
-                parameters['files']['groupfile_root'],
-                parameters['files']['output_folder'], parameters
-            )
-            cook.save_dataframe(
-                trip_distance_arrivals_from_table, 
-                trip_distance_arrivals_from_table_name,
-                parameters['files']['groupfile_root'],
-                parameters['files']['output_folder'], parameters
-            )
-            cook.save_dataframe(
-                trip_weighted_distance_departures_from_table, 
-                trip_weighted_distance_departures_from_table_name,
-                parameters['files']['groupfile_root'],
-                parameters['files']['output_folder'], parameters
-            )
-            cook.save_dataframe(
-                trip_weighted_distance_arrivals_from_table, 
-                trip_weighted_distance_arrivals_from_table_name,
-                parameters['files']['groupfile_root'],
-                parameters['files']['output_folder'], parameters
-            )
+        table_name = (
+            f'{case_name}_{scenario}_{trip.name}_mobility_matrix'
+        )
+        cook.save_dataframe(
+            trip.mobility_matrix, table_name, groupfile_root,
+            output_folder, parameters
+        )
 
     return legs, vehicles, locations, trips
 
@@ -429,11 +354,7 @@ if __name__ == '__main__':
     parameters = cook.parameters_from_TOML(parameters_file_name)
     legs, vehicles, locations, trips = declare_all_instances(
         parameters)
-    # print(legs)
-    # for leg in legs:
-    #     if leg.name == 'home_to_leisure':
-    #         print(leg.duration)
-    # exit()
+
     for leg in legs:
         print(
             leg.name, leg.distance, leg.duration, leg.hour_in_day_factors,
@@ -459,15 +380,4 @@ if __name__ == '__main__':
         print(
             trip.name, trip.legs, trip.percentage_station_users,
             trip.start_probabilities, trip.vehicle, trip.day_start_hour,
-            trip.leg_start_probabilities,
         )
-        for leg_name in trip.legs:
-            print(leg_name)
-            print(trip.leg_start_probabilities[leg_name])
-        print(trip.base_dataframe)
-        print(trip.name)
-        print(trip.departures_from)
-        print(trip.arrivals_from)
-
-
-

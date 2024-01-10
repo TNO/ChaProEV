@@ -41,16 +41,16 @@ eps = true
 # listed formats (put a true if you want to do so, false if you don't)
 [files.dataframe_outputs]
 csv = true
-json = true
-html = true
-latex = true
+json = false
+html = false
+latex = false
 xml = false
-clipboard = true  # This saves the file to the local clipboard
-excel = true
-hdf = true
-feather = true
-parquet = true
-stata = true
+clipboard = false  # This saves the file to the local clipboard
+excel = false
+hdf = false
+feather = false
+parquet = false
+stata = false
 pickle = true
 sql = true
 
@@ -648,7 +648,13 @@ day_types = [
     'weekday_in_work_week', 'weekend_in_work_week',
     'weekday_in_holiday_week', 'weekend_in_holiday_week',
 ]
-day_start_hour = 6
+mobility_quantities = [
+    'Departures amount', 'Departures kilometers',
+    'Departures weighted kilometers',
+    'Arrivals amount', 'Arrivals kilometers',
+    'Arrivals weighted kilometers'
+]
+
 
 holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 42, 52, 53]
 # We need to provide the number of holliday weeks seprately,
@@ -658,7 +664,7 @@ holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 42, 52, 53]
 # of a week).
 number_of_holiday_weeks = 10
 
-time_spent_at_work = 9  # hours
+
 work_hours_in_a_work_day = 8  # hours
 hours_worked_per_work_week = 31	  # hours
 hours_in_a_standard_work_week = 40  # hours
@@ -670,12 +676,9 @@ leisure_trips_per_week_outside_weekends = 2
 maximal_fill_percentage_leisure_trips_on_non_work_weekdays = 1
 weekday_leisure_trips = 2
 percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
-time_at_home_before_going_to_leisure_on_work_day = 2  # hours
-time_spent_at_leisure_on_work_days = 3  # hours
-time_spent_at_leisure_on_non_work_days = 2  # hours
 
 weekend_trips_per_year = 12
-time_spent_at_weekend_destination = 4  # hours
+
 
 holiday_trips_taken = 2
 time_spent_at_holiday_destination = 14  # days
