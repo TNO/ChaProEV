@@ -270,9 +270,12 @@ class Trip:
             for end_location in location_names
             for time_tag in run_time_tags
         ]
+        mobility_index_names = (
+            parameters['mobility_module']['mobility_index_names']
+        )
         run_mobility_index = pd.MultiIndex.from_tuples(
             run_mobility_index_tuples,
-            names=['From', 'To', 'Time tag'])
+            names=mobility_index_names)
         mobility_quantities = (
             parameters['mobility_module']['mobility_quantities']
         )

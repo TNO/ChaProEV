@@ -654,6 +654,7 @@ mobility_quantities = [
     'Arrivals amount', 'Arrivals kilometers',
     'Arrivals weighted kilometers'
 ]
+mobility_index_names = ['From', 'To', 'Time tag']
 
 
 holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 42, 52, 53]
