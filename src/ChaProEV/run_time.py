@@ -11,6 +11,8 @@ timestamps of the run as index (and hour numbers as a column).
 3. **get_day_type:** Tells us the date type of a given time_tag.
 4. **add_day_type_to_time_stamped_dataframe:** Adds a column with the date type
 to a time-stamped_dataframe
+5. **from_day_to_run:** Clones dataframefor a day (with zero at day start) for
+the whole run.
 '''
 
 
@@ -18,6 +20,7 @@ import datetime
 
 import pandas as pd
 import numpy as np
+import math
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -144,6 +147,64 @@ def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
 
     dataframe['Day Type'] = day_types
     return dataframe
+
+
+def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
+    '''
+    Clones dataframe for a day (with zero at day start) for
+    the whole run.
+    '''
+
+    # We need to roll the values so that they start at midnight
+    rolled_values = [
+        np.roll(dataframe_to_clone[column], day_start_hour)
+        for column in dataframe_to_clone.columns
+    ]
+
+    rolled_dataframe_to_clone = pd.DataFrame()
+    for column, column_values in zip(
+            dataframe_to_clone.columns, rolled_values):
+        rolled_dataframe_to_clone[column] = column_values
+
+    SECONDS_PER_HOUR = parameters['time']['SECONDS_PER_HOUR']
+    HOURS_IN_A_DAY = parameters['time']['HOURS_IN_A_DAY']
+    run_number_of_seconds = (run_range[-1] - run_range[0]).total_seconds()
+    run_days = (
+        math.ceil(run_number_of_seconds/(SECONDS_PER_HOUR*HOURS_IN_A_DAY))
+    )
+    run_dataframe = pd.DataFrame()
+    for _ in range(run_days):
+        run_dataframe = pd.concat(
+            (rolled_dataframe_to_clone, run_dataframe), ignore_index=True
+        )
+
+    # We create an extended run range, which includes all hours in the days
+    # of the range (i.e. hours before the run starts and after it ends)
+    extended_run_start = datetime.datetime(
+        year=run_range[0].year, month=run_range[0].month,
+        day=run_range[0].day, hour=0)
+    day_after_end_run = run_range[-1] + datetime.timedelta(days=1)
+    extended_run_end = datetime.datetime(
+        year=day_after_end_run.year, month=day_after_end_run.month,
+        day=day_after_end_run.day, hour=0)
+    run_parameters = parameters['run']
+    run_frequency_parameters = run_parameters['frequency']
+    run_frequency_size = run_frequency_parameters['size']
+    run_frequency_type = run_frequency_parameters['type']
+    run_frequency = f'{run_frequency_size}{run_frequency_type}'
+    extended_run_range = pd.date_range(
+        start=extended_run_start, end=extended_run_end,
+        freq=run_frequency,
+        inclusive='left'
+    )
+    run_dataframe['Time tag'] = extended_run_range
+
+    # We then cut the parts that arenot in the run
+    run_dataframe = run_dataframe[run_dataframe['Time tag'] <= run_range[-1]]
+    run_dataframe = run_dataframe[run_dataframe['Time tag'] >= run_range[0]]
+    run_dataframe = run_dataframe.set_index('Time tag')
+
+    return run_dataframe
 
 
 if __name__ == '__main__':
