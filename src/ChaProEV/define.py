@@ -26,9 +26,9 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
-    import weather
+    import run_time
 except ModuleNotFoundError:
-    from ChaProEV import weather
+    from ChaProEV import run_time
 # So that it works both as a standalone (1st) and as a package (2nd)
 
 
@@ -134,17 +134,17 @@ class Trip:
         trip.start_probabilities = trip_parameters[
             'start_probabilities'
         ]
-
+        trip.day_start_hour = trip_parameters['day_start_hour']
         # We want to create a mobility matrix for the trip. This matrix will
         # have start and end locations (plus hour in day, starting
         # at day start) as an index, and departures, arrivals as columns (
         # each with amounts, distances, weighted distances)
-
+        HOURS_IN_A_DAY = parameters['time']['HOURS_IN_A_DAY']
         mobility_index_tuples = [
             (start_location, end_location, hour_number)
             for start_location in location_names
             for end_location in location_names
-            for hour_number in range(parameters['time']['HOURS_IN_A_DAY'])
+            for hour_number in range(HOURS_IN_A_DAY)
         ]
         mobility_index = pd.MultiIndex.from_tuples(
             mobility_index_tuples,
@@ -259,8 +259,45 @@ class Trip:
             # Fianlly, we update the previous leg values with the current ones
             previous_leg_start_probabilities = current_leg_start_probabilities
             time_driving_previous_leg = time_driving
+        
+        # We now can create a mobility matrix for the whole run
+        run_time_tags = run_time.get_time_range(parameters)[0]
+        run_mobility_index_tuples = [
+            (start_location, end_location, time_tag)
+            for start_location in location_names
+            for end_location in location_names
+            for time_tag in run_time_tags
+        ]
+        run_mobility_index = pd.MultiIndex.from_tuples(
+            run_mobility_index_tuples,
+            names=['From', 'To', 'Time tag'])
+        mobility_quantities = (
+            parameters['mobility_module']['mobility_quantities']
+        )
+        trip.run_mobility_matrix = pd.DataFrame(
+            # np.zeros((len(run_mobility_index), len(mobility_quantities))),
+            columns=mobility_quantities,
+            index=run_mobility_index
+        )
+        for start_location in location_names:
+            for end_location in location_names:
+                for time_tag in run_time_tags:
+                    hour_index_to_use = (
+                        (time_tag.hour-trip.day_start_hour) % HOURS_IN_A_DAY
+                    )
+                    trip.run_mobility_matrix.loc[
+                        (start_location, end_location, time_tag),
+                        mobility_quantities
+                    ] =(
+                        trip.mobility_matrix.loc[
+                            (start_location, end_location, hour_index_to_use),
+                            mobility_quantities
+                        ]
+                    )
 
-        trip.day_start_hour = trip_parameters['day_start_hour']
+        
+
+        
 
         frequency_parameters = parameters['run']['frequency']
         trip_frequency_size = frequency_parameters['size']
@@ -337,11 +374,18 @@ def declare_all_instances(parameters):
 
     # We want to save the mbolity matrixes
     for trip in trips:
-        table_name = (
+        mobility_table_name = (
             f'{case_name}_{scenario}_{trip.name}_mobility_matrix'
         )
         cook.save_dataframe(
-            trip.mobility_matrix, table_name, groupfile_root,
+            trip.mobility_matrix, mobility_table_name, groupfile_root,
+            output_folder, parameters
+        )
+        run_mobility_table_name = (
+            f'{case_name}_{scenario}_{trip.name}_run_mobility_matrix'
+        )
+        cook.save_dataframe(
+            trip.run_mobility_matrix, run_mobility_table_name, groupfile_root,
             output_folder, parameters
         )
 
