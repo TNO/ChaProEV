@@ -11,7 +11,7 @@ timestamps of the run as index (and hour numbers as a column).
 3. **get_day_type:** Tells us the date type of a given time_tag.
 4. **add_day_type_to_time_stamped_dataframe:** Adds a column with the date type
 to a time-stamped_dataframe
-5. **from_day_to_run:** Clones dataframefor a day (with zero at day start) for
+5. **from_day_to_run:** Clones dataframe for a day (with zero at day start) for
 the whole run.
 '''
 
@@ -43,6 +43,28 @@ def get_time_range(parameters):
         run_start_year, run_start_month, run_start_day,
         run_start_hour, run_start_minute
     )
+    mobility_module_parameters = parameters['mobility_module']
+    day_start_hour = mobility_module_parameters['day_start_hour']
+    compute_start_location_split = mobility_module_parameters[
+        'compute_start_location_split']
+    # If we want the model to compute the starting values, we
+    # expand the run to the prior day start so that we can use the
+    # location split at day start per day type
+    if compute_start_location_split:
+        # If the start hour is before the day start hour,
+        # we need to go one day backward
+        if run_start_hour < day_start_hour:
+            run_start -= datetime.timedelta(days=1)
+            run_start_year = run_start.year
+            run_start_month = run_start.month
+            run_start_day = run_start.day
+        run_start_hour = day_start_hour
+        run_start = datetime.datetime(
+            run_start_year, run_start_month, run_start_day,
+            run_start_hour, run_start_minute
+        )
+          
+    
 
     run_end_parameters = parameters['run']['end']
     run_end_year = run_end_parameters['year']
@@ -50,6 +72,8 @@ def get_time_range(parameters):
     run_end_day = run_end_parameters['day']
     run_end_hour = run_end_parameters['hour']
     run_end_minute = run_end_parameters['minute']
+    
+    
 
     run_end = datetime.datetime(
         run_end_year, run_end_month, run_end_day,
@@ -132,7 +156,26 @@ def get_day_type(time_tag, parameters):
     else:
         week_type = 'work'
 
-    return f'{day_type}_in_{week_type}_week'
+    day_name = f'{day_type}_in_{week_type}_week'
+
+    holiday_departures_in_weekend_week_numbers = (
+        parameters['mobility_module'][
+            'holiday_departures_in_weekend_week_numbers']
+    )
+    holiday_returns_in_weekend_week_numbers = (
+        parameters['mobility_module'][
+            'holiday_returns_in_weekend_week_numbers']
+    )
+
+    if day_type == 'weekend':
+        if  time_tag.isocalendar().week in (
+            holiday_departures_in_weekend_week_numbers):
+            day_name = 'weekend_holiday_departures'
+        elif  time_tag.isocalendar().week in (
+            holiday_returns_in_weekend_week_numbers):
+            day_name = 'weekend_holiday_returns'
+
+    return day_name
 
 
 def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
@@ -140,8 +183,10 @@ def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
     Adds a column with the date type
     to a time-stamped_dataframe
     '''
+    day_start_hour = parameters['mobility_module']['day_start_hour']
     day_types = [
-        get_day_type(time_tag, parameters)
+        get_day_type(
+            time_tag -datetime.timedelta(hours=day_start_hour), parameters)
         for time_tag in dataframe.index
     ]
 

@@ -18,6 +18,7 @@ to run that function for all class types.
 '''
 
 import datetime
+import math
 
 
 import numpy as np
@@ -134,7 +135,7 @@ class Trip:
         trip.start_probabilities = trip_parameters[
             'start_probabilities'
         ]
-        trip.day_start_hour = trip_parameters['day_start_hour']
+        trip.day_start_hour = parameters['mobility_module']['day_start_hour']
         # We want to create a mobility matrix for the trip. This matrix will
         # have start and end locations (plus hour in day, starting
         # at day start) as an index, and departures, arrivals as columns (
@@ -170,13 +171,25 @@ class Trip:
             start_location = leg_parameters['locations']['start']
             end_location = leg_parameters['locations']['end']
             time_driving = leg_parameters['duration']
+            # We want to know the percentage of time driving due to this
+            # leg in the current (hour) interval and subsequent ones
+            # We first fill the intervals that are fully filled by the driving
+            # e.g four ones ifthe driving is 4.2 hours
+            time_driving_in_intervals = [1] * math.floor(time_driving)
+            # We then append the remainder (which is the duration if the
+            # duration is smaller than the (hour) interval)
+            remainder = time_driving- math.floor(time_driving)
+            # But only if it is not zero (to avoid adding an unnecessary index)
+            if remainder > 0:
+                time_driving_in_intervals.append(
+                    remainder
+                )
             distance = leg_parameters['distance']
             road_type_mix = np.array(leg_parameters['road_type_mix']['mix'])
             road_type_weights = np.array(
                 parameters['transport_factors']['weights'])
             road_type_factor = sum(road_type_mix * road_type_weights)
             weighted_distance = road_type_factor * distance
-            print(distance, weighted_distance)
 
             if leg_index > 0:
                 # We want to know how much time there is between legs
@@ -217,6 +230,45 @@ class Trip:
                     ].values
                     + current_leg_start_probabilities
             )
+            # We want to compute the percentage that is driving 
+            # due to a departure from the leg's departure location
+            # We start with an empty list
+            percentage_departures_driving = [0] * HOURS_IN_A_DAY
+            # We look how many start in each hour
+            for hour_index, start_probability in enumerate(
+                current_leg_start_probabilities):
+                # The start probability applies to all the future times
+                # where there is (partial or total) driving
+                driving_percentages = [
+                    time_driving_in_interval * start_probability
+                    for time_driving_in_interval in time_driving_in_intervals
+                ]
+                # The corresponding intervals are modified (we need to
+                # wrap around if we go into the next calendar day)
+                # We first list the modified indices
+                modified_indices = [
+                    modified_index % HOURS_IN_A_DAY 
+                    for modified_index 
+                    in range(hour_index,hour_index+len(driving_percentages))]
+                # We then add up the corresponding driving percentages
+                for driving_percentage, modified_index in zip(
+                    driving_percentages, modified_indices):
+                    percentage_departures_driving[modified_index] += (
+                        driving_percentage
+                    )
+                
+        
+            # With this, we can add this leg's contribution to the
+            # mobility matrix
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Departures driving time'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 
+                        'Departures driving time'
+                    ].values
+                    + percentage_departures_driving
+                )
+            
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures kilometers'] = (
                     trip.mobility_matrix.loc[
@@ -241,6 +293,53 @@ class Trip:
                         ].values
                     + current_leg_end_probabilities
             )
+            # We want to compute the percentage that is driving 
+            # due to an arrival from the leg's departure location
+            # We start with an empty list
+            percentage_arrivals_driving = [0] * HOURS_IN_A_DAY
+            # We look how many start in each hour
+            for hour_index, start_probability in enumerate(
+                current_leg_start_probabilities):
+                # The start probability applies to all the future times
+                # where there is (partial or total) driving
+                driving_percentages = [
+                    time_driving_in_interval * start_probability
+                    for time_driving_in_interval in time_driving_in_intervals
+                ]
+                # The corresponding intervals are modified. This time,
+                # we need to go backwards (we need to
+                # wrap around if we go into the previous calendar day)
+                # The +1 are added to have the right indices
+                # We first list the modified indices
+                modified_indices = [
+                    modified_index % HOURS_IN_A_DAY 
+                    for modified_index 
+                    in range(
+                        hour_index-len(driving_percentages)+1,hour_index+1)]
+     
+
+                 
+                # We then add up the corresponding driving percentages
+                for driving_percentage, modified_index in zip(
+                    driving_percentages, modified_indices):
+                    percentage_arrivals_driving[modified_index] += (
+                        driving_percentage
+                    )
+
+
+            # With this, we can add this leg's contribution to the
+            # mobility matrix
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Arrivals driving time'] = (
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 
+                        'Arrivals driving time'
+                    ].values
+                    + percentage_arrivals_driving
+                )
+    
+            
+
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Arrivals kilometers'] = (
                     trip.mobility_matrix.loc[
@@ -261,6 +360,7 @@ class Trip:
             # Fianlly, we update the previous leg values with the current ones
             previous_leg_start_probabilities = current_leg_start_probabilities
             time_driving_previous_leg = time_driving
+            
 
         # We now can create a mobility matrix for the whole run
         run_time_tags = run_time.get_time_range(parameters)[0]
@@ -427,5 +527,5 @@ if __name__ == '__main__':
 
         print(
             trip.name, trip.legs, trip.percentage_station_users,
-            trip.start_probabilities, trip.vehicle, trip.day_start_hour,
+            trip.start_probabilities, trip.vehicle, 
         )
