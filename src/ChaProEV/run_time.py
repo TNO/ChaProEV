@@ -63,8 +63,6 @@ def get_time_range(parameters):
             run_start_year, run_start_month, run_start_day,
             run_start_hour, run_start_minute
         )
-          
-    
 
     run_end_parameters = parameters['run']['end']
     run_end_year = run_end_parameters['year']
@@ -72,8 +70,6 @@ def get_time_range(parameters):
     run_end_day = run_end_parameters['day']
     run_end_hour = run_end_parameters['hour']
     run_end_minute = run_end_parameters['minute']
-    
-    
 
     run_end = datetime.datetime(
         run_end_year, run_end_month, run_end_day,
@@ -168,11 +164,11 @@ def get_day_type(time_tag, parameters):
     )
 
     if day_type == 'weekend':
-        if  time_tag.isocalendar().week in (
-            holiday_departures_in_weekend_week_numbers):
+        if time_tag.isocalendar().week in (
+                holiday_departures_in_weekend_week_numbers):
             day_name = 'weekend_holiday_departures'
-        elif  time_tag.isocalendar().week in (
-            holiday_returns_in_weekend_week_numbers):
+        elif time_tag.isocalendar().week in (
+                holiday_returns_in_weekend_week_numbers):
             day_name = 'weekend_holiday_returns'
 
     return day_name
@@ -186,7 +182,7 @@ def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
     day_start_hour = parameters['mobility_module']['day_start_hour']
     day_types = [
         get_day_type(
-            time_tag -datetime.timedelta(hours=day_start_hour), parameters)
+            time_tag - datetime.timedelta(hours=day_start_hour), parameters)
         for time_tag in dataframe.index
     ]
 

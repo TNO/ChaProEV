@@ -799,7 +799,7 @@ def setup_weather(parameters):
                 'true (lowercase is required by toml) under the'
                 '[run.get_extra_downloads] in your scenario file.'
             )
-        
+
         get_all_hourly_values(parameters)
     try:
         get_scenario_weather_data(parameters)

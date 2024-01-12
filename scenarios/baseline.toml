@@ -363,7 +363,7 @@ mix = [0.8, 0.2]
 
 [legs.home_to_holiday]
 distance = 400  # km
-duration = 4 # hours
+duration = 4  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -433,116 +433,116 @@ city = 1
 [trips.commute_to_work]
 vehicle = 'car'
 legs = ['go_to_work', 'come_from_work']
-time_between_legs = [9] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = [9]
+# This is the time spent at each interim location (same units as use
 # generally, so currently hours). The length of this list is one less than
 # the amount of legs
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0, 
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'home'
 
 [trips.commute_to_work_and_leisure]
 vehicle = 'car'
 legs = ['go_to_work', 'come_from_work', 'home_to_leisure', 'leisure_to_home']
-time_between_legs = [9, 2, 3] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = [9, 2, 3]
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
     0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'home'
 
 [trips.leisure_only]
 vehicle = 'car'
 legs = ['home_to_leisure', 'leisure_to_home']
-time_between_legs = [2] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = [2]
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-   0, 0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625, 
+   0, 0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625,
    0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625,
    0, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'home'
 
 [trips.weekend_trip]
 vehicle = 'car'
 legs = ['home_to_weekend', 'weekend_to_home']
-time_between_legs = [4] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = [4]
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-   0, 0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625, 
+   0, 0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625,
    0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625,
    0, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'home'
 
 [trips.holiday_outward]
 vehicle = 'car'
 legs = ['home_to_holiday']
-time_between_legs = [] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = []
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-   0, 0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375, 
-   0.09375, 0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125, 
+   0, 0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375,
+   0.09375, 0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125,
    0.03125, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'home'
 
 
 [trips.holiday_back]
 vehicle = 'car'
 legs = ['holiday_to_home']
-time_between_legs = [] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = []
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-   0, 0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375, 
-   0.09375, 0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125, 
+   0, 0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375,
+   0.09375, 0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125,
    0.03125, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'holiday'
 
 [trips.stay_put_home]
 vehicle = 'car'
 legs = []
-time_between_legs = [] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = []
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
    0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour
+]  # Start at day start hour
 starting_location = 'home'
 
 
 [trips.stay_put_holiday]
 vehicle = 'car'
 legs = []
-time_between_legs = [] 
-# This is the time spent at each interim location (same units as used 
+time_between_legs = []
+# This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
    0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0,
    0, 0, 0, 0, 0, 0, 0, 0
-] # Start at day start hour 
+]  # Start at day start hour
 starting_location = 'holiday'
 
 # Weather-related parameters
@@ -663,9 +663,6 @@ mobility_quantities = [
     'Departures amount', 'Departures kilometers',
     'Departures weighted kilometers',
     'Departures driving time',
-    'Arrivals amount', 'Arrivals kilometers',
-    'Arrivals weighted kilometers',
-    'Arrivals driving time'
 ]
 mobility_index_names = ['From', 'To', 'Time tag']
 
