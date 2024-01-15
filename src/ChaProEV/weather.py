@@ -872,9 +872,10 @@ def get_location_weather_quantity(
 
 if __name__ == '__main__':
 
-    scenario = 'baseline'
+
     parameters_file_name = f'scenarios/{scenario}.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
+    scenario = parameters['scenario']
     setup_weather(parameters)
     print(
         get_location_weather_quantity(

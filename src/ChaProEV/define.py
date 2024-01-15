@@ -5,13 +5,13 @@ that define the system (the parameters/defintions come from a parameters file),
 namely:
 1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
-2. **Vehicles:** Each vehicle type (or subtype) is defined in this class.
-3. **Location:** This class defines the locations where the vehicles are
+2. **Location:** This class defines the locations where the vehicles are
 (available charger power, connectivity, latitude, longitude, etc.).
-4. **Trips:** Trips are collections of legs that take place on a given day.
+3. **Trips:** Trips are collections of legs that take place on a given day.
     Note that this day does not necessarily start (and end) at minight,
     but can start (and end) at an hour that is more logical/significant for the
-    vehicle user (it could for example be 06:00 for car drivers).
+    user (it could for example be 06:00 for car drivers). This day_start_hour
+    parameter is universal for all trips
 
 This module also includes two functions to declare a chosen class, and
 to run that function for all class types.
@@ -54,30 +54,7 @@ class Leg:
         leg.start_location = locations['start']
         leg.end_location = locations['end']
         road_type_parameters = leg_parameters['road_type_mix']
-        leg.road_type_mix = leg_parameters['road_type_mix']['mix']
-
-
-class Vehicle:
-    '''
-    This class defines the vehicles and their properties, from a parameters
-    file that contains a list of instances and their porperties.
-    '''
-
-    class_name = 'vehicles'
-
-    def __init__(vehicle,  name, parameters):
-        vehicle.name = name
-
-        vehicle_parameters = parameters['vehicles'][name]
-        vehicle.base_consumption = vehicle_parameters['base_consumption']
-        vehicle.battery_capacity = vehicle_parameters['battery_capacity']
-        vehicle.solar_panel_size_kWp = vehicle_parameters[
-            'solar_panel_size_kWp']
-
-        road_factor_parameters = vehicle_parameters['road_factors']
-        vehicle.road_factors = {}
-        for road_type in road_factor_parameters:
-            vehicle.road_factors[road_type] = road_factor_parameters[road_type]
+        leg.road_type_mix = road_type_parameters['mix']
 
 
 class Location:
@@ -113,6 +90,8 @@ class Trip:
     Note that this day does not necessarily start (and end) at minight,
     but can start (and end) at an hour that is more logical/significant for the
     vehicle user (it could for example be 06:00 for car drivers).
+    This day_start_hour
+    parameter is universal for all trips
     This value is set in the parameters files.
     '''
 
@@ -126,7 +105,6 @@ class Trip:
             location_name for location_name in location_parameters
         ]
         trip_parameters = parameters['trips'][name]
-        trip.vehicle = trip_parameters['vehicle']
         trip.legs = trip_parameters['legs']
         trip.time_between_legs = trip_parameters['time_between_legs']
         trip.percentage_station_users = trip_parameters[
@@ -388,7 +366,7 @@ def declare_class_instances(Chosen_class, parameters):
 def declare_all_instances(parameters):
     '''
     This declares all instances of the various objects
-    (legs,  vehicles,  locations,  trips).
+    (legs, locations,  trips).
     '''
     case_name = parameters['case_name']
     scenario = parameters['scenario']
@@ -397,8 +375,6 @@ def declare_all_instances(parameters):
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name= f'{groupfile_root}_{case_name}'
     legs = declare_class_instances(Leg, parameters)
-
-    vehicles = declare_class_instances(Vehicle, parameters)
 
     locations = declare_class_instances(Location, parameters)
 
@@ -421,14 +397,14 @@ def declare_all_instances(parameters):
             output_folder, parameters
         )
 
-    return legs, vehicles, locations, trips
+    return legs, locations, trips
 
 
 if __name__ == '__main__':
 
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
-    legs, vehicles, locations, trips = declare_all_instances(
+    legs, locations, trips = declare_all_instances(
         parameters)
 
     for leg in legs:
@@ -436,12 +412,6 @@ if __name__ == '__main__':
             leg.name, leg.distance, leg.duration, leg.hour_in_day_factors,
             leg.start_location, leg.end_location,
             leg.road_type_mix
-        )
-
-    for vehicle in vehicles:
-        print(
-            vehicle.name, vehicle.base_consumption, vehicle.battery_capacity,
-            vehicle.road_factors
         )
 
     for location in locations:
@@ -455,5 +425,5 @@ if __name__ == '__main__':
 
         print(
             trip.name, trip.legs, trip.percentage_station_users,
-            trip.start_probabilities, trip.vehicle,
+            trip.start_probabilities,
         )
