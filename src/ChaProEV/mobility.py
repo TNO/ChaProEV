@@ -655,6 +655,7 @@ def get_mobility_matrix(parameters):
     file_parameters = parameters['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
+    groupfile_name = f'{groupfile_root}_{case_name}'
     for trip_name in trip_names:
         this_trip_run_probabilities = pd.DataFrame(
             run_trip_probabilities[trip_name]
@@ -673,7 +674,7 @@ def get_mobility_matrix(parameters):
         )
         trip_run_mobility_matrix = cook.read_table_from_database(
             trip_run_mobility_matrix_name,
-            f'{output_folder}/{groupfile_root}.sqlite3'
+            f'{output_folder}/{groupfile_name}.sqlite3'
         )
         trip_run_mobility_matrix = (
             trip_run_mobility_matrix.set_index(mobility_index_names)
@@ -691,7 +692,7 @@ def get_mobility_matrix(parameters):
             )
     cook.save_dataframe(
         run_mobility_matrix, f'{case_name}_{scenario}_run_mobility_matrix',
-        groupfile_root, output_folder, parameters
+        groupfile_name, output_folder, parameters
     )
     return run_mobility_matrix
 
@@ -784,7 +785,7 @@ def get_location_split(parameters):
     file_parameters = parameters['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}'
+    groupfile_name = f'{groupfile_root}_{case_name}'
     location_parameters = parameters['locations']
     location_names = [
             location_name for location_name in location_parameters
@@ -853,7 +854,7 @@ def get_location_split(parameters):
 
     cook.save_dataframe(
         location_split, f'{case_name}_{scenario}_location_split',
-        groupfile_root, output_folder, parameters
+        groupfile_name, output_folder, parameters
     )
     return location_split
 
