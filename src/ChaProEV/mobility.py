@@ -601,7 +601,7 @@ def get_run_trip_probabilities(parameters):
 
         run_trip_probabilities[trip] = trip_probabilities
 
-    table_name = f'{case_name}_{scenario}_run_trip_probabilities'
+    table_name = f'{scenario}_run_trip_probabilities'
     cook.save_dataframe(
         run_trip_probabilities,
         table_name, groupfile_name, output_folder, parameters
@@ -670,7 +670,7 @@ def get_mobility_matrix(parameters):
 
             )
         trip_run_mobility_matrix_name = (
-            f'{case_name}_{scenario}_{trip_name}_run_mobility_matrix'
+            f'{scenario}_{trip_name}_run_mobility_matrix'
         )
         trip_run_mobility_matrix = cook.read_table_from_database(
             trip_run_mobility_matrix_name,
@@ -691,7 +691,7 @@ def get_mobility_matrix(parameters):
                 probability_values_to_use
             )
     cook.save_dataframe(
-        run_mobility_matrix, f'{case_name}_{scenario}_run_mobility_matrix',
+        run_mobility_matrix, f'{scenario}_run_mobility_matrix',
         groupfile_name, output_folder, parameters
     )
     return run_mobility_matrix
@@ -797,7 +797,7 @@ def get_location_split(parameters):
 
     location_split = get_starting_location_split(location_split, parameters)
 
-    run_mobility_matrix_name = f'{case_name}_{scenario}_run_mobility_matrix'
+    run_mobility_matrix_name = f'{scenario}_run_mobility_matrix'
     database_file = f'{output_folder}/{groupfile_name}.sqlite3'
 
     run_mobility_matrix = cook.read_table_from_database(
@@ -853,7 +853,7 @@ def get_location_split(parameters):
             previous_time_tag = time_tag
 
     cook.save_dataframe(
-        location_split, f'{case_name}_{scenario}_location_split',
+        location_split, f'{scenario}_location_split',
         groupfile_name, output_folder, parameters
     )
     return location_split

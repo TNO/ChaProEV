@@ -407,14 +407,14 @@ def declare_all_instances(parameters):
     # We want to save the mbolity matrixes
     for trip in trips:
         mobility_table_name = (
-            f'{case_name}_{scenario}_{trip.name}_mobility_matrix'
+            f'{scenario}_{trip.name}_mobility_matrix'
         )
         cook.save_dataframe(
             trip.mobility_matrix, mobility_table_name, groupfile_name,
             output_folder, parameters
         )
         run_mobility_table_name = (
-            f'{case_name}_{scenario}_{trip.name}_run_mobility_matrix'
+            f'{scenario}_{trip.name}_run_mobility_matrix'
         )
         cook.save_dataframe(
             trip.run_mobility_matrix, run_mobility_table_name, groupfile_name,
