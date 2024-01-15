@@ -895,16 +895,19 @@ def get_starting_location_split(location_split, parameters):
     return location_split
 
 
-if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-
+def make_mobility_data(parameters):
     trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
         parameters
     )
 
     run_mobility_matrix = get_mobility_matrix(parameters)
     location_split = get_location_split(parameters)
+
+
+if __name__ == '__main__':
+    parameters_file_name = 'scenarios/baseline.toml'
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    make_mobility_data(parameters)
 
     print('Add spillover?')
     print('Use departures from and arrivals to for location split')

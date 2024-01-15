@@ -111,11 +111,11 @@ month = 1
 day = 1
 hour = 5
 minute = 0
-[run.end]
-year = 2020
-month = 12
-day = 31
-hour = 23
+[run.end]  # This is is not included in the run time
+year = 2021
+month = 1
+day = 1
+hour = 0
 minute = 0
 [run.frequency]
 size = 1  # Put the size of the interval here

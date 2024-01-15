@@ -33,6 +33,11 @@ try:
 except ModuleNotFoundError:
     from ChaProEV import run_time
 # So that it works both as a standalone (1st) and as a package (2nd)
+try:
+    import consumption
+except ModuleNotFoundError:
+    from ChaProEV import consumption
+# So that it works both as a standalone (1st) and as a package (2nd)
 
 if __name__ == '__main__':
     for scenario_file in os.listdir('scenarios'):
@@ -41,11 +46,17 @@ if __name__ == '__main__':
             parameters_file_name = f'scenarios/{scenario_file}'
             parameters = cook.parameters_from_TOML(parameters_file_name)
 
-            writing.write_scenario_parameters(parameters)
-            weather.setup_weather(parameters)
-            legs, vehicles, legs, trips = define.declare_all_instances(
+            legs, locations, trips = define.declare_all_instances(
                 parameters)
 
-            run_trip_probabilities = (
-                mobility.get_run_trip_probabilities(parameters)
-            )
+            mobility.make_mobility_data(parameters)
+            consumption.create_consumption_tables(parameters)
+
+            # writing.write_scenario_parameters(parameters)
+            # weather.setup_weather(parameters)
+            # legs, vehicles, legs, trips = define.declare_all_instances(
+            #     parameters)
+
+            # run_trip_probabilities = (
+            #     mobility.get_run_trip_probabilities(parameters)
+            # )

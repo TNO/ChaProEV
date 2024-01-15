@@ -373,7 +373,7 @@ def declare_all_instances(parameters):
     file_parameters = parameters['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
-    groupfile_name= f'{groupfile_root}_{case_name}'
+    groupfile_name = f'{groupfile_root}_{case_name}'
     legs = declare_class_instances(Leg, parameters)
 
     locations = declare_class_instances(Location, parameters)

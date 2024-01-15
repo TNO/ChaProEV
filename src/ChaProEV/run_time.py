@@ -240,7 +240,7 @@ def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
     )
     run_dataframe['Time tag'] = extended_run_range
 
-    # We then cut the parts that arenot in the run
+    # We then cut the parts that are ot in the run
     run_dataframe = run_dataframe[run_dataframe['Time tag'] <= run_range[-1]]
     run_dataframe = run_dataframe[run_dataframe['Time tag'] >= run_range[0]]
     run_dataframe = run_dataframe.set_index('Time tag')
