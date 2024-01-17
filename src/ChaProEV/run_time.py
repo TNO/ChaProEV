@@ -162,9 +162,19 @@ def get_day_type(time_tag, parameters):
         parameters['mobility_module'][
             'holiday_returns_in_weekend_week_numbers']
     )
+    holiday_overlap_weekend_week_numbers = (
+        list(
+            set(holiday_departures_in_weekend_week_numbers)
+            .intersection(
+                holiday_returns_in_weekend_week_numbers
+            ))
+    )
 
     if day_type == 'weekend':
-        if time_tag.isocalendar().week in (
+        if  time_tag.isocalendar().week in (
+                holiday_overlap_weekend_week_numbers):
+            day_name = 'holiday_overlap_weekend'
+        elif time_tag.isocalendar().week in (
                 holiday_departures_in_weekend_week_numbers):
             day_name = 'weekend_holiday_departures'
         elif time_tag.isocalendar().week in (

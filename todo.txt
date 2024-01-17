@@ -1,0 +1,85 @@
+
+
+do it per trip
+battery level trigger (below this, will charge)
+
+then max power or spread
+
+How to deal with shift to next day? 
+Trip of prior day might correlate with next day
+    
+
+bank holidays
+holiday trips per year?
+
+
+
+
+
+in requirements.txt
+tomli >= 1.1.0 ; python_version < "3.11" 
+
+ESDL compatibility (+ESSIM?)
+Chapter on working as a provider/with other models (optimisers, e.g.)
+Collection/combination of reference profiles: Can optimiser help choose split?
+Jpurnal of software engineering or other?
+
+
+Advanced CODEC/socio (combine with optimising work?)
+Mopo color palette?
+Use logos (ChaProEV and Mopo in readme)
+
+
+Run weather factors in DB (and pickle?)
+
+SOLAR EFFICIENCY !
+
+            print('Do solar panel efficiency')
+
+            print('Avoid swap by arranging before?')
+            print('And explain/improve in all hourly')
+            print('Clarify what theperature efficiency of vehicles is')
+            print('Test leg.electricity_use_kWh')
+            print('Implement road and hour in day factors')
+            print('Go through class definitions (espcially Trip')
+            print('Day start hour in one place?')
+            print('Fast/station charging')
+            print('Add time fator to location charging price?')
+            print('Connectivity can vary with time? (e.g. due to higher occupancy')
+            print('Max allowed charging time?')
+
+            PV library Sandia (PV-lib)
+
+https://pvpmc.sandia.gov/applications/pv_lib-toolbox/
+
+Charging point efficiency factor per location and impact on from_grib_to_dataframe
+
+Shading + 890 kWh/kWp in Nll rule of thumb+ Temp (ambient+20)-25 --> 0.5% drop per unit_conversions
+Soalr moves: rondomize/spread journeys and such
+
+Where to write computed trip properties (at least non-charge ones, such as location, but maybe also these too)
+In scenario_trips, or elsewhere?
+
+Describe connection to optimisation model
+Share cookbooj=k with ETS team (focus on some functions, such as SQL query writer)
+electricity price: Add (option) for a time correction factor (equal to 1 if not given?)
+
+Density/distribution of building types (houses, work, malls, etc) per zone (e.g.NUTS3)
+
+ESDL in Mopo?
+
+Monte-Carlo/ randomize input (scenarios)
+PV from DTU (and other data, see Matti's presentation)
+
+Reference values DB for people to use in other models (SpineOpt, etc): Maybe add reading functions (or structure, matchin SPINE)
+Charging costs in aggregates
+Have pricing/desirability scaling/flexibility (e.g. charge if need/price reaches a theshold, or use a function, may add desirability to it)
+
+Map plot of kilometrage, charging costs, etc. per country?
+
+Couple to CODEC?
+
+
+Report to Mikael (and/or run results?) for his student
+
+BAG data

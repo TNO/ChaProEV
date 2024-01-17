@@ -83,14 +83,6 @@ def get_trip_probabilities_per_day_type(parameters):
     weekend_trips_per_year = (
         mobility_module_parameters['weekend_trips_per_year']
     )
-    percentage_of_outward_holiday_trips_on_weekends = (
-        mobility_module_parameters[
-            'percentage_of_outward_holiday_trips_on_weekends']
-    )
-    percentage_of_back_holiday_trips_on_weekends = (
-        mobility_module_parameters[
-            'percentage_of_back_holiday_trips_on_weekends']
-    )
     leisure_trips_per_weekend = (
         mobility_module_parameters['leisure_trips_per_weekend']
     )
@@ -133,6 +125,8 @@ def get_trip_probabilities_per_day_type(parameters):
     number_of_holiday_return_weekends = len(
         holiday_returns_in_weekend_week_numbers
     )
+    
+    
 
     # We build a Dataframe to store the trip probabilities per day type
     trip_probabilities_per_day_type = pd.DataFrame(
@@ -167,7 +161,8 @@ def get_trip_probabilities_per_day_type(parameters):
         'holiday_back']['weekend_holiday_departures'] = 0
 
     # The only non-zero values are for holidays outward in departure
-    # weekends and for holidays back in return weekends.
+    # weekends and for holidays back in return weekends,
+    # and in overlap weekends.
     # These are simply given by the amount of holiday trips taken
     # divided by the amount of respective weekends and
     # by the length of a weekend
@@ -197,6 +192,14 @@ def get_trip_probabilities_per_day_type(parameters):
         )
     trip_probabilities_per_day_type.loc[
         'holiday_back']['weekend_holiday_returns'] = (
+            holiday_return_probability
+        )
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward']['holiday_overlap_weekend'] = (
+            holiday_departure_probability
+        )
+    trip_probabilities_per_day_type.loc[
+        'holiday_back']['holiday_overlap_weekend'] = (
             holiday_return_probability
         )
 
@@ -231,6 +234,8 @@ def get_trip_probabilities_per_day_type(parameters):
         'weekend_trip']['weekend_holiday_departures'] = 0
     trip_probabilities_per_day_type.loc[
         'weekend_trip']['weekend_holiday_returns'] = 0
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip']['holiday_overlap_weekend'] = 0
     # We compute the probability to go to work on a given day in a work week.
     # It is given by the probability that peple work in that week times
     # the number of hours worked in that week divided by
@@ -435,6 +440,23 @@ def get_trip_probabilities_per_day_type(parameters):
             len(weekend_day_numbers)
         ) * day_type_start_location_split.loc['home'][
             'weekend_holiday_returns']
+    # For overlap weekends, we have:
+    percentage_not_departing_or_returning = 1 - (
+        trip_probabilities_per_day_type.loc[
+            'holiday_outward']['holiday_overlap_weekend']
+        +
+        trip_probabilities_per_day_type.loc[
+            'holiday_back']['holiday_overlap_weekend']
+    )
+    trip_probabilities_per_day_type.loc[
+        'leisure_only']['holiday_overlap_weekend'] = (
+            percentage_not_departing_or_returning
+            *
+            leisure_trips_per_weekend
+            /
+            len(weekend_day_numbers)
+        ) * day_type_start_location_split.loc['home'][
+            'holiday_overlap_weekend']
 
     # The amount of weekday leisure trips taking place on work weekdays is
     # then the difference between the total amount of weekday leisure trips and
@@ -493,6 +515,12 @@ def get_trip_probabilities_per_day_type(parameters):
         'commute_to_work_and_leisure']['weekend_holiday_departures'] = 0
 
     trip_probabilities_per_day_type.loc[
+        'commute_to_work']['holiday_overlap_weekend'] = 0
+
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure']['holiday_overlap_weekend'] = 0
+
+    trip_probabilities_per_day_type.loc[
         'commute_to_work']['weekend_holiday_returns'] = 0
 
     trip_probabilities_per_day_type.loc[
@@ -529,6 +557,7 @@ def get_trip_probabilities_per_day_type(parameters):
     stay_put_probabilities = (
         1 - travelling_trip_probabilities_per_day_type.sum()
     )
+
     stay_put_split = {}
 
     possible_stay_locations = ['home', 'holiday']
@@ -545,6 +574,7 @@ def get_trip_probabilities_per_day_type(parameters):
                 stay_put_probabilities[day_type]
                 * stay_put_split[stay_put_trip][day_type]
             )
+
     table_name = f'{scenario}_trip_probabilities_per_day_type'
 
     # For some file formats (stata, for example), we need to ensure that
@@ -664,7 +694,7 @@ def get_mobility_matrix(parameters):
         this_trip_run_probabilities_extended = pd.DataFrame()
         for _ in range(len(location_names)*len(location_names)):
             this_trip_run_probabilities_extended = pd.concat(
-                (this_trip_run_probabilities,
+                (this_trip_run_probabilities,   
                  this_trip_run_probabilities_extended),
                 ignore_index=True
 
@@ -754,7 +784,8 @@ def get_day_type_start_location_split(parameters):
     # the model complexer)
     weekend_day_numbers = parameters['time']['weekend_day_numbers']
     travelling_weekend_day_types = [
-        'weekend_holiday_departures', 'weekend_holiday_returns'
+        'weekend_holiday_departures', 'weekend_holiday_returns',
+        'holiday_overlap_weekend'
     ]
     for day_type in travelling_weekend_day_types:
         day_type_start_location_split.loc['home', day_type] = (
@@ -826,23 +857,23 @@ def get_location_split(parameters):
                 arrivals = (
                     sum(
                         run_mobility_matrix.loc[
-                            :, location, time_tag]['Departures amount']
+                            :, location, time_tag]['Arrivals amount']
 
                     )
-                    -
-                    sum(
-                        run_mobility_matrix.loc[
-                            :, location, time_tag][
-                                'Departures driving time']
+                    # -
+                    # sum(
+                    #     run_mobility_matrix.loc[
+                    #         :, location, time_tag][
+                    #             'Departures driving time']
 
-                    )
-                    +
-                    sum(
-                        run_mobility_matrix.loc[
-                            :, location, previous_time_tag][
-                                'Departures driving time']
+                    # )
+                    # +
+                    # sum(
+                    #     run_mobility_matrix.loc[
+                    #         :, location, previous_time_tag][
+                    #             'Departures driving time']
 
-                    )
+                    # )
                 )
 
                 location_split.loc[time_tag][location] = (

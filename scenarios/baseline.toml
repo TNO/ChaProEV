@@ -647,25 +647,28 @@ compute_start_location_split = true
 day_types = [
     'weekday_in_work_week', 'weekend_in_work_week',
     'weekday_in_holiday_week', 'weekend_in_holiday_week',
-    'weekend_holiday_departures', 'weekend_holiday_returns'
+    'weekend_holiday_departures', 'weekend_holiday_returns',
+    'holiday_overlap_weekend'
 ]
 mobility_quantities = [
     'Departures amount', 'Departures kilometers',
     'Departures weighted kilometers',
-    'Departures driving time',
+    'Arrivals amount', 'Arrivals kilometers',
+    'Arrivals weighted kilometers',
+    
 ]
 mobility_index_names = ['From', 'To', 'Time tag']
 
 
-holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 42, 52, 53]
+holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53]
 # We need to provide the number of holliday weeks seprately,
 # as counting the elements of the list above might not work, such as
 # when the above list contains weeks 1 and 53 (which just represent
 # the fact that years don't necessarily start and/or end at the start/end
 # of a week).
 number_of_holiday_weeks = 10
-holiday_departures_in_weekend_week_numbers = [7, 17, 27, 29, 41, 51]
-holiday_returns_in_weekend_week_numbers = [1, 8, 18, 30, 32, 42]
+holiday_departures_in_weekend_week_numbers = [7, 17, 27, 30, 41, 50]
+holiday_returns_in_weekend_week_numbers = [1, 8, 18, 30, 33, 42]
 
 work_hours_in_a_work_day = 8  # hours
 hours_worked_per_work_week = 31	  # hours
@@ -682,10 +685,10 @@ percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
 weekend_trips_per_year = 12
 
 
-holiday_trips_taken = 2
+holiday_trips_taken = 1
 time_spent_at_holiday_destination = 14  # days
-percentage_of_outward_holiday_trips_on_weekends = 0.75
-percentage_of_back_holiday_trips_on_weekends = 0.75
+# percentage_of_outward_holiday_trips_on_weekends = 0.75
+# percentage_of_back_holiday_trips_on_weekends = 0.75
 
 
 [maps]
