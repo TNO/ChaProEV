@@ -171,7 +171,7 @@ def get_day_type(time_tag, parameters):
     )
 
     if day_type == 'weekend':
-        if  time_tag.isocalendar().week in (
+        if time_tag.isocalendar().week in (
                 holiday_overlap_weekend_week_numbers):
             day_name = 'holiday_overlap_weekend'
         elif time_tag.isocalendar().week in (

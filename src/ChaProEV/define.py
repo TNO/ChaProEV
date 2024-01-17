@@ -178,7 +178,7 @@ class Trip:
                 # time spent between legs (i.e. the idle time)
                 time_spent_at_location = trip.time_between_legs[leg_index-1]
                 time_shift = time_driving_previous_leg + time_spent_at_location
-                # For previous leg departures in slot N, the corresponding 
+                # For previous leg departures in slot N, the corresponding
                 # current leg departures.
                 # take place into two time slots. These two slots
                 # have numbers N+slot_shift and N+slot_shift+1
@@ -187,11 +187,11 @@ class Trip:
                 # hours are your units), then arrivals will occur in time
                 # slots (hours if you use them) N+9 and N+10
                 # The portion in the first slot is:
-                first_slot_proportion = (1-time_shift%1)
-                # In the example above, the decimal part is 0.25, so the 
+                first_slot_proportion = (1-time_shift % 1)
+                # In the example above, the decimal part is 0.25, so the
                 # proportion is (1-0.25)=0.75
                 current_leg_start_probabilities = (
-                    first_slot_proportion 
+                    first_slot_proportion
                     *
                     np.roll(previous_leg_start_probabilities, slot_shift)
                     +
@@ -199,7 +199,6 @@ class Trip:
                     *
                     np.roll(previous_leg_start_probabilities, slot_shift+1)
                 )
-        
 
             else:
                 # The first leg is not shifted, by definition of the trip
@@ -209,24 +208,6 @@ class Trip:
                     previous_leg_start_probabilities
                 )
 
-            # # Each leg starts with the computed time shift
-            # # and ends with the time shift plus the time time driving
-            # # in the current leg
-            # # We need to use int() to use the roll function
-            # # A possible improvement would be to proportionally spread
-            # # the departures and arrivals with the remainder
-            
-            # # if time_shift > 0:
-            # #     print(time_shift)
-            # #     print(math.floor(time_shift))
-            # #     exit()
-            # # For previous
-            # current_leg_start_probabilities = (
-            #     np.roll(previous_leg_start_probabilities, int(time_shift))
-            # )
-
-
-
             # For a departure in slot N, the corresponding arrivals
             # take place into two time slots. These two slots
             # have numbers N+slot_shift and N+slot_shift+1
@@ -235,11 +216,11 @@ class Trip:
             # hours are your units), then arrivals will occur in time
             # slots (hours if you use them) N+1 and N+2
             # The portion in the first slot is:
-            first_slot_proportion = (1-time_driving%1)
+            first_slot_proportion = (1-time_driving % 1)
             # In the example above, the decimal part is 0.25, so the proportion
             # is (1-0.25)=0.75
             current_leg_end_probabilities = (
-                    first_slot_proportion 
+                    first_slot_proportion
                     *
                     np.roll(current_leg_start_probabilities, slot_shift)
                     +
@@ -247,26 +228,7 @@ class Trip:
                     *
                     np.roll(current_leg_start_probabilities, slot_shift+1)
                 )
-            print(current_leg_end_probabilities)
-            # moo = (1-time_driving%1)/2
-            # print(moo)
-            # current_leg_end_probabilities = (
-            #     np.roll(
-            #         previous_leg_start_probabilities,
-            #         int(time_shift+time_driving))
-            # )
-            
-            # if time_shift > 0:
-                
-            #     print(current_leg_start_probabilities)
-            #     print(current_leg_end_probabilities)
-            #     print(leg_name)
-            #     print(trip.mobility_matrix.loc[
-            #             ('home', 'work')
-            #         ])
-            #     print(current_leg_start_probabilities * distance)
-            #     exit()
-    
+
             # With this, we can add this leg's contribution to the
             # mobility matrix
             trip.mobility_matrix.loc[
@@ -274,7 +236,7 @@ class Trip:
                     trip.mobility_matrix.loc[
                         (start_location, end_location), 'Departures amount'
                     ].values
-                    + 
+                    +
                     current_leg_start_probabilities
             )
             trip.mobility_matrix.loc[
@@ -282,58 +244,16 @@ class Trip:
                     trip.mobility_matrix.loc[
                         (start_location, end_location), 'Arrivals amount'
                     ].values
-                    + 
+                    +
                     current_leg_end_probabilities
             )
-    
-            # print(time_driving)
-            # print(current_leg_start_probabilities)
-            # print(trip.mobility_matrix.loc[('home', 'work')])
-            # exit()
-            # We want to compute the percentage that is driving
-            # due to a departure from the leg's departure location
-            # We start with an empty list
-            # percentage_departures_driving = [0] * HOURS_IN_A_DAY
-            # # We look how many start in each hour
-            # for hour_index, start_probability in enumerate(
-            #         current_leg_start_probabilities):
-            #     # The start probability applies to all the future times
-            #     # where there is (partial or total) driving
-            #     driving_percentages = [
-            #         time_driving_in_interval * start_probability
-            #         for time_driving_in_interval in time_driving_in_intervals
-            #     ]
-            #     # The corresponding intervals are modified (we need to
-            #     # wrap around if we go into the next calendar day)
-            #     # We first list the modified indices
-            #     modified_indices = [
-            #         modified_index % HOURS_IN_A_DAY
-            #         for modified_index
-            #         in range(hour_index, hour_index+len(driving_percentages))]
-            #     # We then add up the corresponding driving percentages
-            #     for driving_percentage, modified_index in zip(
-            #             driving_percentages, modified_indices):
-            #         percentage_departures_driving[modified_index] += (
-            #             driving_percentage
-            #         )
-
-            # With this, we can add this leg's contribution to the
-            # mobility matrix
-            # trip.mobility_matrix.loc[
-            #     (start_location, end_location), 'Departures driving time'] = (
-            #         trip.mobility_matrix.loc[
-            #             (start_location, end_location),
-            #             'Departures driving time'
-            #         ].values
-            #         + percentage_departures_driving
-            #     )
 
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures kilometers'] = (
                     trip.mobility_matrix.loc[
                         (start_location, end_location), 'Departures kilometers'
                     ].values
-                    + 
+                    +
                     np.array(current_leg_start_probabilities) * distance
             )
             trip.mobility_matrix.loc[
@@ -343,8 +263,8 @@ class Trip:
                         (start_location, end_location),
                         'Departures weighted kilometers'
                     ].values
-                    + 
-                    np.array(current_leg_start_probabilities) 
+                    +
+                    np.array(current_leg_start_probabilities)
                     * weighted_distance
             )
             trip.mobility_matrix.loc[
@@ -352,7 +272,7 @@ class Trip:
                     trip.mobility_matrix.loc[
                         (start_location, end_location), 'Arrivals kilometers'
                     ].values
-                    + 
+                    +
                     np.array(current_leg_end_probabilities) * distance
             )
             trip.mobility_matrix.loc[
@@ -362,17 +282,13 @@ class Trip:
                         (start_location, end_location),
                         'Arrivals weighted kilometers'
                     ].values
-                    + 
+                    +
                     np.array(current_leg_end_probabilities) * weighted_distance
             )
 
             # Finally, we update the previous leg values with the current ones
             previous_leg_start_probabilities = current_leg_start_probabilities
             time_driving_previous_leg = time_driving
-            print(trip.mobility_matrix.loc[
-                (start_location, end_location)])
-            # if time_shift >0 :
-            #     exit()
 
         # We now can create a mobility matrix for the whole run
         run_time_tags = run_time.get_time_range(parameters)[0]

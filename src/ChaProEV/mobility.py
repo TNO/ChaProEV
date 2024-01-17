@@ -125,8 +125,6 @@ def get_trip_probabilities_per_day_type(parameters):
     number_of_holiday_return_weekends = len(
         holiday_returns_in_weekend_week_numbers
     )
-    
-    
 
     # We build a Dataframe to store the trip probabilities per day type
     trip_probabilities_per_day_type = pd.DataFrame(
@@ -694,7 +692,7 @@ def get_mobility_matrix(parameters):
         this_trip_run_probabilities_extended = pd.DataFrame()
         for _ in range(len(location_names)*len(location_names)):
             this_trip_run_probabilities_extended = pd.concat(
-                (this_trip_run_probabilities,   
+                (this_trip_run_probabilities,
                  this_trip_run_probabilities_extended),
                 ignore_index=True
 
