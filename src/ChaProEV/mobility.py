@@ -677,7 +677,7 @@ def get_mobility_matrix(parameters):
         index=run_mobility_index
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
-
+    
     case_name = parameters['case_name']
     scenario = parameters['scenario']
     file_parameters = parameters['files']
@@ -704,20 +704,42 @@ def get_mobility_matrix(parameters):
             trip_run_mobility_matrix_name,
             f'{output_folder}/{groupfile_name}.sqlite3'
         )
+        location_connections_headers = parameters[
+            'mobility_module']['location_connections_headers']
+
         trip_run_mobility_matrix = (
             trip_run_mobility_matrix.set_index(mobility_index_names)
         )
+    
         probability_values_to_use = (
             this_trip_run_probabilities_extended[trip_name].values
         )
-
+   
+        
+        
         for mobility_quantity in mobility_quantities:
+            if mobility_quantity not in location_connections_headers:
+                run_mobility_matrix[mobility_quantity] += (
+                    trip_run_mobility_matrix[mobility_quantity].values
+                    *
+                    probability_values_to_use
+                )
 
-            run_mobility_matrix[mobility_quantity] += (
-                trip_run_mobility_matrix[mobility_quantity].values
-                *
-                probability_values_to_use
-            )
+    location_connections = cook.read_table_from_database(
+        f'{scenario}_location_connections',
+        f'{output_folder}/{groupfile_name}.sqlite3').set_index(['From', 'To'])
+    for start_location in location_names:
+        for end_location in location_names:
+
+            run_mobility_matrix.loc[
+                (start_location, end_location),
+                location_connections_headers
+                ] = location_connections.loc[
+                    (start_location, end_location)].values
+
+
+
+
     cook.save_dataframe(
         run_mobility_matrix, f'{scenario}_run_mobility_matrix',
         groupfile_name, output_folder, parameters

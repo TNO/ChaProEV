@@ -7,7 +7,7 @@ It contains the following functions:
     associated hour numbers, based on values found in the
     parameters file.
 2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
-timestamps of the run as index (and hour numbers as a column).
+time tags of the run as index (and hour numbers as a column).
 3. **get_day_type:** Tells us the date type of a given time_tag.
 4. **add_day_type_to_time_stamped_dataframe:** Adds a column with the date type
 to a time-stamped_dataframe
@@ -115,7 +115,7 @@ def get_time_stamped_dataframe(parameters):
     time_stamped_dataframe = pd.DataFrame(
         run_hour_numbers, columns=['Hour Number'], index=run_range
     )
-    time_stamped_dataframe.index.name = 'Timestamp'
+    time_stamped_dataframe.index.name = 'Time tag'
 
     time_stamped_dataframe['SPINE_hour_number'] = (
         [f't{hour_number:04}' for hour_number in run_hour_numbers]

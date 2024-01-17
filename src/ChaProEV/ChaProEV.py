@@ -48,10 +48,10 @@ if __name__ == '__main__':
 
             legs, locations, trips = define.declare_all_instances(
                 parameters)
-            for trip in trips:
-                print(trip.name)
-                print(trip.run_mobility_matrix)
-            exit()
+            # for trip in trips:
+            #     print(trip.name)
+            #     print(trip.run_mobility_matrix)
+            # exit()
             mobility.make_mobility_data(parameters)
             consumption.create_consumption_tables(parameters)
 

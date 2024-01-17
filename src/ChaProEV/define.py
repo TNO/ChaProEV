@@ -285,6 +285,21 @@ class Trip:
                     +
                     np.array(current_leg_end_probabilities) * weighted_distance
             )
+            # We also track the duration, distance, and wrighted distance
+            # Note that these could change with time as well (for example
+            # with a correction factor added at the run level)
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Duration (hours)'] = (
+                    time_driving
+                )
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Distance (km)'] = (
+                    distance
+                )
+            trip.mobility_matrix.loc[
+                (start_location, end_location), 'Weighted distance (km)'] = (
+                    weighted_distance
+                )
 
             # Finally, we update the previous leg values with the current ones
             previous_leg_start_probabilities = current_leg_start_probabilities
@@ -340,15 +355,15 @@ class Trip:
         # as they will be omitted, so we put generic values.
         trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
         trip_end = datetime.datetime(2001, 1, 2, trip.day_start_hour)
-        trip_time_stamps = pd.date_range(
+        trip_time_tags = pd.date_range(
             start=trip_start, end=trip_end, freq=trip_frequency,
             inclusive='left'
-            # We want the start timestamp, but not the end one, so we need
+            # We want the start timetag, but not the end one, so we need
             # to say it is closed left
         )
         trip_time_index_tuples = [
-            (time_stamp.hour, time_stamp.minute, time_stamp.second)
-            for time_stamp in trip_time_stamps
+            (time_tag.hour, time_tag.minute, time_tag.second)
+            for time_tag in trip_time_tags
         ]
 
         trip.time_index = pd.MultiIndex.from_tuples(
@@ -397,13 +412,43 @@ def declare_all_instances(parameters):
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
+    locations = declare_class_instances(Location, parameters)
     legs = declare_class_instances(Leg, parameters)
 
-    locations = declare_class_instances(Location, parameters)
+    # We want to get the location connections
+    location_connections_headers = parameters[
+            'mobility_module']['location_connections_headers']
+    location_connections_index_tuples = [
+        (start_location.name, end_location.name)
+        for start_location in locations
+        for end_location in locations
+    ]
+    location_connections_index = pd.MultiIndex.from_tuples(
+        location_connections_index_tuples, names=['From', 'To']
+    )
+    location_connections = pd.DataFrame(
+        columns=location_connections_headers,
+        index=location_connections_index
+    )
+    road_type_weights = np.array(
+                parameters['transport_factors']['weights'])
+        
+    for leg in legs:
+        road_type_factor = sum(leg.road_type_mix * road_type_weights)
+        location_connections.loc[leg.start_location, leg.end_location] = (
+            leg.duration, leg.distance, road_type_factor*leg.distance
+        )
+    cook.save_dataframe(
+        location_connections, f'{scenario}_location_connections',
+        groupfile_name, output_folder, parameters)
+    
+
+
+    
 
     trips = declare_class_instances(Trip, parameters)
 
-    # We want to save the mbolity matrixes
+    # We want to save the moblity matrixes
     for trip in trips:
         mobility_table_name = (
             f'{scenario}_{trip.name}_mobility_matrix'

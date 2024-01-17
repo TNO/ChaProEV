@@ -416,7 +416,7 @@ mix = [0.8, 0.2]
 
 [vehicle]
 name = 'car'
-kilometers_column_for_consumption = 'Departures'
+kilometers_column_for_consumption = 'Arrivals'
 use_weighted = false
 battery_capacity = 80  # kWh
 solar_panel_size_kWp = 0  # kWp
@@ -655,8 +655,12 @@ mobility_quantities = [
     'Departures weighted kilometers',
     'Arrivals amount', 'Arrivals kilometers',
     'Arrivals weighted kilometers',
-    
+    'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
 ]
+
+location_connections_headers = [
+    'Duration (hours)', 'Distance (km)', 'Weighted distance (km)']
+
 mobility_index_names = ['From', 'To', 'Time tag']
 
 
