@@ -100,12 +100,32 @@ charge_drawn_from_network = pd.DataFrame(
 )
 start_time = datetime.datetime.now()
 loop_start = start_time
+too = 0
 for time_tag_index, time_tag in enumerate(run_range):
     loop_end = datetime.datetime.now()
-    # print(time_tag)
+    # thresh = 80
+    
+    # if len(battery_space['home'].columns.values)>0:
+    #     if max(battery_space['home'].columns.values) > thresh:
+            
+    #         print(time_tag)
+    #         # print(battery_space['home'].columns.values)
+    #         for location_name in location_names:
+    #             above_tresh = [
+    #                 space 
+    #                 for space in battery_space[location_name].columns.values 
+    #                 if space>thresh
+    #             ]
+    #             if len(above_tresh) > 0:
+    #                 print(location_name)
+    #                 print(battery_space[location_name].loc[time_tag][above_tresh])
+    #         too += 1
+    #         if too > 6:
+    #             exit()
     # if time_tag_index > 2000 :
     #     exit()
-    # print((loop_end-loop_start).total_seconds())
+    print(time_tag)
+    print((loop_end-loop_start).total_seconds())
     loop_start = datetime.datetime.now()
     
     
@@ -120,6 +140,7 @@ for time_tag_index, time_tag in enumerate(run_range):
             battery_space[start_location] = (
                 battery_space[start_location].fillna(0)
             )
+            possible_battery_spaces = [0]
         else:
             possible_battery_spaces = (
                 sorted(battery_space[start_location].columns.values)
@@ -171,11 +192,12 @@ for time_tag_index, time_tag in enumerate(run_range):
             # Float precision can mean that we have exteremly small values
             # that are actually zero
             departures_threshold = charging_parameters['departures_threshold']
-            while departures > departures_threshold :
-                attempts += 1
+            for battery_space_value in possible_battery_spaces:
+            # while departures > departures_threshold :
+            #     attempts += 1
                 
                 #     exit()
-                for battery_space_value in possible_battery_spaces:
+                if departures > departures_threshold :
                     # print('Possible', possible_battery_spaces)
                     
                     # print(departures)
@@ -205,6 +227,15 @@ for time_tag_index, time_tag in enumerate(run_range):
                     arriving_amounts.append(this_battery_space_departures)
                     # print(battery_space[start_location].loc[
                     #         time_tag][battery_space_value].values[0])
+                    # print('TT', time_tag)
+                    # print('Dep', departures)
+                    # print('BS val', battery_space_value)
+                    # print('BS dep', this_battery_space_departures)
+                    # print(battery_space[start_location].loc[
+                    #         time_tag][battery_space_value].values[0])
+                    # print('ga', departures-this_battery_space_departures)
+                    # print('go', (departures-this_battery_space_departures)>departures_threshold)
+                    # print(possible_battery_spaces)
                     departures -= this_battery_space_departures
                     this_battery_space_consumption = (
                         run_mobility_matrix.loc[
@@ -213,7 +244,15 @@ for time_tag_index, time_tag in enumerate(run_range):
                         *
                         electricity_consumption_kWh_per_km
                     )
-                    
+                    # if (battery_space_value+this_battery_space_consumption) > thresh+5:
+                    #     print('YT')
+                    #     print(time_tag)
+                    #     print(battery_space_value)
+                    #     print(this_battery_space_consumption)
+                    #     print(battery_space[start_location].loc[time_tag])
+                    #     print(departures)
+                    #     print(this_battery_space_departures)
+                    #     exit()
                     arriving_battery_spaces.append(
                         battery_space_value+this_battery_space_consumption)
                     # print(this_battery_space_consumption)
@@ -237,12 +276,12 @@ for time_tag_index, time_tag in enumerate(run_range):
                     # print(battery_space[start_location])
                     # exit()
             # print('Arriving', arriving_battery_spaces, arriving_amounts)
-            if attempts > 10:
-                    print(attempts)
-                    print(time_tag)
-                    print(start_location)
-                    print(end_location)
-                    print(departures)
+            # if attempts > 10:
+            #         print(attempts)
+            #         print(time_tag)
+            #         print(start_location)
+            #         print(end_location)
+            #         print(departures)
             if travelling_time:
                 # print('TT', travelling_time)
                 if len(arriving_battery_spaces) > 0 :
@@ -368,7 +407,7 @@ for time_tag_index, time_tag in enumerate(run_range):
     # Have  arrivals not connect at all if partial (until leave)
     # Or assume they move around get connected later
     # Charging
-    # print('Batt',(datetime.datetime.now()-batt_start).total_seconds())
+    print('Batt',(datetime.datetime.now()-batt_start).total_seconds())
     cha_start = datetime.datetime.now()
     for charging_location in location_names:
         charging_location_parameters = location_parameters[charging_location]
@@ -474,7 +513,7 @@ for time_tag_index, time_tag in enumerate(run_range):
     #             boo.loc[:, noo] = boo.loc[noo] + boo[colo]
     #     # print(boo)
     #     exit()
-    # print('Cha',(datetime.datetime.now()-cha_start).total_seconds())
+    print('Cha',(datetime.datetime.now()-cha_start).total_seconds())
 for location_name in location_names:
     # print(battery_space[location_name].columns)
     battery_space[location_name].columns = battery_space[location_name].columns.astype(str)
