@@ -1,5 +1,8 @@
 
 
+charger efficiency for network demand?
+
+
 do it per trip
 battery level trigger (below this, will charge)
 

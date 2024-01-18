@@ -337,6 +337,7 @@ for time_tag_index, time_tag in enumerate(run_range):
     
     # Charging
     for charging_location in location_names:
+        charging_location_parameters = location_parameters[charging_location]
         print(battery_space[charging_location].loc[time_tag])
         # exit()
         # boo = pd.DataFrame(index=range(3))
@@ -348,12 +349,12 @@ for time_tag_index, time_tag in enumerate(run_range):
         if charging_location == 'home':
                 print(battery_space[charging_location].columns)
                 print(battery_space['home'].iloc[0:time_tag_index+1])
-        if time_tag_index > 4:
+        if time_tag_index > 48:
                 print(time_tag)
         for this_battery_space in battery_space[charging_location].columns:
             
-            percent_charging = 0.42
-            max_charge = 0.02
+            percent_charging = charging_location_parameters['connectivity']
+            max_charge = charging_location_parameters['charging_power']
             amount_charged = min(max_charge, this_battery_space)
             new_battery_space = this_battery_space - amount_charged
             # print('New battery space', new_battery_space)
@@ -390,8 +391,8 @@ for time_tag_index, time_tag in enumerate(run_range):
             ]
         battery_space[charging_location] = battery_space[charging_location].reindex(
                     sorted(battery_space[charging_location].columns), axis=1)
-        if time_tag_index > 4:
-            print(battery_space['home'].iloc[0:time_tag_index+1])
+        if time_tag_index > 48:
+            print(battery_space['work'].iloc[0:time_tag_index+1])
             exit()
     if time_tag_index > 240:
         # battery_space['home'] = battery_space['home'].loc[:,(battery_space['home']!=0).any(axis=0)]
