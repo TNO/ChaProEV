@@ -2,6 +2,7 @@
 import math
 import datetime
 import pandas as pd
+import numpy as np
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -88,13 +89,30 @@ run_mobility_matrix['Time tag'] = pd.to_datetime(
     run_mobility_matrix['Time tag'])
 run_mobility_matrix = run_mobility_matrix.set_index(
     ['From', 'To', 'Time tag'])
-print(run_mobility_matrix.loc['home', 'work'])
+# print(run_mobility_matrix.loc['home', 'work'])
+charge_drawn_by_vehicles = pd.DataFrame(
+    np.zeros((len(run_range), len(location_names))),
+    columns=location_names, index=run_range
+)
+charge_drawn_from_network = pd.DataFrame(
+    np.zeros((len(run_range), len(location_names))),
+    columns=location_names, index=run_range
+)
+start_time = datetime.datetime.now()
+loop_start = start_time
 for time_tag_index, time_tag in enumerate(run_range):
-    print(time_tag)
-
-
+    loop_end = datetime.datetime.now()
+    # print(time_tag)
+    # if time_tag_index > 2000 :
+    #     exit()
+    # print((loop_end-loop_start).total_seconds())
+    loop_start = datetime.datetime.now()
+    
+    
+    batt_start = datetime.datetime.now()
     # print(location_split.loc[time_tag])
     for start_location in location_names:
+        batt_loc_start = datetime.datetime.now()
         if time_tag_index == 0:
             battery_space[start_location].loc[time_tag, 0] = (
                 location_split.loc[time_tag][start_location]
@@ -155,11 +173,8 @@ for time_tag_index, time_tag in enumerate(run_range):
             departures_threshold = charging_parameters['departures_threshold']
             while departures > departures_threshold :
                 attempts += 1
-                if attempts > 100:
-                    print(start_location)
-                    print(end_location)
-                    print(departures)
-                    exit()
+                
+                #     exit()
                 for battery_space_value in possible_battery_spaces:
                     # print('Possible', possible_battery_spaces)
                     
@@ -222,6 +237,12 @@ for time_tag_index, time_tag in enumerate(run_range):
                     # print(battery_space[start_location])
                     # exit()
             # print('Arriving', arriving_battery_spaces, arriving_amounts)
+            if attempts > 10:
+                    print(attempts)
+                    print(time_tag)
+                    print(start_location)
+                    print(end_location)
+                    print(departures)
             if travelling_time:
                 # print('TT', travelling_time)
                 if len(arriving_battery_spaces) > 0 :
@@ -256,21 +277,26 @@ for time_tag_index, time_tag in enumerate(run_range):
                         # print(first_arrival_shift_proportion)
                         # row_to_modify = battery_space[end_location].iloc[time_tag_index+first_arrival_shift]
                         # row_to_modify[arriving_battery_space] = 2
-                        battery_space[end_location].loc[
-                            time_tag+first_arrival_shift_time,
-                                arriving_battery_space
-                            ] = (
-                                battery_space[end_location].loc[
-                                    time_tag+first_arrival_shift_time,
-                                        arriving_battery_space
-                                    ].values[0]
-                                +
-                                (
-                                    arriving_amount
-                                    * 
-                                    first_arrival_shift_proportion
+                            
+                        # We check if the arrivals are in the run range
+                        # if they are not, then we don't take them into
+                        # account (as the are not in the run)
+                        if time_tag+first_arrival_shift_time <= run_range[-1]:
+                            battery_space[end_location].loc[
+                                time_tag+first_arrival_shift_time,
+                                    arriving_battery_space
+                                ] = (
+                                    battery_space[end_location].loc[
+                                        time_tag+first_arrival_shift_time,
+                                            arriving_battery_space
+                                        ].values[0]
+                                    +
+                                    (
+                                        arriving_amount
+                                        * 
+                                        first_arrival_shift_proportion
+                                    )
                                 )
-                            )
                         # print(arriving_battery_space)
                         # print(second_arrival_shift_time)
                         # print(start_location)
@@ -288,21 +314,26 @@ for time_tag_index, time_tag in enumerate(run_range):
                         #             * 
                         #             (1-first_arrival_shift_proportion)
                         #         )
-                        battery_space[end_location].loc[
-                            time_tag+second_arrival_shift_time,
-                                arriving_battery_space
-                            ] = (
-                                battery_space[end_location].loc[
-                                    time_tag+second_arrival_shift_time,
-                                        arriving_battery_space
-                                    ].values[0]
-                                +
-                                (
-                                    arriving_amount
-                                    * 
-                                    (1-first_arrival_shift_proportion)
+                            
+                        # We check if the arrivals are in the run range
+                        # if they are not, then we don't take them into
+                        # account (as the are not in the run)
+                        if time_tag+second_arrival_shift_time <= run_range[-1]:
+                            battery_space[end_location].loc[
+                                time_tag+second_arrival_shift_time,
+                                    arriving_battery_space
+                                ] = (
+                                    battery_space[end_location].loc[
+                                        time_tag+second_arrival_shift_time,
+                                            arriving_battery_space
+                                        ].values[0]
+                                    +
+                                    (
+                                        arriving_amount
+                                        * 
+                                        (1-first_arrival_shift_proportion)
+                                    )
                                 )
-                            )
                         # battery_space[end_location].iloc[
                         #     time_tag_index+first_arrival_shift+1][
                         #         arriving_battery_space
@@ -328,17 +359,20 @@ for time_tag_index, time_tag in enumerate(run_range):
         battery_space[start_location] = battery_space[start_location].reindex(
                     sorted(battery_space[start_location].columns), axis=1)
             
-        
+        # print(start_location, (datetime.datetime.now()-batt_loc_start).total_seconds())
             # print(departures)
         # print(start_location)
         # print(battery_space[start_location])
         # print(location_split.loc[time_tag][start_location])
         # print(run_mobility_matrix.loc[start_location,:,time_tag]['Departures amount'])
-    
+    # Have  arrivals not connect at all if partial (until leave)
+    # Or assume they move around get connected later
     # Charging
+    # print('Batt',(datetime.datetime.now()-batt_start).total_seconds())
+    cha_start = datetime.datetime.now()
     for charging_location in location_names:
         charging_location_parameters = location_parameters[charging_location]
-        print(battery_space[charging_location].loc[time_tag])
+        # print(battery_space[charging_location].loc[time_tag])
         # exit()
         # boo = pd.DataFrame(index=range(3))
         # boo[0] = 1
@@ -346,16 +380,34 @@ for time_tag_index, time_tag in enumerate(run_range):
         # print(boo)
         # drop = 5/7
         # print('zzz')
-        if charging_location == 'home':
-                print(battery_space[charging_location].columns)
-                print(battery_space['home'].iloc[0:time_tag_index+1])
-        if time_tag_index > 48:
-                print(time_tag)
+        # if charging_location == 'home':
+        #         print(battery_space[charging_location].columns)
+        #         print(battery_space['home'].iloc[0:time_tag_index+1])
+        # if time_tag_index > 48:
+        #         print(time_tag)
         for this_battery_space in battery_space[charging_location].columns:
-            
+        
             percent_charging = charging_location_parameters['connectivity']
             max_charge = charging_location_parameters['charging_power']
             amount_charged = min(max_charge, this_battery_space)
+            charger_efficiency = charging_location_parameters['charger_efficiency']
+            amount_drawn_from_network = amount_charged / charger_efficiency
+            old_battery_space_occupancy = (
+                battery_space[charging_location]
+                .loc[time_tag][this_battery_space]
+                .values[0]
+            )
+            charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
+                charge_drawn_by_vehicles.loc[time_tag, charging_location]
+                +
+                amount_charged * old_battery_space_occupancy * percent_charging
+            )
+            charge_drawn_from_network.loc[time_tag, charging_location] = (
+                charge_drawn_from_network.loc[time_tag, charging_location]
+                +
+                amount_drawn_from_network
+                * old_battery_space_occupancy * percent_charging
+            )
             new_battery_space = this_battery_space - amount_charged
             # print('New battery space', new_battery_space)
             # print(this_battery_space)
@@ -363,19 +415,30 @@ for time_tag_index, time_tag in enumerate(run_range):
                 battery_space[charging_location][new_battery_space] = 0
             # print(battery_space[charging_location].iloc[0:time_tag_index])
             
-            old_battery_space_occupancy = (
-                battery_space[charging_location]
-                .loc[time_tag, this_battery_space]
-                .values[0]
-            )
+            
             # print(old_battery_space_occupancy)
             
             # print(colo, noo)
             # if  >= 0:
+            # print('NBS', new_battery_space)
+            # print(battery_space[charging_location]
+            #     .loc[time_tag, this_battery_space])
+            # print('Coco')
+            # print(battery_space[charging_location]
+            #     .loc[time_tag][this_battery_space])
+            # print('OBA', old_battery_space_occupancy)
+            # print(new_battery_space)
+            # print('NHL', old_battery_space_occupancy*percent_charging)
+            # print(percent_charging)
+            # print(charging_location)
+            # print(battery_space[charging_location].loc[
+            #     time_tag, new_battery_space] )
+            # print(battery_space[charging_location].loc[
+            #     time_tag] )
             battery_space[charging_location].loc[
                 time_tag, new_battery_space] =  (
                     battery_space[charging_location].loc[
-                        time_tag, new_battery_space] .values[0]
+                        time_tag, new_battery_space].values[0]
                     +
                     old_battery_space_occupancy * percent_charging
             ) 
@@ -391,24 +454,47 @@ for time_tag_index, time_tag in enumerate(run_range):
             ]
         battery_space[charging_location] = battery_space[charging_location].reindex(
                     sorted(battery_space[charging_location].columns), axis=1)
-        if time_tag_index > 48:
-            print(battery_space['work'].iloc[0:time_tag_index+1])
-            exit()
-    if time_tag_index > 240:
-        # battery_space['home'] = battery_space['home'].loc[:,(battery_space['home']!=0).any(axis=0)]
-        # print(battery_space['home'].iloc[240-24:240])
-        # print(battery_space['home'].columns.values)
-        # print(battery_space['home'].columns.values[1])
-        # print(battery_space['home'].columns.values[1]==2.4)
-        drop = 5/7
-        print('zzz')
-        for colo in boo.columns:
-            noo = colo - drop
-            print(colo, noo)
-            if noo >= 0:
-                boo.loc[:, noo] = boo.loc[noo] + boo[colo]
-        # print(boo)
-        exit()
+        # if time_tag_index > 240:
+        #     print(battery_space['work'].iloc[0:time_tag_index+1])
+        #     print(charge_drawn_from_network.iloc[0:time_tag_index+1])
+        #     print(charge_drawn_by_vehicles.iloc[0:time_tag_index+1])
+        #     exit()
+    # if time_tag_index > 240:
+    #     # battery_space['home'] = battery_space['home'].loc[:,(battery_space['home']!=0).any(axis=0)]
+    #     # print(battery_space['home'].iloc[240-24:240])
+    #     # print(battery_space['home'].columns.values)
+    #     # print(battery_space['home'].columns.values[1])
+    #     # print(battery_space['home'].columns.values[1]==2.4)
+    #     drop = 5/7
+    #     print('zzz')
+    #     for colo in boo.columns:
+    #         noo = colo - drop
+    #         print(colo, noo)
+    #         if noo >= 0:
+    #             boo.loc[:, noo] = boo.loc[noo] + boo[colo]
+    #     # print(boo)
+    #     exit()
+    # print('Cha',(datetime.datetime.now()-cha_start).total_seconds())
+for location_name in location_names:
+    # print(battery_space[location_name].columns)
+    battery_space[location_name].columns = battery_space[location_name].columns.astype(str)
+    cook.save_dataframe(
+        battery_space[location_name],
+        f'{scenario}_{location_name}_battery_space',
+        groupfile_name, output_folder, parameters
+    )
+# print(charge_drawn_from_network)
+cook.save_dataframe(
+        charge_drawn_from_network,
+        f'{scenario}_charge_drawn_from_network',
+        groupfile_name, output_folder, parameters
+    )
+# print(charge_drawn_by_vehicles)
+cook.save_dataframe(
+        charge_drawn_by_vehicles,
+        f'{scenario}_charge_drawn_by_vehicles',
+        groupfile_name, output_folder, parameters
+    )
 exit()
 
 consumption_matrix = cook.read_table_from_database(
