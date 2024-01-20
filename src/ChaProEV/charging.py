@@ -80,7 +80,10 @@ for location_name in location_names:
     # battery_space[0] = 0
     battery_space[location_name] = battery_space[location_name].set_index(
         ['Time Tag', 'Hour Number', 'SPINE_Hour_Number'])
-    battery_space[location_name][0] = location_split.loc[run_range[0]][location_name]
+    battery_space[location_name][0] = 0 
+    battery_space[location_name][0].iloc[0] = location_split.loc[run_range[0]][location_name]
+# print(battery_space['home'])
+# exit()
     
     # battery_space.loc[run_range[2], 5/7] = 19.89
     # battery_space = battery_space.fillna(0)
@@ -787,6 +790,7 @@ for time_tag_index, time_tag in enumerate(run_range):
     #     exit()
     cha_start = datetime.datetime.now()
     for charging_location in location_names:
+        cha_loc = datetime.datetime.now()
         charging_location_parameters = location_parameters[charging_location]
         # print(battery_space[charging_location].loc[time_tag])
         # exit()
@@ -804,13 +808,20 @@ for time_tag_index, time_tag in enumerate(run_range):
         # if time_tag_index>24:
         #     exit()
         
-            # print(time_tag)
-            # print(battery_space[charging_location].columns.values)
+        tbs = []
+        # if time_tag_index == 14:
+        #     print(time_tag)
+        #     exit()
+        # print(time_tag)
+        # print(battery_space['home'].iloc[0:15])
         for this_battery_space in battery_space[charging_location].columns:
+
+            tbs_start = datetime.datetime.now()
         
             percent_charging = charging_location_parameters['connectivity']
             max_charge = charging_location_parameters['charging_power']
             amount_charged = min(max_charge, this_battery_space)
+          
             charger_efficiency = charging_location_parameters['charger_efficiency']
             amount_drawn_from_network = amount_charged / charger_efficiency
             # if charging_location =='home':
@@ -824,6 +835,9 @@ for time_tag_index, time_tag in enumerate(run_range):
                 .values[0]
             )
             
+            
+
+
             charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
                 charge_drawn_by_vehicles.loc[time_tag, charging_location]
                 +
@@ -835,6 +849,7 @@ for time_tag_index, time_tag in enumerate(run_range):
                 amount_drawn_from_network
                 * old_battery_space_occupancy * percent_charging
             )
+            
             # if charging_location == 'home':
             #     print(charge_drawn_by_vehicles.loc[time_tag, charging_location] )
 
@@ -844,6 +859,9 @@ for time_tag_index, time_tag in enumerate(run_range):
             #     print('occu', old_battery_space_occupancy)
             #     print(charge_drawn_by_vehicles.loc[time_tag, charging_location])
             new_battery_space = this_battery_space - amount_charged
+
+
+            
             # print('New battery space', new_battery_space)
             # print(this_battery_space)
             if new_battery_space not in battery_space[charging_location].columns:
@@ -852,7 +870,7 @@ for time_tag_index, time_tag in enumerate(run_range):
             
             
             # print(old_battery_space_occupancy)
-            
+            # print((datetime.datetime.now()-tbs_start).total_seconds())
             # print(colo, noo)
             # if  >= 0:
             # print('NBS', new_battery_space)
@@ -877,6 +895,9 @@ for time_tag_index, time_tag in enumerate(run_range):
                     +
                     old_battery_space_occupancy * percent_charging
             ) 
+            # print(battery_space[charging_location].loc[
+            #     time_tag])
+            # print('wa', (datetime.datetime.now()-tbs_start).total_seconds())
             battery_space[charging_location].loc[
                 time_tag, this_battery_space] = (
                     battery_space[charging_location].loc[
@@ -884,11 +905,27 @@ for time_tag_index, time_tag in enumerate(run_range):
                     -
                     old_battery_space_occupancy * percent_charging
             )
+            # print('too', (datetime.datetime.now()-tbs_start).total_seconds())
+            # tbs.append((datetime.datetime.now()-tbs_start).total_seconds())
+
+        cha_time = (datetime.datetime.now()-cha_loc).total_seconds()
+        if cha_time > 1:
+            print(charging_location, cha_time)
+            print(battery_space[charging_location].columns.values)
+            # print(tbs)
+
+            exit()
+            input()
         # battery_space[charging_location] = battery_space[charging_location].loc[
         #         :, (battery_space[charging_location]!=0).any(axis=0)
         #     ]
         battery_space[charging_location] = battery_space[charging_location].reindex(
                     sorted(battery_space[charging_location].columns), axis=1)
+        
+
+        # if time_tag_index == 13:
+        #     if charging_location == 'home':
+        #         exit()
         # if time_tag_index > 240:
         #     print(battery_space['work'].iloc[0:time_tag_index+1])
         #     print(charge_drawn_from_network.iloc[0:time_tag_index+1])
