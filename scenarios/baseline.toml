@@ -182,7 +182,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 [locations.holiday]
-connectivity = 0.1
+connectivity = 1
 charging_power = 22  # kW
 charger_efficiency = 0.85
 latitude = 53.0
