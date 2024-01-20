@@ -18,73 +18,8 @@ except ModuleNotFoundError:
     from ChaProEV import mobility
 # So that it works both as a standalone (1st) and as a package (2nd)  
 
-def get_charging_profile(parameters):
-    charging_parameters = parameters['charging']
-    vehicle_parameters = parameters['vehicle']
-    use_weighted_km = vehicle_parameters['use_weighted']
-    if use_weighted_km:
-        distance_header = 'Weighted distance (km)'
-    else:
-        distance_header = 'Distance (km)'
-    electricity_consumption_kWh_per_km = vehicle_parameters[
-        'base_consumption_per_km']['electricity_kWh']
-    run_range, run_hour_numbers = run_time.get_time_range(parameters)
-    SPINE_hour_numbers = [
-         f't{hour_number:04}' for hour_number in run_hour_numbers]
-    location_parameters = parameters['locations']
-    location_names = [
-        location_name for location_name in location_parameters
-    ]
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
-    
-    file_parameters = parameters['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
-    location_split_table_name = f'{scenario}_location_split'
-    location_split = cook.read_table_from_database(
-        location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
-    )
-    location_split['Time tag'] = pd.to_datetime(location_split['Time tag'])
-    location_split = location_split.set_index('Time tag')
-
-    # We create a DataFrame to store the amount/precentage of vehicles
-    # with a given battery space (in columns) for a given location
-    # and time tag (in the index)
-    battery_space_occupation_index_tuples = [
-        (location_name, time_tag)
-        for location_name in location_names
-        for time_tag in run_range
-    ]
-    battery_space_occupation_index = pd.MultiIndex.from_tuples(
-        battery_space_occupation_index_tuples, names=['Location', 'Time tag']
-    )
-    battery_space_occupation = pd.DataFrame(
-        np.zeros((len(battery_space_occupation_index), 1)),
-        columns=[0], index=battery_space_occupation_index
-    )
-   
-    # We set the initial condition by assuming the vehicles are fully charged
-    # (i.e. no battery space) for their initial locations
-    for location_name in location_names:
-        battery_space_occupation.loc[
-            (location_name, run_range[0]), 0] = (
-                location_split.loc[run_range[0]][location_name]
-            )
 
 
-
-
-if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-    charging_profile = get_charging_profile(parameters)
-    
-    exit()                           
-                                            
-                                            
-                                            
 # do it per trip
 # battery level trigger (below this, will charge)
 
@@ -117,8 +52,6 @@ location_parameters = parameters['locations']
 location_names = [
     location_name for location_name in location_parameters
 ]
-
-
 scenario = parameters['scenario']
 case_name = parameters['case_name']
 
