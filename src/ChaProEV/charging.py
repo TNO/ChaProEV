@@ -17,17 +17,313 @@ try:
 except ModuleNotFoundError:
     from ChaProEV import mobility
 # So that it works both as a standalone (1st) and as a package (2nd)  
+    
+
+def travel_space_occupation(
+        battery_space_occupation, time_tag, time_tag_index,
+        run_range, run_mobility_matrix,
+        parameters):
+
+
+        vehicle_parameters = parameters['vehicle']
+        use_weighted_km = vehicle_parameters['use_weighted']
+        if use_weighted_km:
+            distance_header = 'Weighted distance (km)'
+        else:
+            distance_header = 'Distance (km)'
+        electricity_consumption_kWh_per_km = vehicle_parameters[
+            'base_consumption_per_km']['electricity_kWh']
+        
+        # Replace the na values by zero. These appear if we added a
+        # new column with a given battery space
+        battery_space_occupation = battery_space_occupation.fillna(0)
+        if time_tag > run_range[0] :
+            battery_space_occupation.loc[(slice(None),time_tag), :] = (
+                
+                battery_space_occupation.loc[
+                    (slice(None), time_tag),:].values
+                +
+                battery_space_occupation.loc[
+                    (slice(None), run_range[time_tag_index-1]),:].values
+            )
+
+        # We delete columns where all the amounts per battery space are zero
+        # (for example, ones where we had a battery space that was
+        # removed because of charging
+        battery_space_occupation = battery_space_occupation.loc[
+            :, (battery_space_occupation!=0).any(axis=0)
+        ]
+        # We ensure that the columns of the battery space
+        # array are ordered
+        battery_space_occupation = battery_space_occupation.reindex(
+                    sorted(battery_space_occupation.columns), axis=1)
+        
+        # We look at which battery spaces there are.
+        # The above command sorted them. 
+        # The lowest battery spaces will be first.
+        # These are the ones we assume aremore likely to leave,
+        # as others might want to charge first
+        departing_battery_spaces = battery_space_occupation.columns.values
+        print('Not needed????')
+
+        # run_range[time_tag_index-1]
+        print('previous not needed anymore: ')
+
+        # For each leg (start/end location combination), we
+        # look up the consumption
+        leg_consumptions = (
+            run_mobility_matrix.loc[: , :, time_tag][distance_header]
+            *
+            electricity_consumption_kWh_per_km
+        )
+
+        # We also look up how many vehicles depart
+        departures = (
+            run_mobility_matrix.loc[:, :, time_tag]['Departures amount']
+        )
+        departures_from = departures.groupby(level=['From']).sum()
+        departures_to = departures.groupby(level=['To']).sum()
+
+        # We also need the duration of the lega
+        travelling_times = run_mobility_matrix.loc[:, :, time_tag][
+                            'Duration (hours)']
+        
+        # We want to figure out the battery spaces departures at our time tag
+        # and th arrivals that will result from these departures
+        # We need to know the current battery space occupation
+        # The index of this current battery space occupation needs to
+        # be the same and in the same order as the departures from, so that
+        # we can perform operations such as additions and multiplications
+        current_battery_space_occupation = (
+             battery_space_occupation.loc[(slice(None), time_tag),:]
+             .sort_index().set_index(departures_from.index)
+        )
+        # We also need a cumulative (up to a given battery space)
+        cumulative_current_battery_space_occupation = (
+             battery_space_occupation.loc[(slice(None), time_tag),:]
+             .cumsum(axis=1).sort_index().set_index(departures_from.index)
+        )
+        # The battery space departures have two elements.
+        # The first is for cases where the departures from a given location
+        # are larger than the cumulative sum. In that case, the whole block
+        # of vehicles with that battery space departs
+        full_block_departures = (
+            cumulative_current_battery_space_occupation
+            .lt(departures_from, axis=0)
+            *
+            current_battery_space_occupation
+        )
+        # The second term is for cases wher the departures amount is lower
+        # (or equal) to the cumulative sum. In that case, the departing amount
+        # is the amount of departures minus the cumulative sum up to the
+        # previous block (which is equal to the cumulative sum minus the
+        # block's value, meaning that we add the block's value and remove
+        # the cumulative sum)
+        partial_block_departures = (
+            cumulative_current_battery_space_occupation
+            .ge(departures_from, axis=0)
+            *
+            (
+                current_battery_space_occupation
+                -
+                cumulative_current_battery_space_occupation).add(
+                    departures_from, axis='index'
+                )
+        )
+        # Note that we have to use .add to add a Series to a DataFrame
+        # We also have to set negative values to zero (i.e. for blocks that
+        # will not contribute at all)
+        partial_block_departures[partial_block_departures<0] = 0
+        # We add the two elements:
+        battery_spaces_departures = (
+             full_block_departures + partial_block_departures
+        )
+        
+        # print(battery_space_occupation.loc[(slice(None), time_tag),:].values )
+        # exit()
+        battery_space_occupation.loc[(slice(None), time_tag),:] = (
+            battery_space_occupation.loc[(slice(None), time_tag),:].values
+            # .set_index(departures_from.index)
+            -
+            battery_spaces_departures.values
+        )
+        print(battery_space_occupation.loc[(slice(None), time_tag),:])
+        # exit()
+
+        # We also want to know where these departures go to.
+        # We need a departures From To matrix
+        departures_matrix = (
+             departures.reset_index().pivot_table(index='From', columns='To')
+        )
+        # We want this as percents 
+        departures_matrix_percents = (
+             departures_matrix.div(departures_matrix.sum(axis=1), axis=0)
+             .fillna(0)
+        )
+        # print(departures_matrix_percents)
+        # Make matrix for travlling times, then for proportions to shift N 
+        # Then multiply (piecewise, not matrix) with departures_matrix_percents
+
+        # But the time tag shifts also diifer!
+        # exit()
+        # If there are no departures from a given location,
+        # this would get divisions by zero, which we set to zero (as there
+        # are not dpeartures from there)
+
+        # We transpose this and mulitply it by the departures matrix
+        battery_spaces_arrivals = (
+             departures_matrix_percents.T.dot(battery_spaces_departures)
+        ).droplevel(0) # We drop the extra level that appears
+
+
+        print(battery_spaces_departures)
+        print(battery_spaces_arrivals)
+
+        # if time_tag == run_range[0]:
+        #     battery_space_occupation[1] = 0.00000000000001
+            # print(battery_space_occupation)
+            # exit()
+        # print(battery_spaces_arrivals[0])
+        # exit()
+        battery_space_occupation.loc[(slice(None), time_tag),:] = (
+            battery_space_occupation.loc[(slice(None), time_tag),:].values
+            # .set_index(departures_from.index)
+            +
+            battery_spaces_arrivals.values
+        )
+        print(battery_space_occupation.loc[(slice(None), time_tag),:])
+        # We need to know in which slots the vehicles
+        # will arrive at their destination and the proprtion
+        # of these slots
+        # print(travelling_times)
+        # print(battery_spaces_arrivals)
+        # exit()
+        # travelling_time = float(travelling_time)
+        # first_arrival_shift = math.floor(travelling_time)
+        # first_arrival_shift_time = datetime.timedelta(
+        #     hours=first_arrival_shift)
+        # second_arrival_shift_time = datetime.timedelta(
+        #     hours=first_arrival_shift+1)
+        # first_arrival_shift_proportion = (1 - travelling_time % 1 )
+        # battery_spaces_first_arrivals = (
+        #     first_arrival_shift_proportion
+        #     *
+        #     battery_spaces_arrivals
+        # )
+        # battery_spaces_second_arrivals = (
+        #     (1-first_arrival_shift_proportion)
+        #     *
+        #     battery_spaces_arrivals
+        # )
+
+        # print(battery_spaces_departures)
+        # print(battery_spaces_arrivals)
+        # print(battery_spaces_first_arrivals)
+        # print(battery_spaces_second_arrivals)
+
+        # print(CUM.index)
+        # print(departures_from.index)
+        # print(CUM.ge(departures_from, axis=0))
+        # too = A-CUM+departures_from.T
+        # print((A-CUM).add(departures_from, axis='index'))
+        # # exit()
+        # print(departures_from)
+        # print(CUM)
+        # print(too)
+        # exit()
+        # moki = (CUM.lt(departures_from, axis=1) * A)[departing_battery_spaces]
+        # maki =(CUM.lt(departures_from, axis=0) * A)
+        # moki =(CUM.ge(departures_from, axis=0) * (A-CUM).add(departures_from, axis='index'))
+        # moki[moki<0] = 0
+        # miki = maki+moki
+        # taki =(CUM.lt(departures_to, axis=0) * A)
+        # toki =(CUM.ge(departures_to, axis=0) * (A-CUM).add(departures_to, axis='index'))
+        # toki[toki<0] = 0
+        # tiki = taki+toki
+        if time_tag == run_range[3]:
+            # print(moki)
+            # print(maki)
+            # print('Miki')
+            # print(miki)
+            # # print(toki)
+            # # print(taki)
+            # # print(tiki)
+            # # print(pd.Series(departures.values))
+            # # print(departures_from)
+            # # print(CUM)
+            # print(A)
+            # # print(departures)
+            # print(departures_from)
+            # print(departures_to)
+            # print(departures)
+            # departures.loc['leisure', 'home'] = 0.74
+            # departures.loc['leisure', 'weekend'] = 0.26
+            # miki.loc['leisure', 4] = 0.89
+            # moo = departures.reset_index().pivot_table(index='From', columns='To')
+            # # mook = moo.sum()
+            # # print(departures_from)
+            # # exit()
+            # # zico = np.array([1, 0.178159, 1, 1, 1])
+            # print(moo.div(departures_to.T))
+            # HSK = moo.div(moo.sum(axis=1), axis=0).fillna(0)
+            # print(HSK)
+            # print(miki)
+            # print(HSK.T.dot(miki))
+            
+            # print(miki)
+            # # HSK['leisure', 'home'] = 0.74
+            # # HSK.loc['leisure', 'weekend']  = 0.26
+            # print(HSK)
+            exit()
+            print(HSK.T.dot(miki))
+            exit()
+            # print(type(moo))
+            print(miki)
+            ploo = moo.T.dot(miki)
+            print(ploo)
+            exit()
+        # battery_space_movements = 7777 #starting in this time tag
+        # # Obly this one needs iteration
+
+
+
+        # # Can we avoid TT loop[[?]]
+        # battery_space_departures = battery_space_movements.groupby(
+        #     level=['To']).sum()
+        
+
+        # battery_space_arrivals = battery_space_movements.groupby(
+        #     level=['From']).sum()
+        # # Need to shift columns and, split and shift
+
+        
+        for departing_battery_space in departing_battery_spaces:
+            print('Get this battery space departures')
+            print(departing_battery_space)
+            print(battery_space_occupation.loc[(slice(None),time_tag), departing_battery_space] )
+ 
+        # if time_tag == run_range[2]:
+        #     print(departures)
+            
+        
+        #     # for departure, leg_consumption, travelling_time in zip(
+        #     #     departures, leg_consumptions, travelling_times
+        #     # ):
+        #     #     # if travelling_time:
+        #     #     print(departure, leg_consumption, travelling_time)
+        #     exit()
+
+
+
+        return battery_space_occupation
 
 def get_charging_profile(parameters):
+
+
+
+    
     charging_parameters = parameters['charging']
-    vehicle_parameters = parameters['vehicle']
-    use_weighted_km = vehicle_parameters['use_weighted']
-    if use_weighted_km:
-        distance_header = 'Weighted distance (km)'
-    else:
-        distance_header = 'Distance (km)'
-    electricity_consumption_kWh_per_km = vehicle_parameters[
-        'base_consumption_per_km']['electricity_kWh']
+    
     run_range, run_hour_numbers = run_time.get_time_range(parameters)
     SPINE_hour_numbers = [
          f't{hour_number:04}' for hour_number in run_hour_numbers]
@@ -37,17 +333,30 @@ def get_charging_profile(parameters):
     ]
     scenario = parameters['scenario']
     case_name = parameters['case_name']
-    
     file_parameters = parameters['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
+
+
+    run_mobility_matrix = cook.read_table_from_database(
+        f'{scenario}_run_mobility_matrix', 
+        f'{output_folder}/{groupfile_name}.sqlite3'
+    )
+    run_mobility_matrix['Time tag'] = pd.to_datetime(
+        run_mobility_matrix['Time tag'])
+    run_mobility_matrix = run_mobility_matrix.set_index(
+        ['From', 'To', 'Time tag'])
+    
+    
     location_split_table_name = f'{scenario}_location_split'
     location_split = cook.read_table_from_database(
         location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
     )
     location_split['Time tag'] = pd.to_datetime(location_split['Time tag'])
     location_split = location_split.set_index('Time tag')
+    # print(location_split)
+    # exit()
 
     # We create a DataFrame to store the amount/precentage of vehicles
     # with a given battery space (in columns) for a given location
@@ -63,17 +372,66 @@ def get_charging_profile(parameters):
     battery_space_occupation = pd.DataFrame(
         np.zeros((len(battery_space_occupation_index), 1)),
         columns=[0], index=battery_space_occupation_index
-    )
+    ).sort_index()
+
    
     # We set the initial condition by assuming the vehicles are fully charged
     # (i.e. no battery space) for their initial locations
-    for location_name in location_names:
-        battery_space_occupation.loc[
-            (location_name, run_range[0]), 0] = (
-                location_split.loc[run_range[0]][location_name]
-            )
+    battery_space_occupation.loc[(slice(None),run_range[0]), 0] = (
+        location_split.loc[run_range[0]].sort_index().values
+    )
+    print('Where to put fillna?')
+    print('Take batt out into a func')
+
+    
+    # We look at how the available battery space in the vehicles moves around
+    # (it increases with movements and decreases with charging) 
+    for time_tag_index, time_tag in enumerate(run_range):
+
+        # We begin with changes due to travels
+        battery_space_occupation = travel_space_occupation(
+            battery_space_occupation, time_tag, time_tag_index,
+            run_range, run_mobility_matrix,
+            parameters)
+        
+        # if time_tag == run_range[1]:
+        #     battery_space_occupation.loc[('holiday', time_tag), 5] = 2
+        #     battery_space_occupation.loc[('leisure', time_tag), 4] = 1
+        print('moki')
+        print(battery_space_occupation.loc['leisure'])
+        battery_space_occupation = battery_space_occupation.fillna(0)
+        # if time_tag > run_range[2]:
+        #     print(battery_space_occupation)
+        #     print(battery_space_occupation.loc['holiday'])
+        #     print(battery_space_occupation.loc['home'])
+        #     print(battery_space_occupation.loc['leisure'])
+        #     exit()
+      
+
+    # for location_name in location_names:
+    #     battery_space_occupation.loc[
+    #         (location_name, run_range[0]), 0] = (
+    #             location_split.loc[run_range[0]][location_name]
+    #         )
 
 
+
+    # print(battery_space_occupation.loc[(slice(None),run_range[0]), 0])
+
+    # for time_tag_index, time_tag in enumerate(run_range):
+    #     for location_name in location_names:
+    #         if time_tag_index > 0 :
+    #             # We add the values from the previous time tag to
+    #             # the battery space. We do so because travels can propagate to
+    #             # future time tags. I f we just copied the value from
+    #             # the previous time tag, we would delete these
+    #             battery_space_occupation.loc[(, time_tag)] = (
+    #                 2
+    #                 # battery_space[start_location].iloc[time_tag_index]
+    #                 # +
+    #                 # battery_space[start_location].iloc[time_tag_index-1]
+    #         )
+    print(battery_space_occupation.loc['holiday'])
 
 
 if __name__ == '__main__':
