@@ -128,7 +128,6 @@ guic = pd.DataFrame(
 # We look at how the available battery space in the vehicles moves around
 # (it increases with movements and decreases with charging)
 for time_tag_index, time_tag in enumerate(run_range):
-    print(time_tag)
     loop_end = datetime.datetime.now()
 #     thresh = 80
     
@@ -809,120 +808,6 @@ for time_tag_index, time_tag in enumerate(run_range):
     for charging_location in location_names:
         cha_loc = datetime.datetime.now()
         charging_location_parameters = location_parameters[charging_location]
-        charger_efficiency = charging_location_parameters['charger_efficiency']
-        percent_charging = charging_location_parameters['connectivity']
-        max_charge = charging_location_parameters['charging_power']
-
-        # This variable is useful if new battery spaces
-        # are added within this charging procedure
-        original_battery_spaces = (
-            battery_space[charging_location].columns
-        )
-        charge_drawn_per_charging_vehicle = np.array([
-            min(this_battery_space, max_charge)
-            for this_battery_space in original_battery_spaces
-        ])
-        network_charge_drawn_per_charging_vehicle = (
-            charge_drawn_per_charging_vehicle
-            /
-            charger_efficiency
-        )
-        
-        vehicles_charging = (
-            percent_charging
-            * 
-            battery_space[charging_location].loc[time_tag]
-        ).values[0]
-        charge_drawn_by_vehicles_this_time_tag_per_battery_space = (
-            vehicles_charging * charge_drawn_per_charging_vehicle
-        )
-        charge_drawn_by_vehicles_this_time_tag = sum(
-            charge_drawn_by_vehicles_this_time_tag_per_battery_space)
-        network_charge_drawn_by_vehicles_this_time_tag_per_battery_space = (
-            vehicles_charging * network_charge_drawn_per_charging_vehicle
-        )
-        network_charge_drawn_by_vehicles_this_time_tag = sum(
-            network_charge_drawn_by_vehicles_this_time_tag_per_battery_space)
-        # print(charging_location)
-        # print(charge_drawn_per_charging_vehicle)
-        # print(network_charge_drawn_per_charging_vehicle)
-        # print(vehicles_charging)
-        # print(charge_drawn_by_vehicles_this_time_tag_per_battery_space)
-        # print(network_charge_drawn_by_vehicles_this_time_tag)
-        
-        # We only do the charge computations if there is a charge to be drawn
-        if charge_drawn_by_vehicles_this_time_tag > 0:
-
-            charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
-                charge_drawn_by_vehicles
-                .loc[time_tag][charging_location]
-                +
-                charge_drawn_by_vehicles_this_time_tag
-            )
-
-            charge_drawn_from_network.loc[time_tag, charging_location] = (
-                charge_drawn_from_network
-                .loc[time_tag][charging_location]
-                +
-                network_charge_drawn_by_vehicles_this_time_tag
-            )
-            battery_spaces_after_charging = (
-                battery_space[charging_location].columns.values
-                -
-                charge_drawn_per_charging_vehicle
-            )
-            # print(battery_spaces_after_charging)
-            # print(vehicles_charging)
-            for (
-                battery_space_after_charging,
-                original_battery_space,
-                vehicles_that_get_to_this_space
-            ) in zip(
-                battery_spaces_after_charging,
-                original_battery_spaces,
-                vehicles_charging
-            ):
-                if battery_space_after_charging not in (
-                    battery_space[charging_location].columns):
-
-                    battery_space[charging_location][
-                        battery_space_after_charging] = 0
-                
-                battery_space[charging_location].loc[
-                    time_tag, battery_space_after_charging] = (
-                        battery_space[charging_location].loc[
-                            time_tag][battery_space_after_charging]
-                            .values[0]
-                        +
-                        vehicles_that_get_to_this_space
-                    )
-                
-                battery_space[charging_location].loc[
-                    time_tag, original_battery_space] = (
-                        battery_space[charging_location].loc[
-                            time_tag][original_battery_space]
-                            .values[0]
-                        -
-                        vehicles_that_get_to_this_space
-                    )
-                
-            
-            battery_space[charging_location] = battery_space[
-                charging_location].reindex(
-                sorted(battery_space[charging_location].columns), axis=1)
-            # print(charge_drawn_by_vehicles_this_time_tag_per_battery_space)
-            # print(charge_drawn_by_vehicles)
-        # if time_tag_index == 400:
-        #     print(charge_drawn_by_vehicles)
-        #     print(battery_space['leisure'])
-        #     exit()
-
-
-
-
-
-
-
         # print(battery_space[charging_location].loc[time_tag])
         # exit()
         # boo = pd.DataFrame(index=range(3))
@@ -945,40 +830,42 @@ for time_tag_index, time_tag in enumerate(run_range):
         #     exit()
         # print(time_tag)
         # print(battery_space['home'].iloc[0:15])
-        # for this_battery_space in battery_space[charging_location].columns:
+        for this_battery_space in battery_space[charging_location].columns:
             
-        #     # tbs_start = datetime.datetime.now()
-            
-        #     amount_charged = min(max_charge, this_battery_space)
+            # tbs_start = datetime.datetime.now()
+        
+            percent_charging = charging_location_parameters['connectivity']
+            max_charge = charging_location_parameters['charging_power']
+            amount_charged = min(max_charge, this_battery_space)
           
-            
-        #     amount_drawn_from_network = amount_charged / charger_efficiency
-        #     # if charging_location =='home':
-        #     #     print('batt_space', this_battery_space)
-        #     #     print('% cha', percent_charging)
-        #     #     print('max', max_charge)
-        #     #     print('amo', amount_charged)
-        #     old_battery_space_occupancy = (
-        #         battery_space[charging_location]
-        #         .loc[time_tag][this_battery_space]
-        #         .values[0]
-        #     )
-        #     amount_charging = percent_charging * old_battery_space_occupancy
+            charger_efficiency = charging_location_parameters['charger_efficiency']
+            amount_drawn_from_network = amount_charged / charger_efficiency
+            # if charging_location =='home':
+            #     print('batt_space', this_battery_space)
+            #     print('% cha', percent_charging)
+            #     print('max', max_charge)
+            #     print('amo', amount_charged)
+            old_battery_space_occupancy = (
+                battery_space[charging_location]
+                .loc[time_tag][this_battery_space]
+                .values[0]
+            )
+            amount_charging = percent_charging * old_battery_space_occupancy
             
             
 
 
-            # charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
-            #     charge_drawn_by_vehicles.loc[time_tag, charging_location]
-            #     +
-            #     amount_charged * old_battery_space_occupancy * percent_charging
-            # )
-            # charge_drawn_from_network.loc[time_tag, charging_location] = (
-            #     charge_drawn_from_network.loc[time_tag, charging_location]
-            #     +
-            #     amount_drawn_from_network
-            #     * old_battery_space_occupancy * percent_charging
-            # )
+            charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
+                charge_drawn_by_vehicles.loc[time_tag, charging_location]
+                +
+                amount_charged * old_battery_space_occupancy * percent_charging
+            )
+            charge_drawn_from_network.loc[time_tag, charging_location] = (
+                charge_drawn_from_network.loc[time_tag, charging_location]
+                +
+                amount_drawn_from_network
+                * old_battery_space_occupancy * percent_charging
+            )
             
             # if charging_location == 'home':
             #     print(charge_drawn_by_vehicles.loc[time_tag, charging_location] )
@@ -988,16 +875,16 @@ for time_tag_index, time_tag in enumerate(run_range):
             #     .loc[time_tag])
             #     print('occu', old_battery_space_occupancy)
             #     print(charge_drawn_by_vehicles.loc[time_tag, charging_location])
-            # new_battery_space = this_battery_space - amount_charged
+            new_battery_space = this_battery_space - amount_charged
 
 
             
             # print('New battery space', new_battery_space)
             # print(this_battery_space)
-            # if new_battery_space not in battery_space[charging_location].columns:
+            if new_battery_space not in battery_space[charging_location].columns:
                 # print(time_tag)
                 # print(new_battery_space)
-                # battery_space[charging_location][new_battery_space] = 0
+                battery_space[charging_location][new_battery_space] = 0
             # print(battery_space[charging_location].iloc[0:time_tag_index])
             
             
@@ -1021,73 +908,73 @@ for time_tag_index, time_tag in enumerate(run_range):
             # print(battery_space[charging_location].loc[
             #     time_tag] )
             # print('na', (datetime.datetime.now()-tbs_start).total_seconds())
-            # zoti_start = datetime.datetime.now()
+            zoti_start = datetime.datetime.now()
 
-            # # 126 with 0
-            # # 524 with 0.1 (no triggers of 0.1 threshold)
-            # # 600+ with batt_space (does trigger 0.1 threshold)
-            # # Is it because of matix extension?
-            # # Not using it further (i.e. setting updated new battery space occ
-            # # with zero or something similar is faster: triggers threshold
-            # # and 274 sec)
+            # 126 with 0
+            # 524 with 0.1 (no triggers of 0.1 threshold)
+            # 600+ with batt_space (does trigger 0.1 threshold)
+            # Is it because of matix extension?
+            # Not using it further (i.e. setting updated new battery space occ
+            # with zero or something similar is faster: triggers threshold
+            # and 274 sec)
 
-            # previous_new_battery_space_occupation = (
-            #     # 0.1
-            #     battery_space[charging_location].loc[
-            #             time_tag,
-            #             new_battery_space
-            #             ].values[0]
-            # )
+            previous_new_battery_space_occupation = (
+                # 0.1
+                battery_space[charging_location].loc[
+                        time_tag,
+                        new_battery_space
+                        ].values[0]
+            )
             # THIS IS THE SLOW PART
-            # ziti = (datetime.datetime.now()-zoti_start).total_seconds()
-            # #  SLOW PART IS one of the above ?
-            # # Also, fragmented DF. Is it because of changes in formulas?
+            ziti = (datetime.datetime.now()-zoti_start).total_seconds()
+            #  SLOW PART IS one of the above ?
+            # Also, fragmented DF. Is it because of changes in formulas?
 
 
-            # zoti_start = datetime.datetime.now()
-            # updated_new_battery_space_occupation = (
-            #     previous_new_battery_space_occupation
-            #     +
-            #     amount_charging
-            # )
+            zoti_start = datetime.datetime.now()
+            updated_new_battery_space_occupation = (
+                previous_new_battery_space_occupation
+                +
+                amount_charging
+            )
            
 
             
 
 
 
-            # battery_space[charging_location].loc[
-            #     time_tag, new_battery_space] =  (
-            #         updated_new_battery_space_occupation
-            #         # battery_space[charging_location].loc[
-            #         #     time_tag][new_battery_space].values[0]
-            #         # +
-            #         # amount_charging
-            #         # # old_battery_space_occupancy * percent_charging
-            # ) 
-            # if new_battery_space not in guac.columns:
-            #     guac.loc[:, new_battery_space]  = 0
-            #     guac = (
-            #     guac.reindex(
-            #         sorted(guac.columns), axis=1)
-            #     )
-            #     guic.loc[:, new_battery_space]  = 0
-            #     guic = (
-            #     guic.reindex(
-            #         sorted(guic.columns), axis=1)
-            #     )
+            battery_space[charging_location].loc[
+                time_tag, new_battery_space] =  (
+                    updated_new_battery_space_occupation
+                    # battery_space[charging_location].loc[
+                    #     time_tag][new_battery_space].values[0]
+                    # +
+                    # amount_charging
+                    # # old_battery_space_occupancy * percent_charging
+            ) 
+            if new_battery_space not in guac.columns:
+                guac.loc[:, new_battery_space]  = 0
+                guac = (
+                guac.reindex(
+                    sorted(guac.columns), axis=1)
+                )
+                guic.loc[:, new_battery_space]  = 0
+                guic = (
+                guic.reindex(
+                    sorted(guic.columns), axis=1)
+                )
             
-            # guac.loc[charging_location, new_battery_space]  = (
-            #     guac.loc[charging_location][new_battery_space] + ziti)
-            # guic.loc[charging_location, new_battery_space]  = (
-            #     guic.loc[charging_location][new_battery_space] + 1)
+            guac.loc[charging_location, new_battery_space]  = (
+                guac.loc[charging_location][new_battery_space] + ziti)
+            guic.loc[charging_location, new_battery_space]  = (
+                guic.loc[charging_location][new_battery_space] + 1)
             # if time_tag_index == 200:
             #     print(guac)
             #     exit()
-            # if ziti > 0.1:
-            #     print(time_tag)
-            #     print(charging_location)
-            #     print(ziti)
+            if ziti > 0.1:
+                print(time_tag)
+                print(charging_location)
+                print(ziti)
                 # print(new_battery_space)
                 # print(battery_space[charging_location].loc[
                 # time_tag, new_battery_space])
@@ -1096,30 +983,30 @@ for time_tag_index, time_tag in enumerate(run_range):
                 # print(battery_space[charging_location].columns)
 
                 # exit()
-            # zoti += ziti
+            zoti += ziti
 
-            # previous_this_battery_space_occupation = (
-            #     battery_space[charging_location].loc[
-            #             time_tag, this_battery_space].values[0]
-            # )
-            # updated_this_battery_space_occupation = (
-            #     previous_this_battery_space_occupation
-            #     -
-            #     amount_charging
-            # )
+            previous_this_battery_space_occupation = (
+                battery_space[charging_location].loc[
+                        time_tag, this_battery_space].values[0]
+            )
+            updated_this_battery_space_occupation = (
+                previous_this_battery_space_occupation
+                -
+                amount_charging
+            )
             
-            # # print(battery_space[charging_location].loc[
-            # #     time_tag, this_battery_space])
-            # # print('wa', (datetime.datetime.now()-tbs_start).total_seconds())
-            # battery_space[charging_location].loc[
-            #     time_tag, this_battery_space] = (
-            #         updated_this_battery_space_occupation
+            # print(battery_space[charging_location].loc[
+            #     time_tag, this_battery_space])
+            # print('wa', (datetime.datetime.now()-tbs_start).total_seconds())
+            battery_space[charging_location].loc[
+                time_tag, this_battery_space] = (
+                    updated_this_battery_space_occupation
                     # battery_space[charging_location].loc[
                     #     time_tag][this_battery_space].values[0]
                     # -
                     # amount_charging
                     # # old_battery_space_occupancy * percent_charging
-            
+            )
         #     print('too', (datetime.datetime.now()-tbs_start).total_seconds())
         #     tbs.append((datetime.datetime.now()-tbs_start).total_seconds())
 
@@ -1134,8 +1021,8 @@ for time_tag_index, time_tag in enumerate(run_range):
         # battery_space[charging_location] = battery_space[charging_location].loc[
         #         :, (battery_space[charging_location]!=0).any(axis=0)
         #     ]
-        # battery_space[charging_location] = battery_space[charging_location].reindex(
-        #             sorted(battery_space[charging_location].columns), axis=1)
+        battery_space[charging_location] = battery_space[charging_location].reindex(
+                    sorted(battery_space[charging_location].columns), axis=1)
         
 
         # if time_tag_index == 13:
@@ -1173,12 +1060,12 @@ print('split off in a function?')
 print('Check totals and such?')
 print('Other charging strategies?')
 print((datetime.datetime.now()-start_time).total_seconds())
-# print(zoti)
-# print(guac)
-# print(guic)
-# guoc = 10000 * guac/guic
-# guoc = guoc.fillna(0)
-# print(guoc)
+print(zoti)
+print(guac)
+print(guic)
+guoc = 10000 * guac/guic
+guoc = guoc.fillna(0)
+print(guoc)
 exit()
 for location_name in location_names:
     # print(battery_space[location_name].columns)
