@@ -5,6 +5,7 @@ This is where you run the model
 
 import os
 import pandas as pd
+import datetime
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -38,8 +39,14 @@ try:
 except ModuleNotFoundError:
     from ChaProEV import consumption
 # So that it works both as a standalone (1st) and as a package (2nd)
+try:
+    import charging
+except ModuleNotFoundError:
+    from ChaProEV import charging
+# So that it works both as a standalone (1st) and as a package (2nd)
 
 if __name__ == '__main__':
+    start_ = datetime.datetime.now()
     for scenario_file in os.listdir('scenarios'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
@@ -54,12 +61,19 @@ if __name__ == '__main__':
             # exit()
             mobility.make_mobility_data(parameters)
             consumption.create_consumption_tables(parameters)
+            (
+                battery_space, charge_drawn_by_vehicles,
+                charge_drawn_from_network
+                 ) = charging.get_charging_profile(parameters)
+            print(charge_drawn_by_vehicles)
+            print(charge_drawn_from_network)
+    print((datetime.datetime.now()-start_).total_seconds())
 
-            # writing.write_scenario_parameters(parameters)
-            # weather.setup_weather(parameters)
-            # legs, vehicles, legs, trips = define.declare_all_instances(
-            #     parameters)
+    # writing.write_scenario_parameters(parameters)
+    # weather.setup_weather(parameters)
+    # legs, vehicles, legs, trips = define.declare_all_instances(
+    #     parameters)
 
-            # run_trip_probabilities = (
-            #     mobility.get_run_trip_probabilities(parameters)
-            # )
+    # run_trip_probabilities = (
+    #     mobility.get_run_trip_probabilities(parameters)
+    # )

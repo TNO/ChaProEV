@@ -16,6 +16,8 @@ todo.txt
 comparisons/comparison_template.toml
 dist/ChaProEV-0.1.1-py3-none-any.whl
 dist/ChaProEV-0.1.1.tar.gz
+dist/ChaProEV-0.1.2-py3-none-any.whl
+dist/ChaProEV-0.1.2.tar.gz
 scenarios/baseline.toml
 src/ChaProEV/ChaProEV.py
 src/ChaProEV/__init__.py

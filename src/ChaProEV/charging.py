@@ -545,7 +545,7 @@ def get_charging_profile(parameters):
     # We look at how the available battery space in the vehicles moves around
     # (it increases with movements and decreases with charging)
     for time_tag_index, time_tag in enumerate(run_range):
-        # print(time_tag)
+
         loop_end = datetime.datetime.now()
         loop_time = (loop_end-loop_start).total_seconds()
         loop_times.loc[time_tag, 'Loop duration'] = loop_time
@@ -581,11 +581,16 @@ def get_charging_profile(parameters):
     write_output(battery_space, charge_drawn_by_vehicles,
                  charge_drawn_from_network, parameters)
     loop_times.to_csv('Lopi.csv')
+    return (
+        battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
+    )
 
 
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
     start_ = datetime.datetime.now()
-    charging_profile = get_charging_profile(parameters)
+    battery_space, charge_drawn_by_vehicles, charge_drawn_from_network = (
+        get_charging_profile(parameters)
+    )
     print((datetime.datetime.now()-start_).total_seconds())
