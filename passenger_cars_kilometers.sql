@@ -18,5 +18,6 @@ select sum(Kilometers) as "Yearly kilometers" from baseline_consumption_matrix;
 select * from baseline_weekly_consumption_table;
 select * from baseline_monthly_consumption_table;
 select * from baseline_yearly_consumption_table;
+select * from baseline_charge_drawn_from_network;
 -- select * from baseline_run_mobility_matrix where "From"="leisure"
 -- and "To"="home" limit 100;

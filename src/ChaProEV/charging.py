@@ -16,23 +16,21 @@ try:
     import mobility
 except ModuleNotFoundError:
     from ChaProEV import mobility
-# So that it works both as a standalone (1st) and as a package (2nd)  
-
-
+# So that it works both as a standalone (1st) and as a package (2nd)
 
 # do it per trip
 # battery level trigger (below this, will charge)
 
 # then max power or spread
 
-# How to deal with shift to next day? 
+# How to deal with shift to next day?
 # Trip of prior day might correlate with next day
-    
 
-# def get_trip_charging_array(trip_name, temperature_correction_factors, parameters):
+# def get_trip_charging_array(trip_name, temperature_correction_factors,
+#    parameters):
 #     ...
 #     or as method/property in trip?
-# Dependence on temperatures, but also on battery level at day start 
+# Dependence on temperatures, but also on battery level at day start
 # So maybe do for each day(?)
 # 2
 # parameters_file_name = 'scenarios/baseline.toml'
@@ -43,9 +41,6 @@ def travel_space_occupation(
         battery_space, time_tag, time_tag_index, run_range,
         run_mobility_matrix,
         parameters):
-
-  
-
 
     zero_threshold = parameters['numbers']['zero_threshold']
     location_parameters = parameters['locations']
@@ -61,13 +56,11 @@ def travel_space_occupation(
         distance_header = 'Distance (km)'
     electricity_consumption_kWh_per_km = vehicle_parameters[
         'base_consumption_per_km']['electricity_kWh']
-    
+
     # We look at all movements starting at a given location
     for start_location in location_names:
 
-        
-
-        if time_tag_index > 0 :
+        if time_tag_index > 0:
             # We add the values from the previous time tag to
             # the battery space. We do so because travels can propagate to
             # future time tags. I f we just copied the value from
@@ -78,7 +71,6 @@ def travel_space_occupation(
                 battery_space[start_location].iloc[time_tag_index-1]
             )
 
-
         # We look at which battery spaces there are at this location
         # and sort them. The lowest battery spaces will be first.
         # These are the ones we assume aremore likely to leave,
@@ -86,14 +78,9 @@ def travel_space_occupation(
         departing_battery_spaces = (
                 sorted(battery_space[start_location].columns.values)
             )
-    
-
 
         # We look at all the possible destinations
         for end_location in location_names:
-            
-   
-
 
             # For each leg (start/end location combination), we
             # look up the consumption
@@ -105,7 +92,6 @@ def travel_space_occupation(
                 electricity_consumption_kWh_per_km
             )
 
-
             # We also look up how many vehicles depart
             departures = run_mobility_matrix.loc[
                 start_location, end_location, time_tag][
@@ -113,26 +99,17 @@ def travel_space_occupation(
             if departures > zero_threshold:
                 # If there are no departures, we can skip this
 
-
-
-           
-    
-
                 # We want to know what the arriving battery spaces
                 # will be and the amounts/percentages of the fleet vehicles
                 # for each arriving battery space
                 arriving_battery_spaces = []
                 arriving_amounts = []
-                
+
                 # We also need the duration of the leg
                 travelling_time = run_mobility_matrix.loc[
                                 start_location, end_location, time_tag][
                                     'Duration (hours)']
-                
-            
 
-            
-                
                 # We iterate through the departing battery spaces
                 # (reminder, they are ordered from lowest to highest,
                 # as we assumed that the lower the battery space, the higher
@@ -140,30 +117,23 @@ def travel_space_occupation(
                 # less available battery capacity wll want to charge first).
                 for departing_battery_space in departing_battery_spaces:
 
-                    
-
                     # We will be removing the departures from the lower
                     # battery spaces from the pool, until we have reached
-                    # all departures. For example, if we have 0.2 departures 
+                    # all departures. For example, if we have 0.2 departures
                     # and 0.19 vehicles with space equal to zero, 0.2 vehicles
                     # with space 1, and 0.3 vehicles with space 1.6,
-                    # then we will first take all the 
+                    # then we will first take all the
                     # 0.19 vehicles with space 0,
-                    # 0.01 vehicles with space 1, 
+                    # 0.01 vehicles with space 1,
                     # and 0 vehicles with space 1.6,
-                    # leaving us with 0 vehicles wth space 0, 
+                    # leaving us with 0 vehicles wth space 0,
                     # 0.19 vehicles with
                     # space 1, and 0.3 vehicles with space 1.6
-                    if departures > zero_threshold :
+                    if departures > zero_threshold:
                         # (the departures threshold is there
                         # to avoid issues with floating point numbers, where
                         # we could have some variable being 0.1+0.2
                         # and removing that variabl from 0.3 would not be zero
-                        
-                    
-
-                      
-                        # if travelling_time:
 
                         # We need to know in which slots the vehicles
                         # will arrive at their destination and the proprtion
@@ -178,9 +148,6 @@ def travel_space_occupation(
                             1 - travelling_time % 1
                         )
 
-
-
-
                         # We want to know how many dpeartures will come from
                         # the battery space we are looking at. If there are
                         # more vehicles with the current space than remaining
@@ -192,80 +159,69 @@ def travel_space_occupation(
                             battery_space[start_location].loc[
                                 time_tag][departing_battery_space].values[0]
                         )
-                
-
-
 
                         # We add these departures to the arriving amounts,
                         # as these will arrive to the end location
                         arriving_amounts.append(this_battery_space_departures)
-                        
 
                         # We also add the corresponding battery space at
-                        # arrival, given by the original battery space plus 
+                        # arrival, given by the original battery space plus
                         # the leg's consumption
                         arriving_battery_spaces.append(
                             departing_battery_space+this_leg_consumption
                         )
 
-
-
                         # We update the departures (i.e. how many remain
                         # for larger battery spaces)
                         departures -= this_battery_space_departures
 
-
-                
-                        
                         # Finally, we remove the departures from the start
                         # location for the current time slot
-                    
+
                         battery_space[start_location].loc[
                             time_tag,
                             departing_battery_space] = (
                                     battery_space[start_location].loc[
-                                        time_tag][departing_battery_space]
-                                        .values[0]
-                                - this_battery_space_departures
+                                        time_tag][
+                                            departing_battery_space
+                                            ].values[0]
+                                    - this_battery_space_departures
                                 )
-                   
-     
-                
-                # # We only need to do this if there are actually travels between
+
+                # # We only need to do this if there are actually
+                # # travels between
                 # # the two locations at that time slot
                 # if len(arriving_battery_spaces) > 0 :
-                        
+
                 # We now can update the battery spaces in the end location.
                 for arriving_battery_space, arriving_amount in zip(
                     arriving_battery_spaces, arriving_amounts
                 ):
-                    if arriving_amount > zero_threshold: 
-                    # No need to compute if there are no arrivals
-
-
+                    if arriving_amount > zero_threshold:
+                        # No need to compute if there are no arrivals
 
                         # If the end location does not have the incoming
-                        # battery space in its columns, we add the column 
+                        # battery space in its columns, we add the column
                         # (with zeroes)
                         if arriving_battery_space not in (
-                            battery_space[end_location].columns):
+                                battery_space[end_location].columns
+                                ):
                             battery_space[end_location][
                                 arriving_battery_space] = 0
-            
 
-
-                        if first_arrival_shift_proportion > zero_threshold :
-                            # Otherwise there is no first shift arrival 
+                        if first_arrival_shift_proportion > zero_threshold:
+                            # Otherwise there is no first shift arrival
                             # We check if the arrivals in the first slot
                             # are in the run range
                             # if they are not, then we don't take them into
                             # account (as the are not in the run) and add them
                             # in the end_location battery space DataFrame
                             if time_tag + first_arrival_shift_time <= (
-                                run_range[-1]):
+                                    run_range[-1]
+                                    ):
                                 battery_space[end_location].loc[
                                     time_tag+first_arrival_shift_time,
-                                        arriving_battery_space
+                                    arriving_battery_space
                                     ] = (
                                         battery_space[end_location].loc[
                                             time_tag+first_arrival_shift_time][
@@ -274,25 +230,26 @@ def travel_space_occupation(
                                         +
                                         (
                                             arriving_amount
-                                            * 
+                                            *
                                             first_arrival_shift_proportion
                                         )
                                     )
-            
 
-                        if (1 - first_arrival_shift_proportion ) > (
-                            zero_threshold):
-                            # Otherwise there is no first shift arrival  
-                            # We check if the arrivals in the second slot 
+                        if (1 - first_arrival_shift_proportion) > (
+                                zero_threshold
+                                ):
+                            # Otherwise there is no first shift arrival
+                            # We check if the arrivals in the second slot
                             # are in the run range
                             # if they are not, then we don't take them into
                             # account (as the are not in the run)  and add them
                             # in the end_location battery space DataFrame
                             if time_tag + second_arrival_shift_time <= (
-                                run_range[-1]):
+                                    run_range[-1]
+                                    ):
                                 battery_space[end_location].loc[
                                     time_tag+second_arrival_shift_time,
-                                        arriving_battery_space
+                                    arriving_battery_space
                                     ] = (
                                         battery_space[end_location].loc[
                                             time_tag+second_arrival_shift_time
@@ -302,14 +259,10 @@ def travel_space_occupation(
                                         +
                                         (
                                             arriving_amount
-                                            * 
+                                            *
                                             (1-first_arrival_shift_proportion)
                                         )
                                     )
-                                
-         
-
-
 
                 # We ensure that the columns of the battery space
                 # array are ordered
@@ -318,31 +271,22 @@ def travel_space_occupation(
                         sorted(battery_space[end_location].columns), axis=1)
                 )
 
-
             # We ensure that the columns of the battery space
             # array are ordered
             battery_space[start_location] = battery_space[
                 start_location].reindex(
                         sorted(battery_space[start_location].columns), axis=1)
 
-        # if time_batt:
-        #     batt_3 = datetime.datetime.now()
-        #     batt_times[start_location]['third step'] = (batt_3-batt_2).total_seconds()
-                
-    
     # Have  arrivals not connect at all if partial (until leave)
     # Or assume they move around get connected later
-        
-
 
     return battery_space
-
 
 
 def compute_charging_events(
         battery_space, charge_drawn_by_vehicles, charge_drawn_from_network,
         time_tag, parameters):
-        
+
     zero_threshold = parameters['numbers']['zero_threshold']
     location_parameters = parameters['locations']
     location_names = [
@@ -350,8 +294,6 @@ def compute_charging_events(
     ]
 
     for charging_location in location_names:
-        
-        
 
         charging_location_parameters = location_parameters[charging_location]
         charger_efficiency = charging_location_parameters['charger_efficiency']
@@ -373,11 +315,9 @@ def compute_charging_events(
             charger_efficiency
         )
 
-
-
         vehicles_charging = (
             percent_charging
-            * 
+            *
             battery_space[charging_location].loc[time_tag]
         ).values[0]
         charge_drawn_by_vehicles_this_time_tag_per_battery_space = (
@@ -391,9 +331,6 @@ def compute_charging_events(
         network_charge_drawn_by_vehicles_this_time_tag = sum(
             network_charge_drawn_by_vehicles_this_time_tag_per_battery_space)
 
-
-
-
         # We only do the charge computations if there is a charge to be drawn
         if charge_drawn_by_vehicles_this_time_tag > zero_threshold:
 
@@ -404,8 +341,6 @@ def compute_charging_events(
                 charge_drawn_by_vehicles_this_time_tag
             )
 
-        
-
             charge_drawn_from_network.loc[time_tag, charging_location] = (
                 charge_drawn_from_network
                 .loc[time_tag][charging_location]
@@ -413,14 +348,11 @@ def compute_charging_events(
                 network_charge_drawn_by_vehicles_this_time_tag
             )
 
-
-            
             battery_spaces_after_charging = (
                 battery_space[charging_location].columns.values
                 -
                 charge_drawn_per_charging_vehicle
             )
-
 
             for (
                 battery_space_after_charging,
@@ -433,59 +365,48 @@ def compute_charging_events(
             ):
                 # To avoid unnecessary calculations
                 # USE Thresh?
-                if vehicles_that_get_to_this_space > zero_threshold :
+                if vehicles_that_get_to_this_space > zero_threshold:
                     if original_battery_space > zero_threshold:
 
-                    
-
                         if battery_space_after_charging not in (
-                            battery_space[charging_location].columns.values):
+                            battery_space[charging_location].columns.values
+                        ):
 
                             battery_space[charging_location][
                                 battery_space_after_charging] = 0
-                            
 
-            
                         battery_space[charging_location].loc[
                             time_tag, battery_space_after_charging] = (
                                 battery_space[charging_location].loc[
-                                    time_tag][battery_space_after_charging]
-                                    .values[0]
+                                    time_tag][
+                                        battery_space_after_charging
+                                        ].values[0]
                                 +
                                 vehicles_that_get_to_this_space
                             )
-                        
-         
 
-            
                         battery_space[charging_location].loc[
                             time_tag, original_battery_space] = (
                                 battery_space[charging_location].loc[
-                                    time_tag][original_battery_space]
-                                    .values[0]
+                                    time_tag][original_battery_space].values[0]
                                 -
                                 vehicles_that_get_to_this_space
                             )
-                        
-         
-            
+
             battery_space[charging_location] = battery_space[
                 charging_location].reindex(
                 sorted(battery_space[charging_location].columns), axis=1)
-            
-   
-        
 
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
 def get_charging_framework(parameters):
 
-
     run_range, run_hour_numbers = run_time.get_time_range(parameters)
     # print(run_range[3573])
     # exit()
-    SPINE_hour_numbers = [f't{hour_number:04}' for hour_number in run_hour_numbers]
+    SPINE_hour_numbers = [
+        f't{hour_number:04}' for hour_number in run_hour_numbers]
     location_parameters = parameters['locations']
     location_names = [
         location_name for location_name in location_parameters
@@ -504,7 +425,6 @@ def get_charging_framework(parameters):
     location_split['Time tag'] = pd.to_datetime(location_split['Time tag'])
     location_split = location_split.set_index('Time tag')
 
-
     # We look at the various battery spaces that are available
     # at this charging location (i.e. percent of vehicles with
     # a given battery space per location)
@@ -512,18 +432,18 @@ def get_charging_framework(parameters):
     for location_name in location_names:
         battery_space[location_name] = pd.DataFrame(
             run_range,
-            columns= ['Time Tag'])
+            columns=['Time Tag'])
         battery_space[location_name]['Hour Number'] = run_hour_numbers
         battery_space[location_name]['SPINE_Hour_Number'] = SPINE_hour_numbers
         # battery_space[0] = 0
         battery_space[location_name] = battery_space[location_name].set_index(
             ['Time Tag', 'Hour Number', 'SPINE_Hour_Number'])
-        battery_space[location_name][0] = 0 
-        battery_space[location_name][0].iloc[0] = location_split.loc[run_range[0]][location_name]
-
+        battery_space[location_name][0] = 0
+        battery_space[location_name][0].iloc[0] = location_split.loc[
+            run_range[0]][location_name]
 
     run_mobility_matrix = cook.read_table_from_database(
-        f'{scenario}_run_mobility_matrix', 
+        f'{scenario}_run_mobility_matrix',
         f'{output_folder}/{groupfile_name}.sqlite3'
     )
     run_mobility_matrix['Time tag'] = pd.to_datetime(
@@ -535,27 +455,28 @@ def get_charging_framework(parameters):
         np.zeros((len(run_range), len(location_names))),
         columns=location_names, index=run_range
     )
+    charge_drawn_by_vehicles.index.name = 'Time Tag'
     charge_drawn_from_network = pd.DataFrame(
         np.zeros((len(run_range), len(location_names))),
         columns=location_names, index=run_range
     )
+    charge_drawn_from_network.index.name = 'Time Tag'
 
     return (
-        battery_space, run_range, run_mobility_matrix, 
+        battery_space, run_range, run_mobility_matrix,
         charge_drawn_by_vehicles, charge_drawn_from_network,
     )
-
 
 
 def write_output(
         battery_space, charge_drawn_by_vehicles, charge_drawn_from_network,
         parameters):
-    
+
     run_range, run_hour_numbers = run_time.get_time_range(parameters)
     # print(run_range[3573])
     # exit()
     SPINE_hour_numbers = [
-        't{hour_number:04}' for hour_number in run_hour_numbers]
+        f't{hour_number:04}' for hour_number in run_hour_numbers]
     location_parameters = parameters['locations']
     location_names = [
         location_name for location_name in location_parameters
@@ -568,49 +489,58 @@ def write_output(
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
 
-
     for location_name in location_names:
 
         battery_space[location_name].columns = battery_space[
             location_name].columns.astype(str)
+
         cook.save_dataframe(
             battery_space[location_name],
             f'{scenario}_{location_name}_battery_space',
             groupfile_name, output_folder, parameters
         )
 
+    charge_drawn_from_network = charge_drawn_from_network.reset_index()
+    charge_drawn_from_network['Hour number'] = run_hour_numbers
+    charge_drawn_from_network['SPINE hour number'] = SPINE_hour_numbers
+    charge_drawn_from_network = (
+        charge_drawn_from_network.set_index(
+            ['Time Tag', 'Hour number', 'SPINE hour number'])
+    )
     cook.save_dataframe(
             charge_drawn_from_network,
             f'{scenario}_charge_drawn_from_network',
             groupfile_name, output_folder, parameters
         )
 
+    charge_drawn_by_vehicles = charge_drawn_by_vehicles.reset_index()
+    charge_drawn_by_vehicles['Hour number'] = run_hour_numbers
+    charge_drawn_by_vehicles['SPINE hour number'] = SPINE_hour_numbers
+    charge_drawn_by_vehicles = (
+        charge_drawn_by_vehicles.set_index(
+            ['Time Tag', 'Hour number', 'SPINE hour number'])
+    )
     cook.save_dataframe(
             charge_drawn_by_vehicles,
             f'{scenario}_charge_drawn_by_vehicles',
             groupfile_name, output_folder, parameters
         )
 
+
 def get_charging_profile(parameters):
- 
 
     (
-        battery_space, run_range, run_mobility_matrix, 
+        battery_space, run_range, run_mobility_matrix,
         charge_drawn_by_vehicles, charge_drawn_from_network,
-    ) =  get_charging_framework(parameters)
-
+    ) = get_charging_framework(parameters)
 
     start_time = datetime.datetime.now()
     loop_start = start_time
 
     loop_times = pd.DataFrame(
-        np.zeros((len(run_range),1)), columns=['Loop duration'],
-                index=run_range
+        np.zeros((len(run_range), 1)), columns=['Loop duration'],
+        index=run_range
     )
-
-
-
-
 
     # We look at how the available battery space in the vehicles moves around
     # (it increases with movements and decreases with charging)
@@ -618,33 +548,28 @@ def get_charging_profile(parameters):
         # print(time_tag)
         loop_end = datetime.datetime.now()
         loop_time = (loop_end-loop_start).total_seconds()
-        loop_times.loc[time_tag,'Loop duration'] = loop_time
+        loop_times.loc[time_tag, 'Loop duration'] = loop_time
         if loop_time > 0.1:
             print(run_range[time_tag_index-1])
             print(time_tag_index-1)
 
-      
         battery_space = travel_space_occupation(
             battery_space, time_tag, time_tag_index, run_range,
             run_mobility_matrix,
             parameters
         )
 
-        # print(battery_space['home'])
-        battery_space, charge_drawn_by_vehicles, charge_drawn_from_network =( 
+        battery_space, charge_drawn_by_vehicles, charge_drawn_from_network = (
             compute_charging_events(
-            battery_space, charge_drawn_by_vehicles,
-            charge_drawn_from_network,
-            time_tag, parameters)
+                battery_space, charge_drawn_by_vehicles,
+                charge_drawn_from_network,
+                time_tag, parameters
+            )
         )
 
-
         loop_start = datetime.datetime.now()
-        
-    
+
         # We start with the battery space reduction duw to moving
-    
-  
 
     print('Empty DF?')
     print('Keep float precision?')
@@ -656,10 +581,6 @@ def get_charging_profile(parameters):
     write_output(battery_space, charge_drawn_by_vehicles,
                  charge_drawn_from_network, parameters)
     loop_times.to_csv('Lopi.csv')
-
-
-
-
 
 
 if __name__ == '__main__':
