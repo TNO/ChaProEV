@@ -478,20 +478,10 @@ def compute_charging_events(
 
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
-def get_charging_profile(parameters):
-    
-    
-    time_cha = False
-    
-    
 
-    # Float precision can mean that we have exteremly small values
-    # that are actually zero
-    zero_threshold = parameters['numbers']['zero_threshold']
-    charging_parameters = parameters['charging']
-    
-    
-    
+def get_charging_framework(parameters):
+
+
     run_range, run_hour_numbers = run_time.get_time_range(parameters)
     # print(run_range[3573])
     # exit()
@@ -549,6 +539,67 @@ def get_charging_profile(parameters):
         np.zeros((len(run_range), len(location_names))),
         columns=location_names, index=run_range
     )
+
+    return (
+        battery_space, run_range, run_mobility_matrix, 
+        charge_drawn_by_vehicles, charge_drawn_from_network,
+    )
+
+
+
+def write_output(
+        battery_space, charge_drawn_by_vehicles, charge_drawn_from_network,
+        parameters):
+    
+    run_range, run_hour_numbers = run_time.get_time_range(parameters)
+    # print(run_range[3573])
+    # exit()
+    SPINE_hour_numbers = [
+        't{hour_number:04}' for hour_number in run_hour_numbers]
+    location_parameters = parameters['locations']
+    location_names = [
+        location_name for location_name in location_parameters
+    ]
+    scenario = parameters['scenario']
+    case_name = parameters['case_name']
+
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_root = file_parameters['groupfile_root']
+    groupfile_name = f'{groupfile_root}_{case_name}'
+
+
+    for location_name in location_names:
+
+        battery_space[location_name].columns = battery_space[
+            location_name].columns.astype(str)
+        cook.save_dataframe(
+            battery_space[location_name],
+            f'{scenario}_{location_name}_battery_space',
+            groupfile_name, output_folder, parameters
+        )
+
+    cook.save_dataframe(
+            charge_drawn_from_network,
+            f'{scenario}_charge_drawn_from_network',
+            groupfile_name, output_folder, parameters
+        )
+
+    cook.save_dataframe(
+            charge_drawn_by_vehicles,
+            f'{scenario}_charge_drawn_by_vehicles',
+            groupfile_name, output_folder, parameters
+        )
+
+def get_charging_profile(parameters):
+ 
+
+    (
+        battery_space, run_range, run_mobility_matrix, 
+        charge_drawn_by_vehicles, charge_drawn_from_network,
+    ) =  get_charging_framework(parameters)
+
+
     start_time = datetime.datetime.now()
     loop_start = start_time
 
@@ -556,7 +607,11 @@ def get_charging_profile(parameters):
         np.zeros((len(run_range),1)), columns=['Loop duration'],
                 index=run_range
     )
-        
+
+
+
+
+
     # We look at how the available battery space in the vehicles moves around
     # (it increases with movements and decreases with charging)
     for time_tag_index, time_tag in enumerate(run_range):
@@ -588,7 +643,7 @@ def get_charging_profile(parameters):
         
     
         # We start with the battery space reduction duw to moving
-
+    
   
 
     print('Empty DF?')
@@ -598,30 +653,12 @@ def get_charging_profile(parameters):
     print('Check totals and such?')
     print('Other charging strategies?')
     print((datetime.datetime.now()-start_time).total_seconds())
-
-
-    for location_name in location_names:
-
-        battery_space[location_name].columns = battery_space[location_name].columns.astype(str)
-        cook.save_dataframe(
-            battery_space[location_name],
-            f'{scenario}_{location_name}_battery_space',
-            groupfile_name, output_folder, parameters
-        )
-
-    cook.save_dataframe(
-            charge_drawn_from_network,
-            f'{scenario}_charge_drawn_from_network',
-            groupfile_name, output_folder, parameters
-        )
-
-    cook.save_dataframe(
-            charge_drawn_by_vehicles,
-            f'{scenario}_charge_drawn_by_vehicles',
-            groupfile_name, output_folder, parameters
-        )
-
+    write_output(battery_space, charge_drawn_by_vehicles,
+                 charge_drawn_from_network, parameters)
     loop_times.to_csv('Lopi.csv')
+
+
+
 
 
 
