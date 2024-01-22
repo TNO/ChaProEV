@@ -1,6 +1,6 @@
 .gitignore
-ChaProEV_overview.svg
 LICENCE
+Lopi.csv
 MOPO_logo_chaproev on wht.svg
 MOPO_logo_chaproev.png
 MOPO_logo_chaproev.svg
@@ -9,15 +9,23 @@ MOPO_logo_main_onwhite.svg
 README.md
 Vehicle_Temperature_correction_factor.svg
 eu-emblem-low-res.jpg
+passenger_cars_kilometers.sql
 pyproject.toml
 requirements.txt
+todo.txt
 comparisons/comparison_template.toml
-dist/ChaProEV-0.1.0-py3-none-any.whl
-dist/ChaProEV-0.1.0.tar.gz
+dist/ChaProEV-0.1.1-py3-none-any.whl
+dist/ChaProEV-0.1.1.tar.gz
 scenarios/baseline.toml
 src/ChaProEV/ChaProEV.py
 src/ChaProEV/__init__.py
+src/ChaProEV/charging copy 2.py
+src/ChaProEV/charging copy.py
+src/ChaProEV/charging.py
+src/ChaProEV/charging_deel.py
+src/ChaProEV/consumption.py
 src/ChaProEV/define.py
+src/ChaProEV/fuels.py
 src/ChaProEV/mobility.py
 src/ChaProEV/run_time.py
 src/ChaProEV/weather.py
