@@ -44,7 +44,32 @@ def travel_space_occupation(
         run_mobility_matrix,
         parameters):
 
-  
+    # time_batt = False
+
+
+    # if loop_time > 0.1:
+    #     print(run_range[time_tag_index-1])
+    #     print(time_tag_index-1)
+    #     if time_batt:
+    #         print('Batt', batt_time)
+    #     if time_cha:
+    #         print('Charge', cha_time)
+    #     print('Loop', loop_time)
+    #     if time_cha:
+    #         print('Charge loc', cha_loc)
+    #     if time_batt:
+    #         if batt_time > 0.1:
+    #             print(batt_times)
+    #             print(batt_end_loc)
+    #             # print(batt_ooo)
+    #             # print(departing_battery_spaces)
+    #             # print(departures)
+    #             for koos in batt_rave.keys():
+    #                 print(koos)
+    #                 print(batt_rave[koos])
+    #             # print(batt_rave)
+    #             print(bett_rave_amoos)
+    #             print(bett_rave_spas)
 
 
     zero_threshold = parameters['numbers']['zero_threshold']
@@ -65,7 +90,13 @@ def travel_space_occupation(
     # We look at all movements starting at a given location
     for start_location in location_names:
 
-        
+        # if time_batt:
+        #     bett_rave_amoos[start_location] = {}
+        #     bett_rave_spas[start_location] = {}
+            
+        #     batt_0 = datetime.datetime.now()
+        #     # batt_loc_start = datetime.datetime.now()
+        #     batt_times[start_location] = {}
 
         if time_tag_index > 0 :
             # We add the values from the previous time tag to
@@ -78,6 +109,17 @@ def travel_space_occupation(
                 battery_space[start_location].iloc[time_tag_index-1]
             )
 
+        # if time_batt:
+        #     batt_ooo_0 = datetime.datetime.now()
+        #     # # # We delete columns where all the amounts per battery space 
+        #     # # are zero
+        #     # # (for example, ones where we had a battery space that was
+        #     # # removed because of charging
+        #     # battery_space[start_location] = battery_space[start_location].loc[
+        #     #     :, (battery_space[start_location]!=0).any(axis=0)
+        #     # ]
+            
+        #     batt_ooo_1 = datetime.datetime.now()
 
         # We look at which battery spaces there are at this location
         # and sort them. The lowest battery spaces will be first.
@@ -87,12 +129,26 @@ def travel_space_occupation(
                 sorted(battery_space[start_location].columns.values)
             )
     
+        # if time_batt:
+        #     batt_ooo_2 = datetime.datetime.now()
+        #     batt_ooo[start_location] = [
+        #         (batt_ooo_1-batt_ooo_0).total_seconds(),
+        #         (batt_ooo_2-batt_ooo_1).total_seconds(),
+        #     ]
+        
 
+            
+        #     batt_1 = datetime.datetime.now()
+
+        #     batt_times[start_location]['first step'] = (batt_1-batt_0).total_seconds()
+
+        #     batt_end_loc[start_location] ={}
 
         # We look at all the possible destinations
         for end_location in location_names:
             
-   
+            # if time_batt:
+            #     batt_end_loc_0 = datetime.datetime.now()
 
 
             # For each leg (start/end location combination), we
@@ -105,6 +161,9 @@ def travel_space_occupation(
                 electricity_consumption_kWh_per_km
             )
 
+            # if time_batt:
+            #     batt_end_loc_1 = datetime.datetime.now()
+            
 
             # We also look up how many vehicles depart
             departures = run_mobility_matrix.loc[
@@ -115,7 +174,10 @@ def travel_space_occupation(
 
 
 
-           
+                # if time_batt:
+                #     batt_end_loc_2 = datetime.datetime.now()
+                
+
     
 
                 # We want to know what the arriving battery spaces
@@ -129,7 +191,10 @@ def travel_space_occupation(
                                 start_location, end_location, time_tag][
                                     'Duration (hours)']
                 
-            
+                # if time_batt:
+                #     batt_end_loc_3 = datetime.datetime.now()
+
+                
 
             
                 
@@ -162,7 +227,9 @@ def travel_space_occupation(
                         
                     
 
-                      
+                        
+                        # attempts += 1
+                        
                         # if travelling_time:
 
                         # We need to know in which slots the vehicles
@@ -229,7 +296,9 @@ def travel_space_occupation(
                                 - this_battery_space_departures
                                 )
                    
-     
+
+                # if time_batt:
+                #     batt_end_loc_4 = datetime.datetime.now()       
                 
                 # # We only need to do this if there are actually travels between
                 # # the two locations at that time slot
@@ -241,7 +310,18 @@ def travel_space_occupation(
                 ):
                     if arriving_amount > zero_threshold: 
                     # No need to compute if there are no arrivals
-
+                        
+                        # if time_batt:
+                        #     bett_rave_amoos[start_location][end_location] = (
+                        #         arriving_amounts
+                        #     )
+                        #     bett_rave_spas[start_location][end_location] = (
+                        #         arriving_battery_spaces
+                        #     )
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'] = (
+                        #         batt_rave_base.copy()
+                        #     )
+                        #     batt_rave_0 = datetime.datetime.now()
 
 
                         # If the end location does not have the incoming
@@ -253,6 +333,11 @@ def travel_space_occupation(
                                 arriving_battery_space] = 0
             
 
+                        # if time_batt:
+                        #     batt_rave_1 = datetime.datetime.now()
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[(start_location, end_location), 0] = (
+                        #         (batt_rave_1-batt_rave_0).total_seconds()
+                        #     )
 
                         if first_arrival_shift_proportion > zero_threshold :
                             # Otherwise there is no first shift arrival 
@@ -279,6 +364,33 @@ def travel_space_occupation(
                                         )
                                     )
             
+
+                        # if time_batt:
+                        #     batt_rave_2 = datetime.datetime.now()
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[(start_location, end_location), 1] = (
+                        #         (batt_rave_2-batt_rave_1).total_seconds()
+                            
+                        #     )
+
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[
+                        #         (start_location, end_location), 'arriving BS'] = (
+                        #             arriving_battery_space
+                        #         )
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[
+                        #         (start_location, end_location), 'arriving amount'] = (
+                        #             arriving_amount
+                        #         )
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[
+                        #         (start_location, end_location), '1st prop'] = (
+                        #             first_arrival_shift_proportion
+                        #         )
+                        #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[
+                        #         (start_location, end_location), '1BS'] = (
+                        #             battery_space[end_location].loc[
+                        #                     time_tag+first_arrival_shift_time][
+                        #                         arriving_battery_space
+                        #                     ].values[0]
+                        #         )
 
                         if (1 - first_arrival_shift_proportion ) > (
                             zero_threshold):
@@ -307,9 +419,34 @@ def travel_space_occupation(
                                         )
                                     )
                                 
-         
+                                # if time_batt:
+                                #     batt_rave[
+                                #         f'{arriving_battery_space}_{arriving_amount}'
+                                #         ].loc[(start_location, end_location), 'BR'] = (
+                                #             (1-first_arrival_shift_proportion)
+                                #         )
+                                #     batt_rave[
+                                #         f'{arriving_battery_space}_{arriving_amount}'
+                                #         ].loc[(start_location, end_location), 'AA'] = (
+                                #             arriving_amount
+                                #         )
+                                #     batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[
+                                #     (start_location, end_location), '2BS'] = (
+                                #             battery_space[end_location].loc[
+                                #             time_tag+second_arrival_shift_time][
+                                #                 arriving_battery_space
+                                #             ].values[0]
+                                # )
 
 
+                #     if time_batt:
+                #         batt_rave_3 = datetime.datetime.now()
+                #         batt_rave[f'{arriving_battery_space}_{arriving_amount}'].loc[(start_location, end_location), 2] = (
+                #             (batt_rave_3-batt_rave_2).total_seconds()
+                #         )
+                
+                # if time_batt:      
+                #     batt_end_loc_5 = datetime.datetime.now() 
 
                 # We ensure that the columns of the battery space
                 # array are ordered
@@ -318,6 +455,25 @@ def travel_space_occupation(
                         sorted(battery_space[end_location].columns), axis=1)
                 )
 
+                # if time_batt:
+                #     batt_end_loc_6 = datetime.datetime.now() 
+                #     batt_end_loc[start_location][end_location] = (
+                #         [
+                #             (batt_end_loc_1-batt_end_loc_0).total_seconds(),
+                #             (batt_end_loc_2-batt_end_loc_1).total_seconds(),
+                #             (batt_end_loc_3-batt_end_loc_2).total_seconds(),
+                #             (batt_end_loc_4-batt_end_loc_3).total_seconds(),
+                #             (batt_end_loc_5-batt_end_loc_4).total_seconds(),
+                #             (batt_end_loc_6-batt_end_loc_5).total_seconds(),
+                #         ]
+                #     )
+                #     # print(batte6y_space[end_location])
+                #     # exit()
+
+            # if time_batt:
+            #     batt_2 = datetime.datetime.now()
+            #     batt_times[start_location]['second step'] = (batt_2-batt_1).total_seconds()
+            
 
             # We ensure that the columns of the battery space
             # array are ordered
@@ -334,7 +490,14 @@ def travel_space_occupation(
     # Or assume they move around get connected later
         
 
+    # Charging
+            
+    # if time_batt:
+    #     batt_end = datetime.datetime.now()
+    #     batt_time = (batt_end-batt_start).total_seconds()
 
+    # print(time_tag)
+    # print(battery_space['home'])
     return battery_space
 
 
@@ -351,7 +514,10 @@ def compute_charging_events(
 
     for charging_location in location_names:
         
-        
+        # if time_cha:
+        #     cha_loc_start = datetime.datetime.now()
+        #     cha_loc_0 = datetime.datetime.now()
+
 
         charging_location_parameters = location_parameters[charging_location]
         charger_efficiency = charging_location_parameters['charger_efficiency']
@@ -373,6 +539,8 @@ def compute_charging_events(
             charger_efficiency
         )
 
+        # if time_cha:
+        #     cha_loc_1 = datetime.datetime.now()
 
 
         vehicles_charging = (
@@ -391,6 +559,8 @@ def compute_charging_events(
         network_charge_drawn_by_vehicles_this_time_tag = sum(
             network_charge_drawn_by_vehicles_this_time_tag_per_battery_space)
 
+        # if time_cha:
+        #     cha_loc_2 = datetime.datetime.now()
 
 
 
@@ -404,7 +574,10 @@ def compute_charging_events(
                 charge_drawn_by_vehicles_this_time_tag
             )
 
-        
+            # if time_cha:
+            #     cha_loc_3 = datetime.datetime.now()
+
+
 
             charge_drawn_from_network.loc[time_tag, charging_location] = (
                 charge_drawn_from_network
@@ -413,7 +586,9 @@ def compute_charging_events(
                 network_charge_drawn_by_vehicles_this_time_tag
             )
 
-
+            # if time_cha:
+            #     cha_loc_4 = datetime.datetime.now()
+                
             
             battery_spaces_after_charging = (
                 battery_space[charging_location].columns.values
@@ -421,7 +596,26 @@ def compute_charging_events(
                 charge_drawn_per_charging_vehicle
             )
 
+            # if time_tag_index == 3:
+            #     print(battery_space[charging_location].columns.values)
+            #     print(charge_drawn_per_charging_vehicle)
+            #     print(battery_spaces_after_charging)
+            #     print(original_battery_spaces)
+            #     if charging_location=='home':
+            #         exit()
 
+            # if time_cha:
+            #     cha_loc_5 = datetime.datetime.now()
+            #     cha_pi[charging_location] = []
+            #     cha_pi_a[charging_location] = []
+            #     cha_pi_b[charging_location] = []
+            #     cha_pi_c[charging_location] = []
+            #     kazi[charging_location] = {}
+            #     kozi[charging_location] = {}
+            #     kuzi[charging_location] = {}
+            #     lazi[charging_location] = {}
+            #     lozi[charging_location] = {}
+            #     luzi[charging_location] = {}
             for (
                 battery_space_after_charging,
                 original_battery_space,
@@ -436,7 +630,16 @@ def compute_charging_events(
                 if vehicles_that_get_to_this_space > zero_threshold :
                     if original_battery_space > zero_threshold:
 
-                    
+                        # if time_cha:
+                        #     cha_pi_start = datetime.datetime.now()
+                        #     cha_pi_a_start = datetime.datetime.now()
+                        #     kazi[charging_location][battery_space_after_charging] = []
+                        #     kozi[charging_location][battery_space_after_charging] = []
+                        #     kuzi[charging_location][battery_space_after_charging] = []
+                        #     lazi[charging_location][original_battery_space] = []
+                        #     lozi[charging_location][original_battery_space] = []
+                        #     luzi[charging_location][original_battery_space] = []
+
 
                         if battery_space_after_charging not in (
                             battery_space[charging_location].columns.values):
@@ -445,6 +648,10 @@ def compute_charging_events(
                                 battery_space_after_charging] = 0
                             
 
+                        # if time_cha:
+                        #     cha_pi_a_end = datetime.datetime.now()
+                        #     cha_pi_a[charging_location]= (cha_pi_a_end-cha_pi_a_start).total_seconds()
+                        #     cha_pi_b_start = datetime.datetime.now()
             
                         battery_space[charging_location].loc[
                             time_tag, battery_space_after_charging] = (
@@ -455,7 +662,15 @@ def compute_charging_events(
                                 vehicles_that_get_to_this_space
                             )
                         
-         
+                        # if time_cha:
+                        #     cha_pi_b_end = datetime.datetime.now()
+                        #     cha_pi_b[charging_location] = (cha_pi_b_end-cha_pi_b_start).total_seconds()
+                            
+                        #     kazi[charging_location][battery_space_after_charging] = vehicles_that_get_to_this_space
+                        #     kozi[charging_location][battery_space_after_charging] = battery_space[charging_location].loc[
+                        #             time_tag][battery_space_after_charging].values[0]
+                        #     kuzi[charging_location][battery_space_after_charging] = charge_drawn_per_charging_vehicle
+                        #     cha_pi_c_start = datetime.datetime.now()
 
             
                         battery_space[charging_location].loc[
@@ -467,15 +682,61 @@ def compute_charging_events(
                                 vehicles_that_get_to_this_space
                             )
                         
-         
+                        # if time_cha:
+                        #     cha_pi_c_end = datetime.datetime.now()
+                        #     cha_pi_c[charging_location] = (cha_pi_c_end-cha_pi_c_start).total_seconds()
+                        #     cha_pi_end = datetime.datetime.now()
+                        #     cha_pi[charging_location] = (cha_pi_end-cha_pi_start).total_seconds()
+                        #     lazi[charging_location][original_battery_space] = vehicles_that_get_to_this_space
+                        #     lozi[charging_location][original_battery_space] = battery_space[charging_location].loc[
+                        #             time_tag][original_battery_space].values[0]
+                        #     luzi[charging_location][original_battery_space] = original_battery_space
+    
+            # if time_cha:
+            #     cha_loc_6 = datetime.datetime.now()
             
             battery_space[charging_location] = battery_space[
                 charging_location].reindex(
                 sorted(battery_space[charging_location].columns), axis=1)
             
-   
-        
+            # if time_cha:
+            #     cha_loc_7 = datetime.datetime.now()
+            #     cha_loc_end = datetime.datetime.now()
+            #     cha_loc[charging_location] = (cha_loc_end-cha_loc_start).total_seconds()
 
+
+            # if time_tag_index == 114940:   #284, 740, 1389, 3032, 270,, 680, 1679, 2173, 4552 #  3573, 4552:
+            #     print((datetime.datetime.now()-cha_start).total_seconds())
+            #     print(time_tag)
+            #     print(cha_loc)
+            #     print((cha_loc_1-cha_loc_0).total_seconds())
+            #     print((cha_loc_2-cha_loc_1).total_seconds())
+            #     print((cha_loc_3-cha_loc_2).total_seconds())
+            #     print((cha_loc_4-cha_loc_3).total_seconds())
+            #     print((cha_loc_5-cha_loc_4).total_seconds())
+            #     print((cha_loc_6-cha_loc_5).total_seconds())
+            #     print(vehicles_charging)
+            #     print(original_battery_spaces)
+            #     print(battery_spaces_after_charging)
+            #     print(cha_pi)
+            #     print(cha_pi_a)
+            #     print(cha_pi_b)
+        
+        
+    #     else:
+    #         if time_cha:
+    #             cha_loc_3 = datetime.datetime.now()
+    #             cha_loc_4 = datetime.datetime.now()
+    #             cha_loc_5 = datetime.datetime.now()
+    #             cha_loc_6 = datetime.datetime.now()
+    #             cha_loc_7 = datetime.datetime.now()
+    #             cha_loc_end = datetime.datetime.now()
+    #             cha_loc[charging_location] = (cha_loc_end-cha_loc_start).total_seconds()
+    #                 #     print(cha_pi_c)
+    #         #     # exit()
+    # if time_cha:
+    #     cha_end = datetime.datetime.now()
+    #     cha_time = (cha_end-cha_start).total_seconds()
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 def get_charging_profile(parameters):
@@ -567,8 +828,48 @@ def get_charging_profile(parameters):
         if loop_time > 0.1:
             print(run_range[time_tag_index-1])
             print(time_tag_index-1)
+            # if time_batt:
+            #     print('Batt', batt_time)
+            # if time_cha:
+            #     print('Charge', cha_time)
+            # print('Loop', loop_time)
+            # if time_cha:
+            #     print('Charge loc', cha_loc)
+            # if time_batt:
+            #     if batt_time > 0.1:
+            #         print(batt_times)
+            #         print(batt_end_loc)
+            #         # print(batt_ooo)
+            #         # print(departing_battery_spaces)
+            #         # print(departures)
+            #         for koos in batt_rave.keys():
+            #             print(koos)
+            #             print(batt_rave[koos])
+            #         # print(batt_rave)
+            #         print(bett_rave_amoos)
+            #         print(bett_rave_spas)
+            # if time_cha:
+            #     if cha_time > 0.1:
+            #         print((cha_loc_1-cha_loc_0).total_seconds())
+            #         print((cha_loc_2-cha_loc_1).total_seconds())
+            #         print((cha_loc_3-cha_loc_2).total_seconds())
+            #         print((cha_loc_4-cha_loc_3).total_seconds())
+            #         print((cha_loc_5-cha_loc_4).total_seconds())
+            #         print((cha_loc_6-cha_loc_5).total_seconds())
+            #         print((cha_loc_7-cha_loc_6).total_seconds())
+            #         print(vehicles_charging)
+            #         print(original_battery_spaces)
+            #         print(battery_spaces_after_charging)
+            #         print(cha_pi)
+            #         print(cha_pi_a)
+            #         print(cha_pi_b)
+            #         print(cha_pi_c)
+            #         print(kazi, kozi, kuzi)
+            #         print(lazi, lozi, luzi)
+                # Issue mostly at home, sometimes leisure
 
-      
+                # exit()
+        # print(battery_space['home'])
         battery_space = travel_space_occupation(
             battery_space, time_tag, time_tag_index, run_range,
             run_mobility_matrix,
@@ -582,13 +883,65 @@ def get_charging_profile(parameters):
             charge_drawn_from_network,
             time_tag, parameters)
         )
-
+        # print(battery_space['home'])
+        # if time_tag_index==600:
+        #     print(battery_space['home'].loc[time_tag])
+        #     print(charge_drawn_by_vehicles.loc[time_tag])
+        #     exit()
 
         loop_start = datetime.datetime.now()
         
     
         # We start with the battery space reduction duw to moving
 
+
+
+        # if time_batt:
+        #     batt_start = datetime.datetime.now()
+        #     batt_times = {}
+        #     # print(location_split.loc[time_tag])
+        #     batt_ooo = {}
+        #     batt_end_loc = {}
+        #     batt_rave_index_tuples = [
+        #         (b_start_location, b_end_location)
+        #         for b_start_location in location_names
+        #         for b_end_location in location_names]
+        #     batt_rave_index = pd.MultiIndex.from_tuples(
+        #         batt_rave_index_tuples, names=['Start', 'End']
+        #     )
+        #     batt_rave_base = pd.DataFrame(index=batt_rave_index)
+        #     batt_rave = {}
+        #     bett_rave_amoos = {}
+        #     bett_rave_spas = {}
+
+        # battery_space = travel_space_occupation(
+        #     battery_space, time_tag, time_tag_index, run_range,
+        #     run_mobility_matrix,
+        #     parameters
+        # )
+
+        # #Charging
+        # if time_tag_index == 117848: #7818: #510, 1013, 1384, 1800, 3832 4883  #3856, 4913, 6190, 7818
+        #     print(time_tag)
+        #     print(batt_time)
+        #     print(batt_times)
+        #     print(batt_end_loc)
+        #     print(batt_ooo)
+        #     # exit()
+
+        # if time_cha:
+        #     cha_loc = {}
+        #     cha_start = datetime.datetime.now()
+        #     cha_pi = {}
+        #     cha_pi_a = {}
+        #     cha_pi_b = {}
+        #     cha_pi_c = {}
+        #     kazi = {}
+        #     kozi = {}
+        #     kuzi = {}
+        #     lazi = {}
+        #     lozi = {}
+        #     luzi = {}
   
 
     print('Empty DF?')
@@ -631,3 +984,4 @@ if __name__ == '__main__':
     start_ = datetime.datetime.now()
     charging_profile = get_charging_profile(parameters)
     print((datetime.datetime.now()-start_).total_seconds())
+    exit()   
