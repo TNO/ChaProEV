@@ -712,7 +712,9 @@ country_code_header = 'Map country'
 country_code_header_in_map_data = 'CNTR_CODE'
 heat_bar_map = 'Mopo_to_dark'
 
-[charging]
-departures_threshold = 1e-12
+[numbers]
+zero_threshold = 1e-12
 # Float precision can mean that we have exteremly small values
 # that are actually zero
+
+[charging]
