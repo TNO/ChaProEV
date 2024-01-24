@@ -60,7 +60,8 @@ from ETS_CookBook import ETS_CookBook as cook
 
 
 def download_cds_weather_quantity(
-      quantity, year, month, days, hours, area, download_folder):
+    quantity, year, month, days, hours, area, download_folder
+):
     '''
     Downloads CDS (Climate Data Store) ERA-5 weather data for a given quantity
     in a given area (given by a list with:
@@ -88,9 +89,9 @@ def download_cds_weather_quantity(
             'day': days,
             'time': hours,
             'area': area,
-            'format': 'grib'
+            'format': 'grib',
         },
-        f'{download_folder}/{quantity}_{year}_{month}.grib'
+        f'{download_folder}/{quantity}_{year}_{month}.grib',
     )
 
 
@@ -111,12 +112,14 @@ def download_all_cds_weather_data(parameters):
     start_year = source_data_parameters['start_year']
     end_year = source_data_parameters['end_year']
 
-    years = [str(year) for year in range(start_year, end_year+1)]
+    years = [str(year) for year in range(start_year, end_year + 1)]
     months = [
-        f'{month_number:02d}' for month_number in range(1, MONTHS_IN_A_YEAR+1)
+        f'{month_number:02d}'
+        for month_number in range(1, MONTHS_IN_A_YEAR + 1)
     ]
     days = [
-        f'{day_number:02d}' for day_number in range(1, MAX_DAYS_IN_A_MONTH+1)]
+        f'{day_number:02d}' for day_number in range(1, MAX_DAYS_IN_A_MONTH + 1)
+    ]
     quantities = source_data_parameters['quantities']
     hours = [f'{hour_number:02d}:00' for hour_number in range(HOURS_IN_A_DAY)]
     latitude_min = source_data_parameters['latitude_min']
@@ -136,9 +139,8 @@ def download_all_cds_weather_data(parameters):
 
 
 def make_weather_dataframe(
-        raw_weather_dataframe, quantity, quantity_tag, quantity_name,
-        parameters
-        ):
+    raw_weather_dataframe, quantity, quantity_tag, quantity_name, parameters
+):
     '''
     This function makes a weather DataFrame into one we can use by
     processing data into forms useful for the model.
@@ -167,13 +169,13 @@ def make_weather_dataframe(
     latitudes = [
         np.round(latitude, 1)
         for latitude in np.arange(
-            latitude_min, latitude_max+coordinate_step, coordinate_step
+            latitude_min, latitude_max + coordinate_step, coordinate_step
         )
     ]
     longitudes = [
         np.round(longitude, 1)
         for longitude in np.arange(
-            longitude_min, longitude_max+coordinate_step, coordinate_step
+            longitude_min, longitude_max + coordinate_step, coordinate_step
         )
     ]
     KELVIN_TO_CELSIUS = weather_parameters['KELVIN_TO_CELSIUS']
@@ -187,16 +189,14 @@ def make_weather_dataframe(
     # (See general module exaplanation).
     raw_weather_dataframe = raw_weather_dataframe.loc[
         np.round(
-            raw_weather_dataframe.index.get_level_values('latitude'),
-            1
-            ).isin(latitudes)
+            raw_weather_dataframe.index.get_level_values('latitude'), 1
+        ).isin(latitudes)
     ]
 
     raw_weather_dataframe = raw_weather_dataframe.loc[
         np.round(
-            raw_weather_dataframe.index.get_level_values('longitude'),
-            1
-            ).isin(longitudes)
+            raw_weather_dataframe.index.get_level_values('longitude'), 1
+        ).isin(longitudes)
     ]
 
     # We process the time data into time tags (if needed)
@@ -219,13 +219,14 @@ def make_weather_dataframe(
 
     # We can collect everyting into a processed dataframe
     processed_weather_dataframe = pd.DataFrame(
-        values, columns=[quantity_name],
-        index=[weather_data_time_tags, latitudes, longitudes]
+        values,
+        columns=[quantity_name],
+        index=[weather_data_time_tags, latitudes, longitudes],
     )
 
     processed_weather_dataframe.index.rename(
         processed_index_tags, inplace=True
-        )
+    )
 
     return processed_weather_dataframe
 
@@ -241,9 +242,9 @@ def write_weather_database(parameters):
     weather_parameters = parameters['weather']['processed_data']
     raw_data_folder = weather_parameters['raw_data_folder']
     processed_folder = weather_parameters['processed_folder']
-    weather_database_file_name = (
-        weather_parameters['weather_database_file_name']
-    )
+    weather_database_file_name = weather_parameters[
+        'weather_database_file_name'
+    ]
     quantities = weather_parameters['quantities']
     quantity_tags = weather_parameters['quantity_tags']
     quantity_processed_names = weather_parameters['quantity_processed_names']
@@ -252,38 +253,43 @@ def write_weather_database(parameters):
     weather_database_file = f'{processed_folder}/{weather_database_file_name}'
 
     for quantity, quantity_tag, quantity_name in zip(
-            quantities, quantity_tags, quantity_processed_names):
+        quantities, quantity_tags, quantity_processed_names
+    ):
         # We create a new table for each quantity
         clear_table = True
         print(quantity)
         for file_name in os.listdir(raw_data_folder):
             if file_name.split('.')[-1] == 'grib':
                 file_header = file_name.split('.')[0]
-                if file_header[0:len(quantity)] == quantity:
-
+                if file_header[0 : len(quantity)] == quantity:
                     source_file = f'{raw_data_folder}/{file_name}'
                     quantity_dataframe = cook.from_grib_to_dataframe(
-                        source_file)
+                        source_file
+                    )
                     quantity_dataframe = quantity_dataframe.dropna(
                         subset=[quantity_tag]
                     )
 
                     processed_weather_dataframe = make_weather_dataframe(
-                        quantity_dataframe, quantity, quantity_tag,
-                        quantity_name, parameters
+                        quantity_dataframe,
+                        quantity,
+                        quantity_tag,
+                        quantity_name,
+                        parameters,
                     )
                     cook.put_dataframe_in_sql_in_chunks(
-                        processed_weather_dataframe, weather_database_file,
-                        quantity_name, chunk_size,
-                        drop_existing_table=clear_table
+                        processed_weather_dataframe,
+                        weather_database_file,
+                        quantity_name,
+                        chunk_size,
+                        drop_existing_table=clear_table,
                     )
                     # In following iteraions, we just want to
                     # append data to an existing table.
                     clear_table = False
 
 
-def get_hourly_values(
-        quantity_dataframe, quantity, quantity_name, parameters):
+def get_hourly_values(quantity_dataframe, quantity, quantity_name, parameters):
     '''
     This function takes a Dataframe for a give weather quantity.
     If this is a cumulative quantity, it adds hourly values to it.
@@ -299,11 +305,11 @@ def get_hourly_values(
     )
 
     if quantity in cumulative_quantities:
-        quantity_dataframe[f'Shifted {quantity_name}'] = (
-            [np.nan] * len(quantity_dataframe.index)
+        quantity_dataframe[f'Shifted {quantity_name}'] = [np.nan] * len(
+            quantity_dataframe.index
         )
-        quantity_dataframe[f'Hourly {quantity_name}'] = (
-         [np.nan] * len(quantity_dataframe.index)
+        quantity_dataframe[f'Hourly {quantity_name}'] = [np.nan] * len(
+            quantity_dataframe.index
         )
         # We need to do this for each latitude/longitude combination
         # We will take a slice and fill it with values
@@ -311,27 +317,30 @@ def get_hourly_values(
 
         for latitude in latitudes:
             for longitude in longitudes:
-
                 # We need to check if the latitude/longitude combination
                 # has data
                 if (latitude, longitude) in quantity_dataframe.index:
-
                     location_dataframe = quantity_dataframe.loc[
                         latitude, longitude
                     ]
 
                     cumulative_values = location_dataframe[
-                        quantity_name].values
+                        quantity_name
+                    ].values
                     shifted_cumulative_values = np.roll(cumulative_values, -1)
-                    location_dataframe.loc[:, f'Shifted {quantity_name}'] = (
-                        shifted_cumulative_values
-                    )
+                    location_dataframe.loc[
+                        :, f'Shifted {quantity_name}'
+                    ] = shifted_cumulative_values
 
                     location_dataframe.loc[:, f'Hourly {quantity_name}'] = (
                         shifted_cumulative_values
                         - cumulative_values
-                        * (location_dataframe.index.get_level_values(
-                            'Timetag').hour != 0)
+                        * (
+                            location_dataframe.index.get_level_values(
+                                'Timetag'
+                            ).hour
+                            != 0
+                        )
                         # At midnight, the shifted value is equal to the
                         # hourly value (it's the cumulative value
                         # of the time from 00.00  and 01.00).
@@ -341,11 +350,9 @@ def get_hourly_values(
                     # where the cumulative values
                     # sometimes decrease (slightly), so we change these to zero
                     location_dataframe.loc[
-                                location_dataframe[
-                                    f'Hourly {quantity_name}'
-                                ] < 0,
-                                f'Hourly {quantity_name}'
-                                ] = 0
+                        location_dataframe[f'Hourly {quantity_name}'] < 0,
+                        f'Hourly {quantity_name}',
+                    ] = 0
 
                     # The last value needs to be set to zero,
                     # as it will be based on the first value
@@ -353,7 +360,8 @@ def get_hourly_values(
                     # on the following year, which is not in the data)
                     location_dataframe.at[
                         location_dataframe.index.values[-1],
-                        f'Hourly {quantity_name}'] = 0
+                        f'Hourly {quantity_name}',
+                    ] = 0
 
     return quantity_dataframe
 
@@ -369,9 +377,9 @@ def get_all_hourly_values(parameters):
     cumulative_quantities = weather_parameters['cumulative_quantities']
     processed_index_tags = weather_parameters['processed_index_tags']
     processed_folder = weather_parameters['processed_folder']
-    weather_database_file_name = (
-        weather_parameters['weather_database_file_name']
-    )
+    weather_database_file_name = weather_parameters[
+        'weather_database_file_name'
+    ]
     weather_database = f'{processed_folder}/{weather_database_file_name}'
     quantity_names = weather_parameters['quantity_processed_names']
     chunk_size = weather_parameters['chunk_size']
@@ -385,12 +393,9 @@ def get_all_hourly_values(parameters):
 
     for quantity, quantity_name in zip(quantities, quantity_names):
         if quantity in cumulative_quantities:
-
             with sqlite3.connect(weather_database) as sql_connection:
                 sql_query = query_dictionary[quantity]
-                quantity_dataframe = pd.read_sql(
-                    sql_query, sql_connection
-                )
+                quantity_dataframe = pd.read_sql(sql_query, sql_connection)
                 quantity_dataframe['Timetag'] = pd.to_datetime(
                     quantity_dataframe['Timetag']
                 )
@@ -404,13 +409,11 @@ def get_all_hourly_values(parameters):
             quantity_dataframe = quantity_dataframe.sort_index()
 
             quantity_dataframe = get_hourly_values(
-                quantity_dataframe, quantity,
-                quantity_name, parameters
+                quantity_dataframe, quantity, quantity_name, parameters
             )
 
             cook.put_dataframe_in_sql_in_chunks(
-                quantity_dataframe, weather_database, quantity_name,
-                chunk_size
+                quantity_dataframe, weather_database, quantity_name, chunk_size
             )
 
 
@@ -423,8 +426,7 @@ def get_EV_tool_data(parameters):
 
     file_parameters = parameters['files']
 
-    EV_tool_parameters = parameters[
-        'weather']['EV_tool']
+    EV_tool_parameters = parameters['weather']['EV_tool']
 
     EV_tool_url = EV_tool_parameters['EV_tool_url']
     user_agent = EV_tool_parameters['user_agent']
@@ -455,21 +457,18 @@ def get_EV_tool_data(parameters):
         data_values = data_point.split(',')
         if len(data_values) > 1:
             # Some entries are not actual data entries and are empty
-            temperature = float(
-                data_values[0].strip(" '")
-            )
+            temperature = float(data_values[0].strip(" '"))
             temperatures.append(temperature)
             raw_efficiency_factor = data_values[1].split(':')[1]
-            efficiency_factor = float(
-                raw_efficiency_factor.split("'")[1]
-            )
+            efficiency_factor = float(raw_efficiency_factor.split("'")[1])
             efficiency_factors.append(efficiency_factor)
     efficiency_factor_column_name = EV_tool_parameters[
         'efficiency_factor_column_name'
     ]
     temperature_efficiencies = pd.DataFrame(
-        efficiency_factors, columns=[efficiency_factor_column_name],
-        index=temperatures
+        efficiency_factors,
+        columns=[efficiency_factor_column_name],
+        index=temperatures,
     )
 
     temperature_efficiencies.index.name = 'Temperature (°C)'
@@ -480,8 +479,8 @@ def get_EV_tool_data(parameters):
     groupfile_name = EV_tool_parameters['groupfile_name']
     folder = EV_tool_parameters['folder']
     cook.save_dataframe(
-        temperature_efficiencies, file_name, groupfile_name, folder,
-        parameters)
+        temperature_efficiencies, file_name, groupfile_name, folder, parameters
+    )
 
 
 def temperature_efficiency_factor(temperature, parameters):
@@ -495,17 +494,15 @@ def temperature_efficiency_factor(temperature, parameters):
     3) Consistency between the temparatures in and out of data range.
     '''
 
-    EV_tool_parameters = parameters[
-        'weather']['EV_tool']
+    EV_tool_parameters = parameters['weather']['EV_tool']
 
-    vehicle_temperature_efficiencies_parameters = parameters[
-        'weather']['vehicle_temperature_efficiencies']
+    vehicle_temperature_efficiencies_parameters = parameters['weather'][
+        'vehicle_temperature_efficiencies'
+    ]
 
     source_folder = vehicle_temperature_efficiencies_parameters['folder']
     source_file = vehicle_temperature_efficiencies_parameters['file_name']
-    values_header = EV_tool_parameters[
-        'efficiency_factor_column_name'
-    ]
+    values_header = EV_tool_parameters['efficiency_factor_column_name']
     fitting_polynomial_order = vehicle_temperature_efficiencies_parameters[
         'fitting_polynomial_order'
     ]
@@ -516,15 +513,13 @@ def temperature_efficiency_factor(temperature, parameters):
     data_temperature_range = temperature_efficiencies_data.index
     data_efficiencies = temperature_efficiencies_data[values_header]
     fitting_function_coefficients = np.polyfit(
-        data_temperature_range,
-        data_efficiencies,
-        fitting_polynomial_order
+        data_temperature_range, data_efficiencies, fitting_polynomial_order
     )
     fitting_function = np.poly1d(fitting_function_coefficients)
 
     efficiency_factor = fitting_function(temperature)
 
-    return (efficiency_factor)
+    return efficiency_factor
 
 
 def plot_temperature_efficiency(parameters):
@@ -534,8 +529,7 @@ def plot_temperature_efficiency(parameters):
     of electric vehicles.
     '''
 
-    EV_tool_parameters = parameters[
-        'weather']['EV_tool']
+    EV_tool_parameters = parameters['weather']['EV_tool']
 
     plot_colors = cook.get_extra_colors(parameters)
 
@@ -551,42 +545,57 @@ def plot_temperature_efficiency(parameters):
     source_data_file = plot_parameters['source_data_file']
     source_data = pd.read_pickle(f'{source_data_folder}/{source_data_file}')
     temperatures = source_data.index.values
-    values_header = EV_tool_parameters[
-        'efficiency_factor_column_name'
-    ]
+    values_header = EV_tool_parameters['efficiency_factor_column_name']
     geotab_data_efficiencies = source_data[values_header].values
     fitted_efficiencies = temperature_efficiency_factor(
-                            temperatures, parameters
-                        )
+        temperatures, parameters
+    )
 
-    temeprature_efficiency_figure, temperature_efficiency_plot = (
-        plt.subplots(1, 1)
+    temeprature_efficiency_figure, temperature_efficiency_plot = plt.subplots(
+        1, 1
     )
     temperature_efficiency_plot.plot(
-        temperatures, geotab_data_efficiencies, label='geotab_data',
-        marker='.', markersize=geotab_data_size, color=geotab_data_color,
-        linestyle='none')
+        temperatures,
+        geotab_data_efficiencies,
+        label='geotab_data',
+        marker='.',
+        markersize=geotab_data_size,
+        color=geotab_data_color,
+        linestyle='none',
+    )
     temperature_efficiency_plot.plot(
-        temperatures, fitted_efficiencies, label='fit',
-        linewidth=fit_line_size, color=fit_color)
+        temperatures,
+        fitted_efficiencies,
+        label='fit',
+        linewidth=fit_line_size,
+        color=fit_color,
+    )
     temperature_efficiency_plot.legend()
     temperature_efficiency_plot.set_xlabel('Temperature (°C)')
     temperature_efficiency_plot.set_ylabel('Efficiency factor')
     temperature_efficiency_plot.set_title(
         'Temperature correction factor of range/efficiency of BEVs',
-        fontsize=title_size)
+        fontsize=title_size,
+    )
     temperature_efficiency_plot.set_ylim(0, 1.05)
     temeprature_efficiency_figure.tight_layout()
     cook.save_figure(
         temeprature_efficiency_figure,
         'Vehicle_Temperature_correction_factor',
-        source_data_folder, parameters
+        source_data_folder,
+        parameters,
     )
 
 
 def get_scenario_location_weather_quantity(
-        location_latitude, location_longitude, run_start, run_end,
-        source_table, weather_quantity, parameters):
+    location_latitude,
+    location_longitude,
+    run_start,
+    run_end,
+    source_table,
+    weather_quantity,
+    parameters,
+):
     '''
     Returns a chosen weather quantity for a given location and a given
     runtime.
@@ -613,7 +622,10 @@ def get_scenario_location_weather_quantity(
     run_end = f'"{run_end}"'
 
     list_columns_to_fetch = [
-        'Latitude', 'Longitude', 'Timetag', weather_quantity
+        'Latitude',
+        'Longitude',
+        'Timetag',
+        weather_quantity,
     ]
     # We need to convert this into a string for a query
     columns_to_fetch = ','.join(list_columns_to_fetch)
@@ -621,12 +633,17 @@ def get_scenario_location_weather_quantity(
     query_filter_quantities = ['Latitude', 'Longitude', 'Timetag']
     query_filter_types = ['=', '=', 'between']
     query_filter_values = [
-        location_latitude, location_longitude, [run_start, run_end]
+        location_latitude,
+        location_longitude,
+        [run_start, run_end],
     ]
 
     location_scenario_query = cook.read_query_generator(
-        columns_to_fetch, source_table, query_filter_quantities,
-        query_filter_types, query_filter_values
+        columns_to_fetch,
+        source_table,
+        query_filter_quantities,
+        query_filter_types,
+        query_filter_values,
     )
 
     weather_values = pd.read_sql(
@@ -650,8 +667,9 @@ def get_scenario_weather_data(parameters):
     scenario = parameters['scenario']
     case_name = parameters['case_name']
 
-    weather_factors_table_root_name = parameters[
-        'run']['weather_factors_table_root_name']
+    weather_factors_table_root_name = parameters['run'][
+        'weather_factors_table_root_name'
+    ]
     weather_factors_table_name = (
         f'{scenario}_{weather_factors_table_root_name}'
     )
@@ -676,14 +694,14 @@ def get_scenario_weather_data(parameters):
         run_parameters['start']['month'],
         run_parameters['start']['day'],
         run_parameters['start']['hour'],
-        run_parameters['start']['minute']
+        run_parameters['start']['minute'],
     )
     run_end = datetime.datetime(
         run_parameters['end']['year'],
         run_parameters['end']['month'],
         run_parameters['end']['day'],
         run_parameters['end']['hour'],
-        run_parameters['end']['minute']
+        run_parameters['end']['minute'],
     )
 
     location_parameters = parameters['locations']
@@ -702,17 +720,22 @@ def get_scenario_weather_data(parameters):
                 weather_quantity = quantity
 
             weather_values = get_scenario_location_weather_quantity(
-                location_latitude, location_longitude, run_start, run_end,
-                source_table, weather_quantity, parameters
+                location_latitude,
+                location_longitude,
+                run_start,
+                run_end,
+                source_table,
+                weather_quantity,
+                parameters,
             )
             # weather_values['Location'] = [location]*len(weather_values.index)
             if location_first_quantity:
-                location_weather_dataframe['Location'] = (
-                    [location]*len(weather_values.index)
+                location_weather_dataframe['Location'] = [location] * len(
+                    weather_values.index
                 )
-                location_weather_dataframe['Timetag'] = (
-                    weather_values['Timetag']
-                )
+                location_weather_dataframe['Timetag'] = weather_values[
+                    'Timetag'
+                ]
                 location_weather_dataframe = (
                     location_weather_dataframe.set_index(
                         ['Location', 'Timetag']
@@ -720,20 +743,19 @@ def get_scenario_weather_data(parameters):
                 )
                 location_first_quantity = False
 
-            location_weather_dataframe[weather_quantity] = (
-                weather_values[weather_quantity].values
-            )
+            location_weather_dataframe[weather_quantity] = weather_values[
+                weather_quantity
+            ].values
 
         weather_dataframe = pd.concat(
-            [weather_dataframe, location_weather_dataframe],
-            ignore_index=False
+            [weather_dataframe, location_weather_dataframe], ignore_index=False
         )
 
-        weather_dataframe['Vehicle efficiency factor'] = (
-            temperature_efficiency_factor(
-                weather_dataframe['Temperature at 2 meters (°C)'].values,
-                parameters
-            )
+        weather_dataframe[
+            'Vehicle efficiency factor'
+        ] = temperature_efficiency_factor(
+            weather_dataframe['Temperature at 2 meters (°C)'].values,
+            parameters,
         )
 
         JOULES_IN_A_KWH = parameters['unit_conversions']['JOULES_IN_A_KWH']
@@ -748,8 +770,11 @@ def get_scenario_weather_data(parameters):
         )
 
     cook.save_dataframe(
-        weather_dataframe, weather_factors_table_name, groupfile_name,
-        output_folder, parameters
+        weather_dataframe,
+        weather_factors_table_name,
+        groupfile_name,
+        output_folder,
+        parameters,
     )
 
     return weather_dataframe
@@ -762,7 +787,7 @@ def solar_panels_efficiency_factor(temperature):
     THIS IS A PLACEHOLDER FUNCTION
     '''
     # THIS IS A PLACEHOLDER VALUE
-    efficiency_factor = np.exp(-((temperature-25)**2)/(100))/3
+    efficiency_factor = np.exp(-((temperature - 25) ** 2) / (100)) / 3
 
     return efficiency_factor
 
@@ -821,8 +846,13 @@ def setup_weather(parameters):
 
 
 def get_location_weather_quantity(
-        location_latitude, location_longitude, timetag,
-        source_table, weather_quantity, parameters):
+    location_latitude,
+    location_longitude,
+    timetag,
+    source_table,
+    weather_quantity,
+    parameters,
+):
     '''
     Returns the value a a chosen weather quantity for a given location and
     time tag.
@@ -843,25 +873,27 @@ def get_location_weather_quantity(
     timetag = f'"{timetag}"'
 
     list_columns_to_fetch = [
-        'Latitude', 'Longitude', 'Timetag', weather_quantity
+        'Latitude',
+        'Longitude',
+        'Timetag',
+        weather_quantity,
     ]
     # We need to convert this into a string for a query
     columns_to_fetch = ','.join(list_columns_to_fetch)
 
     query_filter_quantities = ['Latitude', 'Longitude', 'Timetag']
     query_filter_types = ['=', '=', '=']
-    query_filter_values = [
-        location_latitude, location_longitude, timetag
-    ]
+    query_filter_values = [location_latitude, location_longitude, timetag]
 
     scenario_query = cook.read_query_generator(
-        columns_to_fetch, source_table, query_filter_quantities,
-        query_filter_types, query_filter_values
+        columns_to_fetch,
+        source_table,
+        query_filter_quantities,
+        query_filter_types,
+        query_filter_values,
     )
 
-    weather_values = pd.read_sql(
-        scenario_query, weather_database_connection
-    )
+    weather_values = pd.read_sql(scenario_query, weather_database_connection)
 
     # The column does not contain double quotes and we need
     # the value (hence [0])
@@ -871,15 +903,17 @@ def get_location_weather_quantity(
 
 
 if __name__ == '__main__':
-
     parameters_file_name = f'scenarios/{scenario}.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
     scenario = parameters['scenario']
     setup_weather(parameters)
     print(
         get_location_weather_quantity(
-            52.0, 4.2, datetime.datetime(2020, 5, 8, 8, 0),
-            'Temperature at 2 meters (°C)', 'Temperature at 2 meters (°C)',
-            parameters
+            52.0,
+            4.2,
+            datetime.datetime(2020, 5, 8, 8, 0),
+            'Temperature at 2 meters (°C)',
+            'Temperature at 2 meters (°C)',
+            parameters,
         )
     )

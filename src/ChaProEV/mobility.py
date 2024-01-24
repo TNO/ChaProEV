@@ -28,6 +28,19 @@ except ModuleNotFoundError:
 
 
 def get_trip_probabilities_per_day_type(parameters):
+
+    vehicle = parameters['vehicle']['name']
+    if vehicle == 'car':
+        trip_probabilities_per_day_type = (
+            get_car_trip_probabilities_per_day_type(parameters)
+        )
+    else:
+        print('Vehicle does not have a model')
+        exit()
+
+    return trip_probabilities_per_day_type
+
+def get_car_trip_probabilities_per_day_type(parameters):
     '''
     This function computes the trip probabilities per day type.
     '''

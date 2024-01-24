@@ -36,3 +36,10 @@ def write_scenario_parameters(parameters):
             parameter_dataframe, parameter_dataframe_name,
             groupfile_name, output_folder, parameters
         )
+
+
+
+if __name__ == '__main__':
+    parameters_file_name = 'scenarios/baseline.toml'
+    parameters = cook.parameters_from_TOML(parameters_file_name)
+    write_scenario_parameters(parameters)

@@ -66,7 +66,7 @@ class Location:
 
     class_name = 'locations'
 
-    def __init__(location,  name, parameters):
+    def __init__(location, name, parameters):
         location.name = name
 
         location_parameters = parameters['locations'][name]
@@ -74,12 +74,12 @@ class Location:
         location.charging_power = location_parameters['charging_power']
         location.latitude = location_parameters['latitude']
         location.longitude = location_parameters['longitude']
-        location.base_charging_price = (
-            location_parameters['base_charging_price']
-        )
-        location.charging_desirability = (
-            location_parameters['charging_desirability']
-        )
+        location.base_charging_price = location_parameters[
+            'base_charging_price'
+        ]
+        location.charging_desirability = location_parameters[
+            'charging_desirability'
+        ]
 
 
 class Trip:
@@ -97,7 +97,7 @@ class Trip:
 
     class_name = 'trips'
 
-    def __init__(trip,  name, parameters):
+    def __init__(trip, name, parameters):
         trip.name = name
 
         location_parameters = parameters['locations']
@@ -110,9 +110,7 @@ class Trip:
         trip.percentage_station_users = trip_parameters[
             'percentage_station_users'
         ]
-        trip.start_probabilities = trip_parameters[
-            'start_probabilities'
-        ]
+        trip.start_probabilities = trip_parameters['start_probabilities']
         trip.day_start_hour = parameters['mobility_module']['day_start_hour']
         # We want to create a mobility matrix for the trip. This matrix will
         # have start and end locations (plus hour in day, starting
@@ -127,14 +125,15 @@ class Trip:
         ]
         mobility_index = pd.MultiIndex.from_tuples(
             mobility_index_tuples,
-            names=['From', 'To', 'Hour number (from day start)'])
-        mobility_quantities = (
-            parameters['mobility_module']['mobility_quantities']
+            names=['From', 'To', 'Hour number (from day start)'],
         )
+        mobility_quantities = parameters['mobility_module'][
+            'mobility_quantities'
+        ]
         trip.mobility_matrix = pd.DataFrame(
             np.zeros((len(mobility_index), len(mobility_quantities))),
             columns=mobility_quantities,
-            index=mobility_index
+            index=mobility_index,
         )
 
         trip.mobility_matrix = trip.mobility_matrix.sort_index()
@@ -159,13 +158,12 @@ class Trip:
             remainder = time_driving - math.floor(time_driving)
             # But only if it is not zero (to avoid adding an unnecessary index)
             if remainder > 0:
-                time_driving_in_intervals.append(
-                    remainder
-                )
+                time_driving_in_intervals.append(remainder)
             distance = leg_parameters['distance']
             road_type_mix = np.array(leg_parameters['road_type_mix']['mix'])
             road_type_weights = np.array(
-                parameters['transport_factors']['weights'])
+                parameters['transport_factors']['weights']
+            )
             road_type_factor = sum(road_type_mix * road_type_weights)
             weighted_distance = road_type_factor * distance
 
@@ -176,7 +174,7 @@ class Trip:
                 # to know two things: the time spent driving in the
                 # previous leg, and the
                 # time spent between legs (i.e. the idle time)
-                time_spent_at_location = trip.time_between_legs[leg_index-1]
+                time_spent_at_location = trip.time_between_legs[leg_index - 1]
                 time_shift = time_driving_previous_leg + time_spent_at_location
                 # For previous leg departures in slot N, the corresponding
                 # current leg departures.
@@ -187,17 +185,14 @@ class Trip:
                 # hours are your units), then arrivals will occur in time
                 # slots (hours if you use them) N+9 and N+10
                 # The portion in the first slot is:
-                first_slot_proportion = (1-time_shift % 1)
+                first_slot_proportion = 1 - time_shift % 1
                 # In the example above, the decimal part is 0.25, so the
                 # proportion is (1-0.25)=0.75
                 current_leg_start_probabilities = (
                     first_slot_proportion
-                    *
-                    np.roll(previous_leg_start_probabilities, slot_shift)
-                    +
-                    (1-first_slot_proportion)
-                    *
-                    np.roll(previous_leg_start_probabilities, slot_shift+1)
+                    * np.roll(previous_leg_start_probabilities, slot_shift)
+                    + (1 - first_slot_proportion)
+                    * np.roll(previous_leg_start_probabilities, slot_shift + 1)
                 )
 
             else:
@@ -216,90 +211,81 @@ class Trip:
             # hours are your units), then arrivals will occur in time
             # slots (hours if you use them) N+1 and N+2
             # The portion in the first slot is:
-            first_slot_proportion = (1-time_driving % 1)
+            first_slot_proportion = 1 - time_driving % 1
             # In the example above, the decimal part is 0.25, so the proportion
             # is (1-0.25)=0.75
-            current_leg_end_probabilities = (
-                    first_slot_proportion
-                    *
-                    np.roll(current_leg_start_probabilities, slot_shift)
-                    +
-                    (1-first_slot_proportion)
-                    *
-                    np.roll(current_leg_start_probabilities, slot_shift+1)
-                )
+            current_leg_end_probabilities = first_slot_proportion * np.roll(
+                current_leg_start_probabilities, slot_shift
+            ) + (1 - first_slot_proportion) * np.roll(
+                current_leg_start_probabilities, slot_shift + 1
+            )
 
             # With this, we can add this leg's contribution to the
             # mobility matrix
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Departures amount'] = (
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Departures amount'
-                    ].values
-                    +
-                    current_leg_start_probabilities
+                (start_location, end_location), 'Departures amount'
+            ] = (
+                trip.mobility_matrix.loc[
+                    (start_location, end_location), 'Departures amount'
+                ].values
+                + current_leg_start_probabilities
             )
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Arrivals amount'] = (
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Arrivals amount'
-                    ].values
-                    +
-                    current_leg_end_probabilities
+                (start_location, end_location), 'Arrivals amount'
+            ] = (
+                trip.mobility_matrix.loc[
+                    (start_location, end_location), 'Arrivals amount'
+                ].values
+                + current_leg_end_probabilities
             )
 
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Departures kilometers'] = (
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Departures kilometers'
-                    ].values
-                    +
-                    np.array(current_leg_start_probabilities) * distance
+                (start_location, end_location), 'Departures kilometers'
+            ] = (
+                trip.mobility_matrix.loc[
+                    (start_location, end_location), 'Departures kilometers'
+                ].values
+                + np.array(current_leg_start_probabilities) * distance
             )
             trip.mobility_matrix.loc[
                 (start_location, end_location),
-                'Departures weighted kilometers'] = (
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location),
-                        'Departures weighted kilometers'
-                    ].values
-                    +
-                    np.array(current_leg_start_probabilities)
-                    * weighted_distance
+                'Departures weighted kilometers',
+            ] = (
+                trip.mobility_matrix.loc[
+                    (start_location, end_location),
+                    'Departures weighted kilometers',
+                ].values
+                + np.array(current_leg_start_probabilities) * weighted_distance
             )
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Arrivals kilometers'] = (
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Arrivals kilometers'
-                    ].values
-                    +
-                    np.array(current_leg_end_probabilities) * distance
+                (start_location, end_location), 'Arrivals kilometers'
+            ] = (
+                trip.mobility_matrix.loc[
+                    (start_location, end_location), 'Arrivals kilometers'
+                ].values
+                + np.array(current_leg_end_probabilities) * distance
             )
             trip.mobility_matrix.loc[
-                (start_location, end_location),
-                'Arrivals weighted kilometers'] = (
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location),
-                        'Arrivals weighted kilometers'
-                    ].values
-                    +
-                    np.array(current_leg_end_probabilities) * weighted_distance
+                (start_location, end_location), 'Arrivals weighted kilometers'
+            ] = (
+                trip.mobility_matrix.loc[
+                    (start_location, end_location),
+                    'Arrivals weighted kilometers',
+                ].values
+                + np.array(current_leg_end_probabilities) * weighted_distance
             )
             # We also track the duration, distance, and wrighted distance
             # Note that these could change with time as well (for example
             # with a correction factor added at the run level)
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Duration (hours)'] = (
-                    time_driving
-                )
+                (start_location, end_location), 'Duration (hours)'
+            ] = time_driving
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Distance (km)'] = (
-                    distance
-                )
+                (start_location, end_location), 'Distance (km)'
+            ] = distance
             trip.mobility_matrix.loc[
-                (start_location, end_location), 'Weighted distance (km)'] = (
-                    weighted_distance
-                )
+                (start_location, end_location), 'Weighted distance (km)'
+            ] = weighted_distance
 
             # Finally, we update the previous leg values with the current ones
             previous_leg_start_probabilities = current_leg_start_probabilities
@@ -313,38 +299,34 @@ class Trip:
             for end_location in location_names
             for time_tag in run_time_tags
         ]
-        mobility_index_names = (
-            parameters['mobility_module']['mobility_index_names']
-        )
+        mobility_index_names = parameters['mobility_module'][
+            'mobility_index_names'
+        ]
         run_mobility_index = pd.MultiIndex.from_tuples(
-            run_mobility_index_tuples,
-            names=mobility_index_names)
-        mobility_quantities = (
-            parameters['mobility_module']['mobility_quantities']
+            run_mobility_index_tuples, names=mobility_index_names
         )
+        mobility_quantities = parameters['mobility_module'][
+            'mobility_quantities'
+        ]
         trip.run_mobility_matrix = pd.DataFrame(
-            columns=mobility_quantities,
-            index=run_mobility_index
+            columns=mobility_quantities, index=run_mobility_index
         )
         trip.run_mobility_matrix = trip.run_mobility_matrix.sort_index()
 
         for start_location in location_names:
             for end_location in location_names:
-
-                cloned_mobility_matrix = (
-                    run_time.from_day_to_run(
-                        trip.mobility_matrix.loc[
-                            (start_location, end_location),
-                            mobility_quantities
-                        ],
-                        run_time_tags,
-                        trip.day_start_hour, parameters
-                    )
+                cloned_mobility_matrix = run_time.from_day_to_run(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), mobility_quantities
+                    ],
+                    run_time_tags,
+                    trip.day_start_hour,
+                    parameters,
                 )
                 for mobility_quantity in mobility_quantities:
                     trip.run_mobility_matrix.at[
                         (start_location, end_location), mobility_quantity
-                        ] = cloned_mobility_matrix[mobility_quantity].values
+                    ] = cloned_mobility_matrix[mobility_quantity].values
 
         frequency_parameters = parameters['run']['frequency']
         trip_frequency_size = frequency_parameters['size']
@@ -356,7 +338,9 @@ class Trip:
         trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
         trip_end = datetime.datetime(2001, 1, 2, trip.day_start_hour)
         trip_time_tags = pd.date_range(
-            start=trip_start, end=trip_end, freq=trip_frequency,
+            start=trip_start,
+            end=trip_end,
+            freq=trip_frequency,
             inclusive='left'
             # We want the start timetag, but not the end one, so we need
             # to say it is closed left
@@ -412,12 +396,17 @@ def declare_all_instances(parameters):
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
+    # loc_start = datetime.datetime.now()
     locations = declare_class_instances(Location, parameters)
+    # print('Loc', (datetime.datetime.now()-loc_start).total_seconds())
+    # leg_start = datetime.datetime.now()
     legs = declare_class_instances(Leg, parameters)
-
+    # print('Leg', (datetime.datetime.now()-leg_start).total_seconds())
+    # loc_conn_start = datetime.datetime.now()
     # We want to get the location connections
-    location_connections_headers = parameters[
-            'mobility_module']['location_connections_headers']
+    location_connections_headers = parameters['mobility_module'][
+        'location_connections_headers'
+    ]
     location_connections_index_tuples = [
         (start_location.name, end_location.name)
         for start_location in locations
@@ -427,71 +416,79 @@ def declare_all_instances(parameters):
         location_connections_index_tuples, names=['From', 'To']
     )
     location_connections = pd.DataFrame(
-        columns=location_connections_headers,
-        index=location_connections_index
+        columns=location_connections_headers, index=location_connections_index
     )
-    road_type_weights = np.array(
-                parameters['transport_factors']['weights'])
-        
+    road_type_weights = np.array(parameters['transport_factors']['weights'])
+
     for leg in legs:
         road_type_factor = sum(leg.road_type_mix * road_type_weights)
         location_connections.loc[leg.start_location, leg.end_location] = (
-            leg.duration, leg.distance, road_type_factor*leg.distance
+            leg.duration,
+            leg.distance,
+            road_type_factor * leg.distance,
         )
+
     cook.save_dataframe(
-        location_connections, f'{scenario}_location_connections',
-        groupfile_name, output_folder, parameters)
-    
+        location_connections,
+        f'{scenario}_location_connections',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
 
+    # print('Loc', (datetime.datetime.now()-loc_conn_start).total_seconds())
 
-    
+    # tri_start = datetime.datetime.now()
 
     trips = declare_class_instances(Trip, parameters)
-
+    # print('Trip', (datetime.datetime.now()-tri_start).total_seconds())
+    # matrix_start = datetime.datetime.now()
     # We want to save the moblity matrixes
     for trip in trips:
-        mobility_table_name = (
-            f'{scenario}_{trip.name}_mobility_matrix'
-        )
+        mobility_table_name = f'{scenario}_{trip.name}_mobility_matrix'
         cook.save_dataframe(
-            trip.mobility_matrix, mobility_table_name, groupfile_name,
-            output_folder, parameters
+            trip.mobility_matrix,
+            mobility_table_name,
+            groupfile_name,
+            output_folder,
+            parameters,
         )
-        run_mobility_table_name = (
-            f'{scenario}_{trip.name}_run_mobility_matrix'
-        )
+        run_mobility_table_name = f'{scenario}_{trip.name}_run_mobility_matrix'
         cook.save_dataframe(
-            trip.run_mobility_matrix, run_mobility_table_name, groupfile_name,
-            output_folder, parameters
+            trip.run_mobility_matrix,
+            run_mobility_table_name,
+            groupfile_name,
+            output_folder,
+            parameters,
         )
+    # print('Mat', (datetime.datetime.now()-matrix_start).total_seconds())
 
     return legs, locations, trips
 
 
 if __name__ == '__main__':
-
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
-    legs, locations, trips = declare_all_instances(
-        parameters)
+    legs, locations, trips = declare_all_instances(parameters)
 
     for leg in legs:
         print(
-            leg.name, leg.distance, leg.duration, leg.hour_in_day_factors,
-            leg.start_location, leg.end_location,
-            leg.road_type_mix
+            leg.name,
+            leg.distance,
+            leg.duration,
+            leg.hour_in_day_factors,
+            leg.start_location,
+            leg.end_location,
+            leg.road_type_mix,
         )
 
     for location in locations:
-        print(
-            location.name,
-            location.connectivity,
-            location.charging_power
-        )
+        print(location.name, location.connectivity, location.charging_power)
 
     for trip in trips:
-
         print(
-            trip.name, trip.legs, trip.percentage_station_users,
+            trip.name,
+            trip.legs,
+            trip.percentage_station_users,
             trip.start_probabilities,
         )

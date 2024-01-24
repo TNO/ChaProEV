@@ -52,22 +52,41 @@ if __name__ == '__main__':
         if scenario_file.split('.')[1] == 'toml':
             parameters_file_name = f'scenarios/{scenario_file}'
             parameters = cook.parameters_from_TOML(parameters_file_name)
-
-            legs, locations, trips = define.declare_all_instances(
-                parameters)
+            print((datetime.datetime.now() - start_).total_seconds())
+            decla_start = datetime.datetime.now()
+            legs, locations, trips = define.declare_all_instances(parameters)
+            print(
+                'Declare',
+                (datetime.datetime.now() - decla_start).total_seconds(),
+            )
             # for trip in trips:
             #     print(trip.name)
             #     print(trip.run_mobility_matrix)
             # exit()
+            mob_start = datetime.datetime.now()
             mobility.make_mobility_data(parameters)
+            print(
+                'Mobility',
+                (datetime.datetime.now() - mob_start).total_seconds(),
+            )
+            cons_start = datetime.datetime.now()
             consumption.create_consumption_tables(parameters)
+            print(
+                'Cons', (datetime.datetime.now() - cons_start).total_seconds()
+            )
+            charge_start = datetime.datetime.now()
             (
-                battery_space, charge_drawn_by_vehicles,
-                charge_drawn_from_network
-                 ) = charging.get_charging_profile(parameters)
-            print(charge_drawn_by_vehicles)
-            print(charge_drawn_from_network)
-    print((datetime.datetime.now()-start_).total_seconds())
+                battery_space,
+                charge_drawn_by_vehicles,
+                charge_drawn_from_network,
+            ) = charging.get_charging_profile(parameters)
+            print(
+                'Charge',
+                (datetime.datetime.now() - charge_start).total_seconds(),
+            )
+            # print(charge_drawn_by_vehicles)
+            # print(charge_drawn_from_network)
+    print('Tot', (datetime.datetime.now() - start_).total_seconds())
 
     # writing.write_scenario_parameters(parameters)
     # weather.setup_weather(parameters)
@@ -77,3 +96,4 @@ if __name__ == '__main__':
     # run_trip_probabilities = (
     #     mobility.get_run_trip_probabilities(parameters)
     # )
+    # Histograms!

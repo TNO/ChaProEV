@@ -21,3 +21,34 @@ select * from baseline_yearly_consumption_table;
 select * from baseline_charge_drawn_from_network;
 -- select * from baseline_run_mobility_matrix where "From"="leisure"
 -- and "To"="home" limit 100;
+select printf("%.2f",sum(home)) as "Home (kWh)", 
+printf("%.2f",sum(work)) as "Work (kWh)",
+printf("%.2f",sum(leisure)) as "Leisure (kWh)", 
+printf("%.2f",sum(weekend)) as "Weekend (kWh)",
+printf("%.2f",sum(holiday)) as "Holiday (kWh)", 
+printf("%.2f",sum(home)+sum(work)+sum(leisure)
++sum(weekend)+sum(holiday) )
+as "Total (kWh)" 
+from baseline_charge_drawn_by_vehicles;
+
+select 
+printf("%.2f%%", 100*"Home (kWh)"/"Total (kWh)") as "Home (%)",
+printf("%.2f%%", 100*"Work (kWh)"/"Total (kWh)") as "Work (%)",
+printf("%.2f%%", 100*"Leisure (kWh)"/"Total (kWh)") as "Leisure (%)",
+printf("%.2f%%", 100*"Weekend (kWh)"/"Total (kWh)") as "Weekend (%)",
+printf("%.2f%%", 100*"Holiday (kWh)"/"Total (kWh)") as "Holiday (%)"
+from (
+select printf("%.2f",sum(home)) as "Home (kWh)", 
+printf("%.2f",sum(work)) as "Work (kWh)",
+printf("%.2f",sum(leisure)) as "Leisure (kWh)", 
+printf("%.2f",sum(weekend)) as "Weekend (kWh)",
+printf("%.2f",sum(holiday)) as "Holiday (kWh)", 
+printf("%.2f",sum(home)+sum(work)+sum(leisure)
++sum(weekend)+sum(holiday) )
+as "Total (kWh)" 
+from baseline_charge_drawn_by_vehicles
+);
+
+
+
+
