@@ -963,8 +963,20 @@ def get_location_split(parameters):
             connectivity_per_location[location_name]
             * location_parameters[location_name]['connectivity']
         )
+    maximal_delivered_power_location = connectivity_per_location.copy()
+    for location_name in location_names:
+        maximal_delivered_power_location[location_name] = (
+            maximal_delivered_power_location[location_name]
+            * location_parameters[location_name]['charging_power']
+        )
     connectivity = pd.DataFrame(index=connectivity_per_location.index)
     connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)
+    maximal_deivered_power = pd.DataFrame(
+        index=maximal_delivered_power_location.index
+    )
+    maximal_deivered_power[
+        'Maximal Delivered Power (kW)'
+    ] = maximal_delivered_power_location.sum(axis=1)
     cook.save_dataframe(
         location_split,
         f'{scenario}_location_split',
@@ -989,6 +1001,20 @@ def get_location_split(parameters):
     cook.save_dataframe(
         connectivity,
         f'{scenario}_connectivity',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    cook.save_dataframe(
+        maximal_delivered_power_location,
+        f'{scenario}_maximal_delivered_power_per_location',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    cook.save_dataframe(
+        maximal_deivered_power,
+        f'{scenario}_maximal_delivered_power',
         groupfile_name,
         output_folder,
         parameters,
