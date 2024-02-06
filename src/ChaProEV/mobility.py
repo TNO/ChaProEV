@@ -28,7 +28,6 @@ except ModuleNotFoundError:
 
 
 def get_trip_probabilities_per_day_type(parameters):
-
     vehicle = parameters['vehicle']['name']
     if vehicle == 'car':
         trip_probabilities_per_day_type = (
@@ -40,12 +39,13 @@ def get_trip_probabilities_per_day_type(parameters):
 
     return trip_probabilities_per_day_type
 
+
 def get_car_trip_probabilities_per_day_type(parameters):
     '''
     This function computes the trip probabilities per day type.
     '''
-    day_type_start_location_split = (
-        get_day_type_start_location_split(parameters)
+    day_type_start_location_split = get_day_type_start_location_split(
+        parameters
     )
 
     trip_list = list(parameters['trips'].keys())
@@ -66,75 +66,72 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     mobility_module_parameters = parameters['mobility_module']
     worked_hours_per_year = mobility_module_parameters['worked_hours_per_year']
-    work_hours_in_a_work_day = (
-        mobility_module_parameters['work_hours_in_a_work_day']
-    )
+    work_hours_in_a_work_day = mobility_module_parameters[
+        'work_hours_in_a_work_day'
+    ]
     day_types = mobility_module_parameters['day_types']
-    percentage_working_on_a_work_week = (
-        mobility_module_parameters['percentage_working_on_a_work_week']
-    )
-    hours_worked_per_work_week = (
-        mobility_module_parameters['hours_worked_per_work_week']
-    )
-    hours_in_a_standard_work_week = (
-        mobility_module_parameters['hours_in_a_standard_work_week']
-    )
+    percentage_working_on_a_work_week = mobility_module_parameters[
+        'percentage_working_on_a_work_week'
+    ]
+    hours_worked_per_work_week = mobility_module_parameters[
+        'hours_worked_per_work_week'
+    ]
+    hours_in_a_standard_work_week = mobility_module_parameters[
+        'hours_in_a_standard_work_week'
+    ]
     holiday_weeks = mobility_module_parameters['holiday_weeks']
-    number_of_holiday_weeks = (
-        mobility_module_parameters['number_of_holiday_weeks']
-    )
+    number_of_holiday_weeks = mobility_module_parameters[
+        'number_of_holiday_weeks'
+    ]
     holiday_trips_taken = mobility_module_parameters['holiday_trips_taken']
-    time_spent_at_holiday_destination = (
-        mobility_module_parameters['time_spent_at_holiday_destination']
-    )
+    time_spent_at_holiday_destination = mobility_module_parameters[
+        'time_spent_at_holiday_destination'
+    ]
     days_in_holiday_weeks = (
         DAYS_IN_A_YEAR * number_of_holiday_weeks / weeks_in_a_year
     )
     weekend_days_per_year = (
         DAYS_IN_A_YEAR * len(weekend_day_numbers) / DAYS_IN_A_WEEK
     )
-    weekend_trips_per_year = (
-        mobility_module_parameters['weekend_trips_per_year']
-    )
-    leisure_trips_per_weekend = (
-        mobility_module_parameters['leisure_trips_per_weekend']
-    )
-    leisure_trips_per_week_outside_weekends = (
-        mobility_module_parameters['leisure_trips_per_week_outside_weekends']
-    )
+    weekend_trips_per_year = mobility_module_parameters[
+        'weekend_trips_per_year'
+    ]
+    leisure_trips_per_weekend = mobility_module_parameters[
+        'leisure_trips_per_weekend'
+    ]
+    leisure_trips_per_week_outside_weekends = mobility_module_parameters[
+        'leisure_trips_per_week_outside_weekends'
+    ]
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays = (
         mobility_module_parameters[
-            'maximal_fill_percentage_leisure_trips_on_non_work_weekdays']
+            'maximal_fill_percentage_leisure_trips_on_non_work_weekdays'
+        ]
     )
 
     # Some useful quantities telling us how many of which day type there are
     # per year
-    weekday_proportion = (
-        number_weekdays / DAYS_IN_A_WEEK
-    )
+    weekday_proportion = number_weekdays / DAYS_IN_A_WEEK
     workweek_proportion = number_of_holiday_weeks / weeks_in_a_year
     weekdays_in_work_weeks = (
         weekday_proportion * workweek_proportion * DAYS_IN_A_YEAR
     )
     weekdays_in_holiday_weeks = (
-        weekday_proportion * (1-workweek_proportion) * DAYS_IN_A_YEAR
+        weekday_proportion * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     )
     weekend_days_in_holiday_weeks = (
-        (1-weekday_proportion) * (1-workweek_proportion) * DAYS_IN_A_YEAR
+        (1 - weekday_proportion) * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     )
 
-    holiday_departures_in_weekend_week_numbers = (
-        parameters['mobility_module'][
-            'holiday_departures_in_weekend_week_numbers']
-    )
+    holiday_departures_in_weekend_week_numbers = parameters['mobility_module'][
+        'holiday_departures_in_weekend_week_numbers'
+    ]
     number_of_holiday_departure_weekends = len(
         holiday_departures_in_weekend_week_numbers
     )
-    holiday_returns_in_weekend_week_numbers = (
-        parameters['mobility_module'][
-            'holiday_returns_in_weekend_week_numbers']
-    )
+    holiday_returns_in_weekend_week_numbers = parameters['mobility_module'][
+        'holiday_returns_in_weekend_week_numbers'
+    ]
     number_of_holiday_return_weekends = len(
         holiday_returns_in_weekend_week_numbers
     )
@@ -150,26 +147,36 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # We assume that holiday trips occur on certain weekends
     # (some for departures, some for returns))
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['weekday_in_work_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['weekend_in_work_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['weekday_in_work_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['weekend_in_work_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['weekday_in_holiday_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['weekend_in_holiday_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['weekday_in_holiday_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['weekend_in_holiday_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['weekend_holiday_returns'] = 0
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['weekend_holiday_departures'] = 0
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'weekday_in_work_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'weekend_in_work_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'weekday_in_work_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'weekend_in_work_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'weekday_in_holiday_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'weekend_in_holiday_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'weekday_in_holiday_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'weekend_in_holiday_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'weekend_holiday_returns'
+    ] = 0
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'weekend_holiday_departures'
+    ] = 0
 
     # The only non-zero values are for holidays outward in departure
     # weekends and for holidays back in return weekends,
@@ -177,83 +184,79 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # These are simply given by the amount of holiday trips taken
     # divided by the amount of respective weekends and
     # by the length of a weekend
-    holiday_departure_probability = (
-        holiday_trips_taken
-        /
-        (
-            number_of_holiday_departure_weekends
-            *
-            len(weekend_day_numbers)
-            )
+    holiday_departure_probability = holiday_trips_taken / (
+        number_of_holiday_departure_weekends * len(weekend_day_numbers)
     )
 
-    holiday_return_probability = (
-        holiday_trips_taken
-        /
-        (
-            number_of_holiday_return_weekends
-            *
-            len(weekend_day_numbers)
-            )
+    holiday_return_probability = holiday_trips_taken / (
+        number_of_holiday_return_weekends * len(weekend_day_numbers)
     )
 
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['weekend_holiday_departures'] = (
-            holiday_departure_probability
-        )
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['weekend_holiday_returns'] = (
-            holiday_return_probability
-        )
-    trip_probabilities_per_day_type.loc[
-        'holiday_outward']['holiday_overlap_weekend'] = (
-            holiday_departure_probability
-        )
-    trip_probabilities_per_day_type.loc[
-        'holiday_back']['holiday_overlap_weekend'] = (
-            holiday_return_probability
-        )
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'weekend_holiday_departures'
+    ] = holiday_departure_probability
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'weekend_holiday_returns'
+    ] = holiday_return_probability
+    trip_probabilities_per_day_type.loc['holiday_outward'][
+        'holiday_overlap_weekend'
+    ] = holiday_departure_probability
+    trip_probabilities_per_day_type.loc['holiday_back'][
+        'holiday_overlap_weekend'
+    ] = holiday_return_probability
 
     # Weekend trips occur on the weekend and their probability is the amount
     # of such trips divided by the amount of weekend days (both per year)
     # but only in weekends where there are no holiday departures
     # or returns
-    weekend_days_per_year_without_holiday_trips = (
-        weekend_days_per_year
-        -
-        len(weekend_day_numbers) * (
-            len(holiday_departures_in_weekend_week_numbers)
-            +
-            len(holiday_departures_in_weekend_week_numbers)
-        )
-
+    weekend_days_per_year_without_holiday_trips = weekend_days_per_year - len(
+        weekend_day_numbers
+    ) * (
+        len(holiday_departures_in_weekend_week_numbers)
+        + len(holiday_departures_in_weekend_week_numbers)
     )
 
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['weekday_in_work_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['weekday_in_holiday_week'] = 0
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['weekend_in_work_week'] = (
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'weekday_in_work_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'weekday_in_holiday_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'weekend_in_work_week'
+    ] = (
         weekend_trips_per_year / weekend_days_per_year_without_holiday_trips
-    ) * day_type_start_location_split.loc['home']['weekend_in_work_week']
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['weekend_in_holiday_week'] = (
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekend_in_work_week'
+    ]
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'weekend_in_holiday_week'
+    ] = (
         weekend_trips_per_year / weekend_days_per_year_without_holiday_trips
-    ) * day_type_start_location_split.loc['home']['weekend_in_holiday_week']
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['weekend_holiday_departures'] = 0
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['weekend_holiday_returns'] = 0
-    trip_probabilities_per_day_type.loc[
-        'weekend_trip']['holiday_overlap_weekend'] = 0
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekend_in_holiday_week'
+    ]
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'weekend_holiday_departures'
+    ] = 0
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'weekend_holiday_returns'
+    ] = 0
+    trip_probabilities_per_day_type.loc['weekend_trip'][
+        'holiday_overlap_weekend'
+    ] = 0
     # We compute the probability to go to work on a given day in a work week.
     # It is given by the probability that peple work in that week times
     # the number of hours worked in that week divided by
     # the length of a standard work week.
     probability_of_going_to_work_in_a_work_week = (
         percentage_working_on_a_work_week
-        * hours_worked_per_work_week / hours_in_a_standard_work_week
+        * hours_worked_per_work_week
+        / hours_in_a_standard_work_week
     )
     if probability_of_going_to_work_in_a_work_week > 1:
         probability_of_going_to_work_in_a_work_week = 1
@@ -272,7 +275,7 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # The number of worked days in holiday weeks
     # is the difference between the above two.
     worked_days_in_holiday_weeks = (
-        worked_days_per_year-worked_days_in_work_weeks
+        worked_days_per_year - worked_days_in_work_weeks
     )
 
     # The probability to go to work on a holiday week day is
@@ -290,7 +293,7 @@ def get_car_trip_probabilities_per_day_type(parameters):
         print('holiday weeks)')
 
     worked_days_in_a_work_week = (
-         number_weekdays * probability_of_going_to_work_in_a_work_week
+        number_weekdays * probability_of_going_to_work_in_a_work_week
     )
 
     weekdays_with_no_work_trip_per_work_week = (
@@ -315,17 +318,17 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # holiday trip
 
     non_work_weekdays_per_holiday_week_where_a_leisure_trip_can_occur = (
-        (
-            weekdays_with_no_work_trip_per_holiday_week
-            - number_weekdays * (
-                trip_probabilities_per_day_type.loc[
-                    'holiday_outward']['weekday_in_holiday_week']
-                + trip_probabilities_per_day_type.loc[
-                    'holiday_back']['weekday_in_holiday_week']
-            )
+        weekdays_with_no_work_trip_per_holiday_week
+        - number_weekdays
+        * (
+            trip_probabilities_per_day_type.loc['holiday_outward'][
+                'weekday_in_holiday_week'
+            ]
+            + trip_probabilities_per_day_type.loc['holiday_back'][
+                'weekday_in_holiday_week'
+            ]
         )
-        * day_type_start_location_split.loc['home', 'weekday_in_holiday_week']
-    )
+    ) * day_type_start_location_split.loc['home', 'weekday_in_holiday_week']
 
     # The vehicles also need to be home fot that to occur,
     # given that leisure only is between home and leisure
@@ -357,8 +360,8 @@ def get_car_trip_probabilities_per_day_type(parameters):
         )
 
     if fill_level_non_work_weekdays_with_leisure_trips_in_a_work_week > (
-            maximal_fill_percentage_leisure_trips_on_non_work_weekdays
-            ):
+        maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+    ):
         # This is where the cap mentioned above occurs
         fill_level_non_work_weekdays_with_leisure_trips_in_a_work_week = (
             maximal_fill_percentage_leisure_trips_on_non_work_weekdays
@@ -374,8 +377,8 @@ def get_car_trip_probabilities_per_day_type(parameters):
         )
 
     if fill_level_non_work_weekdays_with_leisure_trips_in_a_holiday_week > (
-            maximal_fill_percentage_leisure_trips_on_non_work_weekdays
-            ):
+        maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+    ):
         # This is where the cap mentioned above occurs
         fill_level_non_work_weekdays_with_leisure_trips_in_a_holiday_week = (
             maximal_fill_percentage_leisure_trips_on_non_work_weekdays
@@ -401,73 +404,99 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # This allows us to set the leisure only trips on weekdays
 
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['weekday_in_work_week'] = (
-            weekday_leisure_trips_on_non_work_days_in_a_work_week
-            / number_weekdays
-        ) * day_type_start_location_split.loc['home']['weekday_in_work_week']
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['weekday_in_holiday_week'] = (
-            weekday_leisure_trips_on_non_work_days_in_a_holiday_week
-            / number_weekdays
-        ) * day_type_start_location_split.loc['home'][
-            'weekday_in_holiday_week']
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'weekday_in_work_week'
+    ] = (
+        weekday_leisure_trips_on_non_work_days_in_a_work_week / number_weekdays
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekday_in_work_week'
+    ]
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'weekday_in_holiday_week'
+    ] = (
+        weekday_leisure_trips_on_non_work_days_in_a_holiday_week
+        / number_weekdays
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekday_in_holiday_week'
+    ]
     # For weekends, we distribute the leisure trips across the weekemd
 
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['weekend_in_work_week'] = (
-            leisure_trips_per_weekend / len(weekend_day_numbers)
-        ) * day_type_start_location_split.loc['home']['weekend_in_work_week']
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['weekend_in_holiday_week'] = (
-            leisure_trips_per_weekend / len(weekend_day_numbers)
-        ) * day_type_start_location_split.loc['home'][
-            'weekend_in_holiday_week']
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'weekend_in_work_week'
+    ] = (
+        leisure_trips_per_weekend / len(weekend_day_numbers)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekend_in_work_week'
+    ]
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'weekend_in_holiday_week'
+    ] = (
+        leisure_trips_per_weekend / len(weekend_day_numbers)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekend_in_holiday_week'
+    ]
     # For holiday departure and return weekends, we assume
     # that only those who do not travel can have a leisure-only trip
     percentage_not_departing = 1 - (
-        trip_probabilities_per_day_type.loc[
-            'holiday_outward']['weekend_holiday_departures']
+        trip_probabilities_per_day_type.loc['holiday_outward'][
+            'weekend_holiday_departures'
+        ]
     )
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['weekend_holiday_departures'] = (
-            percentage_not_departing
-            *
-            leisure_trips_per_weekend
-            /
-            len(weekend_day_numbers)
-        ) * day_type_start_location_split.loc['home'][
-            'weekend_holiday_departures']
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'weekend_holiday_departures'
+    ] = (
+        percentage_not_departing
+        * leisure_trips_per_weekend
+        / len(weekend_day_numbers)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekend_holiday_departures'
+    ]
     percentage_not_returning = 1 - (
-        trip_probabilities_per_day_type.loc[
-            'holiday_back']['weekend_holiday_returns']
+        trip_probabilities_per_day_type.loc['holiday_back'][
+            'weekend_holiday_returns'
+        ]
     )
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['weekend_holiday_returns'] = (
-            percentage_not_returning
-            *
-            leisure_trips_per_weekend
-            /
-            len(weekend_day_numbers)
-        ) * day_type_start_location_split.loc['home'][
-            'weekend_holiday_returns']
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'weekend_holiday_returns'
+    ] = (
+        percentage_not_returning
+        * leisure_trips_per_weekend
+        / len(weekend_day_numbers)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekend_holiday_returns'
+    ]
     # For overlap weekends, we have:
     percentage_not_departing_or_returning = 1 - (
-        trip_probabilities_per_day_type.loc[
-            'holiday_outward']['holiday_overlap_weekend']
-        +
-        trip_probabilities_per_day_type.loc[
-            'holiday_back']['holiday_overlap_weekend']
+        trip_probabilities_per_day_type.loc['holiday_outward'][
+            'holiday_overlap_weekend'
+        ]
+        + trip_probabilities_per_day_type.loc['holiday_back'][
+            'holiday_overlap_weekend'
+        ]
     )
-    trip_probabilities_per_day_type.loc[
-        'leisure_only']['holiday_overlap_weekend'] = (
-            percentage_not_departing_or_returning
-            *
-            leisure_trips_per_weekend
-            /
-            len(weekend_day_numbers)
-        ) * day_type_start_location_split.loc['home'][
-            'holiday_overlap_weekend']
+    trip_probabilities_per_day_type.loc['leisure_only'][
+        'holiday_overlap_weekend'
+    ] = (
+        percentage_not_departing_or_returning
+        * leisure_trips_per_weekend
+        / len(weekend_day_numbers)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'holiday_overlap_weekend'
+    ]
 
     # The amount of weekday leisure trips taking place on work weekdays is
     # then the difference between the total amount of weekday leisure trips and
@@ -502,59 +531,87 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # This will be different for work weeks and holiday weeks.
     # We also assume that people don't work on weekends
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['weekday_in_work_week'] = (
-            probability_of_going_to_work_in_a_work_week
-            * leisure_trip_probability_on_a_work_weekday_in_a_work_week
-        ) * day_type_start_location_split.loc['home']['weekday_in_work_week']
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['weekday_in_work_week'] = (
-            probability_of_going_to_work_in_a_work_week
-            * (1-leisure_trip_probability_on_a_work_weekday_in_a_work_week)
-        ) * day_type_start_location_split.loc['home']['weekday_in_work_week']
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'weekday_in_work_week'
+    ] = (
+        probability_of_going_to_work_in_a_work_week
+        * leisure_trip_probability_on_a_work_weekday_in_a_work_week
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekday_in_work_week'
+    ]
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'weekday_in_work_week'
+    ] = (
+        probability_of_going_to_work_in_a_work_week
+        * (1 - leisure_trip_probability_on_a_work_weekday_in_a_work_week)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekday_in_work_week'
+    ]
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['weekend_in_work_week'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'weekend_in_work_week'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['weekend_in_work_week'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'weekend_in_work_week'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['weekend_holiday_departures'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'weekend_holiday_departures'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['weekend_holiday_departures'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'weekend_holiday_departures'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['holiday_overlap_weekend'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'holiday_overlap_weekend'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['holiday_overlap_weekend'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'holiday_overlap_weekend'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['weekend_holiday_returns'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'weekend_holiday_returns'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['weekend_holiday_returns'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'weekend_holiday_returns'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['weekday_in_holiday_week'] = (
-            probability_of_going_to_work_in_a_holiday_week
-            * leisure_trip_probability_on_a_work_weekday_in_a_holiday_week
-        ) * day_type_start_location_split.loc['home'][
-            'weekday_in_holiday_week']
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['weekday_in_holiday_week'] = (
-            probability_of_going_to_work_in_a_holiday_week
-            * (1-leisure_trip_probability_on_a_work_weekday_in_a_holiday_week)
-        ) * day_type_start_location_split.loc['home'][
-            'weekday_in_holiday_week']
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'weekday_in_holiday_week'
+    ] = (
+        probability_of_going_to_work_in_a_holiday_week
+        * leisure_trip_probability_on_a_work_weekday_in_a_holiday_week
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekday_in_holiday_week'
+    ]
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'weekday_in_holiday_week'
+    ] = (
+        probability_of_going_to_work_in_a_holiday_week
+        * (1 - leisure_trip_probability_on_a_work_weekday_in_a_holiday_week)
+    ) * day_type_start_location_split.loc[
+        'home'
+    ][
+        'weekday_in_holiday_week'
+    ]
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work']['weekend_in_holiday_week'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work'][
+        'weekend_in_holiday_week'
+    ] = 0
 
-    trip_probabilities_per_day_type.loc[
-        'commute_to_work_and_leisure']['weekend_in_holiday_week'] = 0
+    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
+        'weekend_in_holiday_week'
+    ] = 0
 
     # Now that we computed all travelling trips, we look at the stay_put
     # trips as remainders
@@ -575,9 +632,9 @@ def get_car_trip_probabilities_per_day_type(parameters):
     for location in possible_stay_locations:
         stay_put_split[f'stay_put_{location}'] = {}
         for day_type in day_types:
-            stay_put_split[f'stay_put_{location}'][day_type] = (
-                day_type_start_location_split.loc[location, day_type]
-            )
+            stay_put_split[f'stay_put_{location}'][
+                day_type
+            ] = day_type_start_location_split.loc[location, day_type]
     # We can now put the stay put probabilities
     for day_type in day_types:
         for stay_put_trip in stay_put_trips:
@@ -591,13 +648,16 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # For some file formats (stata, for example), we need to ensure that
     # the values are floats (or something else, but object does seem to be a
     # problem, as the original DataFrame had nan elements).
-    trip_probabilities_per_day_type = (
-        trip_probabilities_per_day_type.astype('float')
+    trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
+        'float'
     )
 
     cook.save_dataframe(
-        trip_probabilities_per_day_type, table_name, groupfile_name,
-        output_folder, parameters
+        trip_probabilities_per_day_type,
+        table_name,
+        groupfile_name,
+        output_folder,
+        parameters,
     )
 
     return trip_probabilities_per_day_type
@@ -621,31 +681,29 @@ def get_run_trip_probabilities(parameters):
     run_trip_probabilities = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
-    run_trip_probabilities = (
-        run_time.add_day_type_to_time_stamped_dataframe(
-            run_trip_probabilities, parameters
-        )
+    run_trip_probabilities = run_time.add_day_type_to_time_stamped_dataframe(
+        run_trip_probabilities, parameters
     )
 
-    trip_probabilities_per_day_type = (
-                get_trip_probabilities_per_day_type(parameters)
+    trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
+        parameters
     )
 
     for trip in trip_list:
-
-        trip_probabilities = (
-            [
-                trip_probabilities_per_day_type.loc[trip][day_type]
-                for day_type in run_trip_probabilities['Day Type']
-            ]
-        )
+        trip_probabilities = [
+            trip_probabilities_per_day_type.loc[trip][day_type]
+            for day_type in run_trip_probabilities['Day Type']
+        ]
 
         run_trip_probabilities[trip] = trip_probabilities
 
     table_name = f'{scenario}_run_trip_probabilities'
     cook.save_dataframe(
         run_trip_probabilities,
-        table_name, groupfile_name, output_folder, parameters
+        table_name,
+        groupfile_name,
+        output_folder,
+        parameters,
     )
 
     return run_trip_probabilities
@@ -660,13 +718,9 @@ def get_mobility_matrix(parameters):
     run_trip_probabilities = get_run_trip_probabilities(parameters)
 
     location_parameters = parameters['locations']
-    location_names = [
-            location_name for location_name in location_parameters
-    ]
+    location_names = [location_name for location_name in location_parameters]
     trip_parameters = parameters['trips']
-    trip_names = [
-        trip_name for trip_name in trip_parameters
-    ]
+    trip_names = [trip_name for trip_name in trip_parameters]
 
     run_time_tags = run_time.get_time_range(parameters)[0]
     run_mobility_index_tuples = [
@@ -675,22 +729,20 @@ def get_mobility_matrix(parameters):
         for end_location in location_names
         for time_tag in run_time_tags
     ]
-    mobility_index_names = (
-        parameters['mobility_module']['mobility_index_names']
-    )
+    mobility_index_names = parameters['mobility_module'][
+        'mobility_index_names'
+    ]
     run_mobility_index = pd.MultiIndex.from_tuples(
-        run_mobility_index_tuples,
-        names=mobility_index_names)
-    mobility_quantities = (
-        parameters['mobility_module']['mobility_quantities']
+        run_mobility_index_tuples, names=mobility_index_names
     )
+    mobility_quantities = parameters['mobility_module']['mobility_quantities']
     run_mobility_matrix = pd.DataFrame(
         np.zeros((len(run_mobility_index), len(mobility_quantities))),
         columns=mobility_quantities,
-        index=run_mobility_index
+        index=run_mobility_index,
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
-    
+
     case_name = parameters['case_name']
     scenario = parameters['scenario']
     file_parameters = parameters['files']
@@ -703,59 +755,56 @@ def get_mobility_matrix(parameters):
         )
         # We need a version for each start/end location combination
         this_trip_run_probabilities_extended = pd.DataFrame()
-        for _ in range(len(location_names)*len(location_names)):
+        for _ in range(len(location_names) * len(location_names)):
             this_trip_run_probabilities_extended = pd.concat(
-                (this_trip_run_probabilities,
-                 this_trip_run_probabilities_extended),
-                ignore_index=True
-
+                (
+                    this_trip_run_probabilities,
+                    this_trip_run_probabilities_extended,
+                ),
+                ignore_index=True,
             )
         trip_run_mobility_matrix_name = (
             f'{scenario}_{trip_name}_run_mobility_matrix'
         )
         trip_run_mobility_matrix = cook.read_table_from_database(
             trip_run_mobility_matrix_name,
-            f'{output_folder}/{groupfile_name}.sqlite3'
+            f'{output_folder}/{groupfile_name}.sqlite3',
         )
-        location_connections_headers = parameters[
-            'mobility_module']['location_connections_headers']
+        location_connections_headers = parameters['mobility_module'][
+            'location_connections_headers'
+        ]
 
-        trip_run_mobility_matrix = (
-            trip_run_mobility_matrix.set_index(mobility_index_names)
+        trip_run_mobility_matrix = trip_run_mobility_matrix.set_index(
+            mobility_index_names
         )
-    
-        probability_values_to_use = (
-            this_trip_run_probabilities_extended[trip_name].values
-        )
-   
-        
-        
+
+        probability_values_to_use = this_trip_run_probabilities_extended[
+            trip_name
+        ].values
+
         for mobility_quantity in mobility_quantities:
             if mobility_quantity not in location_connections_headers:
                 run_mobility_matrix[mobility_quantity] += (
                     trip_run_mobility_matrix[mobility_quantity].values
-                    *
-                    probability_values_to_use
+                    * probability_values_to_use
                 )
 
     location_connections = cook.read_table_from_database(
         f'{scenario}_location_connections',
-        f'{output_folder}/{groupfile_name}.sqlite3').set_index(['From', 'To'])
+        f'{output_folder}/{groupfile_name}.sqlite3',
+    ).set_index(['From', 'To'])
     for start_location in location_names:
         for end_location in location_names:
-
             run_mobility_matrix.loc[
-                (start_location, end_location),
-                location_connections_headers
-                ] = location_connections.loc[
-                    (start_location, end_location)].values
-
-
-
+                (start_location, end_location), location_connections_headers
+            ] = location_connections.loc[(start_location, end_location)].values
 
     cook.save_dataframe(
-        run_mobility_matrix, f'{scenario}_run_mobility_matrix',
-        groupfile_name, output_folder, parameters
+        run_mobility_matrix,
+        f'{scenario}_run_mobility_matrix',
+        groupfile_name,
+        output_folder,
+        parameters,
     )
     return run_mobility_matrix
 
@@ -770,25 +819,24 @@ def get_day_type_start_location_split(parameters):
     holiday_departures_in_weekend_week_numbers = mobility_module_parameters[
         'holiday_departures_in_weekend_week_numbers'
     ]
-    number_of_holiday_departure_weekends = (
-        len(holiday_departures_in_weekend_week_numbers)
+    number_of_holiday_departure_weekends = len(
+        holiday_departures_in_weekend_week_numbers
     )
     day_types = mobility_module_parameters['day_types']
     location_parameters = parameters['locations']
-    location_names = [
-            location_name for location_name in location_parameters
-    ]
+    location_names = [location_name for location_name in location_parameters]
 
     day_type_start_location_split = pd.DataFrame(
         np.zeros((len(location_names), len(day_types))),
         columns=day_types,
-        index=location_names
+        index=location_names,
     )
     day_type_start_location_split.index.name = 'Location'
 
     # Outside holidays, the vehicles start at home
     day_types_outside_holidays = [
-        'weekday_in_work_week', 'weekend_in_work_week',
+        'weekday_in_work_week',
+        'weekend_in_work_week',
     ]
     for day_type in day_types_outside_holidays:
         day_type_start_location_split.loc['home', day_type] = 1
@@ -801,15 +849,16 @@ def get_day_type_start_location_split(parameters):
     )
 
     non_travelling_holiday_day_types = [
-        'weekday_in_holiday_week', 'weekend_in_holiday_week'
+        'weekday_in_holiday_week',
+        'weekend_in_holiday_week',
     ]
     for day_type in non_travelling_holiday_day_types:
         day_type_start_location_split.loc['home', day_type] = (
             1 - percentage_on_holiday_in_holiday_week
         )
-        day_type_start_location_split.loc['holiday', day_type] = (
-            percentage_on_holiday_in_holiday_week
-        )
+        day_type_start_location_split.loc[
+            'holiday', day_type
+        ] = percentage_on_holiday_in_holiday_week
 
     # For departure and retrun weekends, this is split across
     # the weekend days (note that this is an approximation, as
@@ -817,24 +866,17 @@ def get_day_type_start_location_split(parameters):
     # the model complexer)
     weekend_day_numbers = parameters['time']['weekend_day_numbers']
     travelling_weekend_day_types = [
-        'weekend_holiday_departures', 'weekend_holiday_returns',
-        'holiday_overlap_weekend'
+        'weekend_holiday_departures',
+        'weekend_holiday_returns',
+        'holiday_overlap_weekend',
     ]
     for day_type in travelling_weekend_day_types:
-        day_type_start_location_split.loc['home', day_type] = (
-            1
-            -
-            (
-                percentage_on_holiday_in_holiday_week
-                /
-                len(weekend_day_numbers)
-            )
+        day_type_start_location_split.loc['home', day_type] = 1 - (
+            percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
         )
-        day_type_start_location_split.loc['holiday', day_type] = (
-            percentage_on_holiday_in_holiday_week
-            /
-            len(weekend_day_numbers)
-        )
+        day_type_start_location_split.loc[
+            'holiday', day_type
+        ] = percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
 
     return day_type_start_location_split
 
@@ -851,9 +893,7 @@ def get_location_split(parameters):
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
     location_parameters = parameters['locations']
-    location_names = [
-            location_name for location_name in location_parameters
-    ]
+    location_names = [location_name for location_name in location_parameters]
     run_range = run_time.get_time_range(parameters)[0]
     location_split = pd.DataFrame(columns=location_names, index=run_range)
 
@@ -867,11 +907,11 @@ def get_location_split(parameters):
     run_mobility_matrix = cook.read_table_from_database(
         run_mobility_matrix_name, database_file
     )
-    mobility_index_names = (
-        parameters['mobility_module']['mobility_index_names']
-    )
-    run_mobility_matrix['Time tag'] = (
-        pd.to_datetime(run_mobility_matrix['Time tag'])
+    mobility_index_names = parameters['mobility_module'][
+        'mobility_index_names'
+    ]
+    run_mobility_matrix['Time tag'] = pd.to_datetime(
+        run_mobility_matrix['Time tag']
     )
     run_mobility_matrix = run_mobility_matrix.set_index(mobility_index_names)
     previous_time_tag = run_range[0]
@@ -879,8 +919,9 @@ def get_location_split(parameters):
         if time_tag > run_range[0]:
             for location in location_names:
                 departures = sum(
-                    run_mobility_matrix.loc[
-                        location, :, time_tag]['Departures amount']
+                    run_mobility_matrix.loc[location, :, time_tag][
+                        'Departures amount'
+                    ]
                     # *
                     # location_split.loc[previous_time_tag][location]
                 )
@@ -889,23 +930,21 @@ def get_location_split(parameters):
                 # hour (and departures correspond to arrivals later)
                 arrivals = (
                     sum(
-                        run_mobility_matrix.loc[
-                            :, location, time_tag]['Arrivals amount']
-
+                        run_mobility_matrix.loc[:, location, time_tag][
+                            'Arrivals amount'
+                        ]
                     )
                     # -
                     # sum(
                     #     run_mobility_matrix.loc[
                     #         :, location, time_tag][
                     #             'Departures driving time']
-
                     # )
                     # +
                     # sum(
                     #     run_mobility_matrix.loc[
                     #         :, location, previous_time_tag][
                     #             'Departures driving time']
-
                     # )
                 )
 
@@ -916,9 +955,43 @@ def get_location_split(parameters):
                 )
             previous_time_tag = time_tag
 
+    driving = pd.DataFrame(index=location_split.index)
+    driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
+    connectivity_per_location = location_split.copy()
+    for location_name in location_names:
+        connectivity_per_location[location_name] = (
+            connectivity_per_location[location_name]
+            * location_parameters[location_name]['connectivity']
+        )
+    connectivity = pd.DataFrame(index=connectivity_per_location.index)
+    connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)
     cook.save_dataframe(
-        location_split, f'{scenario}_location_split',
-        groupfile_name, output_folder, parameters
+        location_split,
+        f'{scenario}_location_split',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    cook.save_dataframe(
+        driving,
+        f'{scenario}_percentage_driving',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    cook.save_dataframe(
+        connectivity_per_location,
+        f'{scenario}_connectivity_per_location',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    cook.save_dataframe(
+        connectivity,
+        f'{scenario}_connectivity',
+        groupfile_name,
+        output_folder,
+        parameters,
     )
     return location_split
 
@@ -928,33 +1001,32 @@ def get_starting_location_split(location_split, parameters):
     Gets the location split at run start
     '''
     location_parameters = parameters['locations']
-    location_names = [
-            location_name for location_name in location_parameters
-    ]
+    location_names = [location_name for location_name in location_parameters]
     mobility_module_parameters = parameters['mobility_module']
-    compute_start_location_split = (
-        mobility_module_parameters['compute_start_location_split']
-    )
+    compute_start_location_split = mobility_module_parameters[
+        'compute_start_location_split'
+    ]
     if compute_start_location_split:
         run_start_time_tag = run_time.get_time_range(parameters)[0][0]
         run_start_day_type = run_time.get_day_type(
-            run_start_time_tag, parameters)
-        day_type_start_location_split = (
-            get_day_type_start_location_split(parameters)
+            run_start_time_tag, parameters
+        )
+        day_type_start_location_split = get_day_type_start_location_split(
+            parameters
         )
 
         for location_name in location_names:
-            location_split.iloc[0][location_name] = (
-                day_type_start_location_split[run_start_day_type][
-                    location_name]
-            )
+            location_split.iloc[0][
+                location_name
+            ] = day_type_start_location_split[run_start_day_type][
+                location_name
+            ]
 
     else:
         for location_name in location_names:
-            location_split.iloc[0][location_name] = (
-                location_parameters[
-                    location_name]['percentage_in_location_at_run_start']
-            )
+            location_split.iloc[0][location_name] = location_parameters[
+                location_name
+            ]['percentage_in_location_at_run_start']
 
     return location_split
 
