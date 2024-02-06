@@ -65,7 +65,9 @@ if __name__ == '__main__':
     print('PVs from PVlib')
     print('Fast chargers')
     print('Speedup per day type (option if using mob module)')
+    print('recap DF?')
     print('Check connectivity')
+    print('Clarify charge and power!')
     for scenario_file in os.listdir('scenarios'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':

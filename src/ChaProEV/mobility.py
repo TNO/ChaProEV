@@ -968,6 +968,8 @@ def get_location_split(parameters):
         maximal_delivered_power_location[location_name] = (
             maximal_delivered_power_location[location_name]
             * location_parameters[location_name]['charging_power']
+            / location_parameters[location_name]['charger_efficiency']
+            # Weare looking at the power delivered by the network
         )
     connectivity = pd.DataFrame(index=connectivity_per_location.index)
     connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)

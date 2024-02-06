@@ -514,6 +514,63 @@ def write_output(
         output_folder,
         parameters,
     )
+    charge_drawn_from_network_total = pd.DataFrame(
+        index=charge_drawn_from_network.index
+    )
+    charge_drawn_from_network_total[
+        'Total Charge Drawn (kWh)'
+    ] = charge_drawn_from_network.sum(axis=1)
+    percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
+        index=charge_drawn_from_network.index
+    )
+    cook.save_dataframe(
+        charge_drawn_from_network_total,
+        f'{scenario}_charge_drawn_from_network_total',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    maximal_delivered_power_per_location = cook.read_table_from_database(
+        f'{scenario}_maximal_delivered_power_per_location',
+        f'{output_folder}/{groupfile_name}.sqlite3',
+    )
+    for location_name in location_names:
+        percentage_of_maximal_delivered_power_used_per_location[
+            location_name
+        ] = (
+            charge_drawn_from_network[location_name].values
+            / maximal_delivered_power_per_location[location_name].values
+        )
+
+    cook.save_dataframe(
+        percentage_of_maximal_delivered_power_used_per_location,
+        f'{scenario}_percentage_of_maximal_delivered_power_used_per_location',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+
+    maximal_delivered_power = cook.read_table_from_database(
+        f'{scenario}_maximal_delivered_power',
+        f'{output_folder}/{groupfile_name}.sqlite3',
+    )
+    percentage_of_maximal_delivered_power_used = pd.DataFrame(
+        index=percentage_of_maximal_delivered_power_used_per_location.index
+    )
+   
+    percentage_of_maximal_delivered_power_used[
+        'Percentage of maximal delivered power used'
+    ] = (
+        charge_drawn_from_network_total['Total Charge Drawn (kWh)'].values
+        / maximal_delivered_power['Maximal Delivered Power (kW)'].values
+    )
+    cook.save_dataframe(
+        percentage_of_maximal_delivered_power_used,
+        f'{scenario}_percentage_of_maximal_delivered_power_used',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
 
     charge_drawn_by_vehicles = charge_drawn_by_vehicles.reset_index()
     charge_drawn_by_vehicles['Hour number'] = run_hour_numbers
@@ -524,6 +581,22 @@ def write_output(
     cook.save_dataframe(
         charge_drawn_by_vehicles,
         f'{scenario}_charge_drawn_by_vehicles',
+        groupfile_name,
+        output_folder,
+        parameters,
+    )
+    charge_drawn_by_vehicles_total = pd.DataFrame(
+        index=charge_drawn_by_vehicles.index
+    )
+    charge_drawn_by_vehicles_total[
+        'Total Charge Drawn (kW)'
+    ] = charge_drawn_by_vehicles.sum(axis=1)
+    percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
+        index=charge_drawn_by_vehicles.index
+    )
+    cook.save_dataframe(
+        charge_drawn_by_vehicles_total,
+        f'{scenario}_charge_drawn_by_vehicles_total',
         groupfile_name,
         output_folder,
         parameters,
