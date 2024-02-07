@@ -151,7 +151,7 @@ class Trip:
             # We want to know the percentage of time driving due to this
             # leg in the current (hour) interval and subsequent ones
             # We first fill the intervals that are fully filled by the driving
-            # e.g four ones ifthe driving is 4.2 hours
+            # e.g four ones if the driving is 4.2 hours
             time_driving_in_intervals = [1] * math.floor(time_driving)
             # We then append the remainder (which is the duration if the
             # duration is smaller than the (hour) interval)
@@ -333,6 +333,69 @@ class Trip:
         trip_frequency_type = frequency_parameters['type']
         trip_frequency = f'{trip_frequency_size}{trip_frequency_type}'
 
+        trip.next_leg_kilometers = pd.DataFrame(
+            np.zeros((HOURS_IN_A_DAY, len(location_names))),
+            columns=location_names,
+            index=range(HOURS_IN_A_DAY),
+        )
+        trip.next_leg_kilometers.index.name = 'Hour number (from day start)'
+
+        for leg_index, leg_name in enumerate(trip.legs):
+            # print(trip.name)
+            # print(leg_name)
+            leg_parameters = parameters['legs'][leg_name]
+            start_location = leg_parameters['locations']['start']
+            end_location = leg_parameters['locations']['end']
+            # print(start_location)
+            # print(trip.mobility_matrix.loc[start_location, end_location])
+            if leg_index == 0:
+                for hour_index in range(HOURS_IN_A_DAY):
+                    # print(hour_index)
+                    trip.next_leg_kilometers.loc[hour_index][
+                        start_location
+                    ] += (
+                        trip.mobility_matrix.loc[start_location, end_location][
+                            'Departures kilometers'
+                        ]
+                        .values[hour_index + 1 :]
+                        .sum()
+                    )
+            else:
+                for hour_index in range(HOURS_IN_A_DAY):
+                    # print(hour_index)
+                    # print(previous_leg_arrivals_amount[:hour_index+1].sum())
+                    trip.next_leg_kilometers.loc[hour_index][
+                        start_location
+                    ] += (
+                        trip.mobility_matrix.loc[start_location, end_location][
+                            'Departures kilometers'
+                        ]
+                        .values[hour_index + 1 :]
+                        .sum()
+                    ) * (
+                        previous_leg_arrivals_amount[: hour_index + 1].sum()
+                        #     trip.mobility_matrix.loc[start_location, end_location][
+                        #     'Arrivals amount'
+                        # ]
+                        # .values[:hour_index]
+                        # .sum()
+                    )
+                    # print(trip.mobility_matrix.loc[start_location, end_location][
+                    #         'Arrivals amount'
+                    #     ])
+            previous_leg_arrivals_amount = (
+                trip.mobility_matrix.loc[start_location, end_location][
+                    'Arrivals amount'
+                ]
+            ).values
+
+        trip.run_next_leg_kilometers = run_time.from_day_to_run(
+            trip.next_leg_kilometers,
+            run_time_tags,
+            trip.day_start_hour,
+            parameters,
+        )
+
         # For these, the year, month and day are not important,
         # as they will be omitted, so we put generic values.
         trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
@@ -461,6 +524,20 @@ def declare_all_instances(parameters):
             output_folder,
             parameters,
         )
+        cook.save_dataframe(
+            trip.next_leg_kilometers,
+            f'{scenario}_{trip.name}_next_leg_kilometers',
+            groupfile_name,
+            output_folder,
+            parameters,
+        )
+        cook.save_dataframe(
+            trip.run_next_leg_kilometers,
+            f'{scenario}_{trip.name}_run_next_leg_kilometers',
+            groupfile_name,
+            output_folder,
+            parameters,
+        )
     # print('Mat', (datetime.datetime.now()-matrix_start).total_seconds())
 
     return legs, locations, trips
@@ -491,4 +568,24 @@ if __name__ == '__main__':
             trip.legs,
             trip.percentage_station_users,
             trip.start_probabilities,
+            trip.mobility_matrix.loc['home'],
         )
+
+
+# 1) Identify next leg (with prob)
+# at H next leg = legs[0] * sumprobs[H+1:]
+# departure probs legs[1] = dparture probs.roll(time at loc+duration)
+# or use departures/arrivals from other module
+
+
+# in LOCx legN until
+
+# for leg in trip.legs:
+#     start_location
+#     end_location
+#     trip_run_mobility_matrix.loc[start, end]
+#     get sum over next hours of departures amount
+#     sum goes from arrivals to departures
+#     then make a run version
+#     in mobility use trip probabilities to make run version
+#     in consumption get energy for next leg

@@ -2,6 +2,7 @@
 This module creates consumption tables
 '''
 import pandas as pd
+import numpy as np
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -131,7 +132,42 @@ def create_consumption_tables(parameters):
     )
 
 
+def get_energy_for_next_leg(parameters):
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_root = file_parameters['groupfile_root']
+    scenario = parameters['scenario']
+    case_name = parameters['case_name']
+    next_leg_kilometers = cook.read_table_from_database(
+        f'{scenario}_next_leg_kilometers',
+        f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+    )
+    next_leg_kilometers['Time Tag'] = pd.to_datetime(
+        next_leg_kilometers['Time Tag']
+    )
+    next_leg_kilometers = next_leg_kilometers.set_index('Time Tag')
+    vehicle_parameters = parameters['vehicle']
+    vehicle_base_consumptions_kWh_per_km = vehicle_parameters[
+        'base_consumption_per_km'
+    ]['electricity_kWh']
+    consumption = pd.Series(
+        [vehicle_base_consumptions_kWh_per_km]
+        * len(next_leg_kilometers.index),
+        index=next_leg_kilometers.index,
+    )
+    energy_for_next_leg = next_leg_kilometers.mul(consumption, axis=0)
+    cook.save_dataframe(
+        energy_for_next_leg,
+        f'{scenario}_energy_for_next_leg',
+        f'{groupfile_root}_{case_name}',
+        output_folder,
+        parameters,
+    )
+
+
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
+
     create_consumption_tables(parameters)
+    get_energy_for_next_leg(parameters)

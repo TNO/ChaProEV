@@ -47,10 +47,13 @@ except ModuleNotFoundError:
 
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
+    print('Time tag versus Time Tag')
     print('Other vehicles')
     print('Trips to keep memory')
     print('US module')
-    print('Time agnostic and option to spread evenly (or otherwise) at the end')
+    print(
+        'Time agnostic and option to spread evenly (or otherwise) at the end'
+    )
     print('Bus percent of time in route at bus stops')
     print('Other quantities')
     print('Cahrging strategies')
@@ -58,16 +61,28 @@ if __name__ == '__main__':
     print('discharge V2X')
     print('Label min and max for btt space and energy fro next leg')
     print('Aggregates: KMs and cons per trip, day type (?) and total')
-    print('Aggregates: Stats (mean, min, max) of Charging power (kW), Driving%, Connected %, Batt space, batt charge level, Maximal delivered power (kW), Percentage of maximal delivered power used (%), Minimal delivered power (kW)')
-    print('Data for Tulipa/COMPETES Connected (%)	Charging Power (kW)	Charging Profile	Energy_demand_for_next_leg (kWh)	Energy_demand_for_next_leg (as percent of total demand)	Maximal delivered power (kW)	Percentage of maximal power used(%)	Minimal deliverd power (kW) ')
-    print('Full data too? Or per location, with one table per, and have sumtable 9or sum in Table?')
+    print(
+        'Aggregates: Stats (mean, min, max) of Charging power (kW), Driving%, Connected %, Batt space, batt charge level, Maximal delivered power (kW), Percentage of maximal delivered power used (%), Minimal delivered power (kW)'
+    )
+    print(
+        'Data for Tulipa/COMPETES Connected (%)	Charging Power (kW)	Charging Profile	Energy_demand_for_next_leg (kWh)	Energy_demand_for_next_leg (as percent of total demand)	Maximal delivered power (kW)	Percentage of maximal power used(%)	Minimal deliverd power (kW) '
+    )
+    print(
+        'Full data too? Or per location, with one table per, and have sumtable 9or sum in Table?'
+    )
     print('Temperature effect')
     print('PVs from PVlib')
     print('Fast chargers')
     print('Speedup per day type (option if using mob module)')
     print('recap DF?')
     print('Check connectivity')
-    print('Clarify charge and power!')
+    print('Clarify charge and power! for drawn')
+    print(
+        'Minimal state of charge = energy for next leg + lowest acceptabl;e level'
+    )
+    print(
+        'Charging Power and Charge Drawn as separate tables and the in percentage and such'
+    )
     for scenario_file in os.listdir('scenarios'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
@@ -80,10 +95,7 @@ if __name__ == '__main__':
                 'Declare',
                 (datetime.datetime.now() - decla_start).total_seconds(),
             )
-            # for trip in trips:
-            #     print(trip.name)
-            #     print(trip.run_mobility_matrix)
-            # exit()
+
             mob_start = datetime.datetime.now()
             mobility.make_mobility_data(parameters)
             print(

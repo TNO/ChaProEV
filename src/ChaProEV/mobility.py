@@ -1059,6 +1059,53 @@ def get_starting_location_split(location_split, parameters):
     return location_split
 
 
+def get_kilometers_for_next_leg(parameters):
+    run_trip_probabilities = get_run_trip_probabilities(parameters)
+
+    scenario = parameters['scenario']
+    case_name = parameters['case_name']
+
+    file_parameters = parameters['files']
+    output_folder = file_parameters['output_folder']
+    groupfile_root = file_parameters['groupfile_root']
+
+    location_parameters = parameters['locations']
+    location_names = [location_name for location_name in location_parameters]
+    run_next_leg_kilometers = pd.DataFrame(
+        np.zeros((len(run_trip_probabilities.index), len(location_names))),
+        columns=location_names,
+        index=run_trip_probabilities.index,
+    )
+    trip_parameters = parameters['trips']
+    trip_names = [trip_name for trip_name in trip_parameters]
+    for trip_name in trip_names:
+        trip_run_next_leg_kilometers = cook.read_table_from_database(
+            f'{scenario}_{trip_name}_run_next_leg_kilometers',
+            f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+        )
+        trip_run_next_leg_kilometers['Time tag'] = pd.to_datetime(
+            trip_run_next_leg_kilometers['Time tag']
+        )
+        trip_run_next_leg_kilometers = trip_run_next_leg_kilometers.set_index(
+            'Time tag'
+        )
+        this_trip_probabilities = pd.Series(run_trip_probabilities[trip_name])
+
+        run_next_leg_kilometers += trip_run_next_leg_kilometers.mul(
+            this_trip_probabilities, axis=0
+        )
+
+    cook.save_dataframe(
+        run_next_leg_kilometers,
+        f'{scenario}_next_leg_kilometers',
+        f'{groupfile_root}_{case_name}',
+        output_folder,
+        parameters,
+    )
+
+    return run_next_leg_kilometers
+
+
 def make_mobility_data(parameters):
     trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
         parameters
@@ -1066,11 +1113,13 @@ def make_mobility_data(parameters):
 
     run_mobility_matrix = get_mobility_matrix(parameters)
     location_split = get_location_split(parameters)
+    kilometers_for_next_leg = get_kilometers_for_next_leg(parameters)
 
 
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
+
     make_mobility_data(parameters)
 
     print('Add spillover?')
