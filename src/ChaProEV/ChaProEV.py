@@ -48,6 +48,7 @@ except ModuleNotFoundError:
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
     print('Time tag versus Time Tag')
+    print('Sum over locations ofenergy for next?')
     print('Other vehicles')
     print('Trips to keep memory')
     print('US module')
@@ -103,7 +104,7 @@ if __name__ == '__main__':
                 (datetime.datetime.now() - mob_start).total_seconds(),
             )
             cons_start = datetime.datetime.now()
-            consumption.create_consumption_tables(parameters)
+            consumption.get_consumption_data(parameters)
             print(
                 'Cons', (datetime.datetime.now() - cons_start).total_seconds()
             )

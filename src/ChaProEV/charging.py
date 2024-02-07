@@ -406,8 +406,8 @@ def get_charging_framework(parameters):
     location_split = cook.read_table_from_database(
         location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
     )
-    location_split['Time tag'] = pd.to_datetime(location_split['Time tag'])
-    location_split = location_split.set_index('Time tag')
+    location_split['Time Tag'] = pd.to_datetime(location_split['Time Tag'])
+    location_split = location_split.set_index('Time Tag')
 
     # We look at the various battery spaces that are available
     # at this charging location (i.e. percent of vehicles with
@@ -437,11 +437,11 @@ def get_charging_framework(parameters):
         f'{scenario}_run_mobility_matrix',
         f'{output_folder}/{groupfile_name}.sqlite3',
     )
-    run_mobility_matrix['Time tag'] = pd.to_datetime(
-        run_mobility_matrix['Time tag']
+    run_mobility_matrix['Time Tag'] = pd.to_datetime(
+        run_mobility_matrix['Time Tag']
     )
     run_mobility_matrix = run_mobility_matrix.set_index(
-        ['From', 'To', 'Time tag']
+        ['From', 'To', 'Time Tag']
     )
 
     charge_drawn_by_vehicles = pd.DataFrame(

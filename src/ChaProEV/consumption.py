@@ -39,13 +39,13 @@ def create_consumption_tables(parameters):
         )
     )
 
-    consumption_matrix['Time tag'] = pd.to_datetime(
-        consumption_matrix['Time tag']
+    consumption_matrix['Time Tag'] = pd.to_datetime(
+        consumption_matrix['Time Tag']
     )
 
     # We create a consumption matrix
     consumption_matrix = pd.DataFrame(
-        consumption_matrix.set_index(['From', 'To', 'Time tag'])[
+        consumption_matrix.set_index(['From', 'To', 'Time Tag'])[
             kilometers_source_column
         ]
     ).rename(columns={kilometers_source_column: 'Kilometers'})
@@ -64,7 +64,7 @@ def create_consumption_tables(parameters):
         )
 
     # We create a consumption table
-    consumption_table = consumption_matrix.groupby(['Time tag']).sum()
+    consumption_table = consumption_matrix.groupby(['Time Tag']).sum()
 
     # We also create versions grouped by different time units
     daily_consumption_table = consumption_table.resample('D').sum()
@@ -164,10 +164,12 @@ def get_energy_for_next_leg(parameters):
         parameters,
     )
 
+def get_consumption_data(parameters):
+    create_consumption_tables(parameters)
+    get_energy_for_next_leg(parameters)
 
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
-
-    create_consumption_tables(parameters)
-    get_energy_for_next_leg(parameters)
+    get_consumption_data(parameters)
+    

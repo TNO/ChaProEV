@@ -125,7 +125,7 @@ def get_time_stamped_dataframe(parameters):
     time_stamped_dataframe = pd.DataFrame(
         run_hour_numbers, columns=['Hour Number'], index=run_range
     )
-    time_stamped_dataframe.index.name = 'Time tag'
+    time_stamped_dataframe.index.name = 'Time Tag'
 
     time_stamped_dataframe['SPINE_hour_number'] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
@@ -265,12 +265,12 @@ def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
         freq=run_frequency,
         inclusive='left',
     )
-    run_dataframe['Time tag'] = extended_run_range
+    run_dataframe['Time Tag'] = extended_run_range
 
     # We then cut the parts that are ot in the run
-    run_dataframe = run_dataframe[run_dataframe['Time tag'] <= run_range[-1]]
-    run_dataframe = run_dataframe[run_dataframe['Time tag'] >= run_range[0]]
-    run_dataframe = run_dataframe.set_index('Time tag')
+    run_dataframe = run_dataframe[run_dataframe['Time Tag'] <= run_range[-1]]
+    run_dataframe = run_dataframe[run_dataframe['Time Tag'] >= run_range[0]]
+    run_dataframe = run_dataframe.set_index('Time Tag')
 
     return run_dataframe
 

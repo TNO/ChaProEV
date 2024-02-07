@@ -661,7 +661,7 @@ mobility_quantities = [
 location_connections_headers = [
     'Duration (hours)', 'Distance (km)', 'Weighted distance (km)']
 
-mobility_index_names = ['From', 'To', 'Time tag']
+mobility_index_names = ['From', 'To', 'Time Tag']
 
 
 holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53]

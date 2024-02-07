@@ -897,7 +897,7 @@ def get_location_split(parameters):
     run_range = run_time.get_time_range(parameters)[0]
     location_split = pd.DataFrame(columns=location_names, index=run_range)
 
-    location_split.index.name = 'Time tag'
+    location_split.index.name = 'Time Tag'
 
     location_split = get_starting_location_split(location_split, parameters)
 
@@ -910,8 +910,9 @@ def get_location_split(parameters):
     mobility_index_names = parameters['mobility_module'][
         'mobility_index_names'
     ]
-    run_mobility_matrix['Time tag'] = pd.to_datetime(
-        run_mobility_matrix['Time tag']
+
+    run_mobility_matrix['Time Tag'] = pd.to_datetime(
+        run_mobility_matrix['Time Tag']
     )
     run_mobility_matrix = run_mobility_matrix.set_index(mobility_index_names)
     previous_time_tag = run_range[0]
@@ -1083,11 +1084,11 @@ def get_kilometers_for_next_leg(parameters):
             f'{scenario}_{trip_name}_run_next_leg_kilometers',
             f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
         )
-        trip_run_next_leg_kilometers['Time tag'] = pd.to_datetime(
-            trip_run_next_leg_kilometers['Time tag']
+        trip_run_next_leg_kilometers['Time Tag'] = pd.to_datetime(
+            trip_run_next_leg_kilometers['Time Tag']
         )
         trip_run_next_leg_kilometers = trip_run_next_leg_kilometers.set_index(
-            'Time tag'
+            'Time Tag'
         )
         this_trip_probabilities = pd.Series(run_trip_probabilities[trip_name])
 
