@@ -1077,6 +1077,12 @@ def get_kilometers_for_next_leg(parameters):
         columns=location_names,
         index=run_trip_probabilities.index,
     )
+    run_next_leg_kilometers_cumulative = pd.DataFrame(
+        np.zeros((len(run_trip_probabilities.index), len(location_names))),
+        columns=location_names,
+        index=run_trip_probabilities.index,
+    )
+
     trip_parameters = parameters['trips']
     trip_names = [trip_name for trip_name in trip_parameters]
     for trip_name in trip_names:
@@ -1090,15 +1096,44 @@ def get_kilometers_for_next_leg(parameters):
         trip_run_next_leg_kilometers = trip_run_next_leg_kilometers.set_index(
             'Time Tag'
         )
+        trip_run_next_leg_kilometers_cumulative = (
+            cook.read_table_from_database(
+                f'{scenario}_{trip_name}_'
+                f'run_next_leg_kilometers_cumulative',
+                f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+            )
+        )
+        trip_run_next_leg_kilometers_cumulative[
+            'Time Tag'
+        ] = pd.to_datetime(
+            trip_run_next_leg_kilometers_cumulative['Time Tag']
+        )
+        trip_run_next_leg_kilometers_cumulative = (
+            trip_run_next_leg_kilometers_cumulative.set_index(
+                'Time Tag'
+            )
+        )
         this_trip_probabilities = pd.Series(run_trip_probabilities[trip_name])
 
         run_next_leg_kilometers += trip_run_next_leg_kilometers.mul(
             this_trip_probabilities, axis=0
         )
+        run_next_leg_kilometers_cumulative += (
+            trip_run_next_leg_kilometers_cumulative.mul(
+                this_trip_probabilities, axis=0
+            )
+        )
 
     cook.save_dataframe(
         run_next_leg_kilometers,
         f'{scenario}_next_leg_kilometers',
+        f'{groupfile_root}_{case_name}',
+        output_folder,
+        parameters,
+    )
+    cook.save_dataframe(
+        run_next_leg_kilometers_cumulative,
+        f'{scenario}_next_leg_kilometers_cumulative',
         f'{groupfile_root}_{case_name}',
         output_folder,
         parameters,

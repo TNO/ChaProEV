@@ -339,6 +339,11 @@ class Trip:
             index=range(HOURS_IN_A_DAY),
         )
         trip.next_leg_kilometers.index.name = 'Hour number (from day start)'
+        # The standard version sets the kilometers in the time slot
+        # before departure, this second, cumulative, version does so from
+        # the moment the vehicles arrive
+        # (or day start for the first leg of the trip)
+        trip.next_leg_kilometers_cumulative = trip.next_leg_kilometers.copy()
 
         for leg_index, leg_name in enumerate(trip.legs):
             # print(trip.name)
@@ -349,9 +354,24 @@ class Trip:
             # print(start_location)
             # print(trip.mobility_matrix.loc[start_location, end_location])
             if leg_index == 0:
-                for hour_index in range(HOURS_IN_A_DAY):
-                    # print(hour_index)
+                for hour_index in range(HOURS_IN_A_DAY - 1):
+                    # We skip the last time slot, as this should wrap the trip
+                    # and we are not looking into the next day
+                    # with this apporach
+
+                    # For the standard version, we look if the vehicle
+                    # is set to deart in the next time slot
                     trip.next_leg_kilometers.loc[hour_index][
+                        start_location
+                    ] += trip.mobility_matrix.loc[
+                        start_location, end_location
+                    ][
+                        'Departures kilometers'
+                    ].values[
+                        hour_index + 1
+                    ]
+                    # For the other version, we look at all future departures
+                    trip.next_leg_kilometers_cumulative.loc[hour_index][
                         start_location
                     ] += (
                         trip.mobility_matrix.loc[start_location, end_location][
@@ -361,10 +381,25 @@ class Trip:
                         .sum()
                     )
             else:
-                for hour_index in range(HOURS_IN_A_DAY):
-                    # print(hour_index)
-                    # print(previous_leg_arrivals_amount[:hour_index+1].sum())
+                for hour_index in range(HOURS_IN_A_DAY - 1):
+                    # We skip the last time slot, as this should wrap the trip
+                    # and we are not looking into the next day
+                    # with this apporach
+
+                    # We do the same as for the first leg, but we need
+                    # to limit that to the vehicles that already have
+                    # arrived at the end location
                     trip.next_leg_kilometers.loc[hour_index][
+                        start_location
+                    ] += (
+                        trip.mobility_matrix.loc[start_location, end_location][
+                            'Departures kilometers'
+                        ].values[hour_index + 1]
+                    ) * (
+                        previous_leg_arrivals_amount[: hour_index + 1].sum()
+                    )
+                    # Once again, the variant applies to all future departures
+                    trip.next_leg_kilometers_cumulative.loc[hour_index][
                         start_location
                     ] += (
                         trip.mobility_matrix.loc[start_location, end_location][
@@ -374,15 +409,8 @@ class Trip:
                         .sum()
                     ) * (
                         previous_leg_arrivals_amount[: hour_index + 1].sum()
-                        #     trip.mobility_matrix.loc[start_location, end_location][
-                        #     'Arrivals amount'
-                        # ]
-                        # .values[:hour_index]
-                        # .sum()
                     )
-                    # print(trip.mobility_matrix.loc[start_location, end_location][
-                    #         'Arrivals amount'
-                    #     ])
+
             previous_leg_arrivals_amount = (
                 trip.mobility_matrix.loc[start_location, end_location][
                     'Arrivals amount'
@@ -395,39 +423,45 @@ class Trip:
             trip.day_start_hour,
             parameters,
         )
-
-        # For these, the year, month and day are not important,
-        # as they will be omitted, so we put generic values.
-        trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
-        trip_end = datetime.datetime(2001, 1, 2, trip.day_start_hour)
-        trip_time_tags = pd.date_range(
-            start=trip_start,
-            end=trip_end,
-            freq=trip_frequency,
-            inclusive='left'
-            # We want the start timetag, but not the end one, so we need
-            # to say it is closed left
-        )
-        trip_time_index_tuples = [
-            (time_tag.hour, time_tag.minute, time_tag.second)
-            for time_tag in trip_time_tags
-        ]
-
-        trip.time_index = pd.MultiIndex.from_tuples(
-            trip_time_index_tuples, name=['Hour', 'Minute', 'Second']
+        trip.run_next_leg_kilometers_cumulative = run_time.from_day_to_run(
+            trip.next_leg_kilometers_cumulative,
+            run_time_tags,
+            trip.day_start_hour,
+            parameters,
         )
 
-        trip.base_dataframe = pd.DataFrame(index=trip.time_index)
+        # # For these, the year, month and day are not important,
+        # # as they will be omitted, so we put generic values.
+        # trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
+        # trip_end = datetime.datetime(2001, 1, 2, trip.day_start_hour)
+        # trip_time_tags = pd.date_range(
+        #     start=trip_start,
+        #     end=trip_end,
+        #     freq=trip_frequency,
+        #     inclusive='left'
+        #     # We want the start timetag, but not the end one, so we need
+        #     # to say it is closed left
+        # )
+        # trip_time_index_tuples = [
+        #     (time_tag.hour, time_tag.minute, time_tag.second)
+        #     for time_tag in trip_time_tags
+        # ]
 
-        empty_values = np.empty((len(trip.time_index), len(location_names)))
-        empty_values[:] = np.nan
-        trip.base_dataframe[location_names] = empty_values
-        trip.located_at = trip.base_dataframe.copy()
-        trip.connected = trip.base_dataframe.copy()
-        trip.available_power_kW = trip.base_dataframe.copy()
-        trip.battery_space_kWh = trip.base_dataframe.copy()
-        trip.drawn_charge_kWh = trip.base_dataframe.copy()
-        trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
+        # trip.time_index = pd.MultiIndex.from_tuples(
+        #     trip_time_index_tuples, name=['Hour', 'Minute', 'Second']
+        # )
+
+        # trip.base_dataframe = pd.DataFrame(index=trip.time_index)
+
+        # empty_values = np.empty((len(trip.time_index), len(location_names)))
+        # empty_values[:] = np.nan
+        # trip.base_dataframe[location_names] = empty_values
+        # trip.located_at = trip.base_dataframe.copy()
+        # trip.connected = trip.base_dataframe.copy()
+        # trip.available_power_kW = trip.base_dataframe.copy()
+        # trip.battery_space_kWh = trip.base_dataframe.copy()
+        # trip.drawn_charge_kWh = trip.base_dataframe.copy()
+        # trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
 
 
 def declare_class_instances(Chosen_class, parameters):
@@ -534,6 +568,20 @@ def declare_all_instances(parameters):
         cook.save_dataframe(
             trip.run_next_leg_kilometers,
             f'{scenario}_{trip.name}_run_next_leg_kilometers',
+            groupfile_name,
+            output_folder,
+            parameters,
+        )
+        cook.save_dataframe(
+            trip.next_leg_kilometers,
+            f'{scenario}_{trip.name}_next_leg_kilometers_cumulative',
+            groupfile_name,
+            output_folder,
+            parameters,
+        )
+        cook.save_dataframe(
+            trip.run_next_leg_kilometers,
+            f'{scenario}_{trip.name}' f'_run_next_leg_kilometers_cumulative',
             groupfile_name,
             output_folder,
             parameters,

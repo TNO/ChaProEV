@@ -47,7 +47,7 @@ except ModuleNotFoundError:
 
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
-    print('Time tag versus Time Tag')
+
     print('Sum over locations ofenergy for next?')
     print('Other vehicles')
     print('Trips to keep memory')
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     print('Bus percent of time in route at bus stops')
     print('Other quantities')
     print('Cahrging strategies')
-    print('Energy needed for next leg')
+
     print('discharge V2X')
     print('Label min and max for btt space and energy fro next leg')
     print('Aggregates: KMs and cons per trip, day type (?) and total')

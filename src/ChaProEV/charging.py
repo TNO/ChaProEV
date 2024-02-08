@@ -557,7 +557,7 @@ def write_output(
     percentage_of_maximal_delivered_power_used = pd.DataFrame(
         index=percentage_of_maximal_delivered_power_used_per_location.index
     )
-   
+
     percentage_of_maximal_delivered_power_used[
         'Percentage of maximal delivered power used'
     ] = (
@@ -667,7 +667,7 @@ def get_charging_profile(parameters):
     print('Keep float precision?')
     print('Check totals and such?')
     print('Other charging strategies?')
-    print('Energy for next leg')
+
     print('Other vehicles')
     print('Local values')
     # print((datetime.datetime.now()-start_time).total_seconds())

@@ -146,6 +146,17 @@ def get_energy_for_next_leg(parameters):
         next_leg_kilometers['Time Tag']
     )
     next_leg_kilometers = next_leg_kilometers.set_index('Time Tag')
+    next_leg_kilometers_cumulative = cook.read_table_from_database(
+        f'{scenario}_next_leg_kilometers_cumulative',
+        f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+    )
+    next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
+        next_leg_kilometers_cumulative['Time Tag']
+    )
+    next_leg_kilometers_cumulative = (
+        next_leg_kilometers_cumulative.set_index('Time Tag')
+    )
+
     vehicle_parameters = parameters['vehicle']
     vehicle_base_consumptions_kWh_per_km = vehicle_parameters[
         'base_consumption_per_km'
@@ -163,13 +174,24 @@ def get_energy_for_next_leg(parameters):
         output_folder,
         parameters,
     )
+    energy_for_next_leg_cumulative = (
+        next_leg_kilometers_cumulative.mul(consumption, axis=0)
+    )
+    cook.save_dataframe(
+        energy_for_next_leg_cumulative,
+        f'{scenario}_energy_for_next_leg_cumulative',
+        f'{groupfile_root}_{case_name}',
+        output_folder,
+        parameters,
+    )
+
 
 def get_consumption_data(parameters):
     create_consumption_tables(parameters)
     get_energy_for_next_leg(parameters)
 
+
 if __name__ == '__main__':
     parameters_file_name = 'scenarios/baseline.toml'
     parameters = cook.parameters_from_TOML(parameters_file_name)
     get_consumption_data(parameters)
-    
