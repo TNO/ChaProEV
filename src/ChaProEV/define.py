@@ -573,14 +573,14 @@ def declare_all_instances(parameters):
             parameters,
         )
         cook.save_dataframe(
-            trip.next_leg_kilometers,
+            trip.next_leg_kilometers_cumulative,
             f'{scenario}_{trip.name}_next_leg_kilometers_cumulative',
             groupfile_name,
             output_folder,
             parameters,
         )
         cook.save_dataframe(
-            trip.run_next_leg_kilometers,
+            trip.run_next_leg_kilometers_cumulative,
             f'{scenario}_{trip.name}' f'_run_next_leg_kilometers_cumulative',
             groupfile_name,
             output_folder,
