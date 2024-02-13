@@ -8,7 +8,6 @@ It contains the following functions:
 '''
 
 import pandas as pd
-
 from ETS_CookBook import ETS_CookBook as cook
 
 
@@ -33,10 +32,12 @@ def write_scenario_parameters(parameters):
         parameter_dataframe = parameter_dataframe.astype('str')
         parameter_dataframe_name = f'{scenario}_{parameter_category}'
         cook.save_dataframe(
-            parameter_dataframe, parameter_dataframe_name,
-            groupfile_name, output_folder, parameters
+            parameter_dataframe,
+            parameter_dataframe_name,
+            groupfile_name,
+            output_folder,
+            parameters,
         )
-
 
 
 if __name__ == '__main__':

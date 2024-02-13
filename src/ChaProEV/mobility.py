@@ -14,10 +14,11 @@ that start their day at a given location (per day type)
 for the whole run
 6. **get_starting_location_split:** Gets the location split at run start
 '''
-import pandas as pd
-import numpy as np
+
 import datetime
 
+import numpy as np
+import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -632,9 +633,9 @@ def get_car_trip_probabilities_per_day_type(parameters):
     for location in possible_stay_locations:
         stay_put_split[f'stay_put_{location}'] = {}
         for day_type in day_types:
-            stay_put_split[f'stay_put_{location}'][
-                day_type
-            ] = day_type_start_location_split.loc[location, day_type]
+            stay_put_split[f'stay_put_{location}'][day_type] = (
+                day_type_start_location_split.loc[location, day_type]
+            )
     # We can now put the stay put probabilities
     for day_type in day_types:
         for stay_put_trip in stay_put_trips:
@@ -856,9 +857,9 @@ def get_day_type_start_location_split(parameters):
         day_type_start_location_split.loc['home', day_type] = (
             1 - percentage_on_holiday_in_holiday_week
         )
-        day_type_start_location_split.loc[
-            'holiday', day_type
-        ] = percentage_on_holiday_in_holiday_week
+        day_type_start_location_split.loc['holiday', day_type] = (
+            percentage_on_holiday_in_holiday_week
+        )
 
     # For departure and retrun weekends, this is split across
     # the weekend days (note that this is an approximation, as
@@ -874,9 +875,9 @@ def get_day_type_start_location_split(parameters):
         day_type_start_location_split.loc['home', day_type] = 1 - (
             percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
         )
-        day_type_start_location_split.loc[
-            'holiday', day_type
-        ] = percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
+        day_type_start_location_split.loc['holiday', day_type] = (
+            percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
+        )
 
     return day_type_start_location_split
 
@@ -977,9 +978,9 @@ def get_location_split(parameters):
     maximal_deivered_power = pd.DataFrame(
         index=maximal_delivered_power_location.index
     )
-    maximal_deivered_power[
-        'Maximal Delivered Power (kW)'
-    ] = maximal_delivered_power_location.sum(axis=1)
+    maximal_deivered_power['Maximal Delivered Power (kW)'] = (
+        maximal_delivered_power_location.sum(axis=1)
+    )
     cook.save_dataframe(
         location_split,
         f'{scenario}_location_split',
@@ -1045,11 +1046,11 @@ def get_starting_location_split(location_split, parameters):
         )
 
         for location_name in location_names:
-            location_split.iloc[0][
-                location_name
-            ] = day_type_start_location_split[run_start_day_type][
-                location_name
-            ]
+            location_split.iloc[0][location_name] = (
+                day_type_start_location_split[run_start_day_type][
+                    location_name
+                ]
+            )
 
     else:
         for location_name in location_names:
@@ -1103,15 +1104,11 @@ def get_kilometers_for_next_leg(parameters):
                 f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
             )
         )
-        trip_run_next_leg_kilometers_cumulative[
-            'Time Tag'
-        ] = pd.to_datetime(
+        trip_run_next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
             trip_run_next_leg_kilometers_cumulative['Time Tag']
         )
         trip_run_next_leg_kilometers_cumulative = (
-            trip_run_next_leg_kilometers_cumulative.set_index(
-                'Time Tag'
-            )
+            trip_run_next_leg_kilometers_cumulative.set_index('Time Tag')
         )
         this_trip_probabilities = pd.Series(run_trip_probabilities[trip_name])
 

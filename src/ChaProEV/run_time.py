@@ -15,13 +15,11 @@ to a time-stamped_dataframe
 the whole run.
 '''
 
-
 import datetime
-
-import pandas as pd
-import numpy as np
 import math
 
+import numpy as np
+import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
@@ -92,7 +90,7 @@ def get_time_range(parameters):
         start=run_start,
         end=run_end,
         freq=run_frequency,
-        inclusive='left'
+        inclusive='left',
         # We want the start timestamp, but not the end one, so we need
         # to say it is closed left
     )

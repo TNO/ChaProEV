@@ -3,10 +3,10 @@ Author: Omar Usmani (Omar.Usmani@TNO.nl)
 This is where you run the model
 '''
 
-import os
-import pandas as pd
 import datetime
+import os
 
+import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -48,6 +48,9 @@ except ModuleNotFoundError:
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
 
+    print('Match en required fo next and total')
+    print('Make one-year run')
+    print('Recap DF')
     print('Sum over locations ofenergy for next?')
     print('Other vehicles')
     print('Trips to keep memory')

@@ -1,9 +1,9 @@
 '''
 This module creates consumption tables
 '''
-import pandas as pd
-import numpy as np
 
+import numpy as np
+import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
@@ -153,8 +153,8 @@ def get_energy_for_next_leg(parameters):
     next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
         next_leg_kilometers_cumulative['Time Tag']
     )
-    next_leg_kilometers_cumulative = (
-        next_leg_kilometers_cumulative.set_index('Time Tag')
+    next_leg_kilometers_cumulative = next_leg_kilometers_cumulative.set_index(
+        'Time Tag'
     )
 
     vehicle_parameters = parameters['vehicle']
@@ -174,8 +174,8 @@ def get_energy_for_next_leg(parameters):
         output_folder,
         parameters,
     )
-    energy_for_next_leg_cumulative = (
-        next_leg_kilometers_cumulative.mul(consumption, axis=0)
+    energy_for_next_leg_cumulative = next_leg_kilometers_cumulative.mul(
+        consumption, axis=0
     )
     cook.save_dataframe(
         energy_for_next_leg_cumulative,

@@ -45,17 +45,16 @@ correction factor (source data versus interpolation)of electric vehicles.
     weather quantity for a given location and time tag.
 '''
 
+import datetime
 import os
 import sqlite3
-import datetime
 
+import cdsapi
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import cdsapi
 import requests
 from bs4 import BeautifulSoup as bs
-import matplotlib.pyplot as plt
-
 from ETS_CookBook import ETS_CookBook as cook
 
 
@@ -328,9 +327,9 @@ def get_hourly_values(quantity_dataframe, quantity, quantity_name, parameters):
                         quantity_name
                     ].values
                     shifted_cumulative_values = np.roll(cumulative_values, -1)
-                    location_dataframe.loc[
-                        :, f'Shifted {quantity_name}'
-                    ] = shifted_cumulative_values
+                    location_dataframe.loc[:, f'Shifted {quantity_name}'] = (
+                        shifted_cumulative_values
+                    )
 
                     location_dataframe.loc[:, f'Hourly {quantity_name}'] = (
                         shifted_cumulative_values
@@ -751,11 +750,11 @@ def get_scenario_weather_data(parameters):
             [weather_dataframe, location_weather_dataframe], ignore_index=False
         )
 
-        weather_dataframe[
-            'Vehicle efficiency factor'
-        ] = temperature_efficiency_factor(
-            weather_dataframe['Temperature at 2 meters (°C)'].values,
-            parameters,
+        weather_dataframe['Vehicle efficiency factor'] = (
+            temperature_efficiency_factor(
+                weather_dataframe['Temperature at 2 meters (°C)'].values,
+                parameters,
+            )
         )
 
         JOULES_IN_A_KWH = parameters['unit_conversions']['JOULES_IN_A_KWH']

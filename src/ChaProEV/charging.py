@@ -1,8 +1,8 @@
-import math
 import datetime
-import pandas as pd
-import numpy as np
+import math
 
+import numpy as np
+import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -517,9 +517,9 @@ def write_output(
     charge_drawn_from_network_total = pd.DataFrame(
         index=charge_drawn_from_network.index
     )
-    charge_drawn_from_network_total[
-        'Total Charge Drawn (kWh)'
-    ] = charge_drawn_from_network.sum(axis=1)
+    charge_drawn_from_network_total['Total Charge Drawn (kWh)'] = (
+        charge_drawn_from_network.sum(axis=1)
+    )
     percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
         index=charge_drawn_from_network.index
     )
@@ -588,9 +588,9 @@ def write_output(
     charge_drawn_by_vehicles_total = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
-    charge_drawn_by_vehicles_total[
-        'Total Charge Drawn (kW)'
-    ] = charge_drawn_by_vehicles.sum(axis=1)
+    charge_drawn_by_vehicles_total['Total Charge Drawn (kW)'] = (
+        charge_drawn_by_vehicles.sum(axis=1)
+    )
     percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )

@@ -20,10 +20,8 @@ to run that function for all class types.
 import datetime
 import math
 
-
 import numpy as np
 import pandas as pd
-
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
