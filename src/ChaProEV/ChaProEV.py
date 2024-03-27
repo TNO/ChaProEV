@@ -47,7 +47,8 @@ except ModuleNotFoundError:
 
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
-
+    print('Adde @cache')
+    print('Rearrange toml (with non-specific elements in the back)')
     print('Match en required fo next and total')
     print('Make one-year run')
     print('Recap DF')
