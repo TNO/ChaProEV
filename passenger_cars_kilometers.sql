@@ -49,6 +49,6 @@ as "Total (kWh)"
 from baseline_charge_drawn_by_vehicles
 );
 
-
+select * from baseline_location_split;
 
 
