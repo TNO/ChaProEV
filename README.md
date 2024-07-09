@@ -44,7 +44,9 @@ pip install ChaProEV
 and then import ChaProEV in your code
 
 
+## Documentation
 
+The docmentation can be found [here](https://tno.github.io/ChaProEV/)
 ## **Context, goals, and future developments**
 
 ### **Driver**
