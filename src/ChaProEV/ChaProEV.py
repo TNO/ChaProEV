@@ -5,6 +5,7 @@ This is where you run the model
 
 import datetime
 import os
+import typing as ty
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -60,7 +61,7 @@ except ModuleNotFoundError:
 # we are importing again
 
 if __name__ == '__main__':
-    start_ = datetime.datetime.now()
+    start_: datetime.datetime = datetime.datetime.now()
     print('Match en required fo next and total')
     print('Recap DF')
     print('Sum over locations ofenergy for next?')
@@ -114,28 +115,28 @@ if __name__ == '__main__':
     for scenario_file in os.listdir('scenarios'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
-            scenario_file_name = f'scenarios/{scenario_file}'
-            scenario = cook.parameters_from_TOML(scenario_file_name)
+            scenario_file_name: str = f'scenarios/{scenario_file}'
+            scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
             print((datetime.datetime.now() - start_).total_seconds())
-            decla_start = datetime.datetime.now()
+            decla_start: datetime.datetime = datetime.datetime.now()
             legs, locations, trips = define.declare_all_instances(scenario)
             print(
                 'Declare',
                 (datetime.datetime.now() - decla_start).total_seconds(),
             )
 
-            mob_start = datetime.datetime.now()
+            mob_start: datetime.datetime = datetime.datetime.now()
             mobility.make_mobility_data(scenario)
             print(
                 'Mobility',
                 (datetime.datetime.now() - mob_start).total_seconds(),
             )
-            cons_start = datetime.datetime.now()
+            cons_start: datetime.datetime = datetime.datetime.now()
             consumption.get_consumption_data(scenario)
             print(
                 'Cons', (datetime.datetime.now() - cons_start).total_seconds()
             )
-            charge_start = datetime.datetime.now()
+            charge_start: datetime.datetime = datetime.datetime.now()
             (
                 battery_space,
                 charge_drawn_by_vehicles,
