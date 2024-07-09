@@ -28,14 +28,14 @@ except ModuleNotFoundError:
 # Trip of prior day might correlate with next day
 
 # def get_trip_charging_array(trip_name, temperature_correction_factors,
-#    parameters):
+#    scenario):
 #     ...
 #     or as method/property in trip?
 # Dependence on temperatures, but also on battery level at day start
 # So maybe do for each day(?)
 # 2
-# parameters_file_name = 'scenarios/baseline.toml'
-# parameters = cook.parameters_from_TOML(parameters_file_name)
+# scenario_file_name = 'scenarios/baseline.toml'
+# scenario = cook.parameters_from_TOML(scenario_file_name)
 
 
 def travel_space_occupation(
@@ -44,13 +44,13 @@ def travel_space_occupation(
     time_tag_index,
     run_range,
     run_mobility_matrix,
-    parameters,
+    scenario,
 ):
-    zero_threshold = parameters['numbers']['zero_threshold']
-    location_parameters = parameters['locations']
+    zero_threshold = scenario['numbers']['zero_threshold']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
 
-    vehicle_parameters = parameters['vehicle']
+    vehicle_parameters = scenario['vehicle']
     use_weighted_km = vehicle_parameters['use_weighted']
     if use_weighted_km:
         distance_header = 'Weighted distance (km)'
@@ -283,10 +283,10 @@ def compute_charging_events(
     charge_drawn_by_vehicles,
     charge_drawn_from_network,
     time_tag,
-    parameters,
+    scenario,
 ):
-    zero_threshold = parameters['numbers']['zero_threshold']
-    location_parameters = parameters['locations']
+    zero_threshold = scenario['numbers']['zero_threshold']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
 
     for charging_location in location_names:
@@ -388,23 +388,23 @@ def compute_charging_events(
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
-def get_charging_framework(parameters):
-    run_range, run_hour_numbers = run_time.get_time_range(parameters)
+def get_charging_framework(scenario):
+    run_range, run_hour_numbers = run_time.get_time_range(scenario)
     # print(run_range[3573])
     # exit()
     SPINE_hour_numbers = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
 
-    file_parameters = parameters['files']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
-    location_split_table_name = f'{scenario}_location_split'
+    location_split_table_name = f'{scenario_name}_location_split'
     location_split = cook.read_table_from_database(
         location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
     )
@@ -436,7 +436,7 @@ def get_charging_framework(parameters):
     #         battery_space[location_name][charge_level] = 0
 
     run_mobility_matrix = cook.read_table_from_database(
-        f'{scenario}_run_mobility_matrix',
+        f'{scenario_name}_run_mobility_matrix',
         f'{output_folder}/{groupfile_name}.sqlite3',
     )
     run_mobility_matrix['Time Tag'] = pd.to_datetime(
@@ -472,20 +472,20 @@ def write_output(
     battery_space,
     charge_drawn_by_vehicles,
     charge_drawn_from_network,
-    parameters,
+    scenario,
 ):
-    run_range, run_hour_numbers = run_time.get_time_range(parameters)
+    run_range, run_hour_numbers = run_time.get_time_range(scenario)
     # print(run_range[3573])
     # exit()
     SPINE_hour_numbers = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
 
-    file_parameters = parameters['files']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
@@ -497,10 +497,10 @@ def write_output(
 
         cook.save_dataframe(
             battery_space[location_name],
-            f'{scenario}_{location_name}_battery_space',
+            f'{scenario_name}_{location_name}_battery_space',
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
 
     charge_drawn_from_network = charge_drawn_from_network.reset_index()
@@ -511,10 +511,10 @@ def write_output(
     )
     cook.save_dataframe(
         charge_drawn_from_network,
-        f'{scenario}_charge_drawn_from_network',
+        f'{scenario_name}_charge_drawn_from_network',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     charge_drawn_from_network_total = pd.DataFrame(
         index=charge_drawn_from_network.index
@@ -527,13 +527,13 @@ def write_output(
     )
     cook.save_dataframe(
         charge_drawn_from_network_total,
-        f'{scenario}_charge_drawn_from_network_total',
+        f'{scenario_name}_charge_drawn_from_network_total',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     maximal_delivered_power_per_location = cook.read_table_from_database(
-        f'{scenario}_maximal_delivered_power_per_location',
+        f'{scenario_name}_maximal_delivered_power_per_location',
         f'{output_folder}/{groupfile_name}.sqlite3',
     )
     for location_name in location_names:
@@ -546,14 +546,15 @@ def write_output(
 
     cook.save_dataframe(
         percentage_of_maximal_delivered_power_used_per_location,
-        f'{scenario}_percentage_of_maximal_delivered_power_used_per_location',
+        f'{scenario_name}_'
+        f'percentage_of_maximal_delivered_power_used_per_location',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
     maximal_delivered_power = cook.read_table_from_database(
-        f'{scenario}_maximal_delivered_power',
+        f'{scenario_name}_maximal_delivered_power',
         f'{output_folder}/{groupfile_name}.sqlite3',
     )
     percentage_of_maximal_delivered_power_used = pd.DataFrame(
@@ -568,10 +569,10 @@ def write_output(
     )
     cook.save_dataframe(
         percentage_of_maximal_delivered_power_used,
-        f'{scenario}_percentage_of_maximal_delivered_power_used',
+        f'{scenario_name}_percentage_of_maximal_delivered_power_used',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
     charge_drawn_by_vehicles = charge_drawn_by_vehicles.reset_index()
@@ -582,10 +583,10 @@ def write_output(
     )
     cook.save_dataframe(
         charge_drawn_by_vehicles,
-        f'{scenario}_charge_drawn_by_vehicles',
+        f'{scenario_name}_charge_drawn_by_vehicles',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     charge_drawn_by_vehicles_total = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
@@ -598,21 +599,21 @@ def write_output(
     )
     cook.save_dataframe(
         charge_drawn_by_vehicles_total,
-        f'{scenario}_charge_drawn_by_vehicles_total',
+        f'{scenario_name}_charge_drawn_by_vehicles_total',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
 
-def get_charging_profile(parameters):
+def get_charging_profile(scenario):
     (
         battery_space,
         run_range,
         run_mobility_matrix,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_framework(parameters)
+    ) = get_charging_framework(scenario)
 
     # start_time = datetime.datetime.now()
     # loop_start = start_time
@@ -644,7 +645,7 @@ def get_charging_profile(parameters):
             time_tag_index,
             run_range,
             run_mobility_matrix,
-            parameters,
+            scenario,
         )
 
         (
@@ -656,7 +657,7 @@ def get_charging_profile(parameters):
             charge_drawn_by_vehicles,
             charge_drawn_from_network,
             time_tag,
-            parameters,
+            scenario,
         )
 
         loop_end = datetime.datetime.now()
@@ -678,7 +679,7 @@ def get_charging_profile(parameters):
         battery_space,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-        parameters,
+        scenario,
     )
     loop_times.to_csv('Lopi.csv')
     # print('Write', (datetime.datetime.now()-write_out_start).total_seconds())
@@ -728,13 +729,13 @@ def get_all_charge_levels():
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+    scenario_file_name = 'scenarios/baseline.toml'
+    scenario = cook.parameters_from_TOML(scenario_file_name)
 
     start_ = datetime.datetime.now()
     (
         battery_space,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_profile(parameters)
+    ) = get_charging_profile(scenario)
     print((datetime.datetime.now() - start_).total_seconds())

@@ -61,23 +61,13 @@ except ModuleNotFoundError:
 
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
-    print('Adde @cache')
-    print('Rearrange toml (with non-specific elements in the back)')
     print('Match en required fo next and total')
-    print('Make one-year run')
     print('Recap DF')
     print('Sum over locations ofenergy for next?')
     print('Other vehicles')
     print('Trips to keep memory')
-    print('US module')
-    print(
-        'Time agnostic and option to spread evenly (or otherwise) at the end'
-    )
     print('Bus percent of time in route at bus stops')
     print('Other quantities')
-    print('Cahrging strategies')
-
-    print('discharge V2X')
     # print('Label min and max for btt space and energy fro next leg')
     # print('Aggregates: KMs and cons per trip, day type (?) and total')
     # print(
@@ -124,24 +114,24 @@ if __name__ == '__main__':
     for scenario_file in os.listdir('scenarios'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
-            parameters_file_name = f'scenarios/{scenario_file}'
-            parameters = cook.parameters_from_TOML(parameters_file_name)
+            scenario_file_name = f'scenarios/{scenario_file}'
+            scenario = cook.parameters_from_TOML(scenario_file_name)
             print((datetime.datetime.now() - start_).total_seconds())
             decla_start = datetime.datetime.now()
-            legs, locations, trips = define.declare_all_instances(parameters)
+            legs, locations, trips = define.declare_all_instances(scenario)
             print(
                 'Declare',
                 (datetime.datetime.now() - decla_start).total_seconds(),
             )
 
             mob_start = datetime.datetime.now()
-            mobility.make_mobility_data(parameters)
+            mobility.make_mobility_data(scenario)
             print(
                 'Mobility',
                 (datetime.datetime.now() - mob_start).total_seconds(),
             )
             cons_start = datetime.datetime.now()
-            consumption.get_consumption_data(parameters)
+            consumption.get_consumption_data(scenario)
             print(
                 'Cons', (datetime.datetime.now() - cons_start).total_seconds()
             )
@@ -150,7 +140,7 @@ if __name__ == '__main__':
                 battery_space,
                 charge_drawn_by_vehicles,
                 charge_drawn_from_network,
-            ) = charging.get_charging_profile(parameters)
+            ) = charging.get_charging_profile(scenario)
             print(
                 'Charge',
                 (datetime.datetime.now() - charge_start).total_seconds(),
@@ -159,12 +149,12 @@ if __name__ == '__main__':
             # print(charge_drawn_from_network)
     print('Tot', (datetime.datetime.now() - start_).total_seconds())
 
-    # writing.write_scenario_parameters(parameters)
-    # weather.setup_weather(parameters)
+    # writing.write_scenario_parameters(scenario)
+    # weather.setup_weather( scenario)
     # legs, vehicles, legs, trips = define.declare_all_instances(
-    #     parameters)
+    #     scenario)
 
     # run_trip_probabilities = (
-    #     mobility.get_run_trip_probabilities(parameters)
+    #     mobility.get_run_trip_probabilities(scenario)
     # )
     # Histograms!

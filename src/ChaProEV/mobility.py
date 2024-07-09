@@ -33,11 +33,11 @@ except ModuleNotFoundError:
 # we are importing again
 
 
-def get_trip_probabilities_per_day_type(parameters):
-    vehicle = parameters['vehicle']['name']
+def get_trip_probabilities_per_day_type(scenario):
+    vehicle = scenario['vehicle']['name']
     if vehicle == 'car':
         trip_probabilities_per_day_type = (
-            get_car_trip_probabilities_per_day_type(parameters)
+            get_car_trip_probabilities_per_day_type(scenario)
         )
     else:
         print('Vehicle does not have a model')
@@ -46,31 +46,31 @@ def get_trip_probabilities_per_day_type(parameters):
     return trip_probabilities_per_day_type
 
 
-def get_car_trip_probabilities_per_day_type(parameters):
+def get_car_trip_probabilities_per_day_type(scenario):
     '''
     This function computes the trip probabilities per day type.
     '''
     day_type_start_location_split = get_day_type_start_location_split(
-        parameters
+        scenario
     )
 
-    trip_list = list(parameters['trips'].keys())
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    trip_list = list(scenario['trips'].keys())
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
 
-    file_parameters = parameters['files']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
 
-    time_parameters = parameters['time']
+    time_parameters = scenario['time']
     DAYS_IN_A_YEAR = time_parameters['DAYS_IN_A_YEAR']
     DAYS_IN_A_WEEK = time_parameters['DAYS_IN_A_WEEK']
     weeks_in_a_year = DAYS_IN_A_YEAR / DAYS_IN_A_WEEK
     weekend_day_numbers = time_parameters['weekend_day_numbers']
     number_weekdays = DAYS_IN_A_WEEK - len(weekend_day_numbers)
 
-    mobility_module_parameters = parameters['mobility_module']
+    mobility_module_parameters = scenario['mobility_module']
     worked_hours_per_year = mobility_module_parameters['worked_hours_per_year']
     work_hours_in_a_work_day = mobility_module_parameters[
         'work_hours_in_a_work_day'
@@ -129,13 +129,13 @@ def get_car_trip_probabilities_per_day_type(parameters):
     #     (1 - weekday_proportion) * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     # )
 
-    holiday_departures_in_weekend_week_numbers = parameters['mobility_module'][
+    holiday_departures_in_weekend_week_numbers = scenario['mobility_module'][
         'holiday_departures_in_weekend_week_numbers'
     ]
     number_of_holiday_departure_weekends = len(
         holiday_departures_in_weekend_week_numbers
     )
-    holiday_returns_in_weekend_week_numbers = parameters['mobility_module'][
+    holiday_returns_in_weekend_week_numbers = scenario['mobility_module'][
         'holiday_returns_in_weekend_week_numbers'
     ]
     number_of_holiday_return_weekends = len(
@@ -623,7 +623,7 @@ def get_car_trip_probabilities_per_day_type(parameters):
                 * stay_put_split[stay_put_trip][day_type]
             )
 
-    table_name = f'{scenario}_trip_probabilities_per_day_type'
+    table_name = f'{scenario_name}_trip_probabilities_per_day_type'
 
     # For some file formats (stata, for example), we need to ensure that
     # the values are floats (or something else, but object does seem to be a
@@ -637,36 +637,36 @@ def get_car_trip_probabilities_per_day_type(parameters):
         table_name,
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
     return trip_probabilities_per_day_type
 
 
-def get_run_trip_probabilities(parameters):
+def get_run_trip_probabilities(scenario):
     '''
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
 
-    trip_list = list(parameters['trips'].keys())
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    trip_list = list(scenario['trips'].keys())
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
 
-    file_parameters = parameters['files']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
 
-    run_range, run_hour_numbers = run_time.get_time_range(parameters)
+    run_range, run_hour_numbers = run_time.get_time_range(scenario)
     run_trip_probabilities = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
     run_trip_probabilities = run_time.add_day_type_to_time_stamped_dataframe(
-        run_trip_probabilities, parameters
+        run_trip_probabilities, scenario
     )
 
     trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
-        parameters
+        scenario
     )
 
     for trip in trip_list:
@@ -677,45 +677,45 @@ def get_run_trip_probabilities(parameters):
 
         run_trip_probabilities[trip] = trip_probabilities
 
-    table_name = f'{scenario}_run_trip_probabilities'
+    table_name = f'{scenario_name}_run_trip_probabilities'
     cook.save_dataframe(
         run_trip_probabilities,
         table_name,
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
     return run_trip_probabilities
 
 
-def get_mobility_matrix(parameters):
+def get_mobility_matrix(scenario):
     '''
     Makes a mobility matrix for the run that tracks departures
     from and to locations (tracks amount, kilometers, and weighted kilometers)
     '''
 
-    run_trip_probabilities = get_run_trip_probabilities(parameters)
+    run_trip_probabilities = get_run_trip_probabilities(scenario)
 
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
-    trip_parameters = parameters['trips']
+    trip_parameters = scenario['trips']
     trip_names = [trip_name for trip_name in trip_parameters]
 
-    run_time_tags = run_time.get_time_range(parameters)[0]
+    run_time_tags = run_time.get_time_range(scenario)[0]
     run_mobility_index_tuples = [
         (start_location, end_location, time_tag)
         for start_location in location_names
         for end_location in location_names
         for time_tag in run_time_tags
     ]
-    mobility_index_names = parameters['mobility_module'][
+    mobility_index_names = scenario['mobility_module'][
         'mobility_index_names'
     ]
     run_mobility_index = pd.MultiIndex.from_tuples(
         run_mobility_index_tuples, names=mobility_index_names
     )
-    mobility_quantities = parameters['mobility_module']['mobility_quantities']
+    mobility_quantities = scenario['mobility_module']['mobility_quantities']
     run_mobility_matrix = pd.DataFrame(
         np.zeros((len(run_mobility_index), len(mobility_quantities))),
         columns=mobility_quantities,
@@ -723,9 +723,9 @@ def get_mobility_matrix(parameters):
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
 
-    case_name = parameters['case_name']
-    scenario = parameters['scenario']
-    file_parameters = parameters['files']
+    case_name = scenario['case_name']
+    scenario_name = scenario['scenario']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
@@ -744,13 +744,13 @@ def get_mobility_matrix(parameters):
                 ignore_index=True,
             )
         trip_run_mobility_matrix_name = (
-            f'{scenario}_{trip_name}_run_mobility_matrix'
+            f'{scenario_name}_{trip_name}_run_mobility_matrix'
         )
         trip_run_mobility_matrix = cook.read_table_from_database(
             trip_run_mobility_matrix_name,
             f'{output_folder}/{groupfile_name}.sqlite3',
         )
-        location_connections_headers = parameters['mobility_module'][
+        location_connections_headers = scenario['mobility_module'][
             'location_connections_headers'
         ]
 
@@ -771,7 +771,7 @@ def get_mobility_matrix(parameters):
 
     location_connections = (
         cook.read_table_from_database(
-            f'{scenario}_location_connections',
+            f'{scenario_name}_location_connections',
             f'{output_folder}/{groupfile_name}.sqlite3',
         )
         .set_index(['From', 'To'])
@@ -785,20 +785,20 @@ def get_mobility_matrix(parameters):
 
     cook.save_dataframe(
         run_mobility_matrix,
-        f'{scenario}_run_mobility_matrix',
+        f'{scenario_name}_run_mobility_matrix',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     return run_mobility_matrix
 
 
-def get_day_type_start_location_split(parameters):
+def get_day_type_start_location_split(scenario):
     '''
     Tells us the proportion of vehicles
     that start their day at a given location (per day type)
     '''
-    mobility_module_parameters = parameters['mobility_module']
+    mobility_module_parameters = scenario['mobility_module']
     holiday_trips_taken = mobility_module_parameters['holiday_trips_taken']
     holiday_departures_in_weekend_week_numbers = mobility_module_parameters[
         'holiday_departures_in_weekend_week_numbers'
@@ -807,7 +807,7 @@ def get_day_type_start_location_split(parameters):
         holiday_departures_in_weekend_week_numbers
     )
     day_types = mobility_module_parameters['day_types']
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
 
     day_type_start_location_split = pd.DataFrame(
@@ -848,7 +848,7 @@ def get_day_type_start_location_split(parameters):
     # the weekend days (note that this is an approximation, as
     # we ideally should split the weekend in two, but that would make
     # the model complexer)
-    weekend_day_numbers = parameters['time']['weekend_day_numbers']
+    weekend_day_numbers = scenario['time']['weekend_day_numbers']
     travelling_weekend_day_types = [
         'weekend_holiday_departures',
         'weekend_holiday_returns',
@@ -865,33 +865,33 @@ def get_day_type_start_location_split(parameters):
     return day_type_start_location_split
 
 
-def get_location_split(parameters):
+def get_location_split(scenario):
     '''
     Produces the location split of the vehicles for the whole run
     '''
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
 
-    file_parameters = parameters['files']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
-    run_range = run_time.get_time_range(parameters)[0]
+    run_range = run_time.get_time_range(scenario)[0]
     location_split = pd.DataFrame(columns=location_names, index=run_range)
 
     location_split.index.name = 'Time Tag'
 
-    location_split = get_starting_location_split(location_split, parameters)
+    location_split = get_starting_location_split(location_split, scenario)
 
-    run_mobility_matrix_name = f'{scenario}_run_mobility_matrix'
+    run_mobility_matrix_name = f'{scenario_name}_run_mobility_matrix'
     database_file = f'{output_folder}/{groupfile_name}.sqlite3'
 
     run_mobility_matrix = cook.read_table_from_database(
         run_mobility_matrix_name, database_file
     )
-    mobility_index_names = parameters['mobility_module'][
+    mobility_index_names = scenario['mobility_module'][
         'mobility_index_names'
     ]
 
@@ -970,66 +970,66 @@ def get_location_split(parameters):
     )
     cook.save_dataframe(
         location_split,
-        f'{scenario}_location_split',
+        f'{scenario_name}_location_split',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         driving,
-        f'{scenario}_percentage_driving',
+        f'{scenario_name}_percentage_driving',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         connectivity_per_location,
-        f'{scenario}_connectivity_per_location',
+        f'{scenario_name}_connectivity_per_location',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         connectivity,
-        f'{scenario}_connectivity',
+        f'{scenario_name}_connectivity',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         maximal_delivered_power_location,
-        f'{scenario}_maximal_delivered_power_per_location',
+        f'{scenario_name}_maximal_delivered_power_per_location',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         maximal_deivered_power,
-        f'{scenario}_maximal_delivered_power',
+        f'{scenario_name}_maximal_delivered_power',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     return location_split
 
 
-def get_starting_location_split(location_split, parameters):
+def get_starting_location_split(location_split, scenario):
     '''
     Gets the location split at run start
     '''
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
-    mobility_module_parameters = parameters['mobility_module']
+    mobility_module_parameters = scenario['mobility_module']
     compute_start_location_split = mobility_module_parameters[
         'compute_start_location_split'
     ]
     if compute_start_location_split:
-        run_start_time_tag = run_time.get_time_range(parameters)[0][0]
+        run_start_time_tag = run_time.get_time_range(scenario)[0][0]
         run_start_day_type = run_time.get_day_type(
-            run_start_time_tag, parameters
+            run_start_time_tag, scenario
         )
         day_type_start_location_split = get_day_type_start_location_split(
-            parameters
+            scenario
         )
 
         for location_name in location_names:
@@ -1051,17 +1051,17 @@ def get_starting_location_split(location_split, parameters):
     return location_split
 
 
-def get_kilometers_for_next_leg(parameters):
-    run_trip_probabilities = get_run_trip_probabilities(parameters)
+def get_kilometers_for_next_leg(scenario):
+    run_trip_probabilities = get_run_trip_probabilities(scenario)
 
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
 
-    file_parameters = parameters['files']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
 
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     location_names = [location_name for location_name in location_parameters]
     run_next_leg_kilometers = pd.DataFrame(
         np.zeros((len(run_trip_probabilities.index), len(location_names))),
@@ -1074,11 +1074,11 @@ def get_kilometers_for_next_leg(parameters):
         index=run_trip_probabilities.index,
     )
 
-    trip_parameters = parameters['trips']
+    trip_parameters = scenario['trips']
     trip_names = [trip_name for trip_name in trip_parameters]
     for trip_name in trip_names:
         trip_run_next_leg_kilometers = cook.read_table_from_database(
-            f'{scenario}_{trip_name}_run_next_leg_kilometers',
+            f'{scenario_name}_{trip_name}_run_next_leg_kilometers',
             f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
         )
         trip_run_next_leg_kilometers['Time Tag'] = pd.to_datetime(
@@ -1089,7 +1089,7 @@ def get_kilometers_for_next_leg(parameters):
         )
         trip_run_next_leg_kilometers_cumulative = (
             cook.read_table_from_database(
-                f'{scenario}_{trip_name}_'
+                f'{scenario_name}_{trip_name}_'
                 f'run_next_leg_kilometers_cumulative',
                 f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
             )
@@ -1113,30 +1113,30 @@ def get_kilometers_for_next_leg(parameters):
 
     cook.save_dataframe(
         run_next_leg_kilometers,
-        f'{scenario}_next_leg_kilometers',
+        f'{scenario_name}_next_leg_kilometers',
         f'{groupfile_root}_{case_name}',
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         run_next_leg_kilometers_cumulative,
-        f'{scenario}_next_leg_kilometers_cumulative',
+        f'{scenario_name}_next_leg_kilometers_cumulative',
         f'{groupfile_root}_{case_name}',
         output_folder,
-        parameters,
+        scenario,
     )
 
     return run_next_leg_kilometers
 
 
-def make_mobility_data(parameters):
+def make_mobility_data(scenario):
     trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
-        parameters
+        scenario
     )
 
-    run_mobility_matrix = get_mobility_matrix(parameters)
-    location_split = get_location_split(parameters)
-    kilometers_for_next_leg = get_kilometers_for_next_leg(parameters)
+    run_mobility_matrix = get_mobility_matrix(scenario)
+    location_split = get_location_split(scenario)
+    kilometers_for_next_leg = get_kilometers_for_next_leg(scenario)
     print(trip_probabilities_per_day_type)
     print(run_mobility_matrix)
     print(location_split)
@@ -1144,10 +1144,10 @@ def make_mobility_data(parameters):
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+    scenario_file_name = 'scenarios/baseline.toml'
+    scenario = cook.parameters_from_TOML(scenario_file_name)
 
-    make_mobility_data(parameters)
+    make_mobility_data(scenario)
 
     print('Add spillover?')
     print('Use departures from and arrivals to for location split')

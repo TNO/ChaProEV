@@ -5,7 +5,7 @@ This module defines time structures.
 It contains the following functions:
 1. **get_time_range:** This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
-    parameters file.
+    scenario file.
 2. **get_time_stamped_dataframe:** This function creates a DataFrame with the
 time tags of the run as index (and hour numbers as a column).
 3. **get_day_type:** Tells us the date type of a given time_tag.
@@ -23,14 +23,14 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def get_time_range(parameters):
+def get_time_range(scenario):
     '''
     This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
-    parameters file.
+    scenario file.
     '''
 
-    run_start_parameters = parameters['run']['start']
+    run_start_parameters = scenario['run']['start']
     run_start_year = run_start_parameters['year']
     run_start_month = run_start_parameters['month']
     run_start_day = run_start_parameters['day']
@@ -44,7 +44,7 @@ def get_time_range(parameters):
         run_start_hour,
         run_start_minute,
     )
-    mobility_module_parameters = parameters['mobility_module']
+    mobility_module_parameters = scenario['mobility_module']
     day_start_hour = mobility_module_parameters['day_start_hour']
     compute_start_location_split = mobility_module_parameters[
         'compute_start_location_split'
@@ -69,7 +69,7 @@ def get_time_range(parameters):
             run_start_minute,
         )
 
-    run_end_parameters = parameters['run']['end']
+    run_end_parameters = scenario['run']['end']
     run_end_year = run_end_parameters['year']
     run_end_month = run_end_parameters['month']
     run_end_day = run_end_parameters['day']
@@ -80,7 +80,7 @@ def get_time_range(parameters):
         run_end_year, run_end_month, run_end_day, run_end_hour, run_end_minute
     )
 
-    run_parameters = parameters['run']
+    run_parameters = scenario['run']
     run_frequency_parameters = run_parameters['frequency']
     run_frequency_size = run_frequency_parameters['size']
     run_frequency_type = run_frequency_parameters['type']
@@ -95,7 +95,7 @@ def get_time_range(parameters):
         # to say it is closed left
     )
 
-    time_parameters = parameters['time']
+    time_parameters = scenario['time']
     SECONDS_PER_HOUR = time_parameters['SECONDS_PER_HOUR']
     first_hour_number = time_parameters['first_hour_number']
 
@@ -113,13 +113,13 @@ def get_time_range(parameters):
     return run_range, run_hour_numbers
 
 
-def get_time_stamped_dataframe(parameters):
+def get_time_stamped_dataframe(scenario):
     '''
     This function creates a DataFrame with the timestamps of the
     run as index (and hour numbers as a column).
     '''
 
-    run_range, run_hour_numbers = get_time_range(parameters)
+    run_range, run_hour_numbers = get_time_range(scenario)
     time_stamped_dataframe = pd.DataFrame(
         run_hour_numbers, columns=['Hour Number'], index=run_range
     )
@@ -129,10 +129,10 @@ def get_time_stamped_dataframe(parameters):
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
     time_stamped_dataframe = add_day_type_to_time_stamped_dataframe(
-        time_stamped_dataframe, parameters
+        time_stamped_dataframe, scenario
     )
 
-    location_parameters = parameters['locations']
+    location_parameters = scenario['locations']
     locations = list(location_parameters.keys())
     time_stamped_dataframe[locations] = np.empty(
         (len(run_range), len(locations))
@@ -142,13 +142,13 @@ def get_time_stamped_dataframe(parameters):
     return time_stamped_dataframe
 
 
-def get_day_type(time_tag, parameters):
+def get_day_type(time_tag, scenario):
     '''
     Tells us the date type of a given time_tag.
     '''
 
-    weekend_day_numbers = parameters['time']['weekend_day_numbers']
-    holiday_weeks = parameters['mobility_module']['holiday_weeks']
+    weekend_day_numbers = scenario['time']['weekend_day_numbers']
+    holiday_weeks = scenario['mobility_module']['holiday_weeks']
     if time_tag.isoweekday() in weekend_day_numbers:
         day_type = 'weekend'
     else:
@@ -161,10 +161,10 @@ def get_day_type(time_tag, parameters):
 
     day_name = f'{day_type}_in_{week_type}_week'
 
-    holiday_departures_in_weekend_week_numbers = parameters['mobility_module'][
+    holiday_departures_in_weekend_week_numbers = scenario['mobility_module'][
         'holiday_departures_in_weekend_week_numbers'
     ]
-    holiday_returns_in_weekend_week_numbers = parameters['mobility_module'][
+    holiday_returns_in_weekend_week_numbers = scenario['mobility_module'][
         'holiday_returns_in_weekend_week_numbers'
     ]
     holiday_overlap_weekend_week_numbers = list(
@@ -190,15 +190,15 @@ def get_day_type(time_tag, parameters):
     return day_name
 
 
-def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
+def add_day_type_to_time_stamped_dataframe(dataframe, scenario):
     '''
     Adds a column with the date type
     to a time-stamped_dataframe
     '''
-    day_start_hour = parameters['mobility_module']['day_start_hour']
+    day_start_hour = scenario['mobility_module']['day_start_hour']
     day_types = [
         get_day_type(
-            time_tag - datetime.timedelta(hours=day_start_hour), parameters
+            time_tag - datetime.timedelta(hours=day_start_hour), scenario
         )
         for time_tag in dataframe.index
     ]
@@ -207,7 +207,7 @@ def add_day_type_to_time_stamped_dataframe(dataframe, parameters):
     return dataframe
 
 
-def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
+def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, scenario):
     '''
     Clones dataframe for a day (with zero at day start) for
     the whole run.
@@ -225,8 +225,8 @@ def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
     ):
         rolled_dataframe_to_clone[column] = column_values
 
-    SECONDS_PER_HOUR = parameters['time']['SECONDS_PER_HOUR']
-    HOURS_IN_A_DAY = parameters['time']['HOURS_IN_A_DAY']
+    SECONDS_PER_HOUR = scenario['time']['SECONDS_PER_HOUR']
+    HOURS_IN_A_DAY = scenario['time']['HOURS_IN_A_DAY']
     run_number_of_seconds = (run_range[-1] - run_range[0]).total_seconds()
     run_days = math.ceil(
         run_number_of_seconds / (SECONDS_PER_HOUR * HOURS_IN_A_DAY)
@@ -252,7 +252,7 @@ def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
         day=day_after_end_run.day,
         hour=0,
     )
-    run_parameters = parameters['run']
+    run_parameters = scenario['run']
     run_frequency_parameters = run_parameters['frequency']
     run_frequency_size = run_frequency_parameters['size']
     run_frequency_type = run_frequency_parameters['type']
@@ -274,10 +274,10 @@ def from_day_to_run(dataframe_to_clone, run_range, day_start_hour, parameters):
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-    run_range, run_hour_numbers = get_time_range(parameters)
-    time_stamped_dataframe = get_time_stamped_dataframe(parameters)
+    scenario_file_name = 'scenarios/baseline.toml'
+    scenario = cook.parameters_from_TOML(scenario_file_name)
+    run_range, run_hour_numbers = get_time_range(scenario)
+    time_stamped_dataframe = get_time_stamped_dataframe(scenario)
     print(run_range)
     print(run_hour_numbers)
     print(time_stamped_dataframe)

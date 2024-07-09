@@ -6,19 +6,19 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def create_consumption_tables(parameters):
+def create_consumption_tables(scenario):
     '''
     Creates the consumption tables
     '''
-    case_name = parameters['case_name']
-    scenario = parameters['scenario']
-    groupfile_root = parameters['files']['groupfile_root']
+    case_name = scenario['case_name']
+    scenario_name = scenario['scenario']
+    groupfile_root = scenario['files']['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
-    output_folder = parameters['files']['output_folder']
-    groupfile_root = parameters['files']['groupfile_root']
+    output_folder = scenario['files']['output_folder']
+    groupfile_root = scenario['files']['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
-    output_folder = parameters['files']['output_folder']
-    vehicle_parameters = parameters['vehicle']
+    output_folder = scenario['files']['output_folder']
+    vehicle_parameters = scenario['vehicle']
     kilometers_column_for_consumption = vehicle_parameters[
         'kilometers_column_for_consumption'
     ]
@@ -33,7 +33,7 @@ def create_consumption_tables(parameters):
         )
     consumption_matrix = pd.DataFrame(
         cook.read_table_from_database(
-            f'{scenario}_run_mobility_matrix',
+            f'{scenario_name}_run_mobility_matrix',
             f'{output_folder}/{groupfile_name}.sqlite3',
         )
     )
@@ -89,56 +89,56 @@ def create_consumption_tables(parameters):
 
     cook.save_dataframe(
         consumption_matrix,
-        f'{scenario}_consumption_matrix',
+        f'{scenario_name}_consumption_matrix',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         consumption_table,
-        f'{scenario}_consumption_table',
+        f'{scenario_name}_consumption_table',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         daily_consumption_table,
-        f'{scenario}_daily_consumption_table',
+        f'{scenario_name}_daily_consumption_table',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         weekly_consumption_table,
-        f'{scenario}_weekly_consumption_table',
+        f'{scenario_name}_weekly_consumption_table',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         monthly_consumption_table,
-        f'{scenario}_monthly_consumption_table',
+        f'{scenario_name}_monthly_consumption_table',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
     cook.save_dataframe(
         yearly_consumption_table,
-        f'{scenario}_yearly_consumption_table',
+        f'{scenario_name}_yearly_consumption_table',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
 
-def get_energy_for_next_leg(parameters):
-    file_parameters = parameters['files']
+def get_energy_for_next_leg(scenario):
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    scenario_name = scenario['scenario']
+    case_name = scenario['case_name']
     next_leg_kilometers = cook.read_table_from_database(
-        f'{scenario}_next_leg_kilometers',
+        f'{scenario_name}_next_leg_kilometers',
         f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
     )
     next_leg_kilometers['Time Tag'] = pd.to_datetime(
@@ -146,7 +146,7 @@ def get_energy_for_next_leg(parameters):
     )
     next_leg_kilometers = next_leg_kilometers.set_index('Time Tag')
     next_leg_kilometers_cumulative = cook.read_table_from_database(
-        f'{scenario}_next_leg_kilometers_cumulative',
+        f'{scenario_name}_next_leg_kilometers_cumulative',
         f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
     )
     next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
@@ -156,7 +156,7 @@ def get_energy_for_next_leg(parameters):
         'Time Tag'
     )
 
-    vehicle_parameters = parameters['vehicle']
+    vehicle_parameters = scenario['vehicle']
     vehicle_base_consumptions_kWh_per_km = vehicle_parameters[
         'base_consumption_per_km'
     ]['electricity_kWh']
@@ -168,29 +168,29 @@ def get_energy_for_next_leg(parameters):
     energy_for_next_leg = next_leg_kilometers.mul(consumption, axis=0)
     cook.save_dataframe(
         energy_for_next_leg,
-        f'{scenario}_energy_for_next_leg',
+        f'{scenario_name}_energy_for_next_leg',
         f'{groupfile_root}_{case_name}',
         output_folder,
-        parameters,
+        scenario,
     )
     energy_for_next_leg_cumulative = next_leg_kilometers_cumulative.mul(
         consumption, axis=0
     )
     cook.save_dataframe(
         energy_for_next_leg_cumulative,
-        f'{scenario}_energy_for_next_leg_cumulative',
+        f'{scenario_name}_energy_for_next_leg_cumulative',
         f'{groupfile_root}_{case_name}',
         output_folder,
-        parameters,
+        scenario,
     )
 
 
-def get_consumption_data(parameters):
-    create_consumption_tables(parameters)
-    get_energy_for_next_leg(parameters)
+def get_consumption_data(scenario):
+    create_consumption_tables(scenario)
+    get_energy_for_next_leg(scenario)
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-    get_consumption_data(parameters)
+    scenario_file_name = 'scenarios/baseline.toml'
+    scenario = cook.parameters_from_TOML(scenario_file_name)
+    get_consumption_data(scenario)

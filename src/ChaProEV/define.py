@@ -1,7 +1,7 @@
 '''
 Author: Omar Usmani (Omar.Usmani@TNO.nl)
 This module defines and declares classes for the different objects
-that define the system (the parameters/defintions come from a parameters file),
+that define the system (the parameters/defintions come from a scenario file),
 namely:
 1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
@@ -40,7 +40,7 @@ except ModuleNotFoundError:
 
 class Leg:
     '''
-    This class defines the legs and their properties, from a parameters
+    This class defines the legs and their properties, from a scenario
     file that contains a list of instances and their properties.
     Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
@@ -48,10 +48,10 @@ class Leg:
 
     class_name = 'legs'
 
-    def __init__(leg, name, parameters):
+    def __init__(leg, name, scenario):
         leg.name = name
 
-        leg_parameters = parameters['legs'][name]
+        leg_parameters = scenario['legs'][name]
         leg.distance = leg_parameters['distance']
         leg.duration = leg_parameters['duration']
         leg.hour_in_day_factors = leg_parameters['hour_in_day_factors']
@@ -65,16 +65,16 @@ class Leg:
 class Location:
     '''
     This class defines the locations where the vehicles are
-    and their properties,  from a parameters
+    and their properties,  from a scenario
     file that contains a list of instances and their properties.
     '''
 
     class_name = 'locations'
 
-    def __init__(location, name, parameters):
+    def __init__(location, name, scenario):
         location.name = name
 
-        location_parameters = parameters['locations'][name]
+        location_parameters = scenario['locations'][name]
         location.connectivity = location_parameters['connectivity']
         location.charging_power = location_parameters['charging_power']
         location.latitude = location_parameters['latitude']
@@ -89,7 +89,7 @@ class Location:
 
 class Trip:
     '''
-    This class defines the  trips and their properties, from a parameters
+    This class defines the  trips and their properties, from a scenario
     file that contains a list of instances and their properties.
     Trips are collections of legs that take place on a given day.
     Note that this day does not necessarily start (and end) at minight,
@@ -97,31 +97,31 @@ class Trip:
     vehicle user (it could for example be 06:00 for car drivers).
     This day_start_hour
     parameter is universal for all trips
-    This value is set in the parameters files.
+    This value is set in the scenario files.
     '''
 
     class_name = 'trips'
 
-    def __init__(trip, name, parameters):
+    def __init__(trip, name, scenario):
         trip.name = name
 
-        location_parameters = parameters['locations']
+        location_parameters = scenario['locations']
         location_names = [
             location_name for location_name in location_parameters
         ]
-        trip_parameters = parameters['trips'][name]
+        trip_parameters = scenario['trips'][name]
         trip.legs = trip_parameters['legs']
         trip.time_between_legs = trip_parameters['time_between_legs']
         trip.percentage_station_users = trip_parameters[
             'percentage_station_users'
         ]
         trip.start_probabilities = trip_parameters['start_probabilities']
-        trip.day_start_hour = parameters['mobility_module']['day_start_hour']
+        trip.day_start_hour = scenario['mobility_module']['day_start_hour']
         # We want to create a mobility matrix for the trip. This matrix will
         # have start and end locations (plus hour in day, starting
         # at day start) as an index, and departures, arrivals as columns (
         # each with amounts, distances, weighted distances)
-        HOURS_IN_A_DAY = parameters['time']['HOURS_IN_A_DAY']
+        HOURS_IN_A_DAY = scenario['time']['HOURS_IN_A_DAY']
         mobility_index_tuples = [
             (start_location, end_location, hour_number)
             for start_location in location_names
@@ -132,7 +132,7 @@ class Trip:
             mobility_index_tuples,
             names=['From', 'To', 'Hour number (from day start)'],
         )
-        mobility_quantities = parameters['mobility_module'][
+        mobility_quantities = scenario['mobility_module'][
             'mobility_quantities'
         ]
         trip.mobility_matrix = pd.DataFrame(
@@ -149,7 +149,7 @@ class Trip:
 
         # To fill in the mobility matrix, we iterate over the legs of the trip
         for leg_index, leg_name in enumerate(trip.legs):
-            leg_parameters = parameters['legs'][leg_name]
+            leg_parameters = scenario['legs'][leg_name]
             start_location = leg_parameters['locations']['start']
             end_location = leg_parameters['locations']['end']
             time_driving = leg_parameters['duration']
@@ -167,7 +167,7 @@ class Trip:
             distance = leg_parameters['distance']
             road_type_mix = np.array(leg_parameters['road_type_mix']['mix'])
             road_type_weights = np.array(
-                parameters['transport_factors']['weights']
+                scenario['transport_factors']['weights']
             )
             road_type_factor = sum(road_type_mix * road_type_weights)
             weighted_distance = road_type_factor * distance
@@ -297,20 +297,20 @@ class Trip:
             time_driving_previous_leg = time_driving
 
         # We now can create a mobility matrix for the whole run
-        run_time_tags = run_time.get_time_range(parameters)[0]
+        run_time_tags = run_time.get_time_range(scenario)[0]
         run_mobility_index_tuples = [
             (start_location, end_location, time_tag)
             for start_location in location_names
             for end_location in location_names
             for time_tag in run_time_tags
         ]
-        mobility_index_names = parameters['mobility_module'][
+        mobility_index_names = scenario['mobility_module'][
             'mobility_index_names'
         ]
         run_mobility_index = pd.MultiIndex.from_tuples(
             run_mobility_index_tuples, names=mobility_index_names
         )
-        mobility_quantities = parameters['mobility_module'][
+        mobility_quantities = scenario['mobility_module'][
             'mobility_quantities'
         ]
         trip.run_mobility_matrix = pd.DataFrame(
@@ -326,14 +326,14 @@ class Trip:
                     ],
                     run_time_tags,
                     trip.day_start_hour,
-                    parameters,
+                    scenario,
                 )
                 for mobility_quantity in mobility_quantities:
                     trip.run_mobility_matrix.at[
                         (start_location, end_location), mobility_quantity
                     ] = cloned_mobility_matrix[mobility_quantity].values
 
-        # frequency_parameters = parameters['run']['frequency']
+        # frequency_parameters = scenario['run']['frequency']
         # trip_frequency_size = frequency_parameters['size']
         # trip_frequency_type = frequency_parameters['type']
         # trip_frequency = f'{trip_frequency_size}{trip_frequency_type}'
@@ -353,7 +353,7 @@ class Trip:
         for leg_index, leg_name in enumerate(trip.legs):
             # print(trip.name)
             # print(leg_name)
-            leg_parameters = parameters['legs'][leg_name]
+            leg_parameters = scenario['legs'][leg_name]
             start_location = leg_parameters['locations']['start']
             end_location = leg_parameters['locations']['end']
             # print(start_location)
@@ -427,13 +427,13 @@ class Trip:
             trip.next_leg_kilometers,
             run_time_tags,
             trip.day_start_hour,
-            parameters,
+            scenario,
         )
         trip.run_next_leg_kilometers_cumulative = run_time.from_day_to_run(
             trip.next_leg_kilometers_cumulative,
             run_time_tags,
             trip.day_start_hour,
-            parameters,
+            scenario,
         )
 
         # # For these, the year, month and day are not important,
@@ -470,44 +470,44 @@ class Trip:
         # trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
 
 
-def declare_class_instances(Chosen_class, parameters):
+def declare_class_instances(Chosen_class, scenario):
     '''
     This function creates the instances of a class (Chosen_class),
-    based on a parameters file name where the instances and their properties
+    based on a scenario file name where the instances and their properties
     are given.
     '''
 
     class_name = Chosen_class.class_name
 
-    class_names = parameters[class_name]
+    class_names = scenario[class_name]
     instances = []
 
     for class_name in class_names:
-        instances.append(Chosen_class(class_name, parameters))
+        instances.append(Chosen_class(class_name, scenario))
 
     return instances
 
 
-def declare_all_instances(parameters):
+def declare_all_instances(scenario):
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
     '''
-    case_name = parameters['case_name']
-    scenario = parameters['scenario']
-    file_parameters = parameters['files']
+    case_name = scenario['case_name']
+    scenario_name = scenario['scenario']
+    file_parameters = scenario['files']
     output_folder = file_parameters['output_folder']
     groupfile_root = file_parameters['groupfile_root']
     groupfile_name = f'{groupfile_root}_{case_name}'
     # loc_start = datetime.datetime.now()
-    locations = declare_class_instances(Location, parameters)
+    locations = declare_class_instances(Location, scenario)
     # print('Loc', (datetime.datetime.now()-loc_start).total_seconds())
     # leg_start = datetime.datetime.now()
-    legs = declare_class_instances(Leg, parameters)
+    legs = declare_class_instances(Leg, scenario)
     # print('Leg', (datetime.datetime.now()-leg_start).total_seconds())
     # loc_conn_start = datetime.datetime.now()
     # We want to get the location connections
-    location_connections_headers = parameters['mobility_module'][
+    location_connections_headers = scenario['mobility_module'][
         'location_connections_headers'
     ]
     location_connections_index_tuples = [
@@ -521,7 +521,7 @@ def declare_all_instances(parameters):
     location_connections = pd.DataFrame(
         columns=location_connections_headers, index=location_connections_index
     )
-    road_type_weights = np.array(parameters['transport_factors']['weights'])
+    road_type_weights = np.array(scenario['transport_factors']['weights'])
 
     for leg in legs:
         road_type_factor = sum(leg.road_type_mix * road_type_weights)
@@ -533,64 +533,67 @@ def declare_all_instances(parameters):
 
     cook.save_dataframe(
         location_connections,
-        f'{scenario}_location_connections',
+        f'{scenario_name}_location_connections',
         groupfile_name,
         output_folder,
-        parameters,
+        scenario,
     )
 
     # print('Loc', (datetime.datetime.now()-loc_conn_start).total_seconds())
 
     # tri_start = datetime.datetime.now()
 
-    trips = declare_class_instances(Trip, parameters)
+    trips = declare_class_instances(Trip, scenario)
     # print('Trip', (datetime.datetime.now()-tri_start).total_seconds())
     # matrix_start = datetime.datetime.now()
     # We want to save the moblity matrixes
     for trip in trips:
-        mobility_table_name = f'{scenario}_{trip.name}_mobility_matrix'
+        mobility_table_name = f'{scenario_name}_{trip.name}_mobility_matrix'
         cook.save_dataframe(
             trip.mobility_matrix,
             mobility_table_name,
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
-        run_mobility_table_name = f'{scenario}_{trip.name}_run_mobility_matrix'
+        run_mobility_table_name = (
+            f'{scenario_name}_{trip.name}_run_mobility_matrix'
+        )
         cook.save_dataframe(
             trip.run_mobility_matrix,
             run_mobility_table_name,
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
         cook.save_dataframe(
             trip.next_leg_kilometers,
-            f'{scenario}_{trip.name}_next_leg_kilometers',
+            f'{scenario_name}_{trip.name}_next_leg_kilometers',
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
         cook.save_dataframe(
             trip.run_next_leg_kilometers,
-            f'{scenario}_{trip.name}_run_next_leg_kilometers',
+            f'{scenario_name}_{trip.name}_run_next_leg_kilometers',
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
         cook.save_dataframe(
             trip.next_leg_kilometers_cumulative,
-            f'{scenario}_{trip.name}_next_leg_kilometers_cumulative',
+            f'{scenario_name}_{trip.name}_next_leg_kilometers_cumulative',
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
         cook.save_dataframe(
             trip.run_next_leg_kilometers_cumulative,
-            f'{scenario}_{trip.name}' f'_run_next_leg_kilometers_cumulative',
+            f'{scenario_name}_{trip.name}'
+            f'_run_next_leg_kilometers_cumulative',
             groupfile_name,
             output_folder,
-            parameters,
+            scenario,
         )
     # print('Mat', (datetime.datetime.now()-matrix_start).total_seconds())
 
@@ -598,9 +601,9 @@ def declare_all_instances(parameters):
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-    legs, locations, trips = declare_all_instances(parameters)
+    scenario_file_name = 'scenarios/baseline.toml'
+    scenario = cook.parameters_from_TOML(scenario_file_name)
+    legs, locations, trips = declare_all_instances(scenario)
 
     for leg in legs:
         print(
