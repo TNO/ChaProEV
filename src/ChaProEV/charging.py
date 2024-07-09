@@ -208,7 +208,7 @@ def travel_space_occupation(
                         ):
                             battery_space[end_location][
                                 arriving_battery_space
-                            ] = 0
+                            ] = float(0)
 
                         if first_arrival_shift_proportion > zero_threshold:
                             # Otherwise there is no first shift arrival
@@ -220,6 +220,7 @@ def travel_space_occupation(
                             if time_tag + first_arrival_shift_time <= (
                                 run_range[-1]
                             ):
+
                                 battery_space[end_location].loc[
                                     time_tag + first_arrival_shift_time,
                                     arriving_battery_space,
@@ -361,7 +362,7 @@ def compute_charging_events(
                         ):
                             battery_space[charging_location][
                                 battery_space_after_charging
-                            ] = 0
+                            ] = float(0)
 
                         battery_space[charging_location].loc[
                             time_tag, battery_space_after_charging
@@ -409,6 +410,7 @@ def get_charging_framework(scenario):
         location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
     )
     location_split['Time Tag'] = pd.to_datetime(location_split['Time Tag'])
+
     location_split = location_split.set_index('Time Tag')
 
     # We look at the various battery spaces that are available
@@ -421,19 +423,20 @@ def get_charging_framework(scenario):
         )
         battery_space[location_name]['Hour Number'] = run_hour_numbers
         battery_space[location_name]['SPINE_Hour_Number'] = SPINE_hour_numbers
-        # battery_space[0] = 0
+        # battery_space[0] float(0)
         battery_space[location_name] = battery_space[location_name].set_index(
             ['Time Tag', 'Hour Number', 'SPINE_Hour_Number']
         )
-        battery_space[location_name][0] = 0
-        battery_space[location_name][0].iloc[0] = location_split.loc[
+        battery_space[location_name][float(0)] = float(0)
+
+        battery_space[location_name].loc[run_range[0], 0] = location_split.loc[
             run_range[0]
         ][location_name]
 
     # all_charge_levels = get_all_charge_levels()
     # for location_name in location_names:
     #     for charge_level in all_charge_levels[location_name]:
-    #         battery_space[location_name][charge_level] = 0
+    #         battery_space[location_name][charge_level] float(0)
 
     run_mobility_matrix = cook.read_table_from_database(
         f'{scenario_name}_run_mobility_matrix',
@@ -536,13 +539,21 @@ def write_output(
         f'{scenario_name}_maximal_delivered_power_per_location',
         f'{output_folder}/{groupfile_name}.sqlite3',
     )
+
     for location_name in location_names:
         percentage_of_maximal_delivered_power_used_per_location[
             location_name
-        ] = (
-            charge_drawn_from_network[location_name].values
-            / maximal_delivered_power_per_location[location_name].values
-        )
+        ] = [
+            (
+                charge_drawn / maximal_delivered_power
+                if maximal_delivered_power != 0
+                else 0
+            )
+            for charge_drawn, maximal_delivered_power in zip(
+                charge_drawn_from_network[location_name].values,
+                maximal_delivered_power_per_location[location_name].values,
+            )
+        ]
 
     cook.save_dataframe(
         percentage_of_maximal_delivered_power_used_per_location,
