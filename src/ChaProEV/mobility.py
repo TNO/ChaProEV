@@ -85,17 +85,17 @@ def get_car_trip_probabilities_per_day_type(parameters):
     hours_in_a_standard_work_week = mobility_module_parameters[
         'hours_in_a_standard_work_week'
     ]
-    holiday_weeks = mobility_module_parameters['holiday_weeks']
+    # holiday_weeks = mobility_module_parameters['holiday_weeks']
     number_of_holiday_weeks = mobility_module_parameters[
         'number_of_holiday_weeks'
     ]
     holiday_trips_taken = mobility_module_parameters['holiday_trips_taken']
-    time_spent_at_holiday_destination = mobility_module_parameters[
-        'time_spent_at_holiday_destination'
-    ]
-    days_in_holiday_weeks = (
-        DAYS_IN_A_YEAR * number_of_holiday_weeks / weeks_in_a_year
-    )
+    # time_spent_at_holiday_destination = mobility_module_parameters[
+    #     'time_spent_at_holiday_destination'
+    # ]
+    # days_in_holiday_weeks = (
+    #     DAYS_IN_A_YEAR * number_of_holiday_weeks / weeks_in_a_year
+    # )
     weekend_days_per_year = (
         DAYS_IN_A_YEAR * len(weekend_day_numbers) / DAYS_IN_A_WEEK
     )
@@ -125,9 +125,9 @@ def get_car_trip_probabilities_per_day_type(parameters):
     weekdays_in_holiday_weeks = (
         weekday_proportion * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     )
-    weekend_days_in_holiday_weeks = (
-        (1 - weekday_proportion) * (1 - workweek_proportion) * DAYS_IN_A_YEAR
-    )
+    # weekend_days_in_holiday_weeks = (
+    #     (1 - weekday_proportion) * (1 - workweek_proportion) * DAYS_IN_A_YEAR
+    # )
 
     holiday_departures_in_weekend_week_numbers = parameters['mobility_module'][
         'holiday_departures_in_weekend_week_numbers'
