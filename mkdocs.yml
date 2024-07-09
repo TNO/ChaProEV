@@ -1,0 +1,12 @@
+site_name: ChaProEV
+nav:
+ - Home: index.md
+ - How to use: using.md
+ - Plotting:
+            - Math: math.md
+            - Physics: physics.md
+
+theme: 
+	name: readthedocs
+	sticky_navigation: False
+

@@ -134,7 +134,7 @@ hour = 0
 minute = 0
 [run.frequency]
 size = 1  # Put the size of the interval here
-type = 'H'  # 'min'
+type = 'h'  # 'min'
 # Put the interval type here, use 'H' for hours, 'min' for minutes,
 # 'S' for seconds, 'D' for days. For more info and other types, see here:
 # https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases

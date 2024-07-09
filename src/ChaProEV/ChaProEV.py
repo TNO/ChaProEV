@@ -6,44 +6,58 @@ This is where you run the model
 import datetime
 import os
 
-import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
-    import weather
+    import define  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import weather
+    from ChaProEV import define  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 try:
-    import define
+    import mobility  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import define
+    from ChaProEV import mobility  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 try:
-    import writing
+    import consumption  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import writing
+    from ChaProEV import consumption  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
 try:
-    import mobility
+    import charging  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import mobility
+    from ChaProEV import charging  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
-try:
-    import run_time
-except ModuleNotFoundError:
-    from ChaProEV import run_time
-# So that it works both as a standalone (1st) and as a package (2nd)
-try:
-    import consumption
-except ModuleNotFoundError:
-    from ChaProEV import consumption
-# So that it works both as a standalone (1st) and as a package (2nd)
-try:
-    import charging
-except ModuleNotFoundError:
-    from ChaProEV import charging
-# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
 
 if __name__ == '__main__':
     start_ = datetime.datetime.now()
@@ -64,17 +78,26 @@ if __name__ == '__main__':
     print('Cahrging strategies')
 
     print('discharge V2X')
-    print('Label min and max for btt space and energy fro next leg')
-    print('Aggregates: KMs and cons per trip, day type (?) and total')
-    print(
-        'Aggregates: Stats (mean, min, max) of Charging power (kW), Driving%, Connected %, Batt space, batt charge level, Maximal delivered power (kW), Percentage of maximal delivered power used (%), Minimal delivered power (kW)'
-    )
-    print(
-        'Data for Tulipa/COMPETES Connected (%)	Charging Power (kW)	Charging Profile	Energy_demand_for_next_leg (kWh)	Energy_demand_for_next_leg (as percent of total demand)	Maximal delivered power (kW)	Percentage of maximal power used(%)	Minimal deliverd power (kW) '
-    )
-    print(
-        'Full data too? Or per location, with one table per, and have sumtable 9or sum in Table?'
-    )
+    # print('Label min and max for btt space and energy fro next leg')
+    # print('Aggregates: KMs and cons per trip, day type (?) and total')
+    # print(
+    #     'Aggregates: Stats (mean, min, max) of Charging power (kW),
+    # Driving%, Connected %, Batt space, batt charge level,
+    # Maximal delivered power (kW),
+    # Percentage of maximal delivered power used (%),
+    # Minimal delivered power (kW)'
+    # )
+    # print(
+    #     'Data for Tulipa/COMPETES Connected (%)	Charging Power (kW)
+    # Charging Profile	Energy_demand_for_next_leg (kWh)
+    # Energy_demand_for_next_leg (as percent of total demand)
+    # \Maximal delivered power (kW)
+    # Percentage of maximal power used(%)	Minimal deliverd power (kW) '
+    # )
+    # print(
+    #     'Full data too? Or per location, with one table per,
+    # and have sumtable 9or sum in Table?'
+    # )
     print('Temperature effect')
     print('PVs from PVlib')
     print('Fast chargers')
@@ -82,12 +105,22 @@ if __name__ == '__main__':
     print('recap DF?')
     print('Check connectivity')
     print('Clarify charge and power! for drawn')
-    print(
-        'Minimal state of charge = energy for next leg + lowest acceptabl;e level'
-    )
-    print(
-        'Charging Power and Charge Drawn as separate tables and the in percentage and such'
-    )
+    # print(
+    #     'Minimal state of charge = energy for next leg
+    # + lowest acceptabl;e level'
+    # )
+    # print(
+    #     'Charging Power and Charge Drawn as separate tables
+    # and the in percentage and such'
+    # )
+    # print(
+    #     'Split home an-home and home-street (or have it as
+    # separate runs with different powers?)'
+    # )
+    # print('Other vehicles')
+    print('Speed up by using day types only calc as option')
+    print('Chargin strategis (basic, adaptive, price (?))')
+    print('Every x days')
     for scenario_file in os.listdir('scenarios'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':

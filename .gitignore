@@ -4,3 +4,5 @@ devel/
 ChaProEV_env/
 __pycache__/
 documentation/
+site/
+.venv/

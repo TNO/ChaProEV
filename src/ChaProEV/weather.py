@@ -423,8 +423,6 @@ def get_EV_tool_data(parameters):
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
     '''
 
-    file_parameters = parameters['files']
-
     EV_tool_parameters = parameters['weather']['EV_tool']
 
     EV_tool_url = EV_tool_parameters['EV_tool_url']

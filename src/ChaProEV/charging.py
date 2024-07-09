@@ -6,16 +6,18 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
-    import run_time
-except ModuleNotFoundError:
-    from ChaProEV import run_time
-# So that it works both as a standalone (1st) and as a package (2nd)
+    import run_time  # type: ignore
 
-try:
-    import mobility
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import mobility
+    from ChaProEV import run_time  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 
 # do it per trip
 # battery level trigger (below this, will charge)
@@ -612,7 +614,7 @@ def get_charging_profile(parameters):
         charge_drawn_from_network,
     ) = get_charging_framework(parameters)
 
-    start_time = datetime.datetime.now()
+    # start_time = datetime.datetime.now()
     # loop_start = start_time
 
     loop_times = pd.DataFrame(
@@ -631,10 +633,10 @@ def get_charging_profile(parameters):
         # if time_tag_index > 10:
         #     exit()
 
-        if time_tag_index > 0:
-            if loop_time > 0.1:
-                print(run_range[time_tag_index - 1])
-                print(time_tag_index - 1)
+        # if time_tag_index > 0:
+        #     if loop_time > 0.1:
+        #         print(run_range[time_tag_index - 1])
+        #         print(time_tag_index - 1)
 
         battery_space = travel_space_occupation(
             battery_space,

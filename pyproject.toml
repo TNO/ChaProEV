@@ -20,7 +20,19 @@ dynamic = ['dependencies']
 [tool.setuptools.dynamic]
 dependencies = {file = ['requirements.txt']}
 
+[tool.setuptools.package-data]
+'ETS_CookBook' = ['py.typed']
+
+[tool.setuptools.packages.find]
+where = ['src']
+
+[tool.pytest.ini_options]
+pythonpath = ['src/ChaProEV']
+
 [project.urls]
 'Homepage' = 'https://github.com/TNO/ChaProEV'
 
+[[tool.mypy.overrides]]
+module = ['geopandas/*', 'plotly/*', 'tomllib/*', 'tomli/*', 'cdsapi/*']
+ignore_missing_imports = true
 

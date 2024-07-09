@@ -17,7 +17,7 @@ This module also includes two functions to declare a chosen class, and
 to run that function for all class types.
 '''
 
-import datetime
+# import datetime
 import math
 
 import numpy as np
@@ -25,10 +25,17 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
-    import run_time
+    import run_time  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import run_time
+    from ChaProEV import run_time  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
 
 
 class Leg:
@@ -326,10 +333,10 @@ class Trip:
                         (start_location, end_location), mobility_quantity
                     ] = cloned_mobility_matrix[mobility_quantity].values
 
-        frequency_parameters = parameters['run']['frequency']
-        trip_frequency_size = frequency_parameters['size']
-        trip_frequency_type = frequency_parameters['type']
-        trip_frequency = f'{trip_frequency_size}{trip_frequency_type}'
+        # frequency_parameters = parameters['run']['frequency']
+        # trip_frequency_size = frequency_parameters['size']
+        # trip_frequency_type = frequency_parameters['type']
+        # trip_frequency = f'{trip_frequency_size}{trip_frequency_type}'
 
         trip.next_leg_kilometers = pd.DataFrame(
             np.zeros((HOURS_IN_A_DAY, len(location_names))),
@@ -352,6 +359,7 @@ class Trip:
             # print(start_location)
             # print(trip.mobility_matrix.loc[start_location, end_location])
             if leg_index == 0:
+                previous_leg_arrivals_amount = []
                 for hour_index in range(HOURS_IN_A_DAY - 1):
                     # We skip the last time slot, as this should wrap the trip
                     # and we are not looking into the next day
@@ -359,8 +367,8 @@ class Trip:
 
                     # For the standard version, we look if the vehicle
                     # is set to deart in the next time slot
-                    trip.next_leg_kilometers.loc[hour_index][
-                        start_location
+                    trip.next_leg_kilometers.loc[
+                        hour_index, start_location
                     ] += trip.mobility_matrix.loc[
                         start_location, end_location
                     ][
@@ -369,8 +377,8 @@ class Trip:
                         hour_index + 1
                     ]
                     # For the other version, we look at all future departures
-                    trip.next_leg_kilometers_cumulative.loc[hour_index][
-                        start_location
+                    trip.next_leg_kilometers_cumulative.loc[
+                        hour_index, start_location
                     ] += (
                         trip.mobility_matrix.loc[start_location, end_location][
                             'Departures kilometers'
@@ -387,8 +395,8 @@ class Trip:
                     # We do the same as for the first leg, but we need
                     # to limit that to the vehicles that already have
                     # arrived at the end location
-                    trip.next_leg_kilometers.loc[hour_index][
-                        start_location
+                    trip.next_leg_kilometers.loc[
+                        hour_index, start_location
                     ] += (
                         trip.mobility_matrix.loc[start_location, end_location][
                             'Departures kilometers'
@@ -397,8 +405,8 @@ class Trip:
                         previous_leg_arrivals_amount[: hour_index + 1].sum()
                     )
                     # Once again, the variant applies to all future departures
-                    trip.next_leg_kilometers_cumulative.loc[hour_index][
-                        start_location
+                    trip.next_leg_kilometers_cumulative.loc[
+                        hour_index, start_location
                     ] += (
                         trip.mobility_matrix.loc[start_location, end_location][
                             'Departures kilometers'

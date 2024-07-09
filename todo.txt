@@ -86,3 +86,18 @@ Couple to CODEC?
 Report to Mikael (and/or run results?) for his student
 
 BAG data
+
+home_home
+home_street
+other vehicles
+output 1/1 to 31/12 (option)
+Station users
+speed up using day types only (option)
+QUantities for optimisers
+calendar year (2015 for OPera)
+combine with urban strategy
+case study
+paper
+Modulation 
+every x days
+sun and other prefeence factors for a given day (set in advance?)                                                                                                                                                                                                          

@@ -1,4 +1,6 @@
-Test
+site_name: CHaProEV
+
+
 ## More
 
 ## Even more
