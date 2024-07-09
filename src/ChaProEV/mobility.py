@@ -50,9 +50,7 @@ def get_car_trip_probabilities_per_day_type(scenario):
     '''
     This function computes the trip probabilities per day type.
     '''
-    day_type_start_location_split = get_day_type_start_location_split(
-        scenario
-    )
+    day_type_start_location_split = get_day_type_start_location_split(scenario)
 
     trip_list = list(scenario['trips'].keys())
     scenario_name = scenario['scenario']
@@ -639,7 +637,6 @@ def get_car_trip_probabilities_per_day_type(scenario):
         output_folder,
         scenario,
     )
-
     return trip_probabilities_per_day_type
 
 
@@ -685,7 +682,6 @@ def get_run_trip_probabilities(scenario):
         output_folder,
         scenario,
     )
-
     return run_trip_probabilities
 
 
@@ -709,9 +705,7 @@ def get_mobility_matrix(scenario):
         for end_location in location_names
         for time_tag in run_time_tags
     ]
-    mobility_index_names = scenario['mobility_module'][
-        'mobility_index_names'
-    ]
+    mobility_index_names = scenario['mobility_module']['mobility_index_names']
     run_mobility_index = pd.MultiIndex.from_tuples(
         run_mobility_index_tuples, names=mobility_index_names
     )
@@ -790,7 +784,6 @@ def get_mobility_matrix(scenario):
         output_folder,
         scenario,
     )
-    return run_mobility_matrix
 
 
 def get_day_type_start_location_split(scenario):
@@ -891,9 +884,7 @@ def get_location_split(scenario):
     run_mobility_matrix = cook.read_table_from_database(
         run_mobility_matrix_name, database_file
     )
-    mobility_index_names = scenario['mobility_module'][
-        'mobility_index_names'
-    ]
+    mobility_index_names = scenario['mobility_module']['mobility_index_names']
 
     run_mobility_matrix['Time Tag'] = pd.to_datetime(
         run_mobility_matrix['Time Tag']
@@ -1010,7 +1001,6 @@ def get_location_split(scenario):
         output_folder,
         scenario,
     )
-    return location_split
 
 
 def get_starting_location_split(location_split, scenario):
@@ -1126,21 +1116,12 @@ def get_kilometers_for_next_leg(scenario):
         scenario,
     )
 
-    return run_next_leg_kilometers
-
 
 def make_mobility_data(scenario):
-    trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
-        scenario
-    )
-
-    run_mobility_matrix = get_mobility_matrix(scenario)
-    location_split = get_location_split(scenario)
-    kilometers_for_next_leg = get_kilometers_for_next_leg(scenario)
-    print(trip_probabilities_per_day_type)
-    print(run_mobility_matrix)
-    print(location_split)
-    print(kilometers_for_next_leg)
+    get_trip_probabilities_per_day_type(scenario)
+    get_mobility_matrix(scenario)
+    get_location_split(scenario)
+    get_kilometers_for_next_leg(scenario)
 
 
 if __name__ == '__main__':
