@@ -564,9 +564,13 @@ def write_output(
         scenario,
     )
 
-    maximal_delivered_power = cook.read_table_from_database(
-        f'{scenario_name}_maximal_delivered_power',
-        f'{output_folder}/{groupfile_name}.sqlite3',
+    maximal_delivered_power = (
+        cook.read_table_from_database(
+            f'{scenario_name}_maximal_delivered_power',
+            f'{output_folder}/{groupfile_name}.sqlite3',
+        )
+        .set_index('Time Tag')
+        .astype(float)
     )
     percentage_of_maximal_delivered_power_used = pd.DataFrame(
         index=percentage_of_maximal_delivered_power_used_per_location.index
@@ -574,10 +578,24 @@ def write_output(
 
     percentage_of_maximal_delivered_power_used[
         'Percentage of maximal delivered power used'
-    ] = (
-        charge_drawn_from_network_total['Total Charge Drawn (kWh)'].values
-        / maximal_delivered_power['Maximal Delivered Power (kW)'].values
-    )
+    ] = [
+        (
+            total_charge_drawn_kWh / maximal_delivered_power_kW
+            if maximal_delivered_power_kW != 0
+            else 0
+        )
+        for (total_charge_drawn_kWh, maximal_delivered_power_kW) in zip(
+            charge_drawn_from_network_total['Total Charge Drawn (kWh)'].values,
+            maximal_delivered_power['Maximal Delivered Power (kW)'].values,
+        )
+    ]
+    # print(percentage_of_maximal_delivered_power_used)
+    # percentage_of_maximal_delivered_power_used[
+    #     'Percentage of maximal delivered power used'
+    # ] = (
+    #     charge_drawn_from_network_total['Total Charge Drawn (kWh)'].values
+    #     / maximal_delivered_power['Maximal Delivered Power (kW)'].values
+    # )
     cook.save_dataframe(
         percentage_of_maximal_delivered_power_used,
         f'{scenario_name}_percentage_of_maximal_delivered_power_used',
