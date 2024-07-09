@@ -7,6 +7,6 @@ nav:
             - Physics: physics.md
 
 theme: 
-	name: readthedocs
-	sticky_navigation: False
+  name: readthedocs
+  sticky_navigation: False
 
