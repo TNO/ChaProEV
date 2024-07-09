@@ -75,13 +75,13 @@ def create_consumption_tables(scenario):
     ]
 
     weekly_consumption_table.index.name = 'Week number'
-    monthly_consumption_table = consumption_table.resample('M').sum()
+    monthly_consumption_table = consumption_table.resample('ME').sum()
     monthly_consumption_table.index = [
         f'{time_tag.strftime("%B")} {time_tag.year}'
         for time_tag in monthly_consumption_table.index
     ]
     monthly_consumption_table.index.name = 'Month'
-    yearly_consumption_table = consumption_table.resample('Y').sum()
+    yearly_consumption_table = consumption_table.resample('YE').sum()
     yearly_consumption_table.index = [
         f'{time_tag.year}' for time_tag in yearly_consumption_table.index
     ]
