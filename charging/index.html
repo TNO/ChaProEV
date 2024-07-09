@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Charging - ChaProEV</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Charging";
+        var mkdocs_page_input_path = "charging.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ChaProEV
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
+                  </li>
+                  <li class="toctree-l1"><a class="" href="../run_time.md">Run time</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Charging</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../consumption/">Consumption</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChaProEV</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">Charging</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="more">More</h2>
+<h2 id="even-more">Even more</h2>
+<h2 id="list-of-relevant-files-and-modules"><strong>List of relevant files and modules</strong></h2>
+<h3 id="chaproevpy"><strong>ChaProEV.py</strong></h3>
+<p>Where you run the model</p>
+<h3 id="scenarios-folder"><strong>scenarios folder</strong></h3>
+<p>This folder contains scenario configuration files. There is one per scenario,
+containing all necessary parameters to run the scenatio. To add a scenario,
+copy one of the existing files and add/remove/modify parasmeters paramters as
+required, including the first parameter, which is the scenario name,
+which should be the same as the file name (it might work with another name,
+but this is not tested and there is no reason to have different names for the
+same scenario).
+These scenario files contain the following sections:
+- <strong>unit_conversions:</strong> Parameters to convert units
+- <strong>files:</strong> File-related parameters (folders, output type choices, etc.)
+- <strong>colors:</strong> Color-related parameters(defining new ones, as well as color bars)
+- <strong>time:</strong> Time-related parameters and constants needed in formulas
+- <strong>run:</strong> Parameters related to the run, such as timing, and elements such
+as locations, vehicles, legs, trips, etc.
+- <strong>weather:</strong> Parameters related to the weather, such as elements to define
+what we want to download from various sources, where we store weather data,
+how we process it, 
+or how we want to label quantititis
+- <strong>plots:</strong> Parameters for plots (colors, sizes, etc.)</p>
+<h3 id="definepy"><strong>define.py:</strong></h3>
+<p>This module defines and declares classes for the different objects 
+that define the system (the parameters/defintions come from a parameters file),
+namely:
+1. <strong>Legs:</strong> Legs are point-to-point vehicle movements (i.e. movements where
+    the vehicle goes from a start location and ends/stops at an end location).
+2. <strong>Vehicles:</strong> Each vehicle type (or subtype) is defined in this class.</p>
+<h3 id="weatherpy"><strong>weather.py</strong></h3>
+<p>This module contains functions related to weather data and factors.
+The weather data is pulled from the <a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=form">CDS (Climate Data Store) ERA-5 weather
+data from the Copernicus institute</a>.
+This data contains many quantities (such as temperature, precipitation,
+or solar radiation) at an hourly level (starting in 1950) for the whole
+world, at a one-decimal resolution for latitudes and longitudes.
+Note that the data sometimes has trailing digits, but the resolution
+still seems to be to the first decimal. This is the reason why we round the
+coordinate values in our processing functions.</p>
+<p>It contains the following functions:
+1. <strong>download_cds_weather_quantity:</strong>
+Downloads CDS ERA-5 weather data for a given quantity in a given area.
+2. <strong>download_all_cds_weather_data:</strong>
+Downloads all the necessary CDS weather data.
+3. <strong>make_weather_dataframe:</strong> This function makes a weather DataFrame
+into one we can use by
+removing empty data and processing data into forms useful for the model.
+4. <strong>write_weather_database"</strong> This function writes the weather database.
+5. <strong>get_hourly_values:</strong> This function takes a Dataframe for a 
+given weather quantity. If this is a cumulative quantity, it adds hourly 
+values to it.
+6. <strong>get_all_hourly_values:</strong> This functions adds hourly values to
+cumulative quantities in the weather database.
+7. <strong>get_EV_tool_data:</strong>: This gets the temperature efficiency data from the
+EV tool made by 
+<a href="https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html">geotab</a>.
+8. <strong>temperature_efficiency_factor:</strong>This function returns the temperature
+efficiency factor that corrects the baseline vehicle efficiency.
+9. <strong>plot_temperature_efficiency:</strong> Plots the temperature efficiency 
+correction factor (source data versus interpolation)of electric vehicles.
+10. <strong>get_run_location_weather_quantity:</strong> Returns a chosen weather quantity
+    for a given location and a given runtime.
+11. <strong>get_run_weather_data:</strong> Fetches the weather data and efficiency factors
+    and puts it into a table that is saved to files/databases.
+12. <strong>solar_efficiency_factor:</strong><em> This gives us the efficiency factor of solar
+     panels (i.e. how much of the solar radiation is converted into
+     electricity).
+    THIS IS A PLACEHOLDER FUNCTION
+13. </em><em>setup_weather:</em><em> This runs all the functions necessary to get the run
+    weather factors for a given case.
+14. </em><em>get_location_weather_quantity:</em>* Returns the value a a chosen
+    weather quantity for a given location and time tag.</p>
+<h3 id="run_timepy"><strong>run_time.py:</strong></h3>
+<p>This module defines time structures.</p>
+<p>It contains the following functions:
+1. <strong>get_time_range:</strong> This function returns the time range of the run, and the
+    associated hour numbers, based on values found in the
+    parameters file.
+2. <strong>get_time_stamped_dataframe:</strong> This function creates a DataFrame with the
+timestamps of the run as index (and hour numbers as a column).
+3. <strong>get_day_type:</strong> Tells us the date type of a given time_tag.
+4. <strong>add_day_type_to_time_stamped_dataframe:</strong> Adds a column with the date type
+to a time-stamped_dataframe</p>
+<h3 id="writingpy"><strong>writing.py:</strong></h3>
+<p>This contains functions related to writting outputs.
+It contains the following functions:
+1. <strong>write_scenario_parameters:</strong> This function writes the scenario parameters
+    to the output files (either as separate files, or as tables/sheets
+    in groupfiles.)</p>
+<h3 id="mobilitypy"><strong>mobility.py:</strong></h3>
+<p>This module computes the various functions related to mobility.
+It contains the following functions:
+1. <strong>get_trip_probabilities_per_day_type:</strong> This function computes the trip
+probabilities per day type.</p>
+<h4 id="temperature-efficiency">Temperature efficiency</h4>
+<p>This function returns the temperature efficiency factor that corrects
+the baseline vehicle efficiency. It uses a data file (extracted from
+EV tool made by 
+<a href="https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html">geotab</a>.</p>
+<p><a href="https://www.geotab.com/blog/ev-range/">This information</a> is
+based on 5.2 million trips by 4200 vehicles.
+The degree 6 polynomial fit is:</p>
+<p>$$
+C(T)=0.7078+0.01751\cdot T+0.0001611\cdot T^2-1.036\cdot 10^{-5}\cdot T^3
+-3.581\cdot 10^{-7}\cdot T^4+1.746\cdot 10^{-9}\cdot T^5
++1.07\cdot10^{-10}\cdot T^6
+$$</p>
+<p>where T is the ambient temparture (in the weather data, it's the temperature
+at 2 meters), and C is the efficiency correction factor.</p>
+<p>Plotting the fit verus the data shows that thisi a great fit:
+<center>
+<img src=Vehicle_Temperature_correction_factor.svg>
+</center></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../define/" class="btn btn-neutral float-left" title="Define"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../consumption/" class="btn btn-neutral float-right" title="Consumption">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../define/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../consumption/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        });
+    </script>
+
+</body>
+</html>
