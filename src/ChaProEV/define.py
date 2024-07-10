@@ -348,7 +348,7 @@ class Trip:
                         (start_location, end_location),
                         'Arrivals weighted kilometers',
                     ]
-                )
+                ).values
                 + end_weighted_distance_probabilities
             )
             # We need to convert the first element to Series for type hinting

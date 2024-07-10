@@ -812,7 +812,7 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
 
                 run_mobility_matrix[
                     mobility_quantity
-                ] += weighted_mobility_quantity_to_use
+                ] += weighted_mobility_quantity_to_use.values
     # print(run_mobility_matrix.loc['home', 'work'].iloc[26:89])
     # exit()
     location_connections: pd.DataFrame = (
@@ -823,13 +823,15 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
         .set_index(['From', 'To'])
         .astype(float)
     )
+    # print(location_connections)
+    # exit()
     run_range: pd.Index = run_mobility_index.get_level_values('Time Tag')
 
     for start_location in location_names:
         for end_location in location_names:
-            these_locations_connections = location_connections.loc[
-                start_location, end_location
-            ]
+            these_locations_connections: pd.Series = pd.Series(
+                location_connections.loc[start_location, end_location]
+            )
             these_locations_tuples: ty.List[
                 ty.Tuple[str, str, datetime.datetime]
             ] = [
@@ -843,13 +845,13 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
             run_mobility_matrix.loc[
                 these_loations_index,
                 location_connections_headers,
-            ] = these_locations_connections
+            ] = these_locations_connections.values
 
             # run_mobility_matrix.loc[
             #     (start_location, end_location), location_connections_headers
             # ] = location_connections.loc[
             # (start_location, end_location)].values
-    # print(run_mobility_matrix)
+    # print(run_mobility_matrix.loc['home', 'work'])
     # exit()
     cook.save_dataframe(
         run_mobility_matrix,

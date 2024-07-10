@@ -4,6 +4,7 @@ This module creates consumption tables
 
 import typing as ty
 
+import numpy as np
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -55,9 +56,10 @@ def create_consumption_tables(scenario: ty.Dict) -> None:
     vehicle_base_consumptions_per_km: ty.Dict[str, float] = vehicle_parameters[
         'base_consumption_per_km'
     ]
-    kilometers: pd.Series[float] = pd.Series(
-        consumption_matrix['Kilometers'].values
+    kilometers: np.ndarray = np.array(
+        pd.Series(consumption_matrix['Kilometers']).values
     )
+
     for energy_carrier in vehicle_base_consumptions_per_km:
         carrier_name: str = energy_carrier.split('_')[0]
         unit: str = energy_carrier.split('_')[1]
