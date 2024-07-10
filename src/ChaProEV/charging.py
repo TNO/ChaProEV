@@ -91,6 +91,7 @@ def travel_space_occupation(
         for end_location in location_names:
             # For each leg (start/end location combination), we
             # look up the consumption
+
             this_leg_consumption: float = (
                 run_mobility_matrix.loc[
                     start_location, end_location, time_tag
@@ -477,7 +478,7 @@ def get_charging_framework(
     )
     run_mobility_matrix = run_mobility_matrix.set_index(
         ['From', 'To', 'Time Tag']
-    )
+    ).astype(float)
 
     charge_drawn_by_vehicles: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), len(location_names))),
