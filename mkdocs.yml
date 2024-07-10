@@ -1,10 +1,13 @@
 site_name: ChaProEV
 nav:
- - Home: index.md
- - How to use: using.md
- - Plotting:
-            - Math: math.md
-            - Physics: physics.md
+  - Home: index.md
+  - How to use: using.md
+  - Modules: 
+    - Weather: weather.md
+    - Run time: run_time.md
+    - Define: define.md
+    - Charging: charging.md
+    - Consumption: consumption.md
 
 theme: 
   name: readthedocs

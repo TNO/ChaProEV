@@ -1,5 +1,6 @@
 import datetime
 import math
+import typing as ty
 
 import numpy as np
 import pandas as pd
@@ -39,24 +40,30 @@ except ModuleNotFoundError:
 
 
 def travel_space_occupation(
-    battery_space,
-    time_tag,
-    time_tag_index,
-    run_range,
-    run_mobility_matrix,
-    scenario,
-):
-    zero_threshold = scenario['numbers']['zero_threshold']
-    location_parameters = scenario['locations']
-    location_names = [location_name for location_name in location_parameters]
+    battery_space: ty.Dict[str, pd.DataFrame],
+    time_tag: datetime.datetime,
+    time_tag_index: int,
+    run_range: pd.DatetimeIndex,
+    run_mobility_matrix,  # This is a DataFrame, but MyPy has issues with it
+    # These issues might have to do with MultiIndex
+    scenario: ty.Dict,
+) -> ty.Dict[str, pd.DataFrame]:
 
-    vehicle_parameters = scenario['vehicle']
-    use_weighted_km = vehicle_parameters['use_weighted']
+    zero_threshold: float = scenario['numbers']['zero_threshold']
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name for location_name in location_parameters
+    ]
+
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    use_weighted_km: bool = vehicle_parameters['use_weighted']
     if use_weighted_km:
-        distance_header = 'Weighted distance (km)'
+        distance_header: str = 'Weighted distance (km)'
     else:
         distance_header = 'Distance (km)'
-    electricity_consumption_kWh_per_km = vehicle_parameters[
+    electricity_consumption_kWh_per_km: float = vehicle_parameters[
         'base_consumption_per_km'
     ]['electricity_kWh']
 
@@ -76,7 +83,7 @@ def travel_space_occupation(
         # and sort them. The lowest battery spaces will be first.
         # These are the ones we assume aremore likely to leave,
         # as others might want to charge first
-        departing_battery_spaces = sorted(
+        departing_battery_spaces: ty.List[float] = sorted(
             battery_space[start_location].columns.values
         )
 
@@ -84,7 +91,7 @@ def travel_space_occupation(
         for end_location in location_names:
             # For each leg (start/end location combination), we
             # look up the consumption
-            this_leg_consumption = (
+            this_leg_consumption: float = (
                 run_mobility_matrix.loc[
                     start_location, end_location, time_tag
                 ][distance_header]
@@ -92,7 +99,7 @@ def travel_space_occupation(
             )
 
             # We also look up how many vehicles depart
-            departures = run_mobility_matrix.loc[
+            departures: float = run_mobility_matrix.loc[
                 start_location, end_location, time_tag
             ]['Departures amount']
             if departures > zero_threshold:
@@ -101,11 +108,11 @@ def travel_space_occupation(
                 # We want to know what the arriving battery spaces
                 # will be and the amounts/percentages of the fleet vehicles
                 # for each arriving battery space
-                arriving_battery_spaces = []
-                arriving_amounts = []
+                arriving_battery_spaces: ty.List[float] = []
+                arriving_amounts: ty.List[float] = []
 
                 # We also need the duration of the leg
-                travelling_time = run_mobility_matrix.loc[
+                travelling_time: float = run_mobility_matrix.loc[
                     start_location, end_location, time_tag
                 ]['Duration (hours)']
 
@@ -137,14 +144,14 @@ def travel_space_occupation(
                         # will arrive at their destination and the proprtion
                         # of these slots
                         travelling_time = float(travelling_time)
-                        first_arrival_shift = math.floor(travelling_time)
+                        first_arrival_shift: int = math.floor(travelling_time)
                         first_arrival_shift_time = datetime.timedelta(
                             hours=first_arrival_shift
                         )
-                        second_arrival_shift_time = datetime.timedelta(
-                            hours=first_arrival_shift + 1
+                        second_arrival_shift_time: datetime.timedelta = (
+                            datetime.timedelta(hours=first_arrival_shift + 1)
                         )
-                        first_arrival_shift_proportion = (
+                        first_arrival_shift_proportion: float = (
                             1 - travelling_time % 1
                         )
 
@@ -154,7 +161,7 @@ def travel_space_occupation(
                         # departures, then we take the remaining departures,
                         # otherwise we take all the vehicles with the current
                         # space and move to the next one
-                        this_battery_space_departures = min(
+                        this_battery_space_departures: float = min(
                             departures,
                             battery_space[start_location]
                             .loc[time_tag][departing_battery_space]
@@ -280,50 +287,61 @@ def travel_space_occupation(
 
 
 def compute_charging_events(
-    battery_space,
-    charge_drawn_by_vehicles,
-    charge_drawn_from_network,
-    time_tag,
-    scenario,
-):
-    zero_threshold = scenario['numbers']['zero_threshold']
-    location_parameters = scenario['locations']
-    location_names = [location_name for location_name in location_parameters]
+    battery_space: ty.Dict[str, pd.DataFrame],
+    charge_drawn_by_vehicles: pd.DataFrame,
+    charge_drawn_from_network: pd.DataFrame,
+    time_tag: datetime.datetime,
+    scenario: ty.Dict,
+) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+    zero_threshold: float = scenario['numbers']['zero_threshold']
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name for location_name in location_parameters
+    ]
 
     for charging_location in location_names:
-        charging_location_parameters = location_parameters[charging_location]
-        charger_efficiency = charging_location_parameters['charger_efficiency']
-        percent_charging = charging_location_parameters['connectivity']
-        max_charge = charging_location_parameters['charging_power']
+        charging_location_parameters: ty.Dict[str, float] = (
+            location_parameters[charging_location]
+        )
+        charger_efficiency: float = charging_location_parameters[
+            'charger_efficiency'
+        ]
+        percent_charging: float = charging_location_parameters['connectivity']
+        max_charge: float = charging_location_parameters['charging_power']
 
         # This variable is useful if new battery spaces
         # are added within this charging procedure
-        original_battery_spaces = battery_space[
+        original_battery_spaces: np.ndarray = battery_space[
             charging_location
         ].columns.values
-        charge_drawn_per_charging_vehicle = np.array(
+        charge_drawn_per_charging_vehicle: np.ndarray = np.array(
             [
                 min(this_battery_space, max_charge)
                 for this_battery_space in original_battery_spaces
             ]
         )
-        network_charge_drawn_per_charging_vehicle = (
+        network_charge_drawn_per_charging_vehicle: np.ndarray = (
             charge_drawn_per_charging_vehicle / charger_efficiency
         )
 
-        vehicles_charging = (
+        vehicles_charging: ty.List[float] = (
             percent_charging * battery_space[charging_location].loc[time_tag]
         ).values[0]
-        charge_drawn_by_vehicles_this_time_tag_per_battery_space = (
-            vehicles_charging * charge_drawn_per_charging_vehicle
-        )
-        charge_drawn_by_vehicles_this_time_tag = sum(
+
+        charge_drawn_by_vehicles_this_time_tag_per_battery_space: ty.List[
+            float
+        ] = (vehicles_charging * charge_drawn_per_charging_vehicle)
+        charge_drawn_by_vehicles_this_time_tag: float = sum(
             charge_drawn_by_vehicles_this_time_tag_per_battery_space
         )
-        network_charge_drawn_by_vehicles_this_time_tag_per_battery_space = (
+        network_charge_drawn_by_vehicles_this_time_tag_per_battery_space: (
+            ty.List[float]
+        ) = (
             vehicles_charging * network_charge_drawn_per_charging_vehicle
         )
-        network_charge_drawn_by_vehicles_this_time_tag = sum(
+        network_charge_drawn_by_vehicles_this_time_tag: float = sum(
             network_charge_drawn_by_vehicles_this_time_tag_per_battery_space
         )
 
@@ -339,7 +357,7 @@ def compute_charging_events(
                 + network_charge_drawn_by_vehicles_this_time_tag
             )
 
-            battery_spaces_after_charging = (
+            battery_spaces_after_charging: np.ndarray = (
                 battery_space[charging_location].columns.values
                 - charge_drawn_per_charging_vehicle
             )
@@ -389,24 +407,36 @@ def compute_charging_events(
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
-def get_charging_framework(scenario):
+def get_charging_framework(
+    scenario: ty.Dict,
+) -> ty.Tuple[
+    ty.Dict[str, pd.DataFrame],
+    pd.DatetimeIndex,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+]:
     run_range, run_hour_numbers = run_time.get_time_range(scenario)
     # print(run_range[3573])
     # exit()
-    SPINE_hour_numbers = [
+    SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
-    location_parameters = scenario['locations']
-    location_names = [location_name for location_name in location_parameters]
-    scenario_name = scenario['scenario']
-    case_name = scenario['case_name']
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name for location_name in location_parameters
+    ]
+    scenario_name: str = scenario['scenario']
+    case_name: str = scenario['case_name']
 
-    file_parameters = scenario['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
-    location_split_table_name = f'{scenario_name}_location_split'
-    location_split = cook.read_table_from_database(
+    file_parameters: ty.Dict[str, str] = scenario['files']
+    output_folder: str = file_parameters['output_folder']
+    groupfile_root: str = file_parameters['groupfile_root']
+    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    location_split_table_name: str = f'{scenario_name}_location_split'
+    location_split: pd.DataFrame = cook.read_table_from_database(
         location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
     )
     location_split['Time Tag'] = pd.to_datetime(location_split['Time Tag'])
@@ -416,7 +446,7 @@ def get_charging_framework(scenario):
     # We look at the various battery spaces that are available
     # at this charging location (i.e. percent of vehicles with
     # a given battery space per location)
-    battery_space = {}
+    battery_space: ty.Dict[str, pd.DataFrame] = {}
     for location_name in location_names:
         battery_space[location_name] = pd.DataFrame(
             run_range, columns=['Time Tag']
@@ -438,7 +468,7 @@ def get_charging_framework(scenario):
     #     for charge_level in all_charge_levels[location_name]:
     #         battery_space[location_name][charge_level] float(0)
 
-    run_mobility_matrix = cook.read_table_from_database(
+    run_mobility_matrix: pd.DataFrame = cook.read_table_from_database(
         f'{scenario_name}_run_mobility_matrix',
         f'{output_folder}/{groupfile_name}.sqlite3',
     )
@@ -449,7 +479,7 @@ def get_charging_framework(scenario):
         ['From', 'To', 'Time Tag']
     )
 
-    charge_drawn_by_vehicles = pd.DataFrame(
+    charge_drawn_by_vehicles: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), len(location_names))),
         columns=location_names,
         index=run_range,
@@ -472,26 +502,30 @@ def get_charging_framework(scenario):
 
 
 def write_output(
-    battery_space,
-    charge_drawn_by_vehicles,
-    charge_drawn_from_network,
-    scenario,
-):
+    battery_space: ty.Dict[str, pd.DataFrame],
+    charge_drawn_by_vehicles: pd.DataFrame,
+    charge_drawn_from_network: pd.DataFrame,
+    scenario: ty.Dict,
+) -> None:
     run_range, run_hour_numbers = run_time.get_time_range(scenario)
     # print(run_range[3573])
     # exit()
-    SPINE_hour_numbers = [
+    SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
-    location_parameters = scenario['locations']
-    location_names = [location_name for location_name in location_parameters]
-    scenario_name = scenario['scenario']
-    case_name = scenario['case_name']
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name for location_name in location_parameters
+    ]
+    scenario_name: str = scenario['scenario']
+    case_name: str = scenario['case_name']
 
-    file_parameters = scenario['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
+    file_parameters: ty.Dict[str, str] = scenario['files']
+    output_folder: str = file_parameters['output_folder']
+    groupfile_root: str = file_parameters['groupfile_root']
+    groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     for location_name in location_names:
         battery_space[location_name].columns = battery_space[
@@ -519,14 +553,14 @@ def write_output(
         output_folder,
         scenario,
     )
-    charge_drawn_from_network_total = pd.DataFrame(
+    charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_from_network.index
     )
     charge_drawn_from_network_total['Total Charge Drawn (kWh)'] = (
         charge_drawn_from_network.sum(axis=1)
     )
-    percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
-        index=charge_drawn_from_network.index
+    percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
+        pd.DataFrame(index=charge_drawn_from_network.index)
     )
     cook.save_dataframe(
         charge_drawn_from_network_total,
@@ -535,9 +569,11 @@ def write_output(
         output_folder,
         scenario,
     )
-    maximal_delivered_power_per_location = cook.read_table_from_database(
-        f'{scenario_name}_maximal_delivered_power_per_location',
-        f'{output_folder}/{groupfile_name}.sqlite3',
+    maximal_delivered_power_per_location: pd.DataFrame = (
+        cook.read_table_from_database(
+            f'{scenario_name}_maximal_delivered_power_per_location',
+            f'{output_folder}/{groupfile_name}.sqlite3',
+        )
     )
 
     for location_name in location_names:
@@ -564,7 +600,7 @@ def write_output(
         scenario,
     )
 
-    maximal_delivered_power = (
+    maximal_delivered_power: pd.DataFrame = (
         cook.read_table_from_database(
             f'{scenario_name}_maximal_delivered_power',
             f'{output_folder}/{groupfile_name}.sqlite3',
@@ -572,7 +608,7 @@ def write_output(
         .set_index('Time Tag')
         .astype(float)
     )
-    percentage_of_maximal_delivered_power_used = pd.DataFrame(
+    percentage_of_maximal_delivered_power_used: pd.DataFrame = pd.DataFrame(
         index=percentage_of_maximal_delivered_power_used_per_location.index
     )
 
@@ -617,7 +653,7 @@ def write_output(
         output_folder,
         scenario,
     )
-    charge_drawn_by_vehicles_total = pd.DataFrame(
+    charge_drawn_by_vehicles_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
     charge_drawn_by_vehicles_total['Total Charge Drawn (kW)'] = (
@@ -635,7 +671,9 @@ def write_output(
     )
 
 
-def get_charging_profile(scenario):
+def get_charging_profile(
+    scenario: ty.Dict,
+) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
     (
         battery_space,
         run_range,
@@ -647,7 +685,7 @@ def get_charging_profile(scenario):
     # start_time = datetime.datetime.now()
     # loop_start = start_time
 
-    loop_times = pd.DataFrame(
+    loop_times: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), 1)),
         columns=['Loop duration'],
         index=run_range,
@@ -658,7 +696,7 @@ def get_charging_profile(scenario):
     for time_tag_index, time_tag in enumerate(run_range):
         # loop_end = datetime.datetime.now()
 
-        loop_start = datetime.datetime.now()
+        loop_start: datetime.datetime = datetime.datetime.now()
 
         # if time_tag_index > 10:
         #     exit()
@@ -689,8 +727,8 @@ def get_charging_profile(scenario):
             scenario,
         )
 
-        loop_end = datetime.datetime.now()
-        loop_time = (loop_end - loop_start).total_seconds()
+        loop_end: datetime.datetime = datetime.datetime.now()
+        loop_time: float = (loop_end - loop_start).total_seconds()
         loop_times.loc[time_tag, 'Loop duration'] = loop_time
         # print(time_tag, loop_time)
 
@@ -713,40 +751,40 @@ def get_charging_profile(scenario):
     loop_times.to_csv('Lopi.csv')
     # print('Write', (datetime.datetime.now()-write_out_start).total_seconds())
 
-    return (battery_space, charge_drawn_by_vehicles, charge_drawn_from_network)
+    return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
-def get_all_charge_levels():
-    leg_distances = {}
+def get_all_charge_levels() -> ty.Dict[str, ty.List[float]]:
+    leg_distances: ty.Dict[str, ty.List[float]] = {}
     leg_distances['home'] = [400, 200, 100, 44, 22, 12, 6]
     leg_distances['work'] = [22]
     leg_distances['leisure'] = [6]
     leg_distances['weekend'] = [100]
     leg_distances['holiday'] = [400]
-    draws = {}
+    draws: ty.Dict[str, float] = {}
     draws['home'] = 8.9
     draws['work'] = 22
     draws['leisure'] = 22
     draws['weekend'] = 22
     draws['holiday'] = 22
-    kWh_per_km = 0.2
-    locations = ['home', 'work', 'leisure', 'weekend', 'holiday']
-    all_charge_levels = {}
+    kWh_per_km: float = 0.2
+    locations: ty.List[str] = ['home', 'work', 'leisure', 'weekend', 'holiday']
+    all_charge_levels: ty.Dict[str, ty.List[float]] = {}
     for location in locations:
-        start_levels = [
+        start_levels: ty.List[float] = [
             leg_distance * kWh_per_km
             for leg_distance in leg_distances[location]
         ]
 
         all_charge_levels[location] = []
-        draw = draws[location]
-        charge_levels = start_levels
+        draw: float = draws[location]
+        charge_levels: ty.List[float] = start_levels
         while max(charge_levels) > 0:
-            new_levels = []
+            new_levels: ty.List[float] = []
             for charge_level in charge_levels:
                 if charge_level > 0:
                     all_charge_levels[location].append(charge_level)
-                new_charge_level = charge_level - draw
+                new_charge_level: float = charge_level - draw
                 if new_charge_level > 0:
                     new_levels.append(new_charge_level)
             charge_levels = new_levels
@@ -758,10 +796,10 @@ def get_all_charge_levels():
 
 
 if __name__ == '__main__':
-    scenario_file_name = 'scenarios/baseline.toml'
-    scenario = cook.parameters_from_TOML(scenario_file_name)
+    scenario_file_name: str = 'scenarios/baseline.toml'
+    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
 
-    start_ = datetime.datetime.now()
+    start_: datetime.datetime = datetime.datetime.now()
     (
         battery_space,
         charge_drawn_by_vehicles,

@@ -1,2 +1,0 @@
-# Quantum mechanics
-# Astronomy
