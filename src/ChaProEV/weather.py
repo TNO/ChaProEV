@@ -48,19 +48,26 @@ correction factor (source data versus interpolation)of electric vehicles.
 import datetime
 import os
 import sqlite3
+import typing as ty
 
+import bs4
 import cdsapi
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup as bs
 from ETS_CookBook import ETS_CookBook as cook
 
 
 def download_cds_weather_quantity(
-    quantity, year, month, days, hours, area, download_folder
-):
+    quantity: str,
+    year: str,
+    month: str,
+    days: ty.List[str],
+    hours: ty.List[str],
+    area: ty.List[float],
+    download_folder: str,
+) -> None:
     '''
     Downloads CDS (Climate Data Store) ERA-5 weather data for a given quantity
     in a given area (given by a list with:
@@ -77,7 +84,7 @@ def download_cds_weather_quantity(
     (say, if you add locations in places for which you don't have data yet),
     or if you want to gather other quantities, or look at other years.
     '''
-    quantity_download = cdsapi.Client()
+    quantity_download: cdsapi.Client = cdsapi.Client()
     cook.check_if_folder_exists(download_folder)
     quantity_download.retrieve(
         'reanalysis-era5-land',
@@ -94,7 +101,7 @@ def download_cds_weather_quantity(
     )
 
 
-def download_all_cds_weather_data(scenario):
+def download_all_cds_weather_data(scenario: ty.Dict) -> None:
     '''
     Downloads all the necessary CDS ERA-5 weather data.
     You only need to use this function at the start of your project,
@@ -103,30 +110,39 @@ def download_all_cds_weather_data(scenario):
     or if you want to gather other quantities, or look at other years.
     '''
 
-    time_parameters = scenario['time']
-    HOURS_IN_A_DAY = time_parameters['HOURS_IN_A_DAY']
-    MONTHS_IN_A_YEAR = time_parameters['MONTHS_IN_A_YEAR']
-    MAX_DAYS_IN_A_MONTH = time_parameters['MAX_DAYS_IN_A_MONTH']
-    source_data_parameters = scenario['weather']['source_data']
-    start_year = source_data_parameters['start_year']
-    end_year = source_data_parameters['end_year']
+    time_parameters: ty.Dict = scenario['time']
+    HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
+    MONTHS_IN_A_YEAR: int = time_parameters['MONTHS_IN_A_YEAR']
+    MAX_DAYS_IN_A_MONTH: int = time_parameters['MAX_DAYS_IN_A_MONTH']
+    source_data_parameters: ty.Dict = scenario['weather']['source_data']
+    start_year: int = source_data_parameters['start_year']
+    end_year: int = source_data_parameters['end_year']
 
-    years = [str(year) for year in range(start_year, end_year + 1)]
-    months = [
+    years: ty.List[str] = [
+        str(year) for year in range(start_year, end_year + 1)
+    ]
+    months: ty.List[str] = [
         f'{month_number:02d}'
         for month_number in range(1, MONTHS_IN_A_YEAR + 1)
     ]
-    days = [
+    days: ty.List[str] = [
         f'{day_number:02d}' for day_number in range(1, MAX_DAYS_IN_A_MONTH + 1)
     ]
-    quantities = source_data_parameters['quantities']
-    hours = [f'{hour_number:02d}:00' for hour_number in range(HOURS_IN_A_DAY)]
-    latitude_min = source_data_parameters['latitude_min']
-    latitude_max = source_data_parameters['latitude_max']
-    longitude_min = source_data_parameters['longitude_min']
-    longitude_max = source_data_parameters['longitude_max']
-    raw_data_folder = source_data_parameters['raw_data_folder']
-    area = [latitude_min, longitude_min, latitude_max, longitude_max]
+    quantities: ty.List[str] = source_data_parameters['quantities']
+    hours: ty.List[str] = [
+        f'{hour_number:02d}:00' for hour_number in range(HOURS_IN_A_DAY)
+    ]
+    latitude_min: float = source_data_parameters['latitude_min']
+    latitude_max: float = source_data_parameters['latitude_max']
+    longitude_min: float = source_data_parameters['longitude_min']
+    longitude_max: float = source_data_parameters['longitude_max']
+    raw_data_folder: str = source_data_parameters['raw_data_folder']
+    area: ty.List[float] = [
+        latitude_min,
+        longitude_min,
+        latitude_max,
+        longitude_max,
+    ]
 
     for quantity in quantities:
         for year in years:
@@ -138,8 +154,12 @@ def download_all_cds_weather_data(scenario):
 
 
 def make_weather_dataframe(
-    raw_weather_dataframe, quantity, quantity_tag, quantity_name, scenario
-):
+    raw_weather_dataframe: pd.DataFrame,
+    quantity: str,
+    quantity_tag: str,
+    quantity_name: str,
+    scenario: ty.Dict,
+) -> pd.DataFrame:
     '''
     This function makes a weather DataFrame into one we can use by
     processing data into forms useful for the model.
@@ -156,31 +176,35 @@ def make_weather_dataframe(
     their own latitudes and longitudes).
     '''
 
-    weather_parameters = scenario['weather']['processed_data']
-    latitude_min = weather_parameters['latitude_min']
-    latitude_max = weather_parameters['latitude_max']
-    longitude_min = weather_parameters['longitude_min']
-    longitude_max = weather_parameters['longitude_max']
-    coordinate_step = weather_parameters['coordinate_step']
+    weather_parameters: ty.Dict = scenario['weather']['processed_data']
+    latitude_min: float = weather_parameters['latitude_min']
+    latitude_max: float = weather_parameters['latitude_max']
+    longitude_min: float = weather_parameters['longitude_min']
+    longitude_max: float = weather_parameters['longitude_max']
+    coordinate_step: float = weather_parameters['coordinate_step']
     # We round the coordinates to the first decimal,
     # as this is the data resolution (but with trailing digits).
     # (See general module exaplanation).
-    latitudes = [
+    latitudes: ty.List[float] = [
         np.round(latitude, 1)
         for latitude in np.arange(
             latitude_min, latitude_max + coordinate_step, coordinate_step
         )
     ]
-    longitudes = [
+    longitudes: ty.List[float] = [
         np.round(longitude, 1)
         for longitude in np.arange(
             longitude_min, longitude_max + coordinate_step, coordinate_step
         )
     ]
-    KELVIN_TO_CELSIUS = weather_parameters['KELVIN_TO_CELSIUS']
+    KELVIN_TO_CELSIUS: float = weather_parameters['KELVIN_TO_CELSIUS']
 
-    temperature_quantities = weather_parameters['temperature_quantities']
-    processed_index_tags = weather_parameters['processed_index_tags']
+    temperature_quantities: ty.List[str] = weather_parameters[
+        'temperature_quantities'
+    ]
+    processed_index_tags: ty.List[str] = weather_parameters[
+        'processed_index_tags'
+    ]
 
     # We slice the latitudes and longitudes
     # Note that we round the values to the first decimal,
@@ -200,24 +224,39 @@ def make_weather_dataframe(
 
     # We process the time data into time tags (if needed)
     if 'valid_time' in raw_weather_dataframe.columns:
-        weather_data_time_tags = raw_weather_dataframe['valid_time'].values
+        weather_data_time_tags: pd.Index = pd.Index(
+            raw_weather_dataframe['valid_time'].values
+        )
     else:
-        raw_times = raw_weather_dataframe.index.get_level_values('time')
-        raw_steps = raw_weather_dataframe.index.get_level_values('step')
+        raw_times: pd.Index = raw_weather_dataframe.index.get_level_values(
+            'time'
+        )
+        raw_steps: pd.Index = raw_weather_dataframe.index.get_level_values(
+            'step'
+        )
         weather_data_time_tags = raw_times + raw_steps
 
     # We round the latitudes and longitudes (see above) and gather the values
-    raw_latitudes = raw_weather_dataframe.index.get_level_values('latitude')
-    raw_longitudes = raw_weather_dataframe.index.get_level_values('longitude')
+    raw_latitudes: pd.Index = raw_weather_dataframe.index.get_level_values(
+        'latitude'
+    )
+    raw_longitudes: pd.Index = raw_weather_dataframe.index.get_level_values(
+        'longitude'
+    )
     latitudes = np.round(raw_latitudes, 1)
     longitudes = np.round(raw_longitudes, 1)
-    values = raw_weather_dataframe[quantity_tag].values
+    values: pd.api.extensions.ExtensionArray | np.ndarray = (
+        raw_weather_dataframe[quantity_tag].values
+    )
 
     if quantity in temperature_quantities:
-        values = values + KELVIN_TO_CELSIUS
+        kelvin_to_celsius_conversion: np.ndarray = KELVIN_TO_CELSIUS * np.ones(
+            len(values)
+        )
+        values = values + kelvin_to_celsius_conversion
 
     # We can collect everyting into a processed dataframe
-    processed_weather_dataframe = pd.DataFrame(
+    processed_weather_dataframe: pd.DataFrame = pd.DataFrame(
         values,
         columns=[quantity_name],
         index=[weather_data_time_tags, latitudes, longitudes],
@@ -230,7 +269,7 @@ def make_weather_dataframe(
     return processed_weather_dataframe
 
 
-def write_weather_database(scenario):
+def write_weather_database(scenario: ty.Dict) -> None:
     '''
     This function writes the weather database.
     It iterates over desired quantities, processes
@@ -238,43 +277,49 @@ def write_weather_database(scenario):
     (including some processing), and writes them to a database.
     '''
 
-    weather_parameters = scenario['weather']['processed_data']
-    raw_data_folder = weather_parameters['raw_data_folder']
-    processed_folder = weather_parameters['processed_folder']
-    weather_database_file_name = weather_parameters[
+    weather_parameters: ty.Dict = scenario['weather']['processed_data']
+    raw_data_folder: str = weather_parameters['raw_data_folder']
+    processed_folder: str = weather_parameters['processed_folder']
+    weather_database_file_name: str = weather_parameters[
         'weather_database_file_name'
     ]
-    quantities = weather_parameters['quantities']
-    quantity_tags = weather_parameters['quantity_tags']
-    quantity_processed_names = weather_parameters['quantity_processed_names']
-    chunk_size = weather_parameters['chunk_size']
+    quantities: ty.List[str] = weather_parameters['quantities']
+    quantity_tags: ty.List[str] = weather_parameters['quantity_tags']
+    quantity_processed_names: ty.List[str] = weather_parameters[
+        'quantity_processed_names'
+    ]
+    chunk_size: int = weather_parameters['chunk_size']
     cook.check_if_folder_exists(processed_folder)
-    weather_database_file = f'{processed_folder}/{weather_database_file_name}'
+    weather_database_file: str = (
+        f'{processed_folder}/{weather_database_file_name}'
+    )
 
     for quantity, quantity_tag, quantity_name in zip(
         quantities, quantity_tags, quantity_processed_names
     ):
         # We create a new table for each quantity
-        clear_table = True
+        clear_table: bool = True
         print(quantity)
         for file_name in os.listdir(raw_data_folder):
             if file_name.split('.')[-1] == 'grib':
                 file_header = file_name.split('.')[0]
                 if file_header[0 : len(quantity)] == quantity:
-                    source_file = f'{raw_data_folder}/{file_name}'
-                    quantity_dataframe = cook.from_grib_to_dataframe(
-                        source_file
+                    source_file: str = f'{raw_data_folder}/{file_name}'
+                    quantity_dataframe: pd.DataFrame = (
+                        cook.from_grib_to_dataframe(source_file)
                     )
                     quantity_dataframe = quantity_dataframe.dropna(
                         subset=[quantity_tag]
                     )
 
-                    processed_weather_dataframe = make_weather_dataframe(
-                        quantity_dataframe,
-                        quantity,
-                        quantity_tag,
-                        quantity_name,
-                        scenario,
+                    processed_weather_dataframe: pd.DataFrame = (
+                        make_weather_dataframe(
+                            quantity_dataframe,
+                            quantity,
+                            quantity_tag,
+                            quantity_name,
+                            scenario,
+                        )
                     )
                     cook.put_dataframe_in_sql_in_chunks(
                         processed_weather_dataframe,
@@ -288,18 +333,25 @@ def write_weather_database(scenario):
                     clear_table = False
 
 
-def get_hourly_values(quantity_dataframe, quantity, quantity_name, scenario):
+def get_hourly_values(
+    quantity_dataframe: pd.DataFrame,
+    quantity: str,
+    quantity_name: str,
+    scenario: ty.Dict,
+) -> pd.DataFrame:
     '''
     This function takes a Dataframe for a give weather quantity.
     If this is a cumulative quantity, it adds hourly values to it.
     '''
-    weather_parameters = scenario['weather']['processed_data']
-    cumulative_quantities = weather_parameters['cumulative_quantities']
+    weather_parameters: ty.Dict = scenario['weather']['processed_data']
+    cumulative_quantities: ty.List[str] = weather_parameters[
+        'cumulative_quantities'
+    ]
 
-    latitudes = np.unique(
+    latitudes: np.ndarray = np.unique(
         quantity_dataframe.index.get_level_values('Latitude')
     )
-    longitudes = np.unique(
+    longitudes: np.ndarray = np.unique(
         quantity_dataframe.index.get_level_values('Longitude')
     )
 
@@ -323,10 +375,12 @@ def get_hourly_values(quantity_dataframe, quantity, quantity_name, scenario):
                         latitude, longitude
                     ]
 
-                    cumulative_values = location_dataframe[
+                    cumulative_values: ty.List[float] = location_dataframe[
                         quantity_name
                     ].values
-                    shifted_cumulative_values = np.roll(cumulative_values, -1)
+                    shifted_cumulative_values: np.ndarray = np.roll(
+                        cumulative_values, -1
+                    )
                     location_dataframe.loc[:, f'Shifted {quantity_name}'] = (
                         shifted_cumulative_values
                     )
@@ -365,36 +419,44 @@ def get_hourly_values(quantity_dataframe, quantity, quantity_name, scenario):
     return quantity_dataframe
 
 
-def get_all_hourly_values(scenario):
+def get_all_hourly_values(scenario: ty.Dict) -> None:
     '''
     This functions adds hourly values to cumulative quantities
     in the weather database.
     '''
-    weather_parameters = scenario['weather']['processed_data']
+    weather_parameters: ty.Dict = scenario['weather']['processed_data']
 
-    quantities = weather_parameters['quantities']
-    cumulative_quantities = weather_parameters['cumulative_quantities']
-    processed_index_tags = weather_parameters['processed_index_tags']
-    processed_folder = weather_parameters['processed_folder']
-    weather_database_file_name = weather_parameters[
+    quantities: ty.List[str] = weather_parameters['quantities']
+    cumulative_quantities: ty.List[str] = weather_parameters[
+        'cumulative_quantities'
+    ]
+    processed_index_tags: ty.List[str] = weather_parameters[
+        'processed_index_tags'
+    ]
+    processed_folder: str = weather_parameters['processed_folder']
+    weather_database_file_name: str = weather_parameters[
         'weather_database_file_name'
     ]
-    weather_database = f'{processed_folder}/{weather_database_file_name}'
-    quantity_names = weather_parameters['quantity_processed_names']
-    chunk_size = weather_parameters['chunk_size']
-    queries_for_cumulative_quantities = weather_parameters[
+    weather_database: str = f'{processed_folder}/{weather_database_file_name}'
+    quantity_names: ty.List[str] = weather_parameters[
+        'quantity_processed_names'
+    ]
+    chunk_size: int = weather_parameters['chunk_size']
+    queries_for_cumulative_quantities: ty.List[str] = weather_parameters[
         'queries_for_cumulative_quantities'
     ]
 
-    query_dictionary = dict(
+    query_dictionary: ty.Dict[str, str] = dict(
         zip(cumulative_quantities, queries_for_cumulative_quantities)
     )
 
     for quantity, quantity_name in zip(quantities, quantity_names):
         if quantity in cumulative_quantities:
             with sqlite3.connect(weather_database) as sql_connection:
-                sql_query = query_dictionary[quantity]
-                quantity_dataframe = pd.read_sql(sql_query, sql_connection)
+                sql_query: str = query_dictionary[quantity]
+                quantity_dataframe: pd.DataFrame = pd.read_sql(
+                    sql_query, sql_connection
+                )
                 quantity_dataframe['Timetag'] = pd.to_datetime(
                     quantity_dataframe['Timetag']
                 )
@@ -416,53 +478,57 @@ def get_all_hourly_values(scenario):
             )
 
 
-def get_EV_tool_data(scenario):
+def get_EV_tool_data(scenario: ty.Dict) -> None:
     '''
     This gets the temperature efficiency data from the EV tool made
     by geotab.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
     '''
 
-    EV_tool_parameters = scenario['weather']['EV_tool']
+    EV_tool_parameters: ty.Dict = scenario['weather']['EV_tool']
 
-    EV_tool_url = EV_tool_parameters['EV_tool_url']
-    user_agent = EV_tool_parameters['user_agent']
+    EV_tool_url: str = EV_tool_parameters['EV_tool_url']
+    user_agent: str = EV_tool_parameters['user_agent']
 
-    EV_tool_session = requests.Session()
+    EV_tool_session: requests.Session = requests.Session()
     EV_tool_session.headers['User-Agent'] = user_agent
-    EV_tool_html_content = EV_tool_session.get(EV_tool_url).content
-    EV_tool_soup = bs(EV_tool_html_content, 'html.parser')
+    EV_tool_html_content: bytes = EV_tool_session.get(EV_tool_url).content
+    EV_tool_soup: bs4.BeautifulSoup = bs4.BeautifulSoup(
+        EV_tool_html_content, 'html.parser'
+    )
 
-    EV_tool_scripts = []
+    EV_tool_scripts: ty.List[bs4.Script] = []
     for script in EV_tool_soup.find_all('script'):
         EV_tool_scripts.append(script)
 
-    efficiency_curve_script_index = EV_tool_parameters[
+    efficiency_curve_script_index: int = EV_tool_parameters[
         'efficiency_curve_script_index'
     ]
-    efficiency_curve_script = EV_tool_scripts[efficiency_curve_script_index]
-    efficiency_curve_script_text = efficiency_curve_script.get_text()
-    data_splitter = EV_tool_parameters['data_splitter']
-    efficiency_curve_script_data = efficiency_curve_script_text.split(
-        data_splitter
+    efficiency_curve_script: bs4.Script = EV_tool_scripts[
+        efficiency_curve_script_index
+    ]
+    efficiency_curve_script_text: str = efficiency_curve_script.get_text()
+    data_splitter: str = EV_tool_parameters['data_splitter']
+    efficiency_curve_script_data: ty.List[str] = (
+        efficiency_curve_script_text.split(data_splitter)
     )
 
-    temperatures = []
-    efficiency_factors = []
+    temperatures: ty.List[float] = []
+    efficiency_factors: ty.List[float] = []
 
     for data_point in efficiency_curve_script_data:
-        data_values = data_point.split(',')
+        data_values: ty.List[str] = data_point.split(',')
         if len(data_values) > 1:
             # Some entries are not actual data entries and are empty
-            temperature = float(data_values[0].strip(" '"))
+            temperature: float = float(data_values[0].strip(" '"))
             temperatures.append(temperature)
-            raw_efficiency_factor = data_values[1].split(':')[1]
+            raw_efficiency_factor: str = data_values[1].split(':')[1]
             efficiency_factor = float(raw_efficiency_factor.split("'")[1])
             efficiency_factors.append(efficiency_factor)
-    efficiency_factor_column_name = EV_tool_parameters[
+    efficiency_factor_column_name: str = EV_tool_parameters[
         'efficiency_factor_column_name'
     ]
-    temperature_efficiencies = pd.DataFrame(
+    temperature_efficiencies: pd.DataFrame = pd.DataFrame(
         efficiency_factors,
         columns=[efficiency_factor_column_name],
         index=temperatures,
@@ -472,15 +538,17 @@ def get_EV_tool_data(scenario):
     # This tag (the ° symbol, probably) creates issues with xml files
     # (and a warning with stata), so we need to remove the xml output
     # (or change things).
-    file_name = EV_tool_parameters['file_name']
-    groupfile_name = EV_tool_parameters['groupfile_name']
-    folder = EV_tool_parameters['folder']
+    file_name: str = EV_tool_parameters['file_name']
+    groupfile_name: str = EV_tool_parameters['groupfile_name']
+    folder: str = EV_tool_parameters['folder']
     cook.save_dataframe(
         temperature_efficiencies, file_name, groupfile_name, folder, scenario
     )
 
 
-def temperature_efficiency_factor(temperature, scenario):
+def temperature_efficiency_factor(
+    temperature: float, scenario: ty.Dict
+) -> float:
     '''
     This function returns the temperature efficiency factor that corrects
     the baseline vehicle efficiency. It uses a data file (extracted from
@@ -491,62 +559,75 @@ def temperature_efficiency_factor(temperature, scenario):
     3) Consistency between the temparatures in and out of data range.
     '''
 
-    EV_tool_parameters = scenario['weather']['EV_tool']
+    EV_tool_parameters: ty.Dict = scenario['weather']['EV_tool']
 
-    vehicle_temperature_efficiencies_parameters = scenario['weather'][
+    vehicle_temperature_efficiencies_parameters: ty.Dict = scenario['weather'][
         'vehicle_temperature_efficiencies'
     ]
 
-    source_folder = vehicle_temperature_efficiencies_parameters['folder']
-    source_file = vehicle_temperature_efficiencies_parameters['file_name']
-    values_header = EV_tool_parameters['efficiency_factor_column_name']
-    fitting_polynomial_order = vehicle_temperature_efficiencies_parameters[
-        'fitting_polynomial_order'
-    ]
+    source_folder: str = vehicle_temperature_efficiencies_parameters['folder']
+    source_file: str = vehicle_temperature_efficiencies_parameters['file_name']
+    values_header: str = EV_tool_parameters['efficiency_factor_column_name']
+    fitting_polynomial_order: int = (
+        vehicle_temperature_efficiencies_parameters['fitting_polynomial_order']
+    )
 
-    temperature_efficiencies_data = pd.read_pickle(
+    temperature_efficiencies_data: pd.DataFrame = pd.read_pickle(
         f'{source_folder}/{source_file}'
     )
-    data_temperature_range = temperature_efficiencies_data.index
-    data_efficiencies = temperature_efficiencies_data[values_header]
-    fitting_function_coefficients = np.polyfit(
+    data_temperature_range: pd.Index[float] = (
+        temperature_efficiencies_data.index
+    )
+    data_efficiencies: pd.Series[float] = temperature_efficiencies_data[
+        values_header
+    ]
+    fitting_function_coefficients: np.ndarray = np.polyfit(
         data_temperature_range, data_efficiencies, fitting_polynomial_order
     )
-    fitting_function = np.poly1d(fitting_function_coefficients)
+    fitting_function: np.poly1d = np.poly1d(fitting_function_coefficients)
 
-    efficiency_factor = fitting_function(temperature)
+    efficiency_factor: float = fitting_function(temperature)
 
     return efficiency_factor
 
 
-def plot_temperature_efficiency(scenario):
+def plot_temperature_efficiency(scenario: ty.Dict) -> None:
     '''
     Plots the temperature efficiency correction factor
     (source data versus interpolation)
     of electric vehicles.
     '''
 
-    EV_tool_parameters = scenario['weather']['EV_tool']
+    EV_tool_parameters: ty.Dict = scenario['weather']['EV_tool']
 
-    plot_colors = cook.get_extra_colors(scenario)
+    plot_colors: pd.DataFrame = cook.get_extra_colors(scenario)
 
-    plot_parameters = scenario['plots']['vehicle_temperature_efficiency']
-    plot_style = plot_parameters['style']
-    geotab_data_color = plot_colors.loc[plot_parameters['geotab_data_color']]
-    geotab_data_size = plot_parameters['geotab_data_size']
-    fit_color = plot_colors.loc[plot_parameters['fit_color']]
-    fit_line_size = plot_parameters['fit_line_size']
-    title_size = plot_parameters['title_size']
+    plot_parameters: ty.Dict = scenario['plots'][
+        'vehicle_temperature_efficiency'
+    ]
+    plot_style: str = plot_parameters['style']
+    geotab_data_color: str = plot_colors.loc[
+        plot_parameters['geotab_data_color']
+    ]
+    geotab_data_size: int = plot_parameters['geotab_data_size']
+    fit_color: str = plot_colors.loc[plot_parameters['fit_color']]
+    fit_line_size: int = plot_parameters['fit_line_size']
+    title_size: int = plot_parameters['title_size']
     plt.style.use(plot_style)
-    source_data_folder = plot_parameters['source_data_folder']
-    source_data_file = plot_parameters['source_data_file']
-    source_data = pd.read_pickle(f'{source_data_folder}/{source_data_file}')
-    temperatures = source_data.index.values
-    values_header = EV_tool_parameters['efficiency_factor_column_name']
-    geotab_data_efficiencies = source_data[values_header].values
-    fitted_efficiencies = temperature_efficiency_factor(
-        temperatures, scenario
+    source_data_folder: str = plot_parameters['source_data_folder']
+    source_data_file: str = plot_parameters['source_data_file']
+    source_data: pd.DataFrame = pd.read_pickle(
+        f'{source_data_folder}/{source_data_file}'
     )
+    temperatures: np.ndarray = source_data.index.values
+    values_header: str = EV_tool_parameters['efficiency_factor_column_name']
+    geotab_data_efficiencies: pd.api.extensions.ExtensionArray | np.ndarray = (
+        source_data[values_header].values
+    )
+    fitted_efficiencies: ty.List[float] = [
+        temperature_efficiency_factor(temperature, scenario)
+        for temperature in temperatures
+    ]
 
     temeprature_efficiency_figure, temperature_efficiency_plot = plt.subplots(
         1, 1
@@ -585,14 +666,14 @@ def plot_temperature_efficiency(scenario):
 
 
 def get_scenario_location_weather_quantity(
-    location_latitude,
-    location_longitude,
-    run_start,
-    run_end,
-    source_table,
-    weather_quantity,
-    scenario,
-):
+    location_latitude: float,
+    location_longitude: float,
+    run_start: datetime.datetime,
+    run_end: datetime.datetime,
+    source_table: str,
+    weather_quantity: str,
+    scenario: ty.Dict,
+) -> pd.DataFrame:
     '''
     Returns a chosen weather quantity for a given location and a given
     runtime.
@@ -602,48 +683,52 @@ def get_scenario_location_weather_quantity(
     such as the solar radiation downwards)
     '''
 
-    processed_data_parameters = scenario['weather']['processed_data']
-    processed_folder = processed_data_parameters['processed_folder']
-    weather_database_file_name = processed_data_parameters[
+    processed_data_parameters: ty.Dict = scenario['weather']['processed_data']
+    processed_folder: str = processed_data_parameters['processed_folder']
+    weather_database_file_name: str = processed_data_parameters[
         'weather_database_file_name'
     ]
-    weather_database_connection = sqlite3.connect(
+    weather_database_connection: sqlite3.Connection = sqlite3.connect(
         f'{processed_folder}/{weather_database_file_name}'
     )
 
     # We need to avoid issues with spaces in column names, so we need
     # nested double quotes
-    source_table = f'"{source_table}"'
-    weather_quantity = f'"{weather_quantity}"'
-    run_start = f'"{run_start}"'
-    run_end = f'"{run_end}"'
+    source_table_text: str = f'"{source_table}"'
+    weather_quantity_text: str = f'"{weather_quantity}"'
+    run_start_text: str = f'"{run_start}"'
+    run_end_text: str = f'"{run_end}"'
 
-    list_columns_to_fetch = [
+    list_columns_to_fetch: ty.List[str] = [
         'Latitude',
         'Longitude',
         'Timetag',
-        weather_quantity,
+        weather_quantity_text,
     ]
     # We need to convert this into a string for a query
-    columns_to_fetch = ','.join(list_columns_to_fetch)
+    columns_to_fetch: str = ','.join(list_columns_to_fetch)
 
-    query_filter_quantities = ['Latitude', 'Longitude', 'Timetag']
-    query_filter_types = ['=', '=', 'between']
-    query_filter_values = [
-        location_latitude,
-        location_longitude,
-        [run_start, run_end],
+    query_filter_quantities: ty.List[str] = [
+        'Latitude',
+        'Longitude',
+        'Timetag',
+    ]
+    query_filter_types: ty.List[str] = ['=', '=', 'between']
+    query_filter_values: ty.List = [
+        str(location_latitude),
+        str(location_longitude),
+        [run_start_text, run_end_text],
     ]
 
-    location_scenario_query = cook.read_query_generator(
+    location_scenario_query: str = cook.read_query_generator(
         columns_to_fetch,
-        source_table,
+        source_table_text,
         query_filter_quantities,
         query_filter_types,
         query_filter_values,
     )
 
-    weather_values = pd.read_sql(
+    weather_values: pd.DataFrame = pd.read_sql(
         location_scenario_query, weather_database_connection
     )
 
@@ -654,46 +739,50 @@ def get_scenario_location_weather_quantity(
     return weather_values
 
 
-def get_scenario_weather_data(scenario):
+def get_scenario_weather_data(scenario: ty.Dict) -> pd.DataFrame:
     '''
     Fetches the weather data and efficiency factors and puts it into
     a table that is saved to files/databases.
     '''
-    weather_dataframe = pd.DataFrame()
+    weather_dataframe: pd.DataFrame = pd.DataFrame()
 
-    scenario = scenario['scenario']
-    case_name = scenario['case_name']
+    scenario_name: str = scenario['scenario']
+    case_name: str = scenario['case_name']
 
-    weather_factors_table_root_name = scenario['run'][
+    weather_factors_table_root_name: str = scenario['run'][
         'weather_factors_table_root_name'
     ]
-    weather_factors_table_name = (
-        f'{scenario}_{weather_factors_table_root_name}'
+    weather_factors_table_name: str = (
+        f'{scenario_name}_{weather_factors_table_root_name}'
     )
 
-    file_parameters = scenario['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
+    file_parameters: ty.Dict = scenario['files']
+    output_folder: str = file_parameters['output_folder']
+    groupfile_root: str = file_parameters['groupfile_root']
+    groupfile_name: str = f'{groupfile_root}_{case_name}'
 
-    weather_processed_data_parameters = scenario['weather']['processed_data']
-    quantity_processed_names = weather_processed_data_parameters[
+    weather_processed_data_parameters: ty.Dict = scenario['weather'][
+        'processed_data'
+    ]
+    quantity_processed_names: ty.List[str] = weather_processed_data_parameters[
         'quantity_processed_names'
     ]
 
-    cumulative_quantity_processed_names = weather_processed_data_parameters[
-        'cumulative_quantity_processed_names'
-    ]
+    cumulative_quantity_processed_names: ty.List[str] = (
+        weather_processed_data_parameters[
+            'cumulative_quantity_processed_names'
+        ]
+    )
 
-    run_parameters = scenario['run']
-    run_start = datetime.datetime(
+    run_parameters: ty.Dict = scenario['run']
+    run_start: datetime.datetime = datetime.datetime(
         run_parameters['start']['year'],
         run_parameters['start']['month'],
         run_parameters['start']['day'],
         run_parameters['start']['hour'],
         run_parameters['start']['minute'],
     )
-    run_end = datetime.datetime(
+    run_end: datetime.datetime = datetime.datetime(
         run_parameters['end']['year'],
         run_parameters['end']['month'],
         run_parameters['end']['day'],
@@ -701,29 +790,31 @@ def get_scenario_weather_data(scenario):
         run_parameters['end']['minute'],
     )
 
-    location_parameters = scenario['locations']
+    location_parameters: ty.Dict = scenario['locations']
 
     for location in location_parameters:
-        location_weather_dataframe = pd.DataFrame()
-        location_first_quantity = True
-        location_latitude = location_parameters[location]['latitude']
-        location_longitude = location_parameters[location]['longitude']
+        location_weather_dataframe: pd.DataFrame = pd.DataFrame()
+        location_first_quantity: bool = True
+        location_latitude: float = location_parameters[location]['latitude']
+        location_longitude: float = location_parameters[location]['longitude']
 
         for quantity in quantity_processed_names:
-            source_table = quantity
+            source_table: str = quantity
             if quantity in cumulative_quantity_processed_names:
-                weather_quantity = f'Hourly {quantity}'
+                weather_quantity: str = f'Hourly {quantity}'
             else:
                 weather_quantity = quantity
 
-            weather_values = get_scenario_location_weather_quantity(
-                location_latitude,
-                location_longitude,
-                run_start,
-                run_end,
-                source_table,
-                weather_quantity,
-                scenario,
+            weather_values: pd.DataFrame = (
+                get_scenario_location_weather_quantity(
+                    location_latitude,
+                    location_longitude,
+                    run_start,
+                    run_end,
+                    source_table,
+                    weather_quantity,
+                    scenario,
+                )
             )
             # weather_values['Location'] = [location]*len(weather_values.index)
             if location_first_quantity:
@@ -748,23 +839,29 @@ def get_scenario_weather_data(scenario):
             [weather_dataframe, location_weather_dataframe], ignore_index=False
         )
 
-        weather_dataframe['Vehicle efficiency factor'] = (
+        weather_dataframe['Vehicle efficiency factor'] = [
             temperature_efficiency_factor(
-                weather_dataframe['Temperature at 2 meters (°C)'].values,
+                temperature_to_use,
                 scenario,
             )
-        )
+            for temperature_to_use in weather_dataframe[
+                'Temperature at 2 meters (°C)'
+            ].values
+        ]
 
-        JOULES_IN_A_KWH = scenario['unit_conversions']['JOULES_IN_A_KWH']
-        weather_dataframe['Vehicle solar panels production (kWhe/m2)'] = (
+        JOULES_IN_A_KWH: float = scenario['unit_conversions'][
+            'JOULES_IN_A_KWH'
+        ]
+        weather_dataframe['Vehicle solar panels production (kWhe/m2)'] = [
             weather_dataframe[
                 'Hourly Surface solar radiation downwards (J/m2)'
             ]
-            * solar_panels_efficiency_factor(
-                weather_dataframe['Temperature at 2 meters (°C)']
-            )
+            * solar_panels_efficiency_factor(temperature_to_use)
             / JOULES_IN_A_KWH
-        )
+            for temperature_to_use in weather_dataframe[
+                'Temperature at 2 meters (°C)'
+            ]
+        ]
 
     cook.save_dataframe(
         weather_dataframe,
@@ -777,19 +874,19 @@ def get_scenario_weather_data(scenario):
     return weather_dataframe
 
 
-def solar_panels_efficiency_factor(temperature):
+def solar_panels_efficiency_factor(temperature: float) -> float:
     '''
     This gives us the efficiency factor of solar panels (i.e. how
     much of the solar radiation is converted into electricity).
     THIS IS A PLACEHOLDER FUNCTION
     '''
     # THIS IS A PLACEHOLDER VALUE
-    efficiency_factor = np.exp(-((temperature - 25) ** 2) / (100)) / 3
+    efficiency_factor: float = np.exp(-((temperature - 25) ** 2) / (100)) / 3
 
     return efficiency_factor
 
 
-def setup_weather(scenario):
+def setup_weather(scenario: ty.Dict) -> None:
     '''
     This runs all the functions necessary to get the scenario weather factors
     for a given case. Downloading CDS weather data
@@ -801,10 +898,12 @@ def setup_weather(scenario):
     downloads).
     '''
 
-    get_extra_downloads = scenario['run']['get_extra_downloads']
-    download_weather_data = get_extra_downloads['download_weather_data']
-    download_EV_tool_data = get_extra_downloads['download_EV_tool_data']
-    make_weather_database = get_extra_downloads['make_weather_database']
+    get_extra_downloads: ty.Dict[str, bool] = scenario['run'][
+        'get_extra_downloads'
+    ]
+    download_weather_data: bool = get_extra_downloads['download_weather_data']
+    download_EV_tool_data: bool = get_extra_downloads['download_EV_tool_data']
+    make_weather_database: bool = get_extra_downloads['make_weather_database']
 
     if download_weather_data:
         download_all_cds_weather_data(scenario)
@@ -843,46 +942,54 @@ def setup_weather(scenario):
 
 
 def get_location_weather_quantity(
-    location_latitude,
-    location_longitude,
-    timetag,
-    source_table,
-    weather_quantity,
-    scenario,
-):
+    location_latitude: float,
+    location_longitude: float,
+    timetag: datetime.datetime,
+    source_table: str,
+    weather_quantity: str,
+    scenario: ty.Dict,
+) -> float:
     '''
     Returns the value a a chosen weather quantity for a given location and
     time tag.
     '''
 
-    processed_data_parameters = scenario['weather']['processed_data']
-    processed_folder = processed_data_parameters['processed_folder']
-    weather_database_file_name = processed_data_parameters[
+    processed_data_parameters: ty.Dict = scenario['weather']['processed_data']
+    processed_folder: str = processed_data_parameters['processed_folder']
+    weather_database_file_name: str = processed_data_parameters[
         'weather_database_file_name'
     ]
-    weather_database_connection = sqlite3.connect(
+    weather_database_connection: sqlite3.Connection = sqlite3.connect(
         f'{processed_folder}/{weather_database_file_name}'
     )
     # We need to avoid issues with spaces in column names, so we need
     # nested double quotes
     source_table = f'"{source_table}"'
     weather_quantity = f'"{weather_quantity}"'
-    timetag = f'"{timetag}"'
+    timetag_text: str = f'"{timetag}"'
 
-    list_columns_to_fetch = [
+    list_columns_to_fetch: ty.List[str] = [
         'Latitude',
         'Longitude',
         'Timetag',
         weather_quantity,
     ]
     # We need to convert this into a string for a query
-    columns_to_fetch = ','.join(list_columns_to_fetch)
+    columns_to_fetch: str = ','.join(list_columns_to_fetch)
 
-    query_filter_quantities = ['Latitude', 'Longitude', 'Timetag']
-    query_filter_types = ['=', '=', '=']
-    query_filter_values = [location_latitude, location_longitude, timetag]
+    query_filter_quantities: ty.List[str] = [
+        'Latitude',
+        'Longitude',
+        'Timetag',
+    ]
+    query_filter_types: ty.List[str] = ['=', '=', '=']
+    query_filter_values: ty.List = [
+        location_latitude,
+        location_longitude,
+        timetag_text,
+    ]
 
-    scenario_query = cook.read_query_generator(
+    scenario_query: str = cook.read_query_generator(
         columns_to_fetch,
         source_table,
         query_filter_quantities,
@@ -890,19 +997,23 @@ def get_location_weather_quantity(
         query_filter_values,
     )
 
-    weather_values = pd.read_sql(scenario_query, weather_database_connection)
+    weather_values: pd.DataFrame = pd.read_sql(
+        scenario_query, weather_database_connection
+    )
 
     # The column does not contain double quotes and we need
     # the value (hence [0])
-    value_of_weather_quantity = weather_values[weather_quantity.strip('"')][0]
+    value_of_weather_quantity: float = weather_values[
+        weather_quantity.strip('"')
+    ][0]
 
     return value_of_weather_quantity
 
 
 if __name__ == '__main__':
-    scenario_file_name = 'scenarios/baseline.toml'
-    scenario = cook.parameters_from_TOML(scenario_file_name)
-    scenario = scenario['scenario']
+    scenario_file_name: str = 'scenarios/baseline.toml'
+    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    plot_temperature_efficiency(scenario)
     setup_weather(scenario)
     print(
         get_location_weather_quantity(
