@@ -773,10 +773,12 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
         trip_run_mobility_matrix_name: str = (
             f'{scenario_name}_{trip_name}_run_mobility_matrix'
         )
+
         trip_run_mobility_matrix: pd.DataFrame = cook.read_table_from_database(
             trip_run_mobility_matrix_name,
             f'{output_folder}/{groupfile_name}.sqlite3',
         )
+
         location_connections_headers: ty.List[str] = scenario[
             'mobility_module'
         ]['location_connections_headers']
@@ -788,19 +790,31 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
         probability_values_to_use = this_trip_run_probabilities_extended[
             trip_name
         ].values
+        # print(probability_values_to_use)
+        # print(trip_run_mobility_matrix.loc['home', 'work'])
+        # exit()
 
         for mobility_quantity in mobility_quantities:
             if mobility_quantity not in location_connections_headers:
 
-                weighted_mobility_quatity_to_use = (
+                weighted_mobility_quantity_to_use = (
                     trip_run_mobility_matrix[mobility_quantity]
                     * probability_values_to_use
                 )
+                # print(mobility_quantity)
+                # print(
+                #     trip_run_mobility_matrix[mobility_quantity].loc[
+                #         'home', 'work'
+                #     ]
+                # )
+                # print(weighted_mobility_quantity_to_use.loc['home', 'work'])
+                # exit()
 
                 run_mobility_matrix[
                     mobility_quantity
-                ] += weighted_mobility_quatity_to_use
-
+                ] += weighted_mobility_quantity_to_use
+    # print(run_mobility_matrix.loc['home', 'work'].iloc[26:89])
+    # exit()
     location_connections: pd.DataFrame = (
         cook.read_table_from_database(
             f'{scenario_name}_location_connections',
@@ -835,7 +849,8 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
             #     (start_location, end_location), location_connections_headers
             # ] = location_connections.loc[
             # (start_location, end_location)].values
-
+    # print(run_mobility_matrix)
+    # exit()
     cook.save_dataframe(
         run_mobility_matrix,
         f'{scenario_name}_run_mobility_matrix',

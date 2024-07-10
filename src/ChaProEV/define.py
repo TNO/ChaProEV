@@ -259,22 +259,33 @@ class Trip:
 
             # With this, we can add this leg's contribution to the
             # mobility matrix
+
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures amount'
             ] = (
-                trip.mobility_matrix.loc[
-                    (start_location, end_location), 'Departures amount'
-                ]
+                pd.Series(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Departures amount'
+                    ]
+                ).values
                 + current_leg_start_probabilities
             )
+
+            # We need to convert the first element to Series for type hinting
+            # reasons, as MyPy does not know it is a Series otherwise
+
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Arrivals amount'
             ] = (
-                trip.mobility_matrix.loc[
-                    (start_location, end_location), 'Arrivals amount'
-                ]
+                pd.Series(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Arrivals amount'
+                    ]
+                ).values
                 + current_leg_end_probabilities
             )
+            # We need to convert the first element to Series for type hinting
+            # reasons, as MyPy does not know it is a Series otherwise
 
             start_distance_probabilities: np.ndarray = np.array(
                 current_leg_start_probabilities * distance
@@ -282,11 +293,15 @@ class Trip:
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures kilometers'
             ] = (
-                trip.mobility_matrix.loc[
-                    (start_location, end_location), 'Departures kilometers'
-                ]
+                pd.Series(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Departures kilometers'
+                    ]
+                ).values
                 + start_distance_probabilities
             )
+            # We need to convert the first element to Series for type hinting
+            # reasons, as MyPy does not know it is a Series otherwise
 
             start_weighted_distance_probabilities: np.ndarray = np.array(
                 np.array(current_leg_start_probabilities) * weighted_distance
@@ -295,12 +310,16 @@ class Trip:
                 (start_location, end_location),
                 'Departures weighted kilometers',
             ] = (
-                trip.mobility_matrix.loc[
-                    (start_location, end_location),
-                    'Departures weighted kilometers',
-                ]
+                pd.Series(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location),
+                        'Departures weighted kilometers',
+                    ]
+                ).values
                 + start_weighted_distance_probabilities
             )
+            # We need to convert the first element to Series for type hinting
+            # reasons, as MyPy does not know it is a Series otherwise
 
             end_distance_probabilities: np.ndarray = np.array(
                 current_leg_end_probabilities * distance
@@ -308,11 +327,15 @@ class Trip:
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Arrivals kilometers'
             ] = (
-                trip.mobility_matrix.loc[
-                    (start_location, end_location), 'Arrivals kilometers'
-                ]
+                pd.Series(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location), 'Arrivals kilometers'
+                    ]
+                ).values
                 + end_distance_probabilities
             )
+            # We need to convert the first element to Series for type hinting
+            # reasons, as MyPy does not know it is a Series otherwise
 
             end_weighted_distance_probabilities: np.ndarray = np.array(
                 np.array(current_leg_end_probabilities) * weighted_distance
@@ -320,12 +343,17 @@ class Trip:
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Arrivals weighted kilometers'
             ] = (
-                trip.mobility_matrix.loc[
-                    (start_location, end_location),
-                    'Arrivals weighted kilometers',
-                ]
+                pd.Series(
+                    trip.mobility_matrix.loc[
+                        (start_location, end_location),
+                        'Arrivals weighted kilometers',
+                    ]
+                )
                 + end_weighted_distance_probabilities
             )
+            # We need to convert the first element to Series for type hinting
+            # reasons, as MyPy does not know it is a Series otherwise
+
             # We also track the duration, distance, and wrighted distance
             # Note that these could change with time as well (for example
             # with a correction factor added at the run level)
