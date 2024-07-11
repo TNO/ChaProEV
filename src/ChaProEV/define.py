@@ -827,7 +827,7 @@ if __name__ == '__main__':
             trip.start_probabilities,
             trip.mobility_matrix.loc['home'],
         )
-        exit()
+        # exit()
 
 
 # 1) Identify next leg (with prob)

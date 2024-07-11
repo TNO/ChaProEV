@@ -120,10 +120,12 @@ def get_time_range(
     return run_range, run_hour_numbers
 
 
-def get_time_stamped_dataframe(scenario: ty.Dict) -> pd.DataFrame:
+def get_time_stamped_dataframe(
+    scenario: ty.Dict, locations_as_columns: bool = True
+) -> pd.DataFrame:
     '''
     This function creates a DataFrame with the timestamps of the
-    run as index (and hour numbers as a column).
+    run as index (and hour numbers, SPINE hour numbers as a column).
     '''
 
     run_range, run_hour_numbers = get_time_range(scenario)
@@ -138,13 +140,13 @@ def get_time_stamped_dataframe(scenario: ty.Dict) -> pd.DataFrame:
     time_stamped_dataframe = add_day_type_to_time_stamped_dataframe(
         time_stamped_dataframe, scenario
     )
-
-    location_parameters: ty.Dict = scenario['locations']
-    locations: ty.List[str] = list(location_parameters.keys())
-    time_stamped_dataframe[locations] = np.empty(
-        (len(run_range), len(locations))
-    )
-    time_stamped_dataframe[locations] = np.nan
+    if locations_as_columns:
+        location_parameters: ty.Dict = scenario['locations']
+        locations: ty.List[str] = list(location_parameters.keys())
+        time_stamped_dataframe[locations] = np.empty(
+            (len(run_range), len(locations))
+        )
+        time_stamped_dataframe[locations] = np.nan
 
     return time_stamped_dataframe
 
