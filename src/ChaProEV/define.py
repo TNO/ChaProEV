@@ -657,7 +657,15 @@ def declare_class_instances(
     instances: ty.List[ty.Type] = []
 
     for class_instance in class_instances:
-        instances.append(Chosen_class(class_instance, scenario))
+        append_instance: bool = True
+        if class_name == 'trips':
+            scenario_vehicle: str = scenario['vehicle']['name']
+            trip_vehicle: str = scenario['trips'][class_instance]['vehicle']
+            if trip_vehicle != scenario_vehicle:
+                append_instance = False
+
+        if append_instance:
+            instances.append(Chosen_class(class_instance, scenario))
 
     return instances
 

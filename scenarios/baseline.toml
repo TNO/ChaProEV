@@ -332,8 +332,8 @@ end = 'home'
 mix = [0.8, 0.2]
 
 [vehicle]
-# name = 'car'
-name = 'bus'
+name = 'car'
+# name = 'bus'
 kilometers_column_for_consumption = 'Arrivals'
 use_weighted = false
 battery_capacity = 80  # kWh
