@@ -652,11 +652,12 @@ def declare_class_instances(
 
     class_name: str = Chosen_class.class_name
 
-    class_names: ty.List[str] = scenario[class_name]
+    class_instances: ty.List[str] = scenario[class_name]
+
     instances: ty.List[ty.Type] = []
 
-    for class_name in class_names:
-        instances.append(Chosen_class(class_name, scenario))
+    for class_instance in class_instances:
+        instances.append(Chosen_class(class_instance, scenario))
 
     return instances
 
