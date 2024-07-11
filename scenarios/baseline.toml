@@ -334,6 +334,8 @@ mix = [0.8, 0.2]
 [vehicle]
 name = 'car'
 # name = 'bus'
+yearly_kilometrage = 42_000
+# Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
 use_weighted = false
 battery_capacity = 80  # kWh
@@ -484,6 +486,12 @@ location_connections_headers = [
     'Duration (hours)', 'Distance (km)', 'Weighted distance (km)']
 
 mobility_index_names = ['From', 'To', 'Time Tag']
+kilometers_driven_headers = [
+    'Time driving (%)',
+    'Percentage of run time driving (%)',
+    'Driven kilometers (km)'
+]
+
 
 
 holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53]
@@ -516,6 +524,44 @@ time_spent_at_holiday_destination = 14  # days
 # percentage_of_outward_holiday_trips_on_weekends = 0.75
 # percentage_of_back_holiday_trips_on_weekends = 0.75
 
+
+[mobility_module.percent_time_driving]
+# These are per daay type used for vehicles other than cars
+weekday_in_work_week = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
+weekend_in_work_week = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
+weekday_in_holiday_week = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
+weekend_in_holiday_week = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
+weekend_holiday_departures = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
+weekend_holiday_returns = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
+holiday_overlap_weekend = [
+    0, 0.25, 0.5, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 0.5, 0.25, 1, 1, 1, 1
+]
 
 [transport_factors]
 road_types = ['highway', 'city']

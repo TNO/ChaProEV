@@ -24,6 +24,28 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
+def get_run_duration(scenario: ty.Dict) -> ty.Tuple[float, float]:
+    '''
+    Gets the run duration (in seconds and years)
+    '''
+    run_range: pd.DatetimeIndex = get_time_range(scenario)[0]
+
+    run_duration_seconds: float = (
+        run_range[-1] - run_range[0]
+    ).total_seconds()
+
+    time_parameters: ty.Dict = scenario['time']
+    SECONDS_PER_HOUR: int = time_parameters['SECONDS_PER_HOUR']
+    HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
+    DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
+    SECONDS_PER_YEAR: float = (
+        SECONDS_PER_HOUR * HOURS_IN_A_DAY * DAYS_IN_A_YEAR
+    )
+    run_duration_years: float = run_duration_seconds / SECONDS_PER_YEAR
+
+    return run_duration_seconds, run_duration_years
+
+
 def get_time_range(
     scenario: ty.Dict,
 ) -> ty.Tuple[pd.DatetimeIndex, ty.List[int]]:
@@ -140,6 +162,20 @@ def get_time_stamped_dataframe(
     time_stamped_dataframe = add_day_type_to_time_stamped_dataframe(
         time_stamped_dataframe, scenario
     )
+
+    day_start_hour: int = scenario['mobility_module']['day_start_hour']
+    HOURS_IN_A_DAY = scenario['time']['HOURS_IN_A_DAY']
+    hour_in_day: ty.List[int] = [
+        (
+            timestamp.hour - day_start_hour
+            if timestamp.hour >= day_start_hour
+            else HOURS_IN_A_DAY + timestamp.hour - day_start_hour
+        )
+        for timestamp in run_range
+    ]
+
+    time_stamped_dataframe['Hour index from day start'] = hour_in_day
+
     if locations_as_columns:
         location_parameters: ty.Dict = scenario['locations']
         locations: ty.List[str] = list(location_parameters.keys())

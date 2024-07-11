@@ -49,21 +49,6 @@ def get_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
     return trip_probabilities_per_day_type
 
 
-# def get_bus_trip_probabilities_per_day_type(scenario: ty.Dict) 
-# -> pd.DataFrame:
-#     '''
-#     This function computes the trip probabilities per day type for busses
-
-#     '''
-#     # We build a Dataframe to store the trip probabilities per day type
-#     trip_probabilities_per_day_type: pd.DataFrame = pd.DataFrame(
-#         columns=day_types, index=trip_list
-#     )
-#     trip_probabilities_per_day_type.index.name = 'Trip'
-
-#     return trip_probabilities_per_day_type
-
-
 def get_car_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
     '''
     This function computes the trip probabilities per day type for cars
