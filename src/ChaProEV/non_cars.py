@@ -23,6 +23,13 @@ except ModuleNotFoundError:
 #  (only max power)
 # inactive up to full level (can hacve strategy)
 
+# consumption then battery track
+# two locs: underway and depot/overnight, each with connectivity and power
+# hours at depot (maybe per day type)
+# use hour in day in car module
+
+# and does not include vheicle name --> stop program (option to switch it off)
+
 
 def get_run_kilometrage(scenario: ty.Dict) -> float:
     '''
@@ -106,7 +113,9 @@ def compute_run_driven_kilometers(
     return run_driven_kilometers
 
 
-def get_run_driven_kilometers(scenario: ty.Dict) -> pd.DataFrame:
+def get_run_driven_kilometers(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
     '''
     This gets a DataFrame with kilometers driven per time tag.
     '''
@@ -119,10 +128,9 @@ def get_run_driven_kilometers(scenario: ty.Dict) -> pd.DataFrame:
     )
 
     scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
 
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
@@ -138,10 +146,11 @@ def get_run_driven_kilometers(scenario: ty.Dict) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
 
-    run_driven_kilometers = get_run_driven_kilometers(scenario)
+    run_driven_kilometers = get_run_driven_kilometers(scenario, case_name)
 
     print(run_driven_kilometers)
     # Normal charge when act=0

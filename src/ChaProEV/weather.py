@@ -739,15 +739,16 @@ def get_scenario_location_weather_quantity(
     return weather_values
 
 
-def get_scenario_weather_data(scenario: ty.Dict) -> pd.DataFrame:
+def get_scenario_weather_data(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
     '''
     Fetches the weather data and efficiency factors and puts it into
     a table that is saved to files/databases.
     '''
     weather_dataframe: pd.DataFrame = pd.DataFrame()
 
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     weather_factors_table_root_name: str = scenario['run'][
         'weather_factors_table_root_name'
@@ -757,7 +758,7 @@ def get_scenario_weather_data(scenario: ty.Dict) -> pd.DataFrame:
     )
 
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
@@ -886,7 +887,7 @@ def solar_panels_efficiency_factor(temperature: float) -> float:
     return efficiency_factor
 
 
-def setup_weather(scenario: ty.Dict) -> None:
+def setup_weather(scenario: ty.Dict, case_name: str) -> None:
     '''
     This runs all the functions necessary to get the scenario weather factors
     for a given case. Downloading CDS weather data
@@ -923,7 +924,7 @@ def setup_weather(scenario: ty.Dict) -> None:
 
         get_all_hourly_values(scenario)
     try:
-        get_scenario_weather_data(scenario)
+        get_scenario_weather_data(scenario, case_name)
     except sqlite3.OperationalError:
         raise FileNotFoundError(
             'Weather database could not be opened, it may not exist.'
@@ -1011,10 +1012,11 @@ def get_location_weather_quantity(
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     plot_temperature_efficiency(scenario)
-    setup_weather(scenario)
+    setup_weather(scenario, case_name)
     print(
         get_location_weather_quantity(
             52.0,

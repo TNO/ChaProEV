@@ -36,11 +36,13 @@ except ModuleNotFoundError:
 # we are importing again
 
 
-def get_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
+def get_trip_probabilities_per_day_type(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
     vehicle: str = scenario['vehicle']['name']
     if vehicle == 'car':
         trip_probabilities_per_day_type: pd.DataFrame = (
-            get_car_trip_probabilities_per_day_type(scenario)
+            get_car_trip_probabilities_per_day_type(scenario, case_name)
         )
     else:
         print(f'{vehicle} does not have a model')
@@ -49,7 +51,9 @@ def get_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
     return trip_probabilities_per_day_type
 
 
-def get_car_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
+def get_car_trip_probabilities_per_day_type(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
     '''
     This function computes the trip probabilities per day type for cars
     '''
@@ -58,11 +62,10 @@ def get_car_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
     )
 
     trip_list: ty.List[str] = list(scenario['trips'].keys())
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
@@ -665,17 +668,16 @@ def get_car_trip_probabilities_per_day_type(scenario: ty.Dict) -> pd.DataFrame:
     return trip_probabilities_per_day_type
 
 
-def get_run_trip_probabilities(scenario: ty.Dict) -> pd.DataFrame:
+def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
     '''
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
 
     trip_list: ty.List[str] = list(scenario['trips'].keys())
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
@@ -688,7 +690,7 @@ def get_run_trip_probabilities(scenario: ty.Dict) -> pd.DataFrame:
     )
 
     trip_probabilities_per_day_type: pd.DataFrame = (
-        get_trip_probabilities_per_day_type(scenario)
+        get_trip_probabilities_per_day_type(scenario, case_name)
     )
 
     for trip in trip_list:
@@ -710,13 +712,15 @@ def get_run_trip_probabilities(scenario: ty.Dict) -> pd.DataFrame:
     return run_trip_probabilities
 
 
-def get_mobility_matrix(scenario: ty.Dict) -> None:
+def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     '''
     Makes a mobility matrix for the run that tracks departures
     from and to locations (tracks amount, kilometers, and weighted kilometers)
     '''
 
-    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(scenario)
+    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
+        scenario, case_name
+    )
 
     location_parameters: ty.Dict = scenario['locations']
     location_names: ty.List[str] = [
@@ -750,10 +754,9 @@ def get_mobility_matrix(scenario: ty.Dict) -> None:
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
 
-    case_name: str = scenario['case_name']
-    scenario_name: str = scenario['scenario']
+    scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     for trip_name in trip_names:
@@ -940,15 +943,14 @@ def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
     return day_type_start_location_split
 
 
-def get_location_split(scenario: ty.Dict) -> None:
+def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     '''
     Produces the location split of the vehicles for the whole run
     '''
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     location_parameters: ty.Dict = scenario['locations']
@@ -1142,14 +1144,15 @@ def get_starting_location_split(
     return location_split
 
 
-def get_kilometers_for_next_leg(scenario: ty.Dict) -> None:
-    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(scenario)
+def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
+    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
+        scenario, case_name
+    )
 
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
 
     location_parameters: ty.Dict = scenario['locations']
@@ -1224,18 +1227,19 @@ def get_kilometers_for_next_leg(scenario: ty.Dict) -> None:
     )
 
 
-def make_mobility_data(scenario: ty.Dict) -> None:
-    get_trip_probabilities_per_day_type(scenario)
-    get_mobility_matrix(scenario)
-    get_location_split(scenario)
-    get_kilometers_for_next_leg(scenario)
+def make_mobility_data(scenario: ty.Dict, case_name: str) -> None:
+    get_trip_probabilities_per_day_type(scenario, case_name)
+    get_mobility_matrix(scenario, case_name)
+    get_location_split(scenario, case_name)
+    get_kilometers_for_next_leg(scenario, case_name)
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name: str = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
 
-    make_mobility_data(scenario)
+    make_mobility_data(scenario, case_name)
 
     print('Add spillover?')
     print('Use departures from and arrivals to for location split')

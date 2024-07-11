@@ -13,7 +13,7 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def write_scenario_parameters(scenario: ty.Dict) -> None:
+def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
     '''
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
@@ -21,8 +21,7 @@ def write_scenario_parameters(scenario: ty.Dict) -> None:
     scenario_parameter_categories: ty.List[str] = scenario[
         'scenario_parameter_categories'
     ]
-    case_name: str = scenario['case_name']
-    scenario_name: str = scenario['scenario']
+    scenario_name: str = scenario['scenario_name']
     groupfile_root: str = scenario['files']['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     output_folder: str = scenario['files']['output_folder']
@@ -45,6 +44,7 @@ def write_scenario_parameters(scenario: ty.Dict) -> None:
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name: str = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    write_scenario_parameters(scenario)
+    write_scenario_parameters(scenario, case_name)

@@ -60,6 +60,51 @@ except ModuleNotFoundError:
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
 
+
+def run_ChaProEV(case_name: str) -> None:
+    for scenario_file in os.listdir(f'scenarios/{case_name}'):
+        # To avoid issues if some files are not configuration files
+        if scenario_file.split('.')[1] == 'toml':
+
+            scenario_file_name: str = f'scenarios/{case_name}/{scenario_file}'
+            scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+            scenario['scenario_name'] = scenario_file.split('.')[0]
+            print((datetime.datetime.now() - start_).total_seconds())
+            decla_start: datetime.datetime = datetime.datetime.now()
+            legs, locations, trips = define.declare_all_instances(
+                scenario, case_name
+            )
+            print(
+                'Declare',
+                (datetime.datetime.now() - decla_start).total_seconds(),
+            )
+
+            mob_start: datetime.datetime = datetime.datetime.now()
+            mobility.make_mobility_data(scenario, case_name)
+            print(
+                'Mobility',
+                (datetime.datetime.now() - mob_start).total_seconds(),
+            )
+            cons_start: datetime.datetime = datetime.datetime.now()
+            consumption.get_consumption_data(scenario, case_name)
+            print(
+                'Cons', (datetime.datetime.now() - cons_start).total_seconds()
+            )
+            charge_start: datetime.datetime = datetime.datetime.now()
+            (
+                battery_space,
+                charge_drawn_by_vehicles,
+                charge_drawn_from_network,
+            ) = charging.get_charging_profile(scenario, case_name)
+            print(
+                'Charge',
+                (datetime.datetime.now() - charge_start).total_seconds(),
+            )
+            # print(charge_drawn_by_vehicles)
+            # print(charge_drawn_from_network)
+    print('Tot', (datetime.datetime.now() - start_).total_seconds())
+
+
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
     print('Match en required fo next and total')
@@ -112,44 +157,10 @@ if __name__ == '__main__':
     print('Speed up by using day types only calc as option')
     print('Chargin strategis (basic, adaptive, price (?))')
     print('Every x days')
-    for scenario_file in os.listdir('scenarios'):
-        # To avoid issues if some files are not configuration files
-        if scenario_file.split('.')[1] == 'toml':
-            scenario_file_name: str = f'scenarios/{scenario_file}'
-            scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-            print((datetime.datetime.now() - start_).total_seconds())
-            decla_start: datetime.datetime = datetime.datetime.now()
-            legs, locations, trips = define.declare_all_instances(scenario)
-            print(
-                'Declare',
-                (datetime.datetime.now() - decla_start).total_seconds(),
-            )
-
-            mob_start: datetime.datetime = datetime.datetime.now()
-            mobility.make_mobility_data(scenario)
-            print(
-                'Mobility',
-                (datetime.datetime.now() - mob_start).total_seconds(),
-            )
-            cons_start: datetime.datetime = datetime.datetime.now()
-            consumption.get_consumption_data(scenario)
-            print(
-                'Cons', (datetime.datetime.now() - cons_start).total_seconds()
-            )
-            charge_start: datetime.datetime = datetime.datetime.now()
-            (
-                battery_space,
-                charge_drawn_by_vehicles,
-                charge_drawn_from_network,
-            ) = charging.get_charging_profile(scenario)
-            print(
-                'Charge',
-                (datetime.datetime.now() - charge_start).total_seconds(),
-            )
-            # print(charge_drawn_by_vehicles)
-            # print(charge_drawn_from_network)
-    print('Tot', (datetime.datetime.now() - start_).total_seconds())
-
+    # This is a case name, which is the grouping of all your scenarios.
+    # This is principally used to label your output files.
+    case_name = 'local_impact_BEVs'
+    run_ChaProEV(case_name)
     # writing.write_scenario_parameters(scenario)
     # weather.setup_weather( scenario)
     # legs, vehicles, legs, trips = define.declare_all_instances(

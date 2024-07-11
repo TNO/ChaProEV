@@ -408,9 +408,7 @@ def compute_charging_events(
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
-def get_charging_framework(
-    scenario: ty.Dict,
-) -> ty.Tuple[
+def get_charging_framework(scenario: ty.Dict, case_name: str) -> ty.Tuple[
     ty.Dict[str, pd.DataFrame],
     pd.DatetimeIndex,
     pd.DataFrame,
@@ -429,11 +427,10 @@ def get_charging_framework(
     location_names: ty.List[str] = [
         location_name for location_name in location_parameters
     ]
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict[str, str] = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     location_split_table_name: str = f'{scenario_name}_location_split'
@@ -507,6 +504,7 @@ def write_output(
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
     scenario: ty.Dict,
+    case_name: str,
 ) -> None:
     run_range, run_hour_numbers = run_time.get_time_range(scenario)
     # print(run_range[3573])
@@ -520,11 +518,10 @@ def write_output(
     location_names: ty.List[str] = [
         location_name for location_name in location_parameters
     ]
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict[str, str] = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
@@ -673,7 +670,7 @@ def write_output(
 
 
 def get_charging_profile(
-    scenario: ty.Dict,
+    scenario: ty.Dict, case_name: str
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
     (
         battery_space,
@@ -681,7 +678,7 @@ def get_charging_profile(
         run_mobility_matrix,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_framework(scenario)
+    ) = get_charging_framework(scenario, case_name)
 
     # start_time = datetime.datetime.now()
     # loop_start = start_time
@@ -748,6 +745,7 @@ def get_charging_profile(
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
         scenario,
+        case_name
     )
     loop_times.to_csv('Lopi.csv')
     # print('Write', (datetime.datetime.now()-write_out_start).total_seconds())
@@ -797,7 +795,8 @@ def get_all_charge_levels() -> ty.Dict[str, ty.List[float]]:
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name: str = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
 
     start_: datetime.datetime = datetime.datetime.now()
@@ -805,5 +804,5 @@ if __name__ == '__main__':
         battery_space,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_profile(scenario)
+    ) = get_charging_profile(scenario, case_name)
     print((datetime.datetime.now() - start_).total_seconds())

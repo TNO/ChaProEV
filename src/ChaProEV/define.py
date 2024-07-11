@@ -671,16 +671,15 @@ def declare_class_instances(
 
 
 def declare_all_instances(
-    scenario: ty.Dict,
+    scenario: ty.Dict, case_name: str
 ) -> ty.Tuple[ty.List[ty.Type], ...]:
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
     '''
-    case_name: str = scenario['case_name']
-    scenario_name: str = scenario['scenario']
+    scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     # loc_start = datetime.datetime.now()
@@ -801,9 +800,10 @@ def declare_all_instances(
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name: str = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    legs, locations, trips = declare_all_instances(scenario)
+    legs, locations, trips = declare_all_instances(scenario, case_name)
 
     for leg in legs:
         print(

@@ -1,16 +1,11 @@
 # Created by Omar Usmai (Omar.Usmani@TNO.nl).
 # This file contains configuration parameters for running a
 # ChaProEV scenario. To add a new scenario, copy one of the existing files
-# in this folder (scenarios), and add/remove/modify paramters as
-# required, including the first parameter below, which is the scenario name,
-# which should be the same as the file name (it might work with another name,
-# but this is not tested and there is no reason to have different names for the
-# same scenario).
-scenario = 'baseline'
+# in a folder with the name of your case/rub inside the
+# scenarios folder, and add/remove/modify paramters as
+# required.
 
-# This is a case name, which is the grouping of all your scenarios.
-# This is principally used to label your output files.
-case_name = 'local_impact_BEVs'
+
 
 # Run parameters
 [run]
@@ -680,7 +675,7 @@ title_size = 14
 [files]
 # General parameters
 input_folder = 'input'
-output_folder = 'output'
+output_root = 'output'
 # For files that group data (such as (sqlite) databases or Excel workbooks)
 groupfile_root = 'ChaProEV'
 

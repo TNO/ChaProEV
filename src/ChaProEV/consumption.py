@@ -9,15 +9,14 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def create_consumption_tables(scenario: ty.Dict) -> None:
+def create_consumption_tables(scenario: ty.Dict, case_name: str) -> None:
     '''
     Creates the consumption tables
     '''
-    case_name: str = scenario['case_name']
-    scenario_name: str = scenario['scenario']
+    scenario_name: str = scenario['scenario_name']
     groupfile_root: str = scenario['files']['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
-    output_folder: str = scenario['files']['output_folder']
+    output_folder: str = f'{scenario["files"]["output_root"]}/{case_name}'
     vehicle_parameters: ty.Dict = scenario['vehicle']
     kilometers_column_for_consumption: str = vehicle_parameters[
         'kilometers_column_for_consumption'
@@ -154,12 +153,11 @@ def create_consumption_tables(scenario: ty.Dict) -> None:
     )
 
 
-def get_energy_for_next_leg(scenario: ty.Dict) -> None:
+def get_energy_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     file_parameters: ty.Dict = scenario['files']
-    output_folder: str = file_parameters['output_folder']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
-    scenario_name: str = scenario['scenario']
-    case_name: str = scenario['case_name']
+    scenario_name: str = scenario['scenario_name']
     next_leg_kilometers: pd.DataFrame = cook.read_table_from_database(
         f'{scenario_name}_next_leg_kilometers',
         f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
@@ -212,12 +210,13 @@ def get_energy_for_next_leg(scenario: ty.Dict) -> None:
     )
 
 
-def get_consumption_data(scenario: ty.Dict) -> None:
-    create_consumption_tables(scenario)
-    get_energy_for_next_leg(scenario)
+def get_consumption_data(scenario: ty.Dict, case_name: str) -> None:
+    create_consumption_tables(scenario, case_name)
+    get_energy_for_next_leg(scenario, case_name)
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name: str = 'local_impact_BEVs'
+    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    get_consumption_data(scenario)
+    get_consumption_data(scenario, case_name)
