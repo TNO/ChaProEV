@@ -17,7 +17,6 @@ for the whole run
 
 import datetime
 import typing as ty
-import typing as ty
 
 import numpy as np
 import pandas as pd
@@ -986,6 +985,7 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     '''
     Produces the location split of the vehicles for the whole run
     '''
+    loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
     scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
@@ -1008,12 +1008,13 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
 
     location_split = get_starting_location_split(location_split, scenario)
 
+    loop_timer.append(datetime.datetime.now())
     run_mobility_matrix_name: str = f'{scenario_name}_run_mobility_matrix'
 
     run_mobility_matrix: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{run_mobility_matrix_name}.pkl'
     )
-
+    loop_timer.append(datetime.datetime.now())
     previous_time_tag: datetime.datetime = run_range[0]
     for time_tag in run_range:
         if time_tag > run_range[0]:
@@ -1044,15 +1045,17 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
                     - departures
                 )
             previous_time_tag = time_tag
-
+    loop_timer.append(datetime.datetime.now())
     percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
     percentage_driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
     connectivity_per_location: pd.DataFrame = location_split.copy()
+    loop_timer.append(datetime.datetime.now())
     for location_name in location_names:
         connectivity_per_location[location_name] = (
             connectivity_per_location[location_name]
             * location_parameters[location_name]['connectivity']
         )
+    loop_timer.append(datetime.datetime.now())
     maximail_delivered_power_per_location: pd.DataFrame = (
         connectivity_per_location.copy()
     )
@@ -1063,6 +1066,7 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
             / location_parameters[location_name]['charger_efficiency']
             # Weare looking at the power delivered by the network
         )
+    loop_timer.append(datetime.datetime.now())
     connectivity: pd.DataFrame = pd.DataFrame(
         index=connectivity_per_location.index
     )
@@ -1073,6 +1077,7 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     maximal_delivered_power['Maximal Delivered Power (kW)'] = (
         maximail_delivered_power_per_location.sum(axis=1)
     )
+    loop_timer.append(datetime.datetime.now())
     location_split.to_pickle(
         f'{output_folder}/{scenario_name}_location_split.pkl'
     )
@@ -1090,6 +1095,14 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     maximal_delivered_power.to_pickle(
         f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
     )
+    loop_timer.append(datetime.datetime.now())
+    loop_times: ty.List[float] = []
+    for timer_index, test_element in enumerate(loop_timer):
+        if timer_index > 0:
+            loop_times.append(
+                (test_element - loop_timer[timer_index - 1]).total_seconds()
+            )
+    print(loop_times)
 
 
 def get_starting_location_split(
