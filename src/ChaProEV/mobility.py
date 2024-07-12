@@ -1016,35 +1016,24 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     )
     loop_timer.append(datetime.datetime.now())
     previous_time_tag: datetime.datetime = run_range[0]
+    departures: pd.Series = run_mobility_matrix.groupby(
+        ['From', 'Time Tag']
+    ).sum()['Departures amount']
+    arrivals: pd.Series = run_mobility_matrix.groupby(
+        ['To', 'Time Tag']
+    ).sum()['Arrivals amount']
+    loop_timer.append(datetime.datetime.now())
     for time_tag in run_range:
         if time_tag > run_range[0]:
             for location in location_names:
 
-                departures: float = sum(
-                    run_mobility_matrix.loc[
-                        (location, location_names, time_tag),
-                        'Departures amount',
-                    ]
-                    # *
-                    # location_split.loc[previous_time_tag,location]
-                )
-
-                # We need to reduce the arrivals by the driving time
-                # in the current hour, but add the one from the previous
-                # hour (and departures correspond to arrivals later)
-                arrivals: float = sum(
-                    run_mobility_matrix.loc[
-                        (location_names, location, time_tag),
-                        'Arrivals amount',
-                    ]
-                )
-
                 location_split.loc[time_tag, location] = (
                     location_split.loc[previous_time_tag][location]
-                    + arrivals
-                    - departures
+                    + arrivals.loc[location, time_tag]
+                    - departures.loc[location, time_tag]
                 )
             previous_time_tag = time_tag
+
     loop_timer.append(datetime.datetime.now())
     percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
     percentage_driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
