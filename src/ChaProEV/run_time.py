@@ -177,8 +177,13 @@ def get_time_stamped_dataframe(
     time_stamped_dataframe['Hour index from day start'] = hour_in_day
 
     if locations_as_columns:
+        vehicle: str = scenario['vehicle']['name']
         location_parameters: ty.Dict = scenario['locations']
-        locations: ty.List[str] = list(location_parameters.keys())
+        locations: ty.List[str] = [
+            location_name
+            for location_name in location_parameters.keys()
+            if location_parameters[location_name]['vehicle'] == vehicle
+        ]
         time_stamped_dataframe[locations] = np.empty(
             (len(run_range), len(locations))
         )
@@ -330,8 +335,13 @@ def from_day_to_run(
 
 
 if __name__ == '__main__':
-    scenario_file_name: str = 'scenarios/baseline.toml'
+    case_name = 'local_impact_BEVs'
+    test_scenario_name: str = 'baseline'
+    scenario_file_name: str = (
+        f'scenarios/{case_name}/{test_scenario_name}.toml'
+    )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario['scenario_name'] = test_scenario_name
     run_range, run_hour_numbers = get_time_range(scenario)
     time_stamped_dataframe: pd.DataFrame = get_time_stamped_dataframe(scenario)
     print(run_range)

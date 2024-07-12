@@ -46,6 +46,7 @@ download_EV_tool_data = false
 # [location.code] <--use the the code/alias you want for the location
 # and put the desired properties below
 [locations.home]
+vehicle = 'car'
 connectivity = 1
 charging_power = 8.9  # kW
 charger_efficiency = 0.85
@@ -58,6 +59,7 @@ percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 [locations.work]
+vehicle = 'car'
 connectivity = 0.25
 charging_power = 11  # kW
 charger_efficiency = 0.85
@@ -70,6 +72,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 [locations.leisure]
+vehicle = 'car'
 connectivity = 0.25
 charging_power = 22  # kW
 charger_efficiency = 0.85
@@ -82,6 +85,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 [locations.weekend]
+vehicle = 'car'
 connectivity = 0.1
 charging_power = 22  # kW
 charger_efficiency = 0.85
@@ -94,6 +98,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 [locations.holiday]
+vehicle = 'car'
 connectivity = 1
 charging_power = 22  # kW
 charger_efficiency = 0.85
@@ -105,6 +110,85 @@ charging_desirability = 0.2
 percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
+[locations.bus_base]
+vehicle = 'bus'
+connectivity = 1
+charging_power = 200  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+base_charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 1
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+[locations.bus_route]
+vehicle = 'bus'
+connectivity = 0.2
+charging_power = 200  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+base_charging_price = 0.5  # €/kWh
+charging_desirability = 0.5
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 0
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+[locations.truck_base]
+vehicle = 'truck'
+connectivity = 1
+charging_power = 200  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+base_charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 1
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+[locations.truck_route]
+vehicle = 'truck'
+connectivity = 0.2
+charging_power = 200  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+base_charging_price = 0.5  # €/kWh
+charging_desirability = 0.5
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 0
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+[locations.van_base]
+vehicle = 'van'
+connectivity = 1
+charging_power = 200  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+base_charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 1
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+[locations.van_route]
+vehicle = 'van'
+connectivity = 0.2
+charging_power = 200  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+base_charging_price = 0.5  # €/kWh
+charging_desirability = 0.5
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 0
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+
 
 [legs]
 # You can add legs here by copying existing legs,
@@ -327,8 +411,9 @@ end = 'home'
 mix = [0.8, 0.2]
 
 [vehicle]
-name = 'car'
-# name = 'bus'
+# name = 'car'
+name = 'bus'
+intervals_at_baser = [[],[]]
 yearly_kilometrage = 42_000
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
@@ -482,8 +567,10 @@ location_connections_headers = [
 
 mobility_index_names = ['From', 'To', 'Time Tag']
 kilometers_driven_headers = [
-    'Time driving (%)',
-    'Percentage of run time driving (%)',
+    'Proportion at base',
+    'Proportion idle en route',
+    'Proportion driving',
+    'Proportion of run time driving',
     'Driven kilometers (km)'
 ]
 
@@ -520,42 +607,86 @@ time_spent_at_holiday_destination = 14  # days
 # percentage_of_back_holiday_trips_on_weekends = 0.75
 
 
-[mobility_module.percent_time_driving]
-# These are per daay type used for vehicles other than cars
+[mobility_module.percent_time_at_base]
+# These are per day type used for vehicles other than cars
+# and start at the day start hour. They are the percent of the hour
+# when the vehicle is parked at its base (e.g. bus depot)
 weekday_in_work_week = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+    1, 0.75, 0.5, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.5, 0.75, 1, 1, 1, 1
 ]
 weekend_in_work_week = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+    1, 1, 0.75, 0.5, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.0, 0.5, 0.75, 1, 1, 1
 ]
 weekday_in_holiday_week = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+    1, 1, 0.75, 0.5, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.0, 0.5, 0.75, 1, 1, 1
 ]
 weekend_in_holiday_week = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+    1, 1, 0.75, 0.5, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.0, 0.5, 0.75, 1, 1, 1
 ]
-weekend_holiday_departures = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+weekend_holiday_departures= [
+    1, 1, 0.75, 0.5, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.0, 0.5, 0.75, 1, 1, 1
 ]
 weekend_holiday_returns = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+    1, 1, 0.75, 0.5, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.0, 0.5, 0.75, 1, 1, 1
 ]
 holiday_overlap_weekend = [
-    0, 0.25, 0.5, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 0.5, 0.25, 1, 1, 1, 1
+    1, 1, 0.75, 0.5, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.0, 0.5, 0.75, 1, 1, 1
+]
+
+
+[mobility_module.percent_driving_when_not_at_base]
+# These are per day type used for vehicles other than cars
+# and start at the day start hour. They are the percentage of time
+# the vehicle is driving when they are not at their base (e.g. percent
+# of time busses are at bus stops/end stops during their active hours)
+weekday_in_work_week = [
+    0.5, 0.75, 0.75, 0.75, 0.75, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.75, 0.75, 0.75, 0.75,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+]
+weekend_in_work_week = [
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+]
+weekday_in_holiday_week = [
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+]
+weekend_in_holiday_week = [
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+]
+weekend_holiday_departures = [
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+]
+weekend_holiday_returns = [
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
+]
+holiday_overlap_weekend = [
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
 ]
 
 [transport_factors]

@@ -79,7 +79,8 @@ class Location:
     def __init__(location, name: str, scenario: ty.Dict) -> None:
         location.name: str = name
 
-        location_parameters: ty.Dict[str, float] = scenario['locations'][name]
+        location_parameters: ty.Dict = scenario['locations'][name]
+        location.vehicle: str = location_parameters['vehicle']
         location.connectivity: float = location_parameters['connectivity']
         location.charging_power: float = location_parameters['charging_power']
         location.latitude: float = location_parameters['latitude']
@@ -800,9 +801,13 @@ def declare_all_instances(
 
 
 if __name__ == '__main__':
-    case_name: str = 'local_impact_BEVs'
-    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
+    case_name = 'local_impact_BEVs'
+    test_scenario_name: str = 'baseline'
+    scenario_file_name: str = (
+        f'scenarios/{case_name}/{test_scenario_name}.toml'
+    )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario['scenario_name'] = test_scenario_name
     legs, locations, trips = declare_all_instances(scenario, case_name)
 
     for leg in legs:

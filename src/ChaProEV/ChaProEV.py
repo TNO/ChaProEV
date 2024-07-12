@@ -161,6 +161,7 @@ if __name__ == '__main__':
     # This is principally used to label your output files.
     case_name = 'local_impact_BEVs'
     run_ChaProEV(case_name)
+    print('Iterate over cases? At least as a separate fucntion')
     # writing.write_scenario_parameters(scenario)
     # weather.setup_weather( scenario)
     # legs, vehicles, legs, trips = define.declare_all_instances(

@@ -1013,8 +1013,12 @@ def get_location_weather_quantity(
 
 if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
-    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
+    test_scenario_name: str = 'baseline'
+    scenario_file_name: str = (
+        f'scenarios/{case_name}/{test_scenario_name}.toml'
+    )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario['scenario_name'] = test_scenario_name
     plot_temperature_efficiency(scenario)
     setup_weather(scenario, case_name)
     print(

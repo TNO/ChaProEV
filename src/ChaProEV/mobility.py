@@ -1235,9 +1235,13 @@ def make_mobility_data(scenario: ty.Dict, case_name: str) -> None:
 
 
 if __name__ == '__main__':
-    case_name: str = 'local_impact_BEVs'
-    scenario_file_name: str = f'scenarios/{case_name}/baseline.toml'
+    case_name = 'local_impact_BEVs'
+    test_scenario_name: str = 'baseline'
+    scenario_file_name: str = (
+        f'scenarios/{case_name}/{test_scenario_name}.toml'
+    )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario['scenario_name'] = test_scenario_name
 
     make_mobility_data(scenario, case_name)
 
