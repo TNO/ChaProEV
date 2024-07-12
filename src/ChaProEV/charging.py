@@ -463,15 +463,17 @@ def get_charging_framework(scenario: ty.Dict, case_name: str) -> ty.Tuple[
 
     file_parameters: ty.Dict[str, str] = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
     location_split_table_name: str = f'{scenario_name}_location_split'
-    location_split: pd.DataFrame = cook.read_table_from_database(
-        location_split_table_name, f'{output_folder}/{groupfile_name}.sqlite3'
+    location_split: pd.DataFrame = pd.read_pickle(
+        # cook.read_table_from_database(
+        f'{output_folder}/{location_split_table_name}.pkl'
+        # f'{output_folder}/{groupfile_name}.sqlite3'
     )
-    location_split['Time Tag'] = pd.to_datetime(location_split['Time Tag'])
+    # location_split['Time Tag'] = pd.to_datetime(location_split['Time Tag'])
 
-    location_split = location_split.set_index('Time Tag')
+    # location_split = location_split.set_index('Time Tag')
 
     # We look at the various battery spaces that are available
     # at this charging location (i.e. percent of vehicles with
@@ -498,16 +500,17 @@ def get_charging_framework(scenario: ty.Dict, case_name: str) -> ty.Tuple[
     #     for charge_level in all_charge_levels[location_name]:
     #         battery_space[location_name][charge_level] float(0)
 
-    run_mobility_matrix: pd.DataFrame = cook.read_table_from_database(
-        f'{scenario_name}_run_mobility_matrix',
-        f'{output_folder}/{groupfile_name}.sqlite3',
-    )
-    run_mobility_matrix['Time Tag'] = pd.to_datetime(
-        run_mobility_matrix['Time Tag']
-    )
-    run_mobility_matrix = run_mobility_matrix.set_index(
-        ['From', 'To', 'Time Tag']
+    run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+        # cook.read_table_from_database(
+        f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl',
+        # f'{output_folder}/{groupfile_name}.sqlite3',
     ).astype(float)
+    # run_mobility_matrix['Time Tag'] = pd.to_datetime(
+    #     run_mobility_matrix['Time Tag']
+    # )
+    # run_mobility_matrix = run_mobility_matrix.set_index(
+    #     ['From', 'To', 'Time Tag']
+    # ).astype(float)
 
     charge_drawn_by_vehicles: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), len(location_names))),
@@ -558,21 +561,24 @@ def write_output(
 
     file_parameters: ty.Dict[str, str] = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     for location_name in location_names:
         battery_space[location_name].columns = battery_space[
             location_name
         ].columns.astype(str)
-
-        cook.save_dataframe(
-            battery_space[location_name],
-            f'{scenario_name}_{location_name}_battery_space',
-            groupfile_name,
-            output_folder,
-            scenario,
+        battery_space[location_name].to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{location_name}_battery_space.pkl'
         )
+        # cook.save_dataframe(
+        #     battery_space[location_name],
+        #     f'{scenario_name}_{location_name}_battery_space',
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
 
     charge_drawn_from_network = charge_drawn_from_network.reset_index()
     charge_drawn_from_network['Hour number'] = run_hour_numbers
@@ -580,13 +586,16 @@ def write_output(
     charge_drawn_from_network = charge_drawn_from_network.set_index(
         ['Time Tag', 'Hour number', 'SPINE hour number']
     )
-    cook.save_dataframe(
-        charge_drawn_from_network,
-        f'{scenario_name}_charge_drawn_from_network',
-        groupfile_name,
-        output_folder,
-        scenario,
+    charge_drawn_from_network.to_pickle(
+        f'{output_folder}/{scenario_name}_charge_drawn_from_network.pkl'
     )
+    # cook.save_dataframe(
+    #     charge_drawn_from_network,
+    #     f'{scenario_name}_charge_drawn_from_network',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
     charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_from_network.index
     )
@@ -596,19 +605,23 @@ def write_output(
     percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
         pd.DataFrame(index=charge_drawn_from_network.index)
     )
-    cook.save_dataframe(
-        charge_drawn_from_network_total,
-        f'{scenario_name}_charge_drawn_from_network_total',
-        groupfile_name,
-        output_folder,
-        scenario,
+    charge_drawn_from_network_total.to_pickle(
+        f'{output_folder}/{scenario_name}_charge_drawn_from_network_total.pkl'
     )
-    maximal_delivered_power_per_location: pd.DataFrame = (
-        cook.read_table_from_database(
-            f'{scenario_name}_maximal_delivered_power_per_location',
-            f'{output_folder}/{groupfile_name}.sqlite3',
-        )
+    # cook.save_dataframe(
+    #     charge_drawn_from_network_total,
+    #     f'{scenario_name}_charge_drawn_from_network_total',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
+    maximal_delivered_power_per_location: pd.DataFrame = pd.read_pickle(
+        # cook.read_table_from_database(
+        f'{output_folder}/{scenario_name}'
+        f'_maximal_delivered_power_per_location.pkl',
+        # f'{output_folder}/{groupfile_name}.sqlite3',
     )
+    # )
 
     for location_name in location_names:
         percentage_of_maximal_delivered_power_used_per_location[
@@ -625,23 +638,29 @@ def write_output(
             )
         ]
 
-    cook.save_dataframe(
-        percentage_of_maximal_delivered_power_used_per_location,
-        f'{scenario_name}_'
-        f'percentage_of_maximal_delivered_power_used_per_location',
-        groupfile_name,
-        output_folder,
-        scenario,
+    percentage_of_maximal_delivered_power_used_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}_'
+        f'percentage_of_maximal_delivered_power_used_per_location.pkl'
     )
+    # cook.save_dataframe(
+    #     percentage_of_maximal_delivered_power_used_per_location,
+    #     f'{scenario_name}_'
+    #     f'percentage_of_maximal_delivered_power_used_per_location',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
 
     maximal_delivered_power: pd.DataFrame = (
-        cook.read_table_from_database(
-            f'{scenario_name}_maximal_delivered_power',
-            f'{output_folder}/{groupfile_name}.sqlite3',
+        pd.read_pickle(
+            # cook.read_table_from_database(
+            f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl',
+            # f'{output_folder}/{groupfile_name}.sqlite3',
         )
-        .set_index('Time Tag')
+        # .set_index('Time Tag')
         .astype(float)
     )
+    # )
     percentage_of_maximal_delivered_power_used: pd.DataFrame = pd.DataFrame(
         index=percentage_of_maximal_delivered_power_used_per_location.index
     )
@@ -666,13 +685,18 @@ def write_output(
     #     charge_drawn_from_network_total['Total Charge Drawn (kWh)'].values
     #     / maximal_delivered_power['Maximal Delivered Power (kW)'].values
     # )
-    cook.save_dataframe(
-        percentage_of_maximal_delivered_power_used,
-        f'{scenario_name}_percentage_of_maximal_delivered_power_used',
-        groupfile_name,
-        output_folder,
-        scenario,
+    percentage_of_maximal_delivered_power_used.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_percentage_of_maximal_delivered_power_used.pkl'
     )
+
+    # cook.save_dataframe(
+    #     percentage_of_maximal_delivered_power_used,
+    #     f'{scenario_name}_percentage_of_maximal_delivered_power_used',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
 
     charge_drawn_by_vehicles = charge_drawn_by_vehicles.reset_index()
     charge_drawn_by_vehicles['Hour number'] = run_hour_numbers
@@ -680,13 +704,16 @@ def write_output(
     charge_drawn_by_vehicles = charge_drawn_by_vehicles.set_index(
         ['Time Tag', 'Hour number', 'SPINE hour number']
     )
-    cook.save_dataframe(
-        charge_drawn_by_vehicles,
-        f'{scenario_name}_charge_drawn_by_vehicles',
-        groupfile_name,
-        output_folder,
-        scenario,
+    charge_drawn_by_vehicles.to_pickle(
+        f'{output_folder}/{scenario_name}_charge_drawn_by_vehicles.pkl'
     )
+    # cook.save_dataframe(
+    #     charge_drawn_by_vehicles,
+    #     f'{scenario_name}_charge_drawn_by_vehicles',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
     charge_drawn_by_vehicles_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
@@ -696,13 +723,16 @@ def write_output(
     percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
-    cook.save_dataframe(
-        charge_drawn_by_vehicles_total,
-        f'{scenario_name}_charge_drawn_by_vehicles_total',
-        groupfile_name,
-        output_folder,
-        scenario,
+    charge_drawn_by_vehicles_total.to_pickle(
+        f'{output_folder}/{scenario_name}_charge_drawn_by_vehicles_total.pkl'
     )
+    # cook.save_dataframe(
+    #     charge_drawn_by_vehicles_total,
+    #     f'{scenario_name}_charge_drawn_by_vehicles_total',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
 
 
 def get_charging_profile(

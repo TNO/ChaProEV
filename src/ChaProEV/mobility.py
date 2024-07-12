@@ -114,8 +114,8 @@ def get_car_trip_probabilities_per_day_type(
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     time_parameters: ty.Dict = scenario['time']
     DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
@@ -705,14 +705,16 @@ def get_car_trip_probabilities_per_day_type(
     trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
         'float'
     )
-
-    cook.save_dataframe(
-        trip_probabilities_per_day_type,
-        table_name,
-        groupfile_name,
-        output_folder,
-        scenario,
+    trip_probabilities_per_day_type.to_pickle(
+        f'{output_folder}/{table_name}.pkl'
     )
+    # cook.save_dataframe(
+    #     trip_probabilities_per_day_type,
+    #     table_name,
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
     return trip_probabilities_per_day_type
 
 
@@ -726,8 +728,8 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     run_range, run_hour_numbers = run_time.get_time_range(scenario)
     run_trip_probabilities: pd.DataFrame = pd.DataFrame(index=run_range)
@@ -750,13 +752,14 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
         run_trip_probabilities[trip] = trip_probabilities
 
     table_name: str = f'{scenario_name}_run_trip_probabilities'
-    cook.save_dataframe(
-        run_trip_probabilities,
-        table_name,
-        groupfile_name,
-        output_folder,
-        scenario,
-    )
+    run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
+    # cook.save_dataframe(
+    #     run_trip_probabilities,
+    #     table_name,
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
     return run_trip_probabilities
 
 
@@ -822,8 +825,8 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
     for trip_name in trip_names:
         trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
         if len(trip_legs) > 0:
@@ -850,19 +853,23 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
             )
 
             trip_run_mobility_matrix: pd.DataFrame = (
-                cook.read_table_from_database(
-                    trip_run_mobility_matrix_name,
-                    f'{output_folder}/{groupfile_name}.sqlite3',
-                )
+                pd.read_pickle(
+                    f'{output_folder}/{trip_run_mobility_matrix_name}.pkl'
+                ).astype(float)
+                # cook.read_table_from_database(
+                #     trip_run_mobility_matrix_name,
+                #     f'{output_folder}/{groupfile_name}.sqlite3',
+                # )
             )
 
             location_connections_headers: ty.List[str] = scenario[
                 'mobility_module'
             ]['location_connections_headers']
-
-            trip_run_mobility_matrix = trip_run_mobility_matrix.set_index(
-                mobility_index_names
-            )
+            # print(trip_run_mobility_matrix)
+            # exit()
+            # trip_run_mobility_matrix = trip_run_mobility_matrix.set_index(
+            #     mobility_index_names
+            # )
             # print(trip_run_mobility_matrix)
             # print(this_trip_run_probabilities)
             # exit()
@@ -921,6 +928,8 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
                     # matrix
                     # print(run_mobility_matrix)
                     for trip_location_tuple in trip_location_tuples:
+                        # print(trip_run_mobility_matrix.dtypes)
+                        # exit()
                         run_mobility_matrix.loc[
                             (
                                 trip_location_tuple[0],
@@ -941,11 +950,14 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
         # print(run_mobility_matrix.loc['home', 'work'].iloc[26:89])
         # exit()
         location_connections: pd.DataFrame = (
-            cook.read_table_from_database(
-                f'{scenario_name}_location_connections',
-                f'{output_folder}/{groupfile_name}.sqlite3',
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_location_connections.pkl'
             )
-            .set_index(['From', 'To'])
+            # cook.read_table_from_database(
+            #     f'{scenario_name}_location_connections',
+            #     f'{output_folder}/{groupfile_name}.sqlite3',
+            # )
+            # .set_index(['From', 'To'])
             .astype(float)
         )
         # print(location_connections)
@@ -979,13 +991,16 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     # print(run_mobility_matrix.loc['home', 'work'])
     # exit()
     # print(run_mobility_matrix)
-    cook.save_dataframe(
-        run_mobility_matrix,
-        f'{scenario_name}_run_mobility_matrix',
-        groupfile_name,
-        output_folder,
-        scenario,
+    run_mobility_matrix.to_pickle(
+        f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
     )
+    # cook.save_dataframe(
+    #     run_mobility_matrix,
+    #     f'{scenario_name}_run_mobility_matrix',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
 
 
 def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
@@ -1078,8 +1093,8 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict = scenario['locations']
@@ -1098,21 +1113,25 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     location_split = get_starting_location_split(location_split, scenario)
 
     run_mobility_matrix_name: str = f'{scenario_name}_run_mobility_matrix'
-    database_file: str = f'{output_folder}/{groupfile_name}.sqlite3'
+    # database_file: str = f'{output_folder}/{groupfile_name}.sqlite3'
 
-    run_mobility_matrix: pd.DataFrame = cook.read_table_from_database(
-        run_mobility_matrix_name, database_file
+    run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{run_mobility_matrix_name}.pkl'
     )
-    mobility_index_names: ty.List[str] = scenario['mobility_module'][
-        'mobility_index_names'
-    ]
 
-    run_mobility_matrix['Time Tag'] = pd.to_datetime(
-        run_mobility_matrix['Time Tag']
-    )
-    run_mobility_matrix = run_mobility_matrix.set_index(
-        mobility_index_names
-    ).astype(float)
+    # cook.read_table_from_database(run_mobility_matrix_name, database_file)
+
+    # mobility_index_names: ty.List[str] = scenario['mobility_module'][
+    #     'mobility_index_names'
+    # ]
+    # print(run_mobility_matrix)
+    # exit()
+    # run_mobility_matrix['Time Tag'] = pd.to_datetime(
+    #     run_mobility_matrix['Time Tag']
+    # )
+    # run_mobility_matrix = run_mobility_matrix.set_index(
+    #     mobility_index_names
+    # ).astype(float)
 
     previous_time_tag: datetime.datetime = run_range[0]
     for time_tag in run_range:
@@ -1159,20 +1178,20 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
                 )
             previous_time_tag = time_tag
 
-    driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
-    driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
+    percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
+    percentage_driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
     connectivity_per_location: pd.DataFrame = location_split.copy()
     for location_name in location_names:
         connectivity_per_location[location_name] = (
             connectivity_per_location[location_name]
             * location_parameters[location_name]['connectivity']
         )
-    maximal_delivered_power_location: pd.DataFrame = (
+    maximail_delivered_power_per_location: pd.DataFrame = (
         connectivity_per_location.copy()
     )
     for location_name in location_names:
-        maximal_delivered_power_location[location_name] = (
-            maximal_delivered_power_location[location_name]
+        maximail_delivered_power_per_location[location_name] = (
+            maximail_delivered_power_per_location[location_name]
             * location_parameters[location_name]['charging_power']
             / location_parameters[location_name]['charger_efficiency']
             # Weare looking at the power delivered by the network
@@ -1181,54 +1200,71 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
         index=connectivity_per_location.index
     )
     connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)
-    maximal_deivered_power: pd.DataFrame = pd.DataFrame(
-        index=maximal_delivered_power_location.index
+    maximal_delivered_power: pd.DataFrame = pd.DataFrame(
+        index=maximail_delivered_power_per_location.index
     )
-    maximal_deivered_power['Maximal Delivered Power (kW)'] = (
-        maximal_delivered_power_location.sum(axis=1)
+    maximal_delivered_power['Maximal Delivered Power (kW)'] = (
+        maximail_delivered_power_per_location.sum(axis=1)
     )
-    cook.save_dataframe(
-        location_split,
-        f'{scenario_name}_location_split',
-        groupfile_name,
-        output_folder,
-        scenario,
+    location_split.to_pickle(
+        f'{output_folder}/{scenario_name}_location_split.pkl'
     )
-    cook.save_dataframe(
-        driving,
-        f'{scenario_name}_percentage_driving',
-        groupfile_name,
-        output_folder,
-        scenario,
+    percentage_driving.to_pickle(
+        f'{output_folder}/{scenario_name}_percentage_driving.pkl'
     )
-    cook.save_dataframe(
-        connectivity_per_location,
-        f'{scenario_name}_connectivity_per_location',
-        groupfile_name,
-        output_folder,
-        scenario,
+    connectivity_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}_connectivity_per_location.pkl'
     )
-    cook.save_dataframe(
-        connectivity,
-        f'{scenario_name}_connectivity',
-        groupfile_name,
-        output_folder,
-        scenario,
+    connectivity.to_pickle(f'{output_folder}/{scenario_name}_connectivity.pkl')
+    maximail_delivered_power_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_maximal_delivered_power_per_location.pkl'
     )
-    cook.save_dataframe(
-        maximal_delivered_power_location,
-        f'{scenario_name}_maximal_delivered_power_per_location',
-        groupfile_name,
-        output_folder,
-        scenario,
+    maximal_delivered_power.to_pickle(
+        f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
     )
-    cook.save_dataframe(
-        maximal_deivered_power,
-        f'{scenario_name}_maximal_delivered_power',
-        groupfile_name,
-        output_folder,
-        scenario,
-    )
+    # cook.save_dataframe(
+    #     location_split,
+    #     f'{scenario_name}_location_split',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
+    # cook.save_dataframe(
+    #     driving,
+    #     f'{scenario_name}_percentage_driving',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
+    # cook.save_dataframe(
+    #     connectivity_per_location,
+    #     f'{scenario_name}_connectivity_per_location',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
+    # cook.save_dataframe(
+    #     connectivity,
+    #     f'{scenario_name}_connectivity',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
+    # cook.save_dataframe(
+    #     maximail_delivered_power_per_location,
+    #     f'{scenario_name}_maximal_delivered_power_per_location',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
+    # cook.save_dataframe(
+    #     maximal_delivered_power,
+    #     f'{scenario_name}_maximal_delivered_power',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
 
 
 def get_starting_location_split(
@@ -1288,7 +1324,7 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_root: str = file_parameters['groupfile_root']
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
 
@@ -1313,30 +1349,36 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
     for trip_name in trip_names:
         trip_run_next_leg_kilometers: pd.DataFrame = (
-            cook.read_table_from_database(
-                f'{scenario_name}_{trip_name}_run_next_leg_kilometers',
-                f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip_name}_run_next_leg_kilometers.pkl'
             )
+            # cook.read_table_from_database(
+            #     f'{scenario_name}_{trip_name}_run_next_leg_kilometers',
+            #     f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+            # )
         )
-        trip_run_next_leg_kilometers['Time Tag'] = pd.to_datetime(
-            trip_run_next_leg_kilometers['Time Tag']
-        )
-        trip_run_next_leg_kilometers = trip_run_next_leg_kilometers.set_index(
-            'Time Tag'
-        )
+        # trip_run_next_leg_kilometers['Time Tag'] = pd.to_datetime(
+        #     trip_run_next_leg_kilometers['Time Tag']
+        # )
+        # trip_run_next_leg_kilometers = trip_run_next_leg_kilometers
+        # .set_index(
+        #     'Time Tag'
+        # )
         trip_run_next_leg_kilometers_cumulative: pd.DataFrame = (
-            cook.read_table_from_database(
-                f'{scenario_name}_{trip_name}_'
-                f'run_next_leg_kilometers_cumulative',
-                f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+            # cook.read_table_from_database(
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_{trip_name}_'
+                f'run_next_leg_kilometers_cumulative.pkl',
+                # f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
             )
         )
-        trip_run_next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
-            trip_run_next_leg_kilometers_cumulative['Time Tag']
-        )
-        trip_run_next_leg_kilometers_cumulative = (
-            trip_run_next_leg_kilometers_cumulative.set_index('Time Tag')
-        )
+        # trip_run_next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
+        #     trip_run_next_leg_kilometers_cumulative['Time Tag']
+        # )
+        # trip_run_next_leg_kilometers_cumulative = (
+        #     trip_run_next_leg_kilometers_cumulative.set_index('Time Tag')
+        # )
         this_trip_probabilities: pd.Series[float] = pd.Series(
             run_trip_probabilities[trip_name]
         )
@@ -1350,20 +1392,26 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
             )
         )
 
-    cook.save_dataframe(
-        run_next_leg_kilometers,
-        f'{scenario_name}_next_leg_kilometers',
-        f'{groupfile_root}_{case_name}',
-        output_folder,
-        scenario,
+    run_next_leg_kilometers.to_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl'
     )
-    cook.save_dataframe(
-        run_next_leg_kilometers_cumulative,
-        f'{scenario_name}_next_leg_kilometers_cumulative',
-        f'{groupfile_root}_{case_name}',
-        output_folder,
-        scenario,
+    run_next_leg_kilometers_cumulative.to_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_kilometers_cumulative.pkl'
     )
+    # cook.save_dataframe(
+    #     run_next_leg_kilometers,
+    #     f'{scenario_name}_next_leg_kilometers',
+    #     f'{groupfile_root}_{case_name}',
+    #     output_folder,
+    #     scenario,
+    # )
+    # cook.save_dataframe(
+    #     run_next_leg_kilometers_cumulative,
+    #     f'{scenario_name}_next_leg_kilometers_cumulative',
+    #     f'{groupfile_root}_{case_name}',
+    #     output_folder,
+    #     scenario,
+    # )
 
 
 def make_mobility_data(scenario: ty.Dict, case_name: str) -> None:

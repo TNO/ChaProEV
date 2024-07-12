@@ -22,8 +22,8 @@ def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
         'scenario_parameter_categories'
     ]
     scenario_name: str = scenario['scenario_name']
-    groupfile_root: str = scenario['files']['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = scenario['files']['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
     output_folder: str = scenario['files']['output_folder']
 
     for parameter_category in scenario_parameter_categories:
@@ -34,13 +34,16 @@ def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
         # convert the DataFrame contents to strings
         parameter_dataframe = parameter_dataframe.astype('str')
         parameter_dataframe_name: str = f'{scenario_name}_{parameter_category}'
-        cook.save_dataframe(
-            parameter_dataframe,
-            parameter_dataframe_name,
-            groupfile_name,
-            output_folder,
-            scenario,
+        parameter_dataframe.to_pickle(
+            f'{output_folder}/{parameter_dataframe_name}.pkl'
         )
+        # cook.save_dataframe(
+        #     parameter_dataframe,
+        #     parameter_dataframe_name,
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
 
 
 if __name__ == '__main__':

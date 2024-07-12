@@ -729,8 +729,8 @@ def declare_all_instances(
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
-    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    # groupfile_root: str = file_parameters['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
     # loc_start: datetime.datetime = datetime.datetime.now()
     locations: ty.List[ty.Type] = declare_class_instances(Location, scenario)
     # print('Loc', (datetime.datetime.now() - loc_start).total_seconds())
@@ -775,14 +775,16 @@ def declare_all_instances(
         #     leg.distance,
         #     road_type_factor * leg.distance,
         # )
-
-    cook.save_dataframe(
-        location_connections,
-        f'{scenario_name}_location_connections',
-        groupfile_name,
-        output_folder,
-        scenario,
+    location_connections.to_pickle(
+        f'{output_folder}/{scenario_name}_location_connections.pkl'
     )
+    # cook.save_dataframe(
+    #     location_connections,
+    #     f'{scenario_name}_location_connections',
+    #     groupfile_name,
+    #     output_folder,
+    #     scenario,
+    # )
     # print('Loc', (datetime.datetime.now() - loc_conn_start).total_seconds())
 
     # tri_start: datetime.datetime = datetime.datetime.now()
@@ -792,54 +794,76 @@ def declare_all_instances(
     # We want to save the moblity matrixes
     for trip in trips:
         mobility_table_name: str = (
-            f'{scenario_name}_{trip.name}_mobility_matrix'
+            f'{scenario_name}_{trip.name}_mobility_matrix.pkl'
         )
-        cook.save_dataframe(
-            trip.mobility_matrix,
-            mobility_table_name,
-            groupfile_name,
-            output_folder,
-            scenario,
+        trip.mobility_matrix.to_pickle(
+            f'{output_folder}/{mobility_table_name}.pkl'
         )
+        # cook.save_dataframe(
+        #     trip.mobility_matrix,
+        #     mobility_table_name,
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
         run_mobility_table_name: str = (
             f'{scenario_name}_{trip.name}_run_mobility_matrix'
         )
-        cook.save_dataframe(
-            trip.run_mobility_matrix,
-            run_mobility_table_name,
-            groupfile_name,
-            output_folder,
-            scenario,
+        trip.run_mobility_matrix.to_pickle(
+            f'{output_folder}/{run_mobility_table_name}.pkl'
         )
-        cook.save_dataframe(
-            trip.next_leg_kilometers,
-            f'{scenario_name}_{trip.name}_next_leg_kilometers',
-            groupfile_name,
-            output_folder,
-            scenario,
+        trip.next_leg_kilometers.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            'next_leg_kilometers.pkl'
         )
-        cook.save_dataframe(
-            trip.run_next_leg_kilometers,
-            f'{scenario_name}_{trip.name}_run_next_leg_kilometers',
-            groupfile_name,
-            output_folder,
-            scenario,
+        trip.run_next_leg_kilometers.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_next_leg_kilometers.pkl'
         )
-        cook.save_dataframe(
-            trip.next_leg_kilometers_cumulative,
-            f'{scenario_name}_{trip.name}_next_leg_kilometers_cumulative',
-            groupfile_name,
-            output_folder,
-            scenario,
+        trip.next_leg_kilometers_cumulative.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}'
+            f'_next_leg_kilometers_cumulative.pkl'
         )
-        cook.save_dataframe(
-            trip.run_next_leg_kilometers_cumulative,
-            f'{scenario_name}_{trip.name}'
-            f'_run_next_leg_kilometers_cumulative',
-            groupfile_name,
-            output_folder,
-            scenario,
+        trip.run_next_leg_kilometers_cumulative.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
         )
+        # cook.save_dataframe(
+        #     trip.run_mobility_matrix,
+        #     run_mobility_table_name,
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
+        # cook.save_dataframe(
+        #     trip.next_leg_kilometers,
+        #     f'{scenario_name}_{trip.name}_next_leg_kilometers',
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
+        # cook.save_dataframe(
+        #     trip.run_next_leg_kilometers,
+        #     f'{scenario_name}_{trip.name}_run_next_leg_kilometers',
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
+        # cook.save_dataframe(
+        #     trip.next_leg_kilometers_cumulative,
+        #     f'{scenario_name}_{trip.name}_next_leg_kilometers_cumulative',
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
+        # cook.save_dataframe(
+        #     trip.run_next_leg_kilometers_cumulative,
+        #     f'{scenario_name}_{trip.name}'
+        #     f'_run_next_leg_kilometers_cumulative',
+        #     groupfile_name,
+        #     output_folder,
+        #     scenario,
+        # )
     # print('Mat', (datetime.datetime.now() - matrix_start).total_seconds())
     # exit()
     return legs, locations, trips
@@ -876,9 +900,10 @@ if __name__ == '__main__':
             trip.legs,
             trip.percentage_station_users,
             trip.start_probabilities,
-            trip.mobility_matrix.loc['home'],
+            # trip.mobility_matrix.loc['home'],
         )
         # exit()
+    print((datetime.datetime.now() - start_).total_seconds())
 
 
 # 1) Identify next leg (with prob)
