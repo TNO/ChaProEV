@@ -1,5 +1,10 @@
 
 
+Consumpton table first
+
+Track charge: at each time charge = connectivity and bett space (+ space for available)
+discharge =consumption
+
 charger efficiency for network demand?
 
 

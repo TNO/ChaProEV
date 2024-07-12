@@ -62,6 +62,7 @@ except ModuleNotFoundError:
 
 
 def run_ChaProEV(case_name: str) -> None:
+    start_: datetime.datetime = datetime.datetime.now()
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
@@ -104,6 +105,15 @@ def run_ChaProEV(case_name: str) -> None:
             # print(charge_drawn_from_network)
     print('Tot', (datetime.datetime.now() - start_).total_seconds())
 
+
+# HAVE caRs and non-caRs separate
+# Why is Declare so slow now?
+# Only do vehicle-relevanty things?
+# Or run cars only?
+# Excluded unconnected locations (and thus home-->home)???
+# Either at source or afterwards (if there are no legs)
+# Might have to do it in all functions afterwards
+# Maybe with an if connected
 
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()

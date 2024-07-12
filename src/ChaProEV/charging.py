@@ -20,6 +20,20 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+try:
+    import mobility  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import mobility  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
+
 # do it per trip
 # battery level trigger (below this, will charge)
 
@@ -50,14 +64,23 @@ def travel_space_occupation(
 ) -> ty.Dict[str, pd.DataFrame]:
 
     zero_threshold: float = scenario['numbers']['zero_threshold']
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+
     location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
         'locations'
     ]
     location_names: ty.List[str] = [
-        location_name for location_name in location_parameters
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
 
-    vehicle_parameters: ty.Dict = scenario['vehicle']
+    possible_destinations: ty.Dict[str, ty.List[str]] = (
+        mobility.get_possible_destinations(scenario)
+    )
+    # print(possible_start_locations)
+
     use_weighted_km: bool = vehicle_parameters['use_weighted']
     if use_weighted_km:
         distance_header: str = 'Weighted distance (km)'
@@ -74,6 +97,7 @@ def travel_space_occupation(
             # the battery space. We do so because travels can propagate to
             # future time tags. I f we just copied the value from
             # the previous time tag, we would delete these
+
             battery_space[start_location].iloc[time_tag_index] = (
                 battery_space[start_location].iloc[time_tag_index]
                 + battery_space[start_location].iloc[time_tag_index - 1]
@@ -88,7 +112,7 @@ def travel_space_occupation(
         )
 
         # We look at all the possible destinations
-        for end_location in location_names:
+        for end_location in possible_destinations[start_location]:
             # For each leg (start/end location combination), we
             # look up the consumption
 
@@ -295,11 +319,15 @@ def compute_charging_events(
     scenario: ty.Dict,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
     zero_threshold: float = scenario['numbers']['zero_threshold']
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
         'locations'
     ]
     location_names: ty.List[str] = [
-        location_name for location_name in location_parameters
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
 
     for charging_location in location_names:
@@ -421,11 +449,15 @@ def get_charging_framework(scenario: ty.Dict, case_name: str) -> ty.Tuple[
     SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
         'locations'
     ]
     location_names: ty.List[str] = [
-        location_name for location_name in location_parameters
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
     scenario_name: str = scenario['scenario_name']
 
@@ -512,11 +544,15 @@ def write_output(
     SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
         'locations'
     ]
     location_names: ty.List[str] = [
-        location_name for location_name in location_parameters
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
     scenario_name: str = scenario['scenario_name']
 
@@ -745,7 +781,7 @@ def get_charging_profile(
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
         scenario,
-        case_name
+        case_name,
     )
     loop_times.to_csv('Lopi.csv')
     # print('Write', (datetime.datetime.now()-write_out_start).total_seconds())
