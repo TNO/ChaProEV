@@ -114,8 +114,6 @@ def get_car_trip_probabilities_per_day_type(
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
-    # groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     time_parameters: ty.Dict = scenario['time']
     DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
@@ -708,13 +706,7 @@ def get_car_trip_probabilities_per_day_type(
     trip_probabilities_per_day_type.to_pickle(
         f'{output_folder}/{table_name}.pkl'
     )
-    # cook.save_dataframe(
-    #     trip_probabilities_per_day_type,
-    #     table_name,
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
+
     return trip_probabilities_per_day_type
 
 
@@ -728,8 +720,6 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
-    # groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     run_range, run_hour_numbers = run_time.get_time_range(scenario)
     run_trip_probabilities: pd.DataFrame = pd.DataFrame(index=run_range)
@@ -753,13 +743,7 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
 
     table_name: str = f'{scenario_name}_run_trip_probabilities'
     run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
-    # cook.save_dataframe(
-    #     run_trip_probabilities,
-    #     table_name,
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
+
     return run_trip_probabilities
 
 
@@ -772,15 +756,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
         scenario, case_name
     )
-    # vehicle_parameters: ty.Dict = scenario['vehicle']
-    # vehicle_name: str = vehicle_parameters['name']
 
-    # location_parameters: ty.Dict = scenario['locations']
-    # location_names: ty.List[str] = [
-    #     location_name
-    #     for location_name in location_parameters
-    #     if location_parameters[location_name]['vehicle'] == vehicle_name
-    # ]
     trip_parameters: ty.Dict = scenario['trips']
     trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
 
@@ -796,15 +772,6 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
         for mobility_location_tuple in mobility_location_tuples
         for time_tag in run_time_tags
     ]
-
-    # run_mobility_index_tuples: ty.List[
-    #     ty.Tuple[str, str, datetime.datetime]
-    # ] = [
-    #     (start_location, end_location, time_tag)
-    #     for start_location in location_names
-    #     for end_location in location_names
-    #     for time_tag in run_time_tags
-    # ]
 
     mobility_index_names: ty.List[str] = scenario['mobility_module'][
         'mobility_index_names'
@@ -825,8 +792,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
-    # groupfile_name: str = f'{groupfile_root}_{case_name}'
+
     for trip_name in trip_names:
         trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
         if len(trip_legs) > 0:
@@ -844,35 +810,19 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
             this_trip_run_probabilities: pd.DataFrame = pd.DataFrame(
                 run_trip_probabilities[trip_name]
             )
-            # print(this_trip_run_probabilities)
-            # print(len(run_mobility_index))
-            # exit()
 
             trip_run_mobility_matrix_name: str = (
                 f'{scenario_name}_{trip_name}_run_mobility_matrix'
             )
 
-            trip_run_mobility_matrix: pd.DataFrame = (
-                pd.read_pickle(
-                    f'{output_folder}/{trip_run_mobility_matrix_name}.pkl'
-                ).astype(float)
-                # cook.read_table_from_database(
-                #     trip_run_mobility_matrix_name,
-                #     f'{output_folder}/{groupfile_name}.sqlite3',
-                # )
-            )
+            trip_run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+                f'{output_folder}/{trip_run_mobility_matrix_name}.pkl'
+            ).astype(float)
 
             location_connections_headers: ty.List[str] = scenario[
                 'mobility_module'
             ]['location_connections_headers']
-            # print(trip_run_mobility_matrix)
-            # exit()
-            # trip_run_mobility_matrix = trip_run_mobility_matrix.set_index(
-            #     mobility_index_names
-            # )
-            # print(trip_run_mobility_matrix)
-            # print(this_trip_run_probabilities)
-            # exit()
+
             # We need a version for each start/end location combination
             # that appears in our trip mobility matrix. This ia also the
             # amount of (unique) legsor the trip location tuples
@@ -886,42 +836,19 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
                     ),
                     ignore_index=True,
                 )
-            # print(trip_run_mobility_matrix)
-            # exit()
 
             probability_values_to_use = this_trip_run_probabilities_extended[
                 trip_name
             ].values
-            # print(probability_values_to_use)
-            # print(len(probability_values_to_use))
-            # print(trip_run_mobility_matrix)
-            # # print(len(mobility_index_names))
-            # # print(trip_run_mobility_matrix)
-            # exit()
-            # # print(trip_run_mobility_matrix.loc['home', 'work'])
-            # exit()
 
             for mobility_quantity in mobility_quantities:
-                # print(
-                #     trip_run_mobility_matrix[mobility_quantity].values
-                #     * probability_values_to_use
-                # )
-                # exit()
+
                 if mobility_quantity not in location_connections_headers:
 
                     weighted_mobility_quantity_to_use = (
                         trip_run_mobility_matrix[mobility_quantity]
                         * probability_values_to_use
                     )
-                    # print(mobility_quantity)
-                    # print(
-                    #     trip_run_mobility_matrix[mobility_quantity].loc[
-                    #         'home', 'work'
-                    #     ]
-                    # # )
-                    # print(weighted_mobility_quantity_to_use.loc['home',
-                    #  'work'])
-                    # exit()
 
                     # We need to place it at the right places in the run
                     # mobility
@@ -940,28 +867,11 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
                         ] += weighted_mobility_quantity_to_use.loc[
                             trip_location_tuple
                         ].values
-                    # print(run_mobility_matrix)
 
-                    # exit()
-                    # print(run_mobility_matrix)
-                    # run_mobility_matrix[
-                    #     mobility_quantity
-                    # ] += weighted_mobility_quantity_to_use.values
-        # print(run_mobility_matrix.loc['home', 'work'].iloc[26:89])
-        # exit()
-        location_connections: pd.DataFrame = (
-            pd.read_pickle(
-                f'{output_folder}/{scenario_name}_location_connections.pkl'
-            )
-            # cook.read_table_from_database(
-            #     f'{scenario_name}_location_connections',
-            #     f'{output_folder}/{groupfile_name}.sqlite3',
-            # )
-            # .set_index(['From', 'To'])
-            .astype(float)
-        )
-        # print(location_connections)
-        # exit()
+        location_connections: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_location_connections.pkl'
+        ).astype(float)
+
     run_range: pd.Index = run_mobility_index.get_level_values('Time Tag')
 
     for mobility_location_tuple in mobility_location_tuples:
@@ -984,23 +894,9 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
             location_connections_headers,
         ] = these_locations_connections.values
 
-        # run_mobility_matrix.loc[
-        #     (start_location, end_location), location_connections_headers
-        # ] = location_connections.loc[
-        # (start_location, end_location)].values
-    # print(run_mobility_matrix.loc['home', 'work'])
-    # exit()
-    # print(run_mobility_matrix)
     run_mobility_matrix.to_pickle(
         f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
     )
-    # cook.save_dataframe(
-    #     run_mobility_matrix,
-    #     f'{scenario_name}_run_mobility_matrix',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
 
 
 def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
@@ -1093,8 +989,7 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
-    # groupfile_name: str = f'{groupfile_root}_{case_name}'
+
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict = scenario['locations']
@@ -1113,25 +1008,10 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     location_split = get_starting_location_split(location_split, scenario)
 
     run_mobility_matrix_name: str = f'{scenario_name}_run_mobility_matrix'
-    # database_file: str = f'{output_folder}/{groupfile_name}.sqlite3'
 
     run_mobility_matrix: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{run_mobility_matrix_name}.pkl'
     )
-
-    # cook.read_table_from_database(run_mobility_matrix_name, database_file)
-
-    # mobility_index_names: ty.List[str] = scenario['mobility_module'][
-    #     'mobility_index_names'
-    # ]
-    # print(run_mobility_matrix)
-    # exit()
-    # run_mobility_matrix['Time Tag'] = pd.to_datetime(
-    #     run_mobility_matrix['Time Tag']
-    # )
-    # run_mobility_matrix = run_mobility_matrix.set_index(
-    #     mobility_index_names
-    # ).astype(float)
 
     previous_time_tag: datetime.datetime = run_range[0]
     for time_tag in run_range:
@@ -1150,25 +1030,11 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
                 # We need to reduce the arrivals by the driving time
                 # in the current hour, but add the one from the previous
                 # hour (and departures correspond to arrivals later)
-                arrivals: float = (
-                    sum(
-                        run_mobility_matrix.loc[
-                            (location_names, location, time_tag),
-                            'Arrivals amount',
-                        ]
-                    )
-                    # -
-                    # sum(
-                    #     run_mobility_matrix.loc[
-                    #         :, location, time_tag,
-                    #             'Departures driving time']
-                    # )
-                    # +
-                    # sum(
-                    #     run_mobility_matrix.loc[
-                    #         :, location, previous_time_tag,
-                    #             'Departures driving time']
-                    # )
+                arrivals: float = sum(
+                    run_mobility_matrix.loc[
+                        (location_names, location, time_tag),
+                        'Arrivals amount',
+                    ]
                 )
 
                 location_split.loc[time_tag, location] = (
@@ -1223,48 +1089,6 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     maximal_delivered_power.to_pickle(
         f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
     )
-    # cook.save_dataframe(
-    #     location_split,
-    #     f'{scenario_name}_location_split',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
-    # cook.save_dataframe(
-    #     driving,
-    #     f'{scenario_name}_percentage_driving',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
-    # cook.save_dataframe(
-    #     connectivity_per_location,
-    #     f'{scenario_name}_connectivity_per_location',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
-    # cook.save_dataframe(
-    #     connectivity,
-    #     f'{scenario_name}_connectivity',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
-    # cook.save_dataframe(
-    #     maximail_delivered_power_per_location,
-    #     f'{scenario_name}_maximal_delivered_power_per_location',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
-    # cook.save_dataframe(
-    #     maximal_delivered_power,
-    #     f'{scenario_name}_maximal_delivered_power',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
 
 
 def get_starting_location_split(
@@ -1324,7 +1148,6 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
 
@@ -1348,37 +1171,19 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     trip_parameters: ty.Dict = scenario['trips']
     trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
     for trip_name in trip_names:
-        trip_run_next_leg_kilometers: pd.DataFrame = (
-            pd.read_pickle(
-                f'{output_folder}/{scenario_name}_'
-                f'{trip_name}_run_next_leg_kilometers.pkl'
-            )
-            # cook.read_table_from_database(
-            #     f'{scenario_name}_{trip_name}_run_next_leg_kilometers',
-            #     f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
-            # )
+        trip_run_next_leg_kilometers: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip_name}_run_next_leg_kilometers.pkl'
         )
-        # trip_run_next_leg_kilometers['Time Tag'] = pd.to_datetime(
-        #     trip_run_next_leg_kilometers['Time Tag']
-        # )
-        # trip_run_next_leg_kilometers = trip_run_next_leg_kilometers
-        # .set_index(
-        #     'Time Tag'
-        # )
+
         trip_run_next_leg_kilometers_cumulative: pd.DataFrame = (
             # cook.read_table_from_database(
             pd.read_pickle(
                 f'{output_folder}/{scenario_name}_{trip_name}_'
                 f'run_next_leg_kilometers_cumulative.pkl',
-                # f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
             )
         )
-        # trip_run_next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
-        #     trip_run_next_leg_kilometers_cumulative['Time Tag']
-        # )
-        # trip_run_next_leg_kilometers_cumulative = (
-        #     trip_run_next_leg_kilometers_cumulative.set_index('Time Tag')
-        # )
+
         this_trip_probabilities: pd.Series[float] = pd.Series(
             run_trip_probabilities[trip_name]
         )
@@ -1398,20 +1203,6 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     run_next_leg_kilometers_cumulative.to_pickle(
         f'{output_folder}/{scenario_name}_next_leg_kilometers_cumulative.pkl'
     )
-    # cook.save_dataframe(
-    #     run_next_leg_kilometers,
-    #     f'{scenario_name}_next_leg_kilometers',
-    #     f'{groupfile_root}_{case_name}',
-    #     output_folder,
-    #     scenario,
-    # )
-    # cook.save_dataframe(
-    #     run_next_leg_kilometers_cumulative,
-    #     f'{scenario_name}_next_leg_kilometers_cumulative',
-    #     f'{groupfile_root}_{case_name}',
-    #     output_folder,
-    #     scenario,
-    # )
 
 
 def make_mobility_data(scenario: ty.Dict, case_name: str) -> None:

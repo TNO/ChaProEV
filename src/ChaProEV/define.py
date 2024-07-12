@@ -157,12 +157,6 @@ class Trip:
             for hour_number in range(HOURS_IN_A_DAY)
         ]
 
-        # mobility_index_tuples: ty.List[ty.Tuple[str, str, int]] = [
-        #     (start_location, end_location, hour_number)
-        #     for start_location in location_names
-        #     for end_location in location_names
-        #     for hour_number in range(HOURS_IN_A_DAY)
-        # ]
         mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
             mobility_index_tuples,
             names=['From', 'To', 'Hour number (from day start)'],
@@ -405,15 +399,6 @@ class Trip:
             for time_tag in run_time_tags
         ]
 
-        # run_mobility_index_tuples: ty.List[
-        #     ty.Tuple[str, str, datetime.datetime]
-        # ] = [
-        #     (start_location, end_location, time_tag)
-        #     for start_location in location_names
-        #     for end_location in location_names
-        #     for time_tag in run_time_tags
-        # ]
-
         mobility_index_names: ty.List[str] = scenario['mobility_module'][
             'mobility_index_names'
         ]
@@ -440,31 +425,6 @@ class Trip:
                     (leg_tuple[0], leg_tuple[1]), mobility_quantity
                 ] = cloned_mobility_matrix[mobility_quantity].values
 
-        # for start_location in trip.start_locations:
-        #     for end_location in trip.end_locations:
-        #         cloned_mobility_matrix: pd.DataFrame = (
-        #             run_time.from_day_to_run(
-        #                 trip.mobility_matrix.loc[
-        #                     (start_location, end_location),
-        #                       mobility_quantities
-        #                 ],
-        #                 run_time_tags,
-        #                 trip.day_start_hour,
-        #                 scenario,
-        #             )
-        #         )
-        #         for mobility_quantity in mobility_quantities:
-        #             trip.run_mobility_matrix.at[
-        #                 (start_location, end_location), mobility_quantity
-        #             ] = cloned_mobility_matrix[mobility_quantity].values
-        # print(trip.run_mobility_matrix)
-        # exit()
-
-        # frequency_parameters = scenario['run']['frequency']
-        # trip_frequency_size = frequency_parameters['size']
-        # trip_frequency_type = frequency_parameters['type']
-        # trip_frequency = f'{trip_frequency_size}{trip_frequency_type}'
-
         trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
             np.zeros((HOURS_IN_A_DAY, len(location_names))),
             columns=location_names,
@@ -480,13 +440,11 @@ class Trip:
         )
 
         for leg_index, leg_name in enumerate(trip.legs):
-            # print(trip.name)
-            # print(leg_name)
+
             leg_parameters = scenario['legs'][leg_name]
             start_location = leg_parameters['locations']['start']
             end_location = leg_parameters['locations']['end']
-            # print(start_location)
-            # print(trip.mobility_matrix.loc[start_location, end_location])
+
             if leg_index == 0:
                 previous_leg_arrivals_amount: ty.List[float] = []
                 for hour_index in range(HOURS_IN_A_DAY - 1):
@@ -530,37 +488,6 @@ class Trip:
                         + all_future_departures
                     )
 
-                    # trip.next_leg_kilometers.loc[
-                    #     hour_index, start_location
-                    # ] += upcoming_departures
-
-                    # trip.next_leg_kilometers.loc[
-                    #     hour_index, start_location
-                    # ] += trip.mobility_matrix.loc[
-                    #     (start_location, end_location, hour_index + 1),
-                    #     'Departures kilometers'
-                    # ]
-
-                    # trip.next_leg_kilometers.loc[
-                    #     hour_index, start_location
-                    # ] += trip.mobility_matrix.loc[
-                    #     start_location, end_location
-                    # ][
-                    #     'Departures kilometers'
-                    # ].values[
-                    #     hour_index + 1
-                    # ]
-                    # For the other version, we look at all future departures
-                    # trip.next_leg_kilometers_cumulative.loc[
-                    #     hour_index, start_location
-                    # ] += (
-                    #     trip.mobility_matrix.loc[start_location,
-                    #       end_location][
-                    #         'Departures kilometers'
-                    #     ]
-                    #     .values[hour_index + 1 :]
-                    #     .sum()
-                    # )
             else:
                 for hour_index in range(HOURS_IN_A_DAY - 1):
                     # We skip the last time slot, as this should wrap the trip
@@ -573,7 +500,6 @@ class Trip:
                     upcoming_departures_raw: float = trip.mobility_matrix[
                         'Departures amount'
                     ].loc[start_location, end_location, hour_index + 1]
-                    # print(
 
                     previous_arrivals_to_use: float = sum(
                         previous_leg_arrivals_amount[: hour_index + 1]
@@ -590,16 +516,6 @@ class Trip:
                         ]
                         + actual_upcoming_departures
                     )
-                    # trip.next_leg_kilometers.loc[
-                    #     hour_index, start_location
-                    # ] += (
-                    #     trip.mobility_matrix.loc[start_location,
-                    #           end_location][
-                    #         'Departures kilometers'
-                    #     ].values[hour_index + 1]
-                    # ) * (
-                    #     previous_leg_arrivals_amount[: hour_index + 1].sum()
-                    # )
 
                     # Once again, the variant applies to all future departures
 
@@ -624,19 +540,6 @@ class Trip:
                         + actual_all_future_departures
                     )
 
-                    # trip.next_leg_kilometers_cumulative.loc[
-                    #     hour_index, start_location
-                    # ] += (
-                    #     trip.mobility_matrix.loc[start_location,
-                    # end_location][
-                    #         'Departures kilometers'
-                    #     ]
-                    #     .values[hour_index + 1 :]
-                    #     .sum()
-                    # ) * (
-                    #     previous_leg_arrivals_amount[: hour_index + 1].sum()
-                    # )
-
             previous_leg_arrivals_amount = trip.mobility_matrix[
                 'Arrivals amount'
             ].loc[start_location, end_location]
@@ -655,39 +558,6 @@ class Trip:
                 scenario,
             )
         )
-
-        # # For these, the year, month and day are not important,
-        # # as they will be omitted, so we put generic values.
-        # trip_start = datetime.datetime(2001, 1, 1, trip.day_start_hour)
-        # trip_end = datetime.datetime(2001, 1, 2, trip.day_start_hour)
-        # trip_time_tags = pd.date_range(
-        #     start=trip_start,
-        #     end=trip_end,
-        #     freq=trip_frequency,
-        #     inclusive='left'
-        #     # We want the start timetag, but not the end one, so we need
-        #     # to say it is closed left
-        # )
-        # trip_time_index_tuples = [
-        #     (time_tag.hour, time_tag.minute, time_tag.second)
-        #     for time_tag in trip_time_tags
-        # ]
-
-        # trip.time_index = pd.MultiIndex.from_tuples(
-        #     trip_time_index_tuples, name=['Hour', 'Minute', 'Second']
-        # )
-
-        # trip.base_dataframe = pd.DataFrame(index=trip.time_index)
-
-        # empty_values = np.empty((len(trip.time_index), len(location_names)))
-        # empty_values[:] = np.nan
-        # trip.base_dataframe[location_names] = empty_values
-        # trip.located_at = trip.base_dataframe.copy()
-        # trip.connected = trip.base_dataframe.copy()
-        # trip.available_power_kW = trip.base_dataframe.copy()
-        # trip.battery_space_kWh = trip.base_dataframe.copy()
-        # trip.drawn_charge_kWh = trip.base_dataframe.copy()
-        # trip.energy_necessary_for_next_leg = trip.base_dataframe.copy()
 
 
 def declare_class_instances(
@@ -729,15 +599,11 @@ def declare_all_instances(
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
-    # groupfile_name: str = f'{groupfile_root}_{case_name}'
-    # loc_start: datetime.datetime = datetime.datetime.now()
+
     locations: ty.List[ty.Type] = declare_class_instances(Location, scenario)
-    # print('Loc', (datetime.datetime.now() - loc_start).total_seconds())
-    # leg_start: datetime.datetime = datetime.datetime.now()
+
     legs: ty.List[ty.Type] = declare_class_instances(Leg, scenario)
-    # print('Leg', (datetime.datetime.now() - leg_start).total_seconds())
-    # loc_conn_start: datetime.datetime = datetime.datetime.now()
+
     # We want to get the location connections
     location_connections_headers: ty.List[str] = scenario['mobility_module'][
         'location_connections_headers'
@@ -778,19 +644,9 @@ def declare_all_instances(
     location_connections.to_pickle(
         f'{output_folder}/{scenario_name}_location_connections.pkl'
     )
-    # cook.save_dataframe(
-    #     location_connections,
-    #     f'{scenario_name}_location_connections',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
-    # print('Loc', (datetime.datetime.now() - loc_conn_start).total_seconds())
 
-    # tri_start: datetime.datetime = datetime.datetime.now()
     trips: ty.List[ty.Type] = declare_class_instances(Trip, scenario)
-    # print('Trip', (datetime.datetime.now() - tri_start).total_seconds())
-    # matrix_start = datetime.datetime.now()
+
     # We want to save the moblity matrixes
     for trip in trips:
         mobility_table_name: str = (
@@ -799,13 +655,7 @@ def declare_all_instances(
         trip.mobility_matrix.to_pickle(
             f'{output_folder}/{mobility_table_name}.pkl'
         )
-        # cook.save_dataframe(
-        #     trip.mobility_matrix,
-        #     mobility_table_name,
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
+
         run_mobility_table_name: str = (
             f'{scenario_name}_{trip.name}_run_mobility_matrix'
         )
@@ -828,44 +678,7 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
         )
-        # cook.save_dataframe(
-        #     trip.run_mobility_matrix,
-        #     run_mobility_table_name,
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
-        # cook.save_dataframe(
-        #     trip.next_leg_kilometers,
-        #     f'{scenario_name}_{trip.name}_next_leg_kilometers',
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
-        # cook.save_dataframe(
-        #     trip.run_next_leg_kilometers,
-        #     f'{scenario_name}_{trip.name}_run_next_leg_kilometers',
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
-        # cook.save_dataframe(
-        #     trip.next_leg_kilometers_cumulative,
-        #     f'{scenario_name}_{trip.name}_next_leg_kilometers_cumulative',
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
-        # cook.save_dataframe(
-        #     trip.run_next_leg_kilometers_cumulative,
-        #     f'{scenario_name}_{trip.name}'
-        #     f'_run_next_leg_kilometers_cumulative',
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
-    # print('Mat', (datetime.datetime.now() - matrix_start).total_seconds())
-    # exit()
+
     return legs, locations, trips
 
 
@@ -900,9 +713,8 @@ if __name__ == '__main__':
             trip.legs,
             trip.percentage_station_users,
             trip.start_probabilities,
-            # trip.mobility_matrix.loc['home'],
         )
-        # exit()
+
     print((datetime.datetime.now() - start_).total_seconds())
 
 

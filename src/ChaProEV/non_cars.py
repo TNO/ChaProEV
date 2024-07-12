@@ -195,19 +195,10 @@ def get_run_driven_kilometers(
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    # groupfile_root: str = file_parameters['groupfile_root']
-    # groupfile_name: str = f'{groupfile_root}_{case_name}'
 
     run_driven_kilometers.to_pickle(
         f'{output_folder}/{scenario_name}_run_driven_kilometers.pkl'
     )
-    # cook.save_dataframe(
-    #     run_driven_kilometers,
-    #     f'{scenario_name}_run_driven_kilometers',
-    #     groupfile_name,
-    #     output_folder,
-    #     scenario,
-    # )
 
     return run_driven_kilometers
 

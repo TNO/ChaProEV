@@ -817,7 +817,6 @@ def get_scenario_weather_data(
                     scenario,
                 )
             )
-            # weather_values['Location'] = [location]*len(weather_values.index)
             if location_first_quantity:
                 location_weather_dataframe['Location'] = [location] * len(
                     weather_values.index

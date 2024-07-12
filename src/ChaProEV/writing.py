@@ -63,13 +63,6 @@ def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
         parameter_dataframe.to_pickle(
             f'{output_folder}/{parameter_dataframe_name}.pkl'
         )
-        # cook.save_dataframe(
-        #     parameter_dataframe,
-        #     parameter_dataframe_name,
-        #     groupfile_name,
-        #     output_folder,
-        #     scenario,
-        # )
 
 
 if __name__ == '__main__':
