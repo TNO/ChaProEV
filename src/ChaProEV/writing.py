@@ -7,40 +7,71 @@ It contains the following functions:
     in groupfiles.)
 '''
 
+import os
+import typing as ty
+
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def write_scenario_parameters(parameters):
+def extra_end_outputs(scenario: ty.Dict, case_name: str) -> None:
+    '''
+    Saves the pickle files to other formats
+    '''
+    file_parameters: ty.Dict = scenario['files']
+
+    output_root: str = file_parameters['output_root']
+    output_folder: str = f'{output_root}/{case_name}'
+    groupfile_root: str = file_parameters['groupfile_root']
+    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    for output_file in os.listdir(output_folder):
+        if output_file.split('.')[1] == 'pkl':
+            table_name: str = output_file.split('.')[0]
+            table_to_save = pd.read_pickle(
+                f'{output_root}/{case_name}/{output_file}'
+            )
+            cook.save_dataframe(
+                table_to_save,
+                table_name,
+                groupfile_name,
+                output_folder,
+                scenario,
+            )
+
+
+def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
     '''
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
     '''
-    scenario_parameter_categories = parameters['scenario_parameter_categories']
-    case_name = parameters['case_name']
-    scenario = parameters['scenario']
-    groupfile_root = parameters['files']['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
-    output_folder = parameters['files']['output_folder']
+    scenario_parameter_categories: ty.List[str] = scenario[
+        'scenario_parameter_categories'
+    ]
+    scenario_name: str = scenario['scenario_name']
+    # groupfile_root: str = scenario['files']['groupfile_root']
+    # groupfile_name: str = f'{groupfile_root}_{case_name}'
+    output_folder: str = scenario['files']['output_folder']
 
     for parameter_category in scenario_parameter_categories:
-        parameter_values = parameters[parameter_category]
+        parameter_values = scenario[parameter_category]
         parameter_dataframe = pd.DataFrame(parameter_values)
         # Some types (such as lists) create issues with some file formats,
         # and we only need to show the values anyway, so we
         # convert the DataFrame contents to strings
         parameter_dataframe = parameter_dataframe.astype('str')
-        parameter_dataframe_name = f'{scenario}_{parameter_category}'
-        cook.save_dataframe(
-            parameter_dataframe,
-            parameter_dataframe_name,
-            groupfile_name,
-            output_folder,
-            parameters,
+        parameter_dataframe_name: str = f'{scenario_name}_{parameter_category}'
+        parameter_dataframe.to_pickle(
+            f'{output_folder}/{parameter_dataframe_name}.pkl'
         )
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
-    write_scenario_parameters(parameters)
+    case_name = 'local_impact_BEVs'
+    test_scenario_name: str = 'baseline'
+    scenario_file_name: str = (
+        f'scenarios/{case_name}/{test_scenario_name}.toml'
+    )
+    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario['scenario_name'] = test_scenario_name
+    extra_end_outputs(scenario, case_name)
+    write_scenario_parameters(scenario, case_name)
