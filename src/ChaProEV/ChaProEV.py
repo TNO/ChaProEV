@@ -60,6 +60,19 @@ except ModuleNotFoundError:
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
 
+try:
+    import writing  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import writing  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 
 def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
@@ -103,6 +116,13 @@ def run_ChaProEV(case_name: str) -> None:
             )
             # print(charge_drawn_by_vehicles)
             # print(charge_drawn_from_network)
+            write_start: datetime.datetime = datetime.datetime.now()
+
+            writing.extra_end_outputs(scenario, case_name)
+            print(
+                'Writing other outputs',
+                (datetime.datetime.now() - write_start).total_seconds(),
+            )
     print('Tot', (datetime.datetime.now() - start_).total_seconds())
 
 

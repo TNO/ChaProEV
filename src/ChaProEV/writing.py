@@ -7,10 +7,36 @@ It contains the following functions:
     in groupfiles.)
 '''
 
+import os
 import typing as ty
 
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
+
+
+def extra_end_outputs(scenario: ty.Dict, case_name: str) -> None:
+    '''
+    Saves the pickle files to other formats
+    '''
+    file_parameters: ty.Dict = scenario['files']
+
+    output_root: str = file_parameters['output_root']
+    output_folder: str = f'{output_root}/{case_name}'
+    groupfile_root: str = file_parameters['groupfile_root']
+    groupfile_name: str = f'{groupfile_root}_{case_name}'
+    for output_file in os.listdir(output_folder):
+        if output_file.split('.')[1] == 'pkl':
+            table_name: str = output_file.split('.')[0]
+            table_to_save = pd.read_pickle(
+                f'{output_root}/{case_name}/{output_file}'
+            )
+            cook.save_dataframe(
+                table_to_save,
+                table_name,
+                groupfile_name,
+                output_folder,
+                scenario,
+            )
 
 
 def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
@@ -54,4 +80,5 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
+    extra_end_outputs(scenario, case_name)
     write_scenario_parameters(scenario, case_name)
