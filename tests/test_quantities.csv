@@ -20,5 +20,6 @@ maximal_delivered_power_per_location
 percentage_driving
 percentage_of_maximal_delivered_power_used
 percentage_of_maximal_delivered_power_used_per_location
+commute_to_work_next_leg_kilometers
 
 

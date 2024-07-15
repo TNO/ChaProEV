@@ -454,7 +454,7 @@ class Trip:
 
                     # For the standard version, we look if the vehicle
                     # is set to depart in the next time
-                    upcoming_departures = trip.mobility_matrix.loc[
+                    upcoming_departures_kilometers = trip.mobility_matrix.loc[
                         (start_location, end_location, hour_index + 1),
                         'Departures kilometers',
                     ]
@@ -465,19 +465,21 @@ class Trip:
                         trip.next_leg_kilometers.loc[hour_index][
                             start_location
                         ]
-                        + upcoming_departures
+                        + upcoming_departures_kilometers
                     )
 
                     # For the other version, we look at all future departures
 
-                    all_future_departures = trip.mobility_matrix.loc[
-                        (
-                            start_location,
-                            end_location,
-                            list(range(hour_index + 1, HOURS_IN_A_DAY)),
-                        ),
-                        'Departures kilometers',
-                    ].sum()
+                    all_future_departures_kilometers = (
+                        trip.mobility_matrix.loc[
+                            (
+                                start_location,
+                                end_location,
+                                list(range(hour_index + 1, HOURS_IN_A_DAY)),
+                            ),
+                            'Departures kilometers',
+                        ].sum()
+                    )
 
                     trip.next_leg_kilometers_cumulative.loc[
                         hour_index, start_location
@@ -485,7 +487,7 @@ class Trip:
                         trip.next_leg_kilometers_cumulative.loc[hour_index][
                             start_location
                         ]
-                        + all_future_departures
+                        + all_future_departures_kilometers
                     )
 
             else:
@@ -497,15 +499,18 @@ class Trip:
                     # We do the same as for the first leg, but we need
                     # to limit that to the vehicles that already have
                     # arrived at the end location
-                    upcoming_departures_raw: float = trip.mobility_matrix[
-                        'Departures amount'
-                    ].loc[start_location, end_location, hour_index + 1]
+                    upcoming_departures_kilometers_raw: float = (
+                        trip.mobility_matrix['Departures kilometers'].loc[
+                            start_location, end_location, hour_index + 1
+                        ]
+                    )
 
                     previous_arrivals_to_use: float = sum(
                         previous_leg_arrivals_amount[: hour_index + 1]
                     )
-                    actual_upcoming_departures = (
-                        upcoming_departures_raw * previous_arrivals_to_use
+                    actual_upcoming_departures_kilometers = (
+                        upcoming_departures_kilometers_raw
+                        * previous_arrivals_to_use
                     )
 
                     trip.next_leg_kilometers.loc[
@@ -514,21 +519,22 @@ class Trip:
                         trip.next_leg_kilometers.loc[hour_index][
                             start_location
                         ]
-                        + actual_upcoming_departures
+                        + actual_upcoming_departures_kilometers
                     )
 
                     # Once again, the variant applies to all future departures
 
-                    all_future_departures_raw: float = (
-                        trip.mobility_matrix['Departures amount']
+                    all_future_departures_kilometers_raw: float = (
+                        trip.mobility_matrix['Departures kilometers']
                         .loc[start_location, end_location][
                             list(range(hour_index + 1, HOURS_IN_A_DAY))
                         ]
                         .sum()
                     )
 
-                    actual_all_future_departures = (
-                        previous_arrivals_to_use * all_future_departures_raw
+                    actual_all_future_departures_kilometers = (
+                        previous_arrivals_to_use
+                        * all_future_departures_kilometers_raw
                     )
 
                     trip.next_leg_kilometers_cumulative.loc[
@@ -537,7 +543,7 @@ class Trip:
                         trip.next_leg_kilometers_cumulative.loc[hour_index][
                             start_location
                         ]
-                        + actual_all_future_departures
+                        + actual_all_future_departures_kilometers
                     )
 
             previous_leg_arrivals_amount = trip.mobility_matrix[
