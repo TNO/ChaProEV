@@ -73,6 +73,7 @@ def get_mobility_location_tuples(
     '''
     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = []
     leg_parameters: ty.Dict = scenario['legs']
+
     for leg_name in leg_parameters.keys():
         leg_tuple: ty.Tuple[str, str] = (
             leg_parameters[leg_name]['locations']['start'],
@@ -715,6 +716,7 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
 
+    day_types: ty.List[str] = scenario['mobility_module']['day_types']
     trip_list: ty.List[str] = list(scenario['trips'].keys())
     scenario_name: str = scenario['scenario_name']
 
@@ -734,12 +736,10 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
     )
 
     for trip in trip_list:
-        trip_probabilities: ty.List[float] = [
-            trip_probabilities_per_day_type.loc[trip, day_type]
-            for day_type in run_trip_probabilities['Day Type']
-        ]
-
-        run_trip_probabilities[trip] = trip_probabilities
+        for day_type in day_types:
+            run_trip_probabilities.loc[
+                run_trip_probabilities['Day Type'] == day_type, trip
+            ] = trip_probabilities_per_day_type.loc[trip, day_type]
 
     table_name: str = f'{scenario_name}_run_trip_probabilities'
     run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
@@ -762,6 +762,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
 
     run_time_tags: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
+    loop_timer.append(datetime.datetime.now())
     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
         get_mobility_location_tuples(scenario)
     )
