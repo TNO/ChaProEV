@@ -1025,7 +1025,7 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
         f'{output_folder}/{run_mobility_matrix_name}.pkl'
     )
     loop_timer.append(datetime.datetime.now())
-    previous_time_tag: datetime.datetime = run_range[0]
+
     departures: pd.Series = run_mobility_matrix.groupby(
         ['From', 'Time Tag']
     ).sum()['Departures amount']
@@ -1033,16 +1033,17 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
         ['To', 'Time Tag']
     ).sum()['Arrivals amount']
     loop_timer.append(datetime.datetime.now())
-    for time_tag in run_range:
-        if time_tag > run_range[0]:
-            for location in location_names:
+    for location in location_names:
+        cumulative_departures: pd.Series[float] = departures.loc[
+            location
+        ].cumsum()
+        cumulative_arrivals: pd.Series[float] = arrivals.loc[location].cumsum()
 
-                location_split.loc[time_tag, location] = (
-                    location_split.loc[previous_time_tag][location]
-                    + arrivals.loc[location, time_tag]
-                    - departures.loc[location, time_tag]
-                )
-            previous_time_tag = time_tag
+        location_split.loc[:, location] = (
+            location_split.loc[:, location]
+            + cumulative_arrivals
+            - cumulative_departures
+        )
 
     loop_timer.append(datetime.datetime.now())
     percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
@@ -1123,9 +1124,10 @@ def get_starting_location_split(
         'compute_start_location_split'
     ]
     if compute_start_location_split:
-        run_start_time_tag: datetime.datetime = run_time.get_time_range(
+        run_range: ty.List[datetime.datetime] = run_time.get_time_range(
             scenario
-        )[0][0]
+        )[0]
+        run_start_time_tag: datetime.datetime = run_range[0]
         run_start_day_type: str = run_time.get_day_type(
             run_start_time_tag, scenario
         )
@@ -1135,7 +1137,7 @@ def get_starting_location_split(
 
         for location_name in location_names:
 
-            location_split.loc[run_start_time_tag, location_name] = (
+            location_split.loc[run_range, location_name] = (
                 day_type_start_location_split[run_start_day_type][
                     location_name
                 ]
@@ -1143,11 +1145,9 @@ def get_starting_location_split(
 
     else:
         for location_name in location_names:
-            location_split.loc[run_start_time_tag, location_name] = (
-                location_parameters[location_name][
-                    'percentage_in_location_at_run_start'
-                ]
-            )
+            location_split.loc[run_range, location_name] = location_parameters[
+                location_name
+            ]['percentage_in_location_at_run_start']
 
     return location_split
 

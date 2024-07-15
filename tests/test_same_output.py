@@ -25,7 +25,8 @@ def test_all_files() -> None:
             reference_file: str = f'{reference_folder}/{test_quantity}.pkl'
             test_table: pd.DataFrame = pd.read_pickle(test_file)
             reference_table: pd.DataFrame = pd.read_pickle(reference_file)
-
+            print(test_table)
+            print(reference_table)
             pd.testing.assert_frame_equal(test_table, reference_table)
 
 
