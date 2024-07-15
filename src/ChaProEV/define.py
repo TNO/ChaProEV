@@ -574,7 +574,7 @@ def declare_class_instances(
     based on a scenario file name where the instances and their properties
     are given.
     '''
-
+    scenario_vehicle: str = scenario['vehicle']['name']
     class_name: str = Chosen_class.class_name
 
     class_instances: ty.List[str] = scenario[class_name]
@@ -584,9 +584,14 @@ def declare_class_instances(
     for class_instance in class_instances:
         append_instance: bool = True
         if class_name == 'trips':
-            scenario_vehicle: str = scenario['vehicle']['name']
             trip_vehicle: str = scenario['trips'][class_instance]['vehicle']
             if trip_vehicle != scenario_vehicle:
+                append_instance = False
+        elif class_name == 'locations':
+            location_vehicle: str = scenario['locations'][class_instance][
+                'vehicle'
+            ]
+            if location_vehicle != scenario_vehicle:
                 append_instance = False
 
         if append_instance:
