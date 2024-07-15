@@ -108,10 +108,10 @@ def create_consumption_tables(scenario: ty.Dict, case_name: str) -> None:
         f'{output_folder}/{scenario_name}_daily_consumption_table.pkl'
     )
     weekly_consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_monthly_consumption_table.pkl'
+        f'{output_folder}/{scenario_name}_weekly_consumption_table.pkl'
     )
     monthly_consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_weekly_consumption_table.pkl'
+        f'{output_folder}/{scenario_name}_monthly_consumption_table.pkl'
     )
     yearly_consumption_table.to_pickle(
         f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'

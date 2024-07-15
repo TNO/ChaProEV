@@ -14,7 +14,7 @@ weather_factors_table_root_name = 'weather_factors'
 year = 2020
 month = 1
 day = 1
-hour = 1
+hour = 5
 minute = 0
 [run.end]  # This is is not included in the run time
 year = 2021

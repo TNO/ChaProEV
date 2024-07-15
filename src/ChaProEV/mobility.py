@@ -752,11 +752,12 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     Makes a mobility matrix for the run that tracks departures
     from and to locations (tracks amount, kilometers, and weighted kilometers)
     '''
+    loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
 
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
         scenario, case_name
     )
-
+    loop_timer.append(datetime.datetime.now())
     trip_parameters: ty.Dict = scenario['trips']
     trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
 
@@ -764,7 +765,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
         get_mobility_location_tuples(scenario)
     )
-
+    loop_timer.append(datetime.datetime.now())
     run_mobility_index_tuples: ty.List[
         ty.Tuple[str, str, datetime.datetime]
     ] = [
@@ -792,7 +793,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-
+    loop_timer.append(datetime.datetime.now())
     for trip_name in trip_names:
         trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
         if len(trip_legs) > 0:
@@ -871,9 +872,9 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
         location_connections: pd.DataFrame = pd.read_pickle(
             f'{output_folder}/{scenario_name}_location_connections.pkl'
         ).astype(float)
-
+    loop_timer.append(datetime.datetime.now())
     run_range: pd.Index = run_mobility_index.get_level_values('Time Tag')
-
+    loop_timer.append(datetime.datetime.now())
     for mobility_location_tuple in mobility_location_tuples:
         start_location: str = mobility_location_tuple[0]
         end_location: str = mobility_location_tuple[1]
@@ -893,10 +894,19 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
             these_locations_index,
             location_connections_headers,
         ] = these_locations_connections.values
-
+    loop_timer.append(datetime.datetime.now())
     run_mobility_matrix.to_pickle(
         f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
     )
+    loop_timer.append(datetime.datetime.now())
+    loop_times: ty.List[float] = []
+    for timer_index, test_element in enumerate(loop_timer):
+        if timer_index > 0:
+            loop_times.append(
+                (test_element - loop_timer[timer_index - 1]).total_seconds()
+            )
+    print('Mobility matrix timer')
+    print(loop_times)
 
 
 def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:

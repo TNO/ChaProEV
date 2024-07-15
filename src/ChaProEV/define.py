@@ -650,7 +650,7 @@ def declare_all_instances(
     # We want to save the moblity matrixes
     for trip in trips:
         mobility_table_name: str = (
-            f'{scenario_name}_{trip.name}_mobility_matrix.pkl'
+            f'{scenario_name}_{trip.name}_mobility_matrix'
         )
         trip.mobility_matrix.to_pickle(
             f'{output_folder}/{mobility_table_name}.pkl'
