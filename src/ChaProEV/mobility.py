@@ -795,9 +795,13 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     loop_timer.append(datetime.datetime.now())
     for trip_name in trip_names:
+
         trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
+
         if len(trip_legs) > 0:
+
             trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
+
             for trip_leg in trip_legs:
                 leg_start: str = scenario['legs'][trip_leg]['locations'][
                     'start'
@@ -852,26 +856,28 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
                     )
 
                     # We need to place it at the right places in the run
-                    # mobility
-                    # matrix
-                    # print(run_mobility_matrix)
+                    # mobility matrix
+
                     for trip_location_tuple in trip_location_tuples:
-                        # print(trip_run_mobility_matrix.dtypes)
-                        # exit()
+
                         run_mobility_matrix.loc[
-                            (
-                                trip_location_tuple[0],
-                                trip_location_tuple[1],
-                                run_time_tags,
-                            ),
+                            (trip_location_tuple),
                             mobility_quantity,
-                        ] += weighted_mobility_quantity_to_use.loc[
-                            trip_location_tuple
-                        ].values
+                        ] = (
+                            pd.Series(
+                                run_mobility_matrix.loc[
+                                    trip_location_tuple, mobility_quantity
+                                ]
+                            ).values
+                            + weighted_mobility_quantity_to_use.loc[
+                                trip_location_tuple
+                            ].values
+                        )
 
         location_connections: pd.DataFrame = pd.read_pickle(
             f'{output_folder}/{scenario_name}_location_connections.pkl'
         ).astype(float)
+
     loop_timer.append(datetime.datetime.now())
 
     for mobility_location_tuple in mobility_location_tuples:
