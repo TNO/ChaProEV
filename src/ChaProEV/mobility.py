@@ -873,27 +873,15 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
             f'{output_folder}/{scenario_name}_location_connections.pkl'
         ).astype(float)
     loop_timer.append(datetime.datetime.now())
-    run_range: pd.Index = run_mobility_index.get_level_values('Time Tag')
-    loop_timer.append(datetime.datetime.now())
-    for mobility_location_tuple in mobility_location_tuples:
-        start_location: str = mobility_location_tuple[0]
-        end_location: str = mobility_location_tuple[1]
-        these_locations_connections: pd.Series = pd.Series(
-            location_connections.loc[start_location, end_location]
-        )
-        these_locations_tuples: ty.List[
-            ty.Tuple[str, str, datetime.datetime]
-        ] = [
-            (start_location, end_location, time_tag) for time_tag in run_range
-        ]
-        these_locations_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
-            these_locations_tuples
-        )
 
+    for mobility_location_tuple in mobility_location_tuples:
+        these_locations_connections: pd.Series = pd.Series(
+            location_connections.loc[mobility_location_tuple]
+        )
         run_mobility_matrix.loc[
-            these_locations_index,
-            location_connections_headers,
+            (mobility_location_tuple), location_connections_headers
         ] = these_locations_connections.values
+
     loop_timer.append(datetime.datetime.now())
     run_mobility_matrix.to_pickle(
         f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'

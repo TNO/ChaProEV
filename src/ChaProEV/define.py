@@ -610,7 +610,6 @@ def declare_all_instances(
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-
     locations: ty.List[ty.Type] = declare_class_instances(Location, scenario)
 
     legs: ty.List[ty.Type] = declare_class_instances(Leg, scenario)
@@ -660,6 +659,7 @@ def declare_all_instances(
 
     # We want to save the moblity matrixes
     for trip in trips:
+
         mobility_table_name: str = (
             f'{scenario_name}_{trip.name}_mobility_matrix'
         )
