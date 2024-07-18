@@ -124,6 +124,14 @@ the vehicle goes from a start location and ends/stops at an end location).</p>
 <p>The parameters of a leg are:</p>
 <ol>
 <li><strong>Name:</strong> The name of the leg</li>
+<li><strong>Vehicle:</strong> The vehicle that runs the leg. If this does not correspond
+to the <a href="../scenario/#vehicle-name">scenario vehicle name</a>, then the leg is not
+declared.  Note that when running a
+scenario, you select one vehicle, so this is in principle not necessary.
+The reason for having this is to allow the user to copy the baseline file
+and keep the location definitions that are not used for this scenario but
+might be so for another, thereby reducing the need for changes between
+scenarios.</li>
 <li><strong>Distance:</strong> The distance driven during the leg (in kilometers)</li>
 <li><strong>Duration:</strong> How long it takes to drive the leg (in hours)</li>
 <li><strong>Hour in day factors:</strong> These factors add a correction to the vehicle 
@@ -207,16 +215,16 @@ up to 1/100% that tells us what the probability of starting the trip is at
 a given hour. Note that the hours start at 
  <a href="../scenario/#day_start_hour">day start hour</a>, not at
 midnight.</li>
-<li><strong>Leg repetitions:</strong> A list for repetitions for each leg (set at zero
-if the leg is not repeated), of the same length as the amount of legs. Note
-that if two (or more) consecutive legs have repetitions, then they are
-the sequences of legs is repeated. For more detail, see 
-<a href="#leg-repetitions">here</a>.</li>
-<li><strong>Time between repetitions:</strong> A list of times (in hours) between two
-repetitions of a leg. Note that the index/position in the list starts at the 
-<a href="../scenario/#day_start_hour">day start hour</a>, not at midnight. 
-This allows for things like more frequent
-repeats of legs at peak hours, for example.</li>
+<li><strong>Repeated sequence:</strong> A list of repeated legs 
+(which should follow each other) that form a repeated sequence.</li>
+<li><strong>Repetition amounts:</strong> How often
+the repeated sequence is repeated. This is a list, with one value per leg
+repetition (the nth element corresponds to the nth appearance of
+the sequence in the leg list).</li>
+<li><strong>Time between repetitions:</strong> The time between repetitions of each
+repeated sequence (in hours). This is a list, with one value per leg
+repetition (the nth element corresponds to the nth appearance of
+the sequence in the leg list).</li>
 </ol>
 <h3 id="mobility-matrix">Mobility matrix</h3>
 <p>The main aim of the trip initialization/declaration is to create a mobility
@@ -259,6 +267,10 @@ by the arrivals amount times the distance.
 driven by vehicles arriving to the end location at a given hour, having 
 started at the start location. This is given
 by the arrivals amount times the weighted distance.</p>
+<p>The model also produces a version of this mobility matrix for the whole
+run (which is essentially a copy of the above matrix). This run
+mobility matrix is the mobility matrix if the trip had a probability of 1
+for the whole run.</p>
 <h4 id="leg-repetitions">Leg repetitions</h4>
 <p>Is repeat of leg or two legs????
 [0, 5, 5, 0]
