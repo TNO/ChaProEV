@@ -105,16 +105,18 @@ up to 1/100% that tells us what the probability of starting the trip is at
 a given hour. Note that the hours start at 
  [day start hour](scenario.md#day_start_hour), not at
 midnight.
-7. **Leg repetitions:** A list for repetitions for each leg (set at zero
-if the leg is not repeated), of the same length as the amount of legs. Note
-that if two (or more) consecutive legs have repetitions, then they are
-the sequences of legs is repeated. For more detail, see 
-[here](#leg-repetitions).
-8. **Time between repetitions:** A list of times (in hours) between two
-repetitions of a leg. Note that the index/position in the list starts at the 
+7. **Repeated sequence:** A list of repeated legs 
+(which should follow each other) that form a repeated sequence.
+8. **Repetition amounts:** How often
+the repeated sequence is repeated.
+9. **Time between repetitions:** The time between repetitions of each
+repeated sequence (in hours).
+10. **Time between legs correction factor:** A list of correction factors 
+to the time between legs, at a given hour slot. The index/position in the list 
+starts at the 
 [day start hour](scenario.md#day_start_hour), not at midnight. 
-This allows for things like more frequent
-repeats of legs at peak hours, for example.
+This allows for things like more reduced time between legs 
+at peak hours, for example. This is also used for the time between repetitions.
 
 ### Mobility matrix
 
