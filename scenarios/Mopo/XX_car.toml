@@ -658,9 +658,9 @@ mix = [0.8, 0.2]
 
 
 [vehicle]
-# name = 'car'
+name = 'car'
 # name = 'van'
-name = 'truck'
+# name = 'truck'
 # name = 'bus'
 yearly_kilometrage = 42_000
 # Not relevant for cars, as it is built bottom-up

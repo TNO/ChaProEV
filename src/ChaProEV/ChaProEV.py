@@ -76,6 +76,7 @@ except ModuleNotFoundError:
 
 def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
+    cook.check_if_folder_exists(f'output/{case_name}')
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
@@ -83,6 +84,7 @@ def run_ChaProEV(case_name: str) -> None:
             scenario_file_name: str = f'scenarios/{case_name}/{scenario_file}'
             scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
             scenario['scenario_name'] = scenario_file.split('.')[0]
+            print(scenario['scenario_name'])
             print((datetime.datetime.now() - start_).total_seconds())
             decla_start: datetime.datetime = datetime.datetime.now()
             legs, locations, trips = define.declare_all_instances(
@@ -189,7 +191,7 @@ if __name__ == '__main__':
     print('Every x days')
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
-    case_name = 'local_impact_BEVs'
+    case_name = 'Mopo 2'
     run_ChaProEV(case_name)
     print('Iterate over cases? At least as a separate fucntion')
     # writing.write_scenario_parameters(scenario)
