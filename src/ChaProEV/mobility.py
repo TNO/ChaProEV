@@ -96,6 +96,7 @@ def get_trip_probabilities_per_day_type(
         trip_probabilities_per_day_type: pd.DataFrame = (
             get_car_trip_probabilities_per_day_type(scenario, case_name)
         )
+
     else:
         print(f'{vehicle} does not have a model')
         exit()
@@ -112,8 +113,13 @@ def get_car_trip_probabilities_per_day_type(
     day_type_start_location_split: pd.DataFrame = (
         get_day_type_start_location_split(scenario)
     )
+    scenario_vehicle: str = scenario['vehicle']['name']
+    trip_list: ty.List[str] = []
+    for trip_to_add in list(scenario['trips'].keys()):
+        trip_vehicle = scenario['trips'][trip_to_add]['vehicle']
+        if trip_vehicle == scenario_vehicle:
+            trip_list.append(trip_to_add)
 
-    trip_list: ty.List[str] = list(scenario['trips'].keys())
     scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
@@ -720,7 +726,12 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
     '''
 
     day_types: ty.List[str] = scenario['mobility_module']['day_types']
-    trip_list: ty.List[str] = list(scenario['trips'].keys())
+    scenario_vehicle: str = scenario['vehicle']['name']
+    trip_list: ty.List[str] = []
+    for trip_to_add in list(scenario['trips'].keys()):
+        trip_vehicle = scenario['trips'][trip_to_add]['vehicle']
+        if trip_vehicle == scenario_vehicle:
+            trip_list.append(trip_to_add)
     scenario_name: str = scenario['scenario_name']
 
     file_parameters: ty.Dict = scenario['files']
