@@ -2,7 +2,6 @@
 Author: Omar Usmani (Omar.Usmani@TNO.nl)
 This module defines and declares classes for the different objects
 that define the system (the parameters/defintions come from a scenario file),
-that define the system (the parameters/defintions come from a scenario file),
 namely:
 1. **Legs:** Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
@@ -21,7 +20,6 @@ to run that function for all class types.
 import datetime
 import math
 import typing as ty
-import typing as ty
 
 import numpy as np
 import pandas as pd
@@ -34,18 +32,9 @@ try:
     # imports and does not resolve imports exactly as Python does and it
     # isn't able to find the module.
     # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-    import run_time  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
     from ChaProEV import run_time  # type: ignore
-    from ChaProEV import run_time  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
 
@@ -53,33 +42,16 @@ except ModuleNotFoundError:
 class Leg:
     '''
     This class defines the legs and their properties, from a scenario
-    This class defines the legs and their properties, from a scenario
     file that contains a list of instances and their properties.
     Legs are point-to-point vehicle movements (i.e. movements where
     the vehicle goes from a start location and ends/stops at an end location).
     '''
 
     class_name: str = 'legs'
-    class_name: str = 'legs'
 
     def __init__(leg, name: str, scenario: ty.Dict) -> None:
         leg.name: str = name
-    def __init__(leg, name: str, scenario: ty.Dict) -> None:
-        leg.name: str = name
 
-        leg_parameters: ty.Dict = scenario['legs'][name]
-        leg.distance: float = leg_parameters['distance']
-        leg.duration: float = leg_parameters['duration']
-        leg.hour_in_day_factors: ty.List[float] = leg_parameters[
-            'hour_in_day_factors'
-        ]
-        locations: ty.Dict[str, str] = leg_parameters['locations']
-        leg.start_location: str = locations['start']
-        leg.end_location: str = locations['end']
-        road_type_parameters: ty.Dict[str, ty.List[float]] = leg_parameters[
-            'road_type_mix'
-        ]
-        leg.road_type_mix: ty.List[float] = road_type_parameters['mix']
         leg_parameters: ty.Dict = scenario['legs'][name]
         leg.distance: float = leg_parameters['distance']
         leg.duration: float = leg_parameters['duration']
@@ -99,25 +71,14 @@ class Location:
     '''
     This class defines the locations where the vehicles are
     and their properties,  from a scenario
-    and their properties,  from a scenario
     file that contains a list of instances and their properties.
     '''
 
     class_name: str = 'locations'
-    class_name: str = 'locations'
 
     def __init__(location, name: str, scenario: ty.Dict) -> None:
         location.name: str = name
-    def __init__(location, name: str, scenario: ty.Dict) -> None:
-        location.name: str = name
 
-        location_parameters: ty.Dict = scenario['locations'][name]
-        location.vehicle: str = location_parameters['vehicle']
-        location.connectivity: float = location_parameters['connectivity']
-        location.charging_power: float = location_parameters['charging_power']
-        location.latitude: float = location_parameters['latitude']
-        location.longitude: float = location_parameters['longitude']
-        location.base_charging_price: float = location_parameters[
         location_parameters: ty.Dict = scenario['locations'][name]
         location.vehicle: str = location_parameters['vehicle']
         location.connectivity: float = location_parameters['connectivity']
@@ -128,7 +89,6 @@ class Location:
             'base_charging_price'
         ]
         location.charging_desirability: float = location_parameters[
-        location.charging_desirability: float = location_parameters[
             'charging_desirability'
         ]
 
@@ -136,19 +96,16 @@ class Location:
 class Trip:
     '''
     This class defines the  trips and their properties, from a scenario
-    This class defines the  trips and their properties, from a scenario
     file that contains a list of instances and their properties.
     Trips are collections of legs that take place on a given day.
-    Note that this day does not necessarily start (and end) at midnight,
+    Note that this day does not necessarily start (and end) at minight,
     but can start (and end) at an hour that is more logical/significant for the
     vehicle user (it could for example be 06:00 for car drivers).
     This day_start_hour
     parameter is universal for all trips
     This value is set in the scenario files.
-    This value is set in the scenario files.
     '''
 
-    class_name: str = 'trips'
     class_name: str = 'trips'
 
     def __init__(trip, name: str, scenario: ty.Dict) -> None:
@@ -165,7 +122,6 @@ class Trip:
             if location_parameters[location_name]['vehicle'] == vehicle_name
         ]
         trip_parameters: ty.Dict = scenario['trips'][name]
-        trip.vehicle: str = trip_parameters['vehicle']
         trip.legs: ty.List[str] = trip_parameters['legs']
         trip.time_between_legs: ty.List[float] = trip_parameters[
             'time_between_legs'
@@ -175,10 +131,6 @@ class Trip:
         ]
         trip.start_probabilities: ty.List[float] = trip_parameters[
             'start_probabilities'
-        ]
-        trip.leg_repetitions: ty.List[int] = trip_parameters['leg_repetitions']
-        trip.time_between_repetitions: ty.List[float] = trip_parameters[
-            'time_between_repetitions'
         ]
         trip.day_start_hour: int = scenario['mobility_module'][
             'day_start_hour'
@@ -202,35 +154,16 @@ class Trip:
         mobility_index_tuples: ty.List[ty.Tuple[str, str, int]] = [
             (leg_tuple[0], leg_tuple[1], hour_number)
             for leg_tuple in leg_tuples
-        HOURS_IN_A_DAY: int = scenario['time']['HOURS_IN_A_DAY']
-        parameters_of_legs: ty.Dict = scenario['legs']
-
-        leg_tuples: ty.List[ty.Tuple[str, str]] = [
-            (
-                parameters_of_legs[trip_leg]['locations']['start'],
-                parameters_of_legs[trip_leg]['locations']['end'],
-            )
-            for trip_leg in trip.legs
-        ]
-
-        # We only want the start and end locations that are in the legs
-        mobility_index_tuples: ty.List[ty.Tuple[str, str, int]] = [
-            (leg_tuple[0], leg_tuple[1], hour_number)
-            for leg_tuple in leg_tuples
             for hour_number in range(HOURS_IN_A_DAY)
         ]
-
-        mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
 
         mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
             mobility_index_tuples,
             names=['From', 'To', 'Hour number (from day start)'],
         )
         mobility_quantities: ty.List[str] = scenario['mobility_module'][
-        mobility_quantities: ty.List[str] = scenario['mobility_module'][
             'mobility_quantities'
         ]
-        trip.mobility_matrix: pd.DataFrame = pd.DataFrame(
         trip.mobility_matrix: pd.DataFrame = pd.DataFrame(
             np.zeros((len(mobility_index), len(mobility_quantities))),
             columns=mobility_quantities,
@@ -244,17 +177,9 @@ class Trip:
             trip.start_probabilities
         )
         time_driving_previous_leg: float = float(0)
-        previous_leg_start_probabilities: np.ndarray = np.array(
-            trip.start_probabilities
-        )
-        time_driving_previous_leg: float = float(0)
 
         # To fill in the mobility matrix, we iterate over the legs of the trip
         for leg_index, leg_name in enumerate(trip.legs):
-            leg_parameters: ty.Dict = scenario['legs'][leg_name]
-            start_location: str = leg_parameters['locations']['start']
-            end_location: str = leg_parameters['locations']['end']
-            time_driving: float = leg_parameters['duration']
             leg_parameters: ty.Dict = scenario['legs'][leg_name]
             start_location: str = leg_parameters['locations']['start']
             end_location: str = leg_parameters['locations']['end']
@@ -266,12 +191,8 @@ class Trip:
             time_driving_in_intervals: list[float] = [1] * math.floor(
                 time_driving
             )
-            time_driving_in_intervals: list[float] = [1] * math.floor(
-                time_driving
-            )
             # We then append the remainder (which is the duration if the
             # duration is smaller than the (hour) interval)
-            remainder: float = time_driving - math.floor(time_driving)
             remainder: float = time_driving - math.floor(time_driving)
             # But only if it is not zero (to avoid adding an unnecessary index)
             if remainder > 0:
@@ -282,17 +203,7 @@ class Trip:
             )
             road_type_weights: np.ndarray = np.array(
                 scenario['transport_factors']['weights']
-            distance: float = leg_parameters['distance']
-            road_type_mix: np.ndarray = np.array(
-                leg_parameters['road_type_mix']['mix']
             )
-            road_type_weights: np.ndarray = np.array(
-                scenario['transport_factors']['weights']
-            )
-            road_type_factor: float = float(
-                sum(road_type_mix * road_type_weights)
-            )
-            weighted_distance: float = road_type_factor * distance
             road_type_factor: float = float(
                 sum(road_type_mix * road_type_weights)
             )
@@ -311,34 +222,18 @@ class Trip:
                 time_shift: float = (
                     time_driving_previous_leg + time_spent_at_location
                 )
-                time_spent_at_location: float = trip.time_between_legs[
-                    leg_index - 1
-                ]
-                time_shift: float = (
-                    time_driving_previous_leg + time_spent_at_location
-                )
                 # For previous leg departures in slot N, the corresponding
                 # current leg departures.
                 # take place into two time slots. These two slots
                 # have numbers N+slot_shift and N+slot_shift+1
-                slot_shift: int = math.floor(time_shift)
                 slot_shift: int = math.floor(time_shift)
                 # For example, if the time shift is 9.25 slots (9.25 hours if
                 # hours are your units), then arrivals will occur in time
                 # slots (hours if you use them) N+9 and N+10
                 # The portion in the first slot is:
                 first_slot_proportion: float = 1 - time_shift % 1
-                first_slot_proportion: float = 1 - time_shift % 1
                 # In the example above, the decimal part is 0.25, so the
                 # proportion is (1-0.25)=0.75
-                current_leg_start_probabilities: (
-                    np.ndarray
-                ) = first_slot_proportion * np.roll(
-                    previous_leg_start_probabilities, slot_shift
-                ) + (
-                    1 - first_slot_proportion
-                ) * np.roll(
-                    previous_leg_start_probabilities, slot_shift + 1
                 current_leg_start_probabilities: (
                     np.ndarray
                 ) = first_slot_proportion * np.roll(
@@ -371,13 +266,7 @@ class Trip:
             current_leg_end_probabilities: (
                 np.ndarray
             ) = first_slot_proportion * np.roll(
-            current_leg_end_probabilities: (
-                np.ndarray
-            ) = first_slot_proportion * np.roll(
                 current_leg_start_probabilities, slot_shift
-            ) + (
-                1 - first_slot_proportion
-            ) * np.roll(
             ) + (
                 1 - first_slot_proportion
             ) * np.roll(
@@ -387,7 +276,6 @@ class Trip:
             # With this, we can add this leg's contribution to the
             # mobility matrix
 
-
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures amount'
             ] = (
@@ -396,17 +284,8 @@ class Trip:
                         (start_location, end_location), 'Departures amount'
                     ]
                 ).values
-                pd.Series(
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Departures amount'
-                    ]
-                ).values
                 + current_leg_start_probabilities
             )
-
-            # We need to convert the first element to Series for type hinting
-            # reasons, as MyPy does not know it is a Series otherwise
-
 
             # We need to convert the first element to Series for type hinting
             # reasons, as MyPy does not know it is a Series otherwise
@@ -419,39 +298,17 @@ class Trip:
                         (start_location, end_location), 'Arrivals amount'
                     ]
                 ).values
-                pd.Series(
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Arrivals amount'
-                    ]
-                ).values
                 + current_leg_end_probabilities
             )
             # We need to convert the first element to Series for type hinting
             # reasons, as MyPy does not know it is a Series otherwise
-            # We need to convert the first element to Series for type hinting
-            # reasons, as MyPy does not know it is a Series otherwise
 
-            start_distance_probabilities: np.ndarray = np.array(
-                current_leg_start_probabilities * distance
-            )
             start_distance_probabilities: np.ndarray = np.array(
                 current_leg_start_probabilities * distance
             )
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures kilometers'
             ] = (
-                pd.Series(
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Departures kilometers'
-                    ]
-                ).values
-                + start_distance_probabilities
-            )
-            # We need to convert the first element to Series for type hinting
-            # reasons, as MyPy does not know it is a Series otherwise
-
-            start_weighted_distance_probabilities: np.ndarray = np.array(
-                np.array(current_leg_start_probabilities) * weighted_distance
                 pd.Series(
                     trip.mobility_matrix.loc[
                         (start_location, end_location), 'Departures kilometers'
@@ -482,35 +339,10 @@ class Trip:
 
             end_distance_probabilities: np.ndarray = np.array(
                 current_leg_end_probabilities * distance
-                pd.Series(
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location),
-                        'Departures weighted kilometers',
-                    ]
-                ).values
-                + start_weighted_distance_probabilities
-            )
-            # We need to convert the first element to Series for type hinting
-            # reasons, as MyPy does not know it is a Series otherwise
-
-            end_distance_probabilities: np.ndarray = np.array(
-                current_leg_end_probabilities * distance
             )
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Arrivals kilometers'
             ] = (
-                pd.Series(
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location), 'Arrivals kilometers'
-                    ]
-                ).values
-                + end_distance_probabilities
-            )
-            # We need to convert the first element to Series for type hinting
-            # reasons, as MyPy does not know it is a Series otherwise
-
-            end_weighted_distance_probabilities: np.ndarray = np.array(
-                np.array(current_leg_end_probabilities) * weighted_distance
                 pd.Series(
                     trip.mobility_matrix.loc[
                         (start_location, end_location), 'Arrivals kilometers'
@@ -534,17 +366,7 @@ class Trip:
                     ]
                 ).values
                 + end_weighted_distance_probabilities
-                pd.Series(
-                    trip.mobility_matrix.loc[
-                        (start_location, end_location),
-                        'Arrivals weighted kilometers',
-                    ]
-                ).values
-                + end_weighted_distance_probabilities
             )
-            # We need to convert the first element to Series for type hinting
-            # reasons, as MyPy does not know it is a Series otherwise
-
             # We need to convert the first element to Series for type hinting
             # reasons, as MyPy does not know it is a Series otherwise
 
@@ -574,28 +396,15 @@ class Trip:
         ] = [
             (leg_tuple[0], leg_tuple[1], time_tag)
             for leg_tuple in leg_tuples
-        run_time_tags: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
-
-        # We only want the start and end locations that are in the legs
-        run_mobility_index_tuples: ty.List[
-            ty.Tuple[str, str, datetime.datetime]
-        ] = [
-            (leg_tuple[0], leg_tuple[1], time_tag)
-            for leg_tuple in leg_tuples
             for time_tag in run_time_tags
         ]
-
-        mobility_index_names: ty.List[str] = scenario['mobility_module'][
 
         mobility_index_names: ty.List[str] = scenario['mobility_module'][
             'mobility_index_names'
         ]
         run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
-        run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
             run_mobility_index_tuples, names=mobility_index_names
         )
-
-        trip.run_mobility_matrix: pd.DataFrame = pd.DataFrame(
 
         trip.run_mobility_matrix: pd.DataFrame = pd.DataFrame(
             columns=mobility_quantities, index=run_mobility_index
@@ -615,21 +424,7 @@ class Trip:
                 trip.run_mobility_matrix.at[
                     (leg_tuple[0], leg_tuple[1]), mobility_quantity
                 ] = cloned_mobility_matrix[mobility_quantity].values
-        for leg_tuple in leg_tuples:
-            cloned_mobility_matrix: pd.DataFrame = run_time.from_day_to_run(
-                trip.mobility_matrix.loc[
-                    (leg_tuple[0], leg_tuple[1]), mobility_quantities
-                ],
-                run_time_tags,
-                trip.day_start_hour,
-                scenario,
-            )
-            for mobility_quantity in mobility_quantities:
-                trip.run_mobility_matrix.at[
-                    (leg_tuple[0], leg_tuple[1]), mobility_quantity
-                ] = cloned_mobility_matrix[mobility_quantity].values
 
-        trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
         trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
             np.zeros((HOURS_IN_A_DAY, len(location_names))),
             columns=location_names,
@@ -643,21 +438,14 @@ class Trip:
         trip.next_leg_kilometers_cumulative: pd.DataFrame = (
             trip.next_leg_kilometers.copy()
         )
-        trip.next_leg_kilometers_cumulative: pd.DataFrame = (
-            trip.next_leg_kilometers.copy()
-        )
 
         for leg_index, leg_name in enumerate(trip.legs):
-
-            leg_parameters = scenario['legs'][leg_name]
 
             leg_parameters = scenario['legs'][leg_name]
             start_location = leg_parameters['locations']['start']
             end_location = leg_parameters['locations']['end']
 
-
             if leg_index == 0:
-                previous_leg_arrivals_amount: ty.List[float] = []
                 previous_leg_arrivals_amount: ty.List[float] = []
                 for hour_index in range(HOURS_IN_A_DAY - 1):
                     # We skip the last time slot, as this should wrap the trip
@@ -665,21 +453,6 @@ class Trip:
                     # with this apporach
 
                     # For the standard version, we look if the vehicle
-                    # is set to depart in the next time
-                    upcoming_departures_kilometers = trip.mobility_matrix.loc[
-                        (start_location, end_location, hour_index + 1),
-                        'Departures kilometers',
-                    ]
-
-                    trip.next_leg_kilometers.loc[
-                        hour_index, start_location
-                    ] = (
-                        trip.next_leg_kilometers.loc[hour_index][
-                            start_location
-                        ]
-                        + upcoming_departures_kilometers
-                    )
-
                     # is set to depart in the next time
                     upcoming_departures_kilometers = trip.mobility_matrix.loc[
                         (start_location, end_location, hour_index + 1),
@@ -713,28 +486,9 @@ class Trip:
                     ] = (
                         trip.next_leg_kilometers_cumulative.loc[hour_index][
                             start_location
-
-                    all_future_departures_kilometers = (
-                        trip.mobility_matrix.loc[
-                            (
-                                start_location,
-                                end_location,
-                                list(range(hour_index + 1, HOURS_IN_A_DAY)),
-                            ),
-                            'Departures kilometers',
-                        ].sum()
-                    )
-
-                    trip.next_leg_kilometers_cumulative.loc[
-                        hour_index, start_location
-                    ] = (
-                        trip.next_leg_kilometers_cumulative.loc[hour_index][
-                            start_location
                         ]
                         + all_future_departures_kilometers
-                        + all_future_departures_kilometers
                     )
-
 
             else:
                 for hour_index in range(HOURS_IN_A_DAY - 1):
@@ -766,37 +520,9 @@ class Trip:
                             start_location
                         ]
                         + actual_upcoming_departures_kilometers
-                    upcoming_departures_kilometers_raw: float = (
-                        trip.mobility_matrix['Departures kilometers'].loc[
-                            start_location, end_location, hour_index + 1
-                        ]
                     )
-
-                    previous_arrivals_to_use: float = sum(
-                        previous_leg_arrivals_amount[: hour_index + 1]
-                    )
-                    actual_upcoming_departures_kilometers = (
-                        upcoming_departures_kilometers_raw
-                        * previous_arrivals_to_use
-                    )
-
-                    trip.next_leg_kilometers.loc[
-                        hour_index, start_location
-                    ] = (
-                        trip.next_leg_kilometers.loc[hour_index][
-                            start_location
-                        ]
-                        + actual_upcoming_departures_kilometers
-                    )
-
 
                     # Once again, the variant applies to all future departures
-
-                    all_future_departures_kilometers_raw: float = (
-                        trip.mobility_matrix['Departures kilometers']
-                        .loc[start_location, end_location][
-                            list(range(hour_index + 1, HOURS_IN_A_DAY))
-                        ]
 
                     all_future_departures_kilometers_raw: float = (
                         trip.mobility_matrix['Departures kilometers']
@@ -811,23 +537,6 @@ class Trip:
                         * all_future_departures_kilometers_raw
                     )
 
-                    actual_all_future_departures_kilometers = (
-                        previous_arrivals_to_use
-                        * all_future_departures_kilometers_raw
-                    )
-
-                    trip.next_leg_kilometers_cumulative.loc[
-                        hour_index, start_location
-                    ] = (
-                        trip.next_leg_kilometers_cumulative.loc[hour_index][
-                            start_location
-                        ]
-                        + actual_all_future_departures_kilometers
-                    )
-
-            previous_leg_arrivals_amount = trip.mobility_matrix[
-                'Arrivals amount'
-            ].loc[start_location, end_location]
                     trip.next_leg_kilometers_cumulative.loc[
                         hour_index, start_location
                     ] = (
@@ -841,27 +550,12 @@ class Trip:
                 'Arrivals amount'
             ].loc[start_location, end_location]
 
-        trip.run_next_leg_kilometers: pd.DataFrame = run_time.from_day_to_run(
         trip.run_next_leg_kilometers: pd.DataFrame = run_time.from_day_to_run(
             trip.next_leg_kilometers,
             run_time_tags,
             trip.day_start_hour,
             scenario,
-            scenario,
         )
-        trip.run_next_leg_kilometers_cumulative: pd.DataFrame = (
-            run_time.from_day_to_run(
-                trip.next_leg_kilometers_cumulative,
-                run_time_tags,
-                trip.day_start_hour,
-                scenario,
-            )
-        )
-
-
-def declare_class_instances(
-    Chosen_class: ty.Type, scenario: ty.Dict
-) -> ty.List[ty.Type]:
         trip.run_next_leg_kilometers_cumulative: pd.DataFrame = (
             run_time.from_day_to_run(
                 trip.next_leg_kilometers_cumulative,
@@ -878,33 +572,11 @@ def declare_class_instances(
     '''
     This function creates the instances of a class (Chosen_class),
     based on a scenario file name where the instances and their properties
-    based on a scenario file name where the instances and their properties
     are given.
     '''
     scenario_vehicle: str = scenario['vehicle']['name']
     class_name: str = Chosen_class.class_name
-    scenario_vehicle: str = scenario['vehicle']['name']
-    class_name: str = Chosen_class.class_name
 
-    class_instances: ty.List[str] = scenario[class_name]
-
-    instances: ty.List[ty.Type] = []
-
-    for class_instance in class_instances:
-        append_instance: bool = True
-        if class_name == 'trips':
-            trip_vehicle: str = scenario['trips'][class_instance]['vehicle']
-            if trip_vehicle != scenario_vehicle:
-                append_instance = False
-        elif class_name == 'locations':
-            location_vehicle: str = scenario['locations'][class_instance][
-                'vehicle'
-            ]
-            if location_vehicle != scenario_vehicle:
-                append_instance = False
-
-        if append_instance:
-            instances.append(Chosen_class(class_instance, scenario))
     class_instances: ty.List[str] = scenario[class_name]
 
     instances: ty.List[ty.Type] = []
@@ -931,9 +603,6 @@ def declare_class_instances(
 def declare_all_instances(
     scenario: ty.Dict, case_name: str
 ) -> ty.Tuple[ty.List[ty.Type], ...]:
-def declare_all_instances(
-    scenario: ty.Dict, case_name: str
-) -> ty.Tuple[ty.List[ty.Type], ...]:
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
@@ -945,34 +614,20 @@ def declare_all_instances(
 
     legs: ty.List[ty.Type] = declare_class_instances(Leg, scenario)
 
-    scenario_name: str = scenario['scenario_name']
-    file_parameters: ty.Dict = scenario['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    locations: ty.List[ty.Type] = declare_class_instances(Location, scenario)
-
-    legs: ty.List[ty.Type] = declare_class_instances(Leg, scenario)
-
     # We want to get the location connections
-    location_connections_headers: ty.List[str] = scenario['mobility_module'][
     location_connections_headers: ty.List[str] = scenario['mobility_module'][
         'location_connections_headers'
     ]
-    location_connections_index_tuples: ty.List[ty.Tuple[str, str]] = [
     location_connections_index_tuples: ty.List[ty.Tuple[str, str]] = [
         (start_location.name, end_location.name)
         for start_location in locations
         for end_location in locations
     ]
     location_connections_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
-    location_connections_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
         location_connections_index_tuples, names=['From', 'To']
     )
     location_connections: pd.DataFrame = pd.DataFrame(
-    location_connections: pd.DataFrame = pd.DataFrame(
         columns=location_connections_headers, index=location_connections_index
-    )
-    road_type_weights: np.ndarray = np.array(
-        scenario['transport_factors']['weights']
     )
     road_type_weights: np.ndarray = np.array(
         scenario['transport_factors']['weights']
@@ -980,30 +635,9 @@ def declare_all_instances(
     for leg in legs:
         road_type_factor: float = sum(leg.road_type_mix * road_type_weights)
         fill_values: ty.List[float] = [
-        road_type_factor: float = sum(leg.road_type_mix * road_type_weights)
-        fill_values: ty.List[float] = [
             leg.duration,
             leg.distance,
             road_type_factor * leg.distance,
-        ]
-        for fill_value, location_connection_header in zip(
-            fill_values, location_connections_headers
-        ):
-            location_connections.loc[
-                (leg.start_location, leg.end_location),
-                location_connection_header,
-            ] = fill_value
-        # location_connections.loc[leg.start_location, leg.end_location] = (
-        #     leg.duration,
-        #     leg.distance,
-        #     road_type_factor * leg.distance,
-        # )
-    location_connections.to_pickle(
-        f'{output_folder}/{scenario_name}_location_connections.pkl'
-    )
-
-    trips: ty.List[ty.Type] = declare_class_instances(Trip, scenario)
-
         ]
         for fill_value, location_connection_header in zip(
             fill_values, location_connections_headers
@@ -1056,49 +690,10 @@ def declare_all_instances(
             f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
         )
 
-        mobility_table_name: str = (
-            f'{scenario_name}_{trip.name}_mobility_matrix'
-        )
-        trip.mobility_matrix.to_pickle(
-            f'{output_folder}/{mobility_table_name}.pkl'
-        )
-
-        run_mobility_table_name: str = (
-            f'{scenario_name}_{trip.name}_run_mobility_matrix'
-        )
-        trip.run_mobility_matrix.to_pickle(
-            f'{output_folder}/{run_mobility_table_name}.pkl'
-        )
-        trip.next_leg_kilometers.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            'next_leg_kilometers.pkl'
-        )
-        trip.run_next_leg_kilometers.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_next_leg_kilometers.pkl'
-        )
-        trip.next_leg_kilometers_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}'
-            f'_next_leg_kilometers_cumulative.pkl'
-        )
-        trip.run_next_leg_kilometers_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
-        )
-
     return legs, locations, trips
 
 
 if __name__ == '__main__':
-    start_: datetime.datetime = datetime.datetime.now()
-    case_name = 'local_impact_BEVs'
-    test_scenario_name: str = 'baseline'
-    scenario_file_name: str = (
-        f'scenarios/{case_name}/{test_scenario_name}.toml'
-    )
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
-    legs, locations, trips = declare_all_instances(scenario, case_name)
     start_: datetime.datetime = datetime.datetime.now()
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
@@ -1130,8 +725,6 @@ if __name__ == '__main__':
             trip.percentage_station_users,
             trip.start_probabilities,
         )
-
-    print((datetime.datetime.now() - start_).total_seconds())
 
     print((datetime.datetime.now() - start_).total_seconds())
 
