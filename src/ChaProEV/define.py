@@ -53,6 +53,7 @@ class Leg:
         leg.name: str = name
 
         leg_parameters: ty.Dict = scenario['legs'][name]
+        leg.vehicle: str = leg_parameters['vehicle']
         leg.distance: float = leg_parameters['distance']
         leg.duration: float = leg_parameters['duration']
         leg.hour_in_day_factors: ty.List[float] = leg_parameters[
@@ -596,6 +597,10 @@ def declare_class_instances(
                 'vehicle'
             ]
             if location_vehicle != scenario_vehicle:
+                append_instance = False
+        elif class_name == 'legs':
+            leg_vehicle: str = scenario['legs'][class_instance]['vehicle']
+            if leg_vehicle != scenario_vehicle:
                 append_instance = False
 
         if append_instance:
