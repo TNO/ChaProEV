@@ -132,6 +132,10 @@ class Trip:
         trip.start_probabilities: ty.List[float] = trip_parameters[
             'start_probabilities'
         ]
+        trip.leg_repetitions: ty.List[int] = trip_parameters['leg_repetitions']
+        trip.time_between_repetitions: ty.List[float] = trip_parameters[
+            'time_between_repetitions'
+        ]
         trip.day_start_hour: int = scenario['mobility_module'][
             'day_start_hour'
         ]
