@@ -71,16 +71,19 @@ def get_mobility_location_tuples(
     start and end locations of trips. This is done to avoid creating too
     large mobility matrices (with all possible combinations of locations).
     '''
+    scenario_vehicle: str = scenario['vehicle']['name']
     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = []
     leg_parameters: ty.Dict = scenario['legs']
 
     for leg_name in leg_parameters.keys():
-        leg_tuple: ty.Tuple[str, str] = (
-            leg_parameters[leg_name]['locations']['start'],
-            leg_parameters[leg_name]['locations']['end'],
-        )
-        if leg_tuple not in mobility_location_tuples:
-            mobility_location_tuples.append(leg_tuple)
+        leg_vehicle: str = leg_parameters[leg_name]['vehicle']
+        if leg_vehicle == scenario_vehicle:
+            leg_tuple: ty.Tuple[str, str] = (
+                leg_parameters[leg_name]['locations']['start'],
+                leg_parameters[leg_name]['locations']['end'],
+            )
+            if leg_tuple not in mobility_location_tuples:
+                mobility_location_tuples.append(leg_tuple)
 
     return mobility_location_tuples
 
@@ -753,13 +756,17 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     from and to locations (tracks amount, kilometers, and weighted kilometers)
     '''
     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
-
+    scenario_vehicle: str = scenario['vehicle']['name']
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
         scenario, case_name
     )
     loop_timer.append(datetime.datetime.now())
     trip_parameters: ty.Dict = scenario['trips']
-    trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
+    trip_names: ty.List[str] = [
+        trip_name
+        for trip_name in trip_parameters
+        if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
+    ]
 
     run_time_tags: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
     loop_timer.append(datetime.datetime.now())
@@ -1153,6 +1160,7 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     )
 
     scenario_name: str = scenario['scenario_name']
+    scenario_vehicle: str = scenario['vehicle']['name']
 
     file_parameters: ty.Dict = scenario['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
@@ -1177,7 +1185,11 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     )
 
     trip_parameters: ty.Dict = scenario['trips']
-    trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
+    trip_names: ty.List[str] = [
+        trip_name
+        for trip_name in trip_parameters
+        if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
+    ]
     for trip_name in trip_names:
         trip_run_next_leg_kilometers: pd.DataFrame = pd.read_pickle(
             f'{output_folder}/{scenario_name}_'
