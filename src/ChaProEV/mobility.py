@@ -96,11 +96,48 @@ def get_trip_probabilities_per_day_type(
         trip_probabilities_per_day_type: pd.DataFrame = (
             get_car_trip_probabilities_per_day_type(scenario, case_name)
         )
-
     else:
-        print(f'{vehicle} does not have a model')
-        exit()
+        trip_probabilities_per_day_type = (
+            get_trip_probabilities_per_day_type_other_vehicles(
+                scenario, case_name
+            )
+        )
 
+    return trip_probabilities_per_day_type
+
+
+def get_trip_probabilities_per_day_type_other_vehicles(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
+    '''
+    This function computes the trip probabilities per day type for vehicles
+    other than cars
+    '''
+    scenario_vehicle: str = scenario['vehicle']['name']
+    mobility_module_parameters = scenario['mobility_module']
+    day_types: ty.List[str] = mobility_module_parameters['day_types']
+    trip_list: ty.List[str] = []
+    for trip_to_add in list(scenario['trips'].keys()):
+        trip_vehicle = scenario['trips'][trip_to_add]['vehicle']
+        if trip_vehicle == scenario_vehicle:
+            trip_list.append(trip_to_add)
+    # We build a Dataframe to store the trip probabilities per day type
+
+    trip_probabilities_per_day_type: pd.DataFrame = pd.DataFrame(
+        0, columns=day_types, index=trip_list
+    )
+    trip_probabilities_per_day_type.index.name = 'Trip'
+
+    trips_per_day_type: ty.List[str] = mobility_module_parameters[
+        'trips_per_day_type'
+    ]
+
+    for day_type, trip in zip(day_types, trips_per_day_type):
+        trip_probabilities_per_day_type.loc[trip, day_type] = 1
+
+    trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
+        float
+    )
     return trip_probabilities_per_day_type
 
 

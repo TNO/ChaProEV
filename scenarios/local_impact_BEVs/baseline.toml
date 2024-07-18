@@ -495,8 +495,8 @@ mix = [0.8, 0.2]
 
 
 [vehicle]
-name = 'car'
-# name = 'bus'
+# name = 'car'
+name = 'bus'
 yearly_kilometrage = 42_000
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
@@ -675,10 +675,93 @@ repeated_sequence = [
     # 'bus_from_route_start_to_route_end',
     # 'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [0, 3]
+repetition_amounts = [3, 3]
+time_between_repetitions = [0.1, 0.22] # hours
+
+[trips.bus_weekend_in_workweek]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    # 'bus_from_route_start_to_route_end',
+    # 'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [2, 2]
 time_between_repetitions = [0.1, 0.22] # hours
 
 
+[trips.bus_weekday_in_holiday_week]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    # 'bus_from_route_start_to_route_end',
+    # 'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [2, 2]
+time_between_repetitions = [0.2, 0.42] # hours
+
+[trips.bus_weekend_in_holiday_week]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    # 'bus_from_route_start_to_route_end',
+    # 'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [1, 1]
+time_between_repetitions = [0.1, 0.22] # hours
 
 
 # These parameters are used for the ChaProEV mobility module
@@ -692,6 +775,13 @@ day_types = [
     'weekend_holiday_departures', 'weekend_holiday_returns',
     'holiday_overlap_weekend'
 ]
+trips_per_day_type = [ # for vehicles other than cars
+    'bus_weekday_in_workweek', 'bus_weekend_in_workweek',
+    'bus_weekday_in_holiday_week', 'bus_weekend_in_holiday_week',
+    'bus_weekend_in_holiday_week', 'bus_weekend_in_holiday_week',
+    'bus_weekend_in_holiday_week'
+]
+
 mobility_quantities = [
     'Departures amount', 'Departures kilometers',
     'Departures weighted kilometers',

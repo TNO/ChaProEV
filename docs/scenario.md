@@ -33,6 +33,9 @@ the Thursday before and are as such on a week day
 
 ### day_types
 
+### trips_per_day_type
+For vehicles other than cars, we assume that there is one trip per day type.
+This is where we match the trips to their day type
 
 ## transport_factors
 
