@@ -47,6 +47,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scenario/">The scenario file</a>
+                </li>
+              </ul>
               <p class="caption"><span class="caption-text">Modules</span></p>
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
@@ -54,6 +58,32 @@
                   <li class="toctree-l1"><a class="" href="../run_time.md">Run time</a>
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Define</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#leg">Leg</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#location">Location</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#parameters_1">Parameters</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#trip">Trip</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#parameters_2">Parameters</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mobility-matrix">Mobility matrix</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#leg-repetitions">Leg repetitions</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
                   </li>
@@ -84,7 +114,163 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                
+                <h1 id="classes">Classes</h1>
+<h2 id="leg">Leg</h2>
+<p>This class defines the legs and their properties, from a scenario
+file that contains a list of instances and their properties.
+Legs are point-to-point vehicle movements (i.e. movements where
+the vehicle goes from a start location and ends/stops at an end location).</p>
+<h3 id="parameters">Parameters</h3>
+<p>The parameters of a leg are:</p>
+<ol>
+<li><strong>Name:</strong> The name of the leg</li>
+<li><strong>Distance:</strong> The distance driven during the leg (in kilometers)</li>
+<li><strong>Duration:</strong> How long it takes to drive the leg (in hours)</li>
+<li><strong>Hour in day factors:</strong> These factors add a correction to the vehicle 
+consumption that depend on the hour in day (the first is for 00:00 to 00:59,
+last for 23:00 to 23:59). Note that these are actual hours,
+not hours in the user day (which can start and end at other moments than
+midnight). This is used to take into account things like traffic jams.
+The default value is 1. <strong><em>This factor is a placeholder and is currently not
+in use.</em></strong></li>
+</ol>
+<h2 id="location">Location</h2>
+<p>This class defines the locations where the vehicles are
+and their properties, from a scenario
+file that contains a list of instances and their proper.</p>
+<h3 id="parameters_1">Parameters</h3>
+<p>The parameters of a location are:</p>
+<ol>
+<li><strong>Name</strong>: The name of the location.</li>
+<li><strong>Vehicle:</strong> The vehicle that uses the location. If this does not correspond
+to the <a href="../scenario/#vehicle-name">scenario vehicle name</a>, then the trip is not
+declared.  Note that when running a
+scenario, you select one vehicle, so this is in principle not necessary.
+The reason for having this is to allow the user to copy the baseline file
+and keep the location definitions that are not used for this scenario but
+might be so for another, thereby reducing the need for changes between
+scenarios.</li>
+<li><strong>Connectivity:</strong> A value between 0 and 1 (0% to 100%) that tells the
+probability that a vehicle parked at this location is connected to a
+charger.</li>
+<li><strong>Charging power:</strong> The (peak) charging power of the charger at this
+location (in kW).</li>
+<li><strong>Charger efficiency:</strong> A value between 0 and 1 (0% to 100%) that tells how
+much of the power drawn from the network is delivered to the battery of the
+vehicle.</li>
+<li><strong>Latitude:</strong> The latitude of the location. <strong><em>This factor is a placeholder
+and is currently not in use.</em></strong></li>
+<li><strong>Longitude:</strong> The longitude of the location. <strong><em>This factor is a 
+placeholder and is currently not in use.</em></strong></li>
+<li><strong>Base charging price:</strong> The base/reference (i.e. before
+flexibility/temporal changes) charging price at this location, in €/kWh.
+<strong><em>This factor is a placeholder and is currently not in use.</em></strong></li>
+<li><strong>Charging desirability:</strong> A value between 0 and 1 (0% to 100%) that tells
+how much the users like to charge at this location.
+<strong><em>This factor is a placeholder and is currently not in use.</em></strong></li>
+<li><strong>Percentage in location at run start:</strong> A value between 0 and 1
+(0% to 100%) that tells which percentage of the vehicles start the run there.
+This is used if we will that in directly instead of computing it. The decision
+t use this is controlled by the compute_start_location_split parameter in
+the <a href="../mobility/#module-parameters">mobility</a> module.</li>
+</ol>
+<h2 id="trip">Trip</h2>
+<p>This class defines the trips and their properties, from a scenario
+file that contains a list of instances and their properties.
+Trips are collections of legs that take place on a given day.
+Note that this day does not necessarily start (and end) at midnight,
+but can start (and end) at an hour that is more logical/significant for the
+vehicle user (it could for example be 05:00 for car drivers).
+This <a href="../scenario/#day_start_hour">day start hour</a>
+parameter is universal for all trips
+This value is set in the scenario files.</p>
+<h3 id="parameters_2">Parameters</h3>
+<ol>
+<li><strong>Name</strong>: The name of the trip.</li>
+<li><strong>Vehicle:</strong> The vehicle that does the trip. If this does not correspond
+to the <a href="../scenario/#vehicle-name">scenario vehicle name</a>, then the trip is not
+declared. Note that when running 
+a scenario, you select one vehicle, so this is in principle not necessary.
+The reason for having this is to allow the user to copy the baseline file
+and keep the trip definitions that are not used for this scenario but
+might be so for another, thereby reducing the need for changes between
+scenarios.</li>
+<li><strong>Legs:</strong> A list of the legs in the trip.</li>
+<li><strong>Time between legs:</strong> A list of the time spent at the arrival locations
+between each leg (in hours).</li>
+<li><strong>Percentage station users:</strong>A value between 0 and 1
+(0% to 100%) that tells us which percentage of users use fast charging
+stations.
+<strong><em>This factor is a placeholder and is currently not in use.</em></strong></li>
+<li><strong>Start probabilities:</strong> A list of values between 0 and 1 (0%-100%) adding
+up to 1/100% that tells us what the probability of starting the trip is at
+a given hour. Note that the hours start at 
+ <a href="../scenario/#day_start_hour">day start hour</a>, not at
+midnight.</li>
+<li><strong>Leg repetitions:</strong> A list for repetitions for each leg (set at zero
+if the leg is not repeated), of the same length as the amount of legs. Note
+that if two (or more) consecutive legs have repetitions, then they are
+the sequences of legs is repeated. For more detail, see 
+<a href="#leg-repetitions">here</a>.</li>
+<li><strong>Time between repetitions:</strong> A list of times (in hours) between two
+repetitions of a leg. Note that the index/position in the list starts at the 
+<a href="../scenario/#day_start_hour">day start hour</a>, not at midnight. 
+This allows for things like more frequent
+repeats of legs at peak hours, for example.</li>
+</ol>
+<h3 id="mobility-matrix">Mobility matrix</h3>
+<p>The main aim of the trip initialization/declaration is to create a mobility
+matrix for the trip.
+This mobility matrix has, for all combinations of possible start and end 
+locations (i.e.
+locations connected by a leg in the trip) and for each hour in day number
+(starting at the <a href="../scenario/#day_start_hour">day start hour</a>), the following
+quantities:
+1. <strong>Duration:</strong> The duration (in hours) of a leg between the start location
+and the end location.
+2. <strong>Distance:</strong> The distance (in kilometers) of a leg between the start 
+location.
+3. <strong>Weighted distance:</strong> The weighted distance (in kilometers) of a leg 
+between the start location and the end location. This corresponds to using
+different <a href="../scenario/#road_types">road types</a>, with given
+<a href="../scenario/#weights">weights</a> and given <a href="../scenario/#mix">mixes</a> to account
+for the fact that vehicles consume more on some road types.
+4. <strong>Departures amount</strong>: The chance that a vehicle, in a given hour,  leaves
+the start location,
+going to the end location (amount and chance are equivalent
+here, as we compute on an individual vehicle basis).
+5. <strong>Departures kilometers:</strong> The kilometers driven by vehicles leaving the
+start location at a given hour and going to the end location. This is given
+by the departures amount times the distance.
+6. <strong>Departures  weighted kilometers:</strong> The weighted (by road type) kilometers 
+driven by vehicles leaving the start location at a given hour and going to the 
+end location. This is given
+by the departures amount times the weighted distance.
+7. <strong>Arrivals amount</strong>: The chance that a vehicle, in a given hour,
+ arrives to the end
+location,
+having started the start location (amount and chance are equivalent
+here, as we compute on an individual vehicle basis).
+8. <strong>Arrivals kilometers:</strong> The kilometers driven by vehicles arriving to the
+end location at a given hour, having started at the start location. 
+This is given
+by the arrivals amount times the distance.
+9. <strong>Arrivals  weighted kilometers:</strong> The weighted (by road type) kilometers 
+driven by vehicles arriving to the end location at a given hour, having 
+started at the start location. This is given
+by the arrivals amount times the weighted distance.</p>
+<h4 id="leg-repetitions">Leg repetitions</h4>
+<p>Is repeat of leg or two legs????
+[0, 5, 5, 0]
+If next leg is also repeated/still has repeats left, then it is repeated after the leg
+in question
+so when putting a leg, check if it is repeated. If so, check if the next is repeated,
+until you have no repeats (or end the list). Add on of each repeated legs
+then number of repeats goes down by one and redo
+Have one trip per day type for non-cars</p>
+<p>Reference to day start hour
+cross-links with scenario
+send Profiles to Berlin</p>
               
             </div>
           </div><footer>
