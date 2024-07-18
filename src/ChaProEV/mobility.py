@@ -130,7 +130,7 @@ def get_trip_probabilities_per_day_type_other_vehicles(
 
     trips_per_day_type: ty.List[str] = mobility_module_parameters[
         'trips_per_day_type'
-    ]
+    ][scenario_vehicle]
 
     for day_type, trip in zip(day_types, trips_per_day_type):
         trip_probabilities_per_day_type.loc[trip, day_type] = 1

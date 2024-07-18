@@ -719,45 +719,47 @@ def get_charging_profile(
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
-def get_all_charge_levels() -> ty.Dict[str, ty.List[float]]:
-    leg_distances: ty.Dict[str, ty.List[float]] = {}
-    leg_distances['home'] = [400, 200, 100, 44, 22, 12, 6]
-    leg_distances['work'] = [22]
-    leg_distances['leisure'] = [6]
-    leg_distances['weekend'] = [100]
-    leg_distances['holiday'] = [400]
-    draws: ty.Dict[str, float] = {}
-    draws['home'] = 8.9
-    draws['work'] = 22
-    draws['leisure'] = 22
-    draws['weekend'] = 22
-    draws['holiday'] = 22
-    kWh_per_km: float = 0.2
-    locations: ty.List[str] = ['home', 'work', 'leisure', 'weekend', 'holiday']
-    all_charge_levels: ty.Dict[str, ty.List[float]] = {}
-    for location in locations:
-        start_levels: ty.List[float] = [
-            leg_distance * kWh_per_km
-            for leg_distance in leg_distances[location]
-        ]
+# def get_all_charge_levels() -> ty.Dict[str, ty.List[float]]:
+#     leg_distances: ty.Dict[str, ty.List[float]] = {}
+#     leg_distances['home'] = [400, 200, 100, 44, 22, 12, 6]
+#     leg_distances['work'] = [22]
+#     leg_distances['leisure'] = [6]
+#     leg_distances['weekend'] = [100]
+#     leg_distances['holiday'] = [400]
+#     draws: ty.Dict[str, float] = {}
+#     draws['home'] = 8.9
+#     draws['work'] = 22
+#     draws['leisure'] = 22
+#     draws['weekend'] = 22
+#     draws['holiday'] = 22
+#     kWh_per_km: float = 0.2
+#     locations: ty.List[str] = [
+#       'home', 'work', 'leisure', 'weekend', 'holiday'
+# ]
+#     all_charge_levels: ty.Dict[str, ty.List[float]] = {}
+#     for location in locations:
+#         start_levels: ty.List[float] = [
+#             leg_distance * kWh_per_km
+#             for leg_distance in leg_distances[location]
+#         ]
 
-        all_charge_levels[location] = []
-        draw: float = draws[location]
-        charge_levels: ty.List[float] = start_levels
-        while max(charge_levels) > 0:
-            new_levels: ty.List[float] = []
-            for charge_level in charge_levels:
-                if charge_level > 0:
-                    all_charge_levels[location].append(charge_level)
-                new_charge_level: float = charge_level - draw
-                if new_charge_level > 0:
-                    new_levels.append(new_charge_level)
-            charge_levels = new_levels
-            all_charge_levels[location] = sorted(all_charge_levels[location])
-            if len(charge_levels) == 0:
-                charge_levels = [0]
+#         all_charge_levels[location] = []
+#         draw: float = draws[location]
+#         charge_levels: ty.List[float] = start_levels
+#         while max(charge_levels) > 0:
+#             new_levels: ty.List[float] = []
+#             for charge_level in charge_levels:
+#                 if charge_level > 0:
+#                     all_charge_levels[location].append(charge_level)
+#                 new_charge_level: float = charge_level - draw
+#                 if new_charge_level > 0:
+#                     new_levels.append(new_charge_level)
+#             charge_levels = new_levels
+#             all_charge_levels[location] = sorted(all_charge_levels[location])
+#             if len(charge_levels) == 0:
+#                 charge_levels = [0]
 
-    return all_charge_levels
+#     return all_charge_levels
 
 
 if __name__ == '__main__':

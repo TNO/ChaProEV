@@ -188,13 +188,36 @@ class Trip:
                                     repetition_iteration_index
                                 ]
                             )
+
                         else:
 
-                            trip.time_between_legs.append(
-                                time_between_legs_store[
-                                    leg_index + len(trip.repeated_sequence) - 1
-                                ]
-                            )
+                            add_final_time_between_legs: bool = True
+
+                            if leg_index == (
+                                len(trip_legs_store)
+                                - len(trip.repeated_sequence)
+                            ):
+
+                                if (
+                                    trip_legs_store[-1]
+                                    == trip.repeated_sequence[-1]
+                                ):
+                                    add_final_time_between_legs = False
+                                    # If the last leg of the trip
+                                    # is also the last leg of the repeated
+                                    # sequence, we don't need to add
+                                    # the time after it (since it is the
+                                    # last leg of the trip).
+
+                            if add_final_time_between_legs:
+                                trip.time_between_legs.append(
+                                    time_between_legs_store[
+                                        leg_index
+                                        + len(trip.repeated_sequence)
+                                        - 1
+                                    ]
+                                )
+
                     repetition_iteration_index += 1
 
         # We want to create a mobility matrix for the trip. This matrix will
