@@ -1,0 +1,16 @@
+site_name: ChaProEV
+nav:
+  - Home: index.md
+  - How to use: using.md
+  - The scenario file: scenario.md
+  - Modules: 
+    - Weather: weather.md
+    - Run time: run_time.md
+    - Define: define.md
+    - Charging: charging.md
+    - Consumption: consumption.md
+
+theme: 
+  name: readthedocs
+  sticky_navigation: False
+

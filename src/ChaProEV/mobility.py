@@ -16,95 +16,157 @@ for the whole run
 '''
 
 import datetime
+import typing as ty
 
 import numpy as np
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
-    import run_time
+    import run_time  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
 except ModuleNotFoundError:
-    from ChaProEV import run_time
+    from ChaProEV import run_time  # type: ignore
 # So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
 
 
-def get_trip_probabilities_per_day_type(parameters):
-    vehicle = parameters['vehicle']['name']
+def get_possible_destinations(scenario: ty.Dict) -> ty.Dict[str, ty.List[str]]:
+    '''
+    For each location, this gets the possible destinations
+    '''
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+    location_parameters: ty.Dict = scenario['locations']
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
+    possible_destinations: ty.Dict[str, ty.List[str]] = {}
+    for location_name in location_names:
+        possible_destinations[location_name] = []
+    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
+        get_mobility_location_tuples(scenario)
+    )
+    for mobility_location_tuple in mobility_location_tuples:
+        start_location: str = mobility_location_tuple[0]
+        destination: str = mobility_location_tuple[1]
+        if destination not in possible_destinations[start_location]:
+            possible_destinations[start_location].append(destination)
+
+    return possible_destinations
+
+
+def get_mobility_location_tuples(
+    scenario: ty.Dict,
+) -> ty.List[ty.Tuple[str, str]]:
+    '''
+    This creates a list of tuples. These tuples are all the possible
+    start and end locations of trips. This is done to avoid creating too
+    large mobility matrices (with all possible combinations of locations).
+    '''
+    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = []
+    leg_parameters: ty.Dict = scenario['legs']
+
+    for leg_name in leg_parameters.keys():
+        leg_tuple: ty.Tuple[str, str] = (
+            leg_parameters[leg_name]['locations']['start'],
+            leg_parameters[leg_name]['locations']['end'],
+        )
+        if leg_tuple not in mobility_location_tuples:
+            mobility_location_tuples.append(leg_tuple)
+
+    return mobility_location_tuples
+
+
+def get_trip_probabilities_per_day_type(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
+    vehicle: str = scenario['vehicle']['name']
     if vehicle == 'car':
-        trip_probabilities_per_day_type = (
-            get_car_trip_probabilities_per_day_type(parameters)
+        trip_probabilities_per_day_type: pd.DataFrame = (
+            get_car_trip_probabilities_per_day_type(scenario, case_name)
         )
     else:
-        print('Vehicle does not have a model')
+        print(f'{vehicle} does not have a model')
         exit()
 
     return trip_probabilities_per_day_type
 
 
-def get_car_trip_probabilities_per_day_type(parameters):
+def get_car_trip_probabilities_per_day_type(
+    scenario: ty.Dict, case_name: str
+) -> pd.DataFrame:
     '''
-    This function computes the trip probabilities per day type.
+    This function computes the trip probabilities per day type for cars
     '''
-    day_type_start_location_split = get_day_type_start_location_split(
-        parameters
+    day_type_start_location_split: pd.DataFrame = (
+        get_day_type_start_location_split(scenario)
     )
 
-    trip_list = list(parameters['trips'].keys())
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    trip_list: ty.List[str] = list(scenario['trips'].keys())
+    scenario_name: str = scenario['scenario_name']
 
-    file_parameters = parameters['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
+    file_parameters: ty.Dict = scenario['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
-    time_parameters = parameters['time']
-    DAYS_IN_A_YEAR = time_parameters['DAYS_IN_A_YEAR']
-    DAYS_IN_A_WEEK = time_parameters['DAYS_IN_A_WEEK']
-    weeks_in_a_year = DAYS_IN_A_YEAR / DAYS_IN_A_WEEK
-    weekend_day_numbers = time_parameters['weekend_day_numbers']
-    number_weekdays = DAYS_IN_A_WEEK - len(weekend_day_numbers)
+    time_parameters: ty.Dict = scenario['time']
+    DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
+    DAYS_IN_A_WEEK: int = time_parameters['DAYS_IN_A_WEEK']
+    weeks_in_a_year: float = DAYS_IN_A_YEAR / DAYS_IN_A_WEEK
+    weekend_day_numbers: ty.List[int] = time_parameters['weekend_day_numbers']
+    number_weekdays: int = DAYS_IN_A_WEEK - len(weekend_day_numbers)
 
-    mobility_module_parameters = parameters['mobility_module']
-    worked_hours_per_year = mobility_module_parameters['worked_hours_per_year']
-    work_hours_in_a_work_day = mobility_module_parameters[
+    mobility_module_parameters: ty.Dict = scenario['mobility_module']
+    worked_hours_per_year: float = mobility_module_parameters[
+        'worked_hours_per_year'
+    ]
+    work_hours_in_a_work_day: float = mobility_module_parameters[
         'work_hours_in_a_work_day'
     ]
-    day_types = mobility_module_parameters['day_types']
-    percentage_working_on_a_work_week = mobility_module_parameters[
+    day_types: ty.List[str] = mobility_module_parameters['day_types']
+    percentage_working_on_a_work_week: float = mobility_module_parameters[
         'percentage_working_on_a_work_week'
     ]
-    hours_worked_per_work_week = mobility_module_parameters[
+    hours_worked_per_work_week: float = mobility_module_parameters[
         'hours_worked_per_work_week'
     ]
-    hours_in_a_standard_work_week = mobility_module_parameters[
+    hours_in_a_standard_work_week: float = mobility_module_parameters[
         'hours_in_a_standard_work_week'
     ]
-    holiday_weeks = mobility_module_parameters['holiday_weeks']
-    number_of_holiday_weeks = mobility_module_parameters[
+    # holiday_weeks = mobility_module_parameters['holiday_weeks']
+    number_of_holiday_weeks: float = mobility_module_parameters[
         'number_of_holiday_weeks'
     ]
-    holiday_trips_taken = mobility_module_parameters['holiday_trips_taken']
-    time_spent_at_holiday_destination = mobility_module_parameters[
-        'time_spent_at_holiday_destination'
+    holiday_trips_taken: float = mobility_module_parameters[
+        'holiday_trips_taken'
     ]
-    days_in_holiday_weeks = (
-        DAYS_IN_A_YEAR * number_of_holiday_weeks / weeks_in_a_year
-    )
-    weekend_days_per_year = (
+    # time_spent_at_holiday_destination = mobility_module_parameters[
+    #     'time_spent_at_holiday_destination'
+    # ]
+    # days_in_holiday_weeks = (
+    #     DAYS_IN_A_YEAR * number_of_holiday_weeks / weeks_in_a_year
+    # )
+    weekend_days_per_year: float = (
         DAYS_IN_A_YEAR * len(weekend_day_numbers) / DAYS_IN_A_WEEK
     )
-    weekend_trips_per_year = mobility_module_parameters[
+    weekend_trips_per_year: float = mobility_module_parameters[
         'weekend_trips_per_year'
     ]
-    leisure_trips_per_weekend = mobility_module_parameters[
+    leisure_trips_per_weekend: float = mobility_module_parameters[
         'leisure_trips_per_weekend'
     ]
-    leisure_trips_per_week_outside_weekends = mobility_module_parameters[
-        'leisure_trips_per_week_outside_weekends'
-    ]
+    leisure_trips_per_week_outside_weekends: float = (
+        mobility_module_parameters['leisure_trips_per_week_outside_weekends']
+    )
 
-    maximal_fill_percentage_leisure_trips_on_non_work_weekdays = (
+    maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
         mobility_module_parameters[
             'maximal_fill_percentage_leisure_trips_on_non_work_weekdays'
         ]
@@ -112,33 +174,33 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # Some useful quantities telling us how many of which day type there are
     # per year
-    weekday_proportion = number_weekdays / DAYS_IN_A_WEEK
-    workweek_proportion = number_of_holiday_weeks / weeks_in_a_year
-    weekdays_in_work_weeks = (
+    weekday_proportion: float = number_weekdays / DAYS_IN_A_WEEK
+    workweek_proportion: float = number_of_holiday_weeks / weeks_in_a_year
+    weekdays_in_work_weeks: float = (
         weekday_proportion * workweek_proportion * DAYS_IN_A_YEAR
     )
-    weekdays_in_holiday_weeks = (
+    weekdays_in_holiday_weeks: float = (
         weekday_proportion * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     )
-    weekend_days_in_holiday_weeks = (
-        (1 - weekday_proportion) * (1 - workweek_proportion) * DAYS_IN_A_YEAR
-    )
+    # weekend_days_in_holiday_weeks = (
+    #     (1 - weekday_proportion) * (1 - workweek_proportion) * DAYS_IN_A_YEAR
+    # )
 
-    holiday_departures_in_weekend_week_numbers = parameters['mobility_module'][
-        'holiday_departures_in_weekend_week_numbers'
-    ]
-    number_of_holiday_departure_weekends = len(
+    holiday_departures_in_weekend_week_numbers: ty.List[int] = scenario[
+        'mobility_module'
+    ]['holiday_departures_in_weekend_week_numbers']
+    number_of_holiday_departure_weekends: int = len(
         holiday_departures_in_weekend_week_numbers
     )
-    holiday_returns_in_weekend_week_numbers = parameters['mobility_module'][
-        'holiday_returns_in_weekend_week_numbers'
-    ]
-    number_of_holiday_return_weekends = len(
+    holiday_returns_in_weekend_week_numbers: ty.List[int] = scenario[
+        'mobility_module'
+    ]['holiday_returns_in_weekend_week_numbers']
+    number_of_holiday_return_weekends: int = len(
         holiday_returns_in_weekend_week_numbers
     )
 
     # We build a Dataframe to store the trip probabilities per day type
-    trip_probabilities_per_day_type = pd.DataFrame(
+    trip_probabilities_per_day_type: pd.DataFrame = pd.DataFrame(
         columns=day_types, index=trip_list
     )
     trip_probabilities_per_day_type.index.name = 'Trip'
@@ -148,35 +210,35 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # We assume that holiday trips occur on certain weekends
     # (some for departures, some for returns))
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'weekday_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'weekday_in_work_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'weekend_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'weekend_in_work_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'weekday_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'weekday_in_work_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'weekend_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'weekend_in_work_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'weekday_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'weekday_in_holiday_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'weekend_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'weekend_in_holiday_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'weekday_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'weekday_in_holiday_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'weekend_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'weekend_in_holiday_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'weekend_holiday_returns'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'weekend_holiday_returns'
     ] = 0
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'weekend_holiday_departures'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'weekend_holiday_departures'
     ] = 0
 
     # The only non-zero values are for holidays outward in departure
@@ -185,76 +247,76 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # These are simply given by the amount of holiday trips taken
     # divided by the amount of respective weekends and
     # by the length of a weekend
-    holiday_departure_probability = holiday_trips_taken / (
+    holiday_departure_probability: float = holiday_trips_taken / (
         number_of_holiday_departure_weekends * len(weekend_day_numbers)
     )
 
-    holiday_return_probability = holiday_trips_taken / (
+    holiday_return_probability: float = holiday_trips_taken / (
         number_of_holiday_return_weekends * len(weekend_day_numbers)
     )
 
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'weekend_holiday_departures'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'weekend_holiday_departures'
     ] = holiday_departure_probability
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'weekend_holiday_returns'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'weekend_holiday_returns'
     ] = holiday_return_probability
-    trip_probabilities_per_day_type.loc['holiday_outward'][
-        'holiday_overlap_weekend'
+    trip_probabilities_per_day_type.loc[
+        'holiday_outward', 'holiday_overlap_weekend'
     ] = holiday_departure_probability
-    trip_probabilities_per_day_type.loc['holiday_back'][
-        'holiday_overlap_weekend'
+    trip_probabilities_per_day_type.loc[
+        'holiday_back', 'holiday_overlap_weekend'
     ] = holiday_return_probability
 
     # Weekend trips occur on the weekend and their probability is the amount
     # of such trips divided by the amount of weekend days (both per year)
     # but only in weekends where there are no holiday departures
     # or returns
-    weekend_days_per_year_without_holiday_trips = weekend_days_per_year - len(
-        weekend_day_numbers
-    ) * (
+    weekend_days_per_year_without_holiday_trips: (
+        float
+    ) = weekend_days_per_year - len(weekend_day_numbers) * (
         len(holiday_departures_in_weekend_week_numbers)
         + len(holiday_departures_in_weekend_week_numbers)
     )
 
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'weekday_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'weekday_in_work_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'weekday_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'weekday_in_holiday_week'
     ] = 0
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'weekend_in_work_week'
+
+    # This is needed for MyPy to understand this is a float
+    # and be able to use it in operations below
+
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'weekend_in_work_week'
     ] = (
         weekend_trips_per_year / weekend_days_per_year_without_holiday_trips
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekend_in_work_week'
-    ]
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'weekend_in_holiday_week'
+    ) * float(
+        day_type_start_location_split.loc['home']['weekend_in_work_week']
+    )
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'weekend_in_holiday_week'
     ] = (
         weekend_trips_per_year / weekend_days_per_year_without_holiday_trips
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekend_in_holiday_week'
-    ]
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'weekend_holiday_departures'
+    ) * float(
+        day_type_start_location_split.loc['home']['weekend_in_holiday_week']
+    )
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'weekend_holiday_departures'
     ] = 0
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'weekend_holiday_returns'
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'weekend_holiday_returns'
     ] = 0
-    trip_probabilities_per_day_type.loc['weekend_trip'][
-        'holiday_overlap_weekend'
+    trip_probabilities_per_day_type.loc[
+        'weekend_trip', 'holiday_overlap_weekend'
     ] = 0
     # We compute the probability to go to work on a given day in a work week.
     # It is given by the probability that peple work in that week times
     # the number of hours worked in that week divided by
     # the length of a standard work week.
-    probability_of_going_to_work_in_a_work_week = (
+    probability_of_going_to_work_in_a_work_week: float = (
         percentage_working_on_a_work_week
         * hours_worked_per_work_week
         / hours_in_a_standard_work_week
@@ -268,14 +330,16 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # we need a few steps.
     # We first look at how many weekdays there are in both week types
 
-    worked_days_in_work_weeks = (
+    worked_days_in_work_weeks: float = (
         probability_of_going_to_work_in_a_work_week * weekdays_in_work_weeks
     )
     # We also need the total amount of worked days per year.
-    worked_days_per_year = worked_hours_per_year / work_hours_in_a_work_day
+    worked_days_per_year: float = (
+        worked_hours_per_year / work_hours_in_a_work_day
+    )
     # The number of worked days in holiday weeks
     # is the difference between the above two.
-    worked_days_in_holiday_weeks = (
+    worked_days_in_holiday_weeks: float = (
         worked_days_per_year - worked_days_in_work_weeks
     )
 
@@ -283,9 +347,11 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # the ratio bewtween the number of worked days (on holiday weekdays)
     # and the total amount of holiday weekdays.
     # This only holds for those that actually are at home during those days
-    probability_of_going_to_work_in_a_holiday_week = (
+    probability_of_going_to_work_in_a_holiday_week: float = (
         worked_days_in_holiday_weeks / weekdays_in_holiday_weeks
-    ) / day_type_start_location_split.loc['home', 'weekday_in_holiday_week']
+    ) / float(
+        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+    )
 
     if probability_of_going_to_work_in_a_holiday_week > 1:
         print('The probability of going t work is larger than one.')
@@ -293,43 +359,51 @@ def get_car_trip_probabilities_per_day_type(parameters):
         print('(e.g. too many work hours and/or holiday trips or not enough )')
         print('holiday weeks)')
 
-    worked_days_in_a_work_week = (
+    worked_days_in_a_work_week: float = (
         number_weekdays * probability_of_going_to_work_in_a_work_week
     )
 
-    weekdays_with_no_work_trip_per_work_week = (
+    weekdays_with_no_work_trip_per_work_week: float = (
         number_weekdays - worked_days_in_a_work_week
     )
 
-    worked_days_in_a_holiday_week = (
+    worked_days_in_a_holiday_week: float = (
         number_weekdays * probability_of_going_to_work_in_a_holiday_week
     )
 
-    weekdays_with_no_work_trip_per_holiday_week = (
+    weekdays_with_no_work_trip_per_holiday_week: float = (
         number_weekdays - worked_days_in_a_holiday_week
     )
 
     # For work weeks, it's the same as the amount of days
     # where there is no work trip.
-    non_work_weekdays_per_work_week_where_a_leisure_trip_can_occur = (
+    non_work_weekdays_per_work_week_where_a_leisure_trip_can_occur: float = (
         weekdays_with_no_work_trip_per_work_week
     )
 
     # For holiday weeks, we need to substract weekdays where there is a
     # holiday trip
 
-    non_work_weekdays_per_holiday_week_where_a_leisure_trip_can_occur = (
+    non_work_weekdays_per_holiday_week_where_a_leisure_trip_can_occur: (
+        float
+    ) = (
         weekdays_with_no_work_trip_per_holiday_week
         - number_weekdays
         * (
-            trip_probabilities_per_day_type.loc['holiday_outward'][
-                'weekday_in_holiday_week'
-            ]
-            + trip_probabilities_per_day_type.loc['holiday_back'][
-                'weekday_in_holiday_week'
-            ]
+            float(
+                trip_probabilities_per_day_type.loc['holiday_outward'][
+                    'weekday_in_holiday_week'
+                ]
+            )
+            + float(
+                trip_probabilities_per_day_type.loc['holiday_back'][
+                    'weekday_in_holiday_week'
+                ]
+            )
         )
-    ) * day_type_start_location_split.loc['home', 'weekday_in_holiday_week']
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+    )
 
     # The vehicles also need to be home fot that to occur,
     # given that leisure only is between home and leisure
@@ -353,7 +427,9 @@ def get_car_trip_probabilities_per_day_type(parameters):
     # If the amount of non-work days is zero, then the fill level is zero.
     if non_work_weekdays_per_work_week_where_a_leisure_trip_can_occur == 0:
         # To avoid divisions by zero
-        fill_level_non_work_weekdays_with_leisure_trips_in_a_work_week = 0
+        fill_level_non_work_weekdays_with_leisure_trips_in_a_work_week: (
+            float
+        ) = 0
     else:
         fill_level_non_work_weekdays_with_leisure_trips_in_a_work_week = (
             leisure_trips_per_week_outside_weekends
@@ -370,7 +446,9 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     if non_work_weekdays_per_holiday_week_where_a_leisure_trip_can_occur == 0:
         # To avoid divisions by zero
-        fill_level_non_work_weekdays_with_leisure_trips_in_a_holiday_week = 0
+        fill_level_non_work_weekdays_with_leisure_trips_in_a_holiday_week: (
+            float
+        ) = 0
     else:
         fill_level_non_work_weekdays_with_leisure_trips_in_a_holiday_week = (
             leisure_trips_per_week_outside_weekends
@@ -394,131 +472,113 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # The amount of leisure trips on non-work weekdays is then given by
     # the fill level multplied by the amount of non-work weekdays.
-    weekday_leisure_trips_on_non_work_days_in_a_work_week = (
+    weekday_leisure_trips_on_non_work_days_in_a_work_week: float = (
         fill_level_non_work_weekdays_with_leisure_trips_in_a_work_week
         * non_work_weekdays_per_work_week_where_a_leisure_trip_can_occur
     )
-    weekday_leisure_trips_on_non_work_days_in_a_holiday_week = (
+    weekday_leisure_trips_on_non_work_days_in_a_holiday_week: float = (
         fill_level_non_work_weekdays_with_leisure_trips_in_a_holiday_week
         * non_work_weekdays_per_holiday_week_where_a_leisure_trip_can_occur
     )
 
     # This allows us to set the leisure only trips on weekdays
 
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'weekday_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'weekday_in_work_week'
     ] = (
         weekday_leisure_trips_on_non_work_days_in_a_work_week / number_weekdays
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekday_in_work_week'
-    ]
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'weekday_in_holiday_week'
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_work_week']
+    )
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'weekday_in_holiday_week'
     ] = (
         weekday_leisure_trips_on_non_work_days_in_a_holiday_week
         / number_weekdays
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekday_in_holiday_week'
-    ]
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+    )
     # For weekends, we distribute the leisure trips across the weekemd
 
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'weekend_in_work_week'
-    ] = (
-        leisure_trips_per_weekend / len(weekend_day_numbers)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekend_in_work_week'
-    ]
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'weekend_in_holiday_week'
-    ] = (
-        leisure_trips_per_weekend / len(weekend_day_numbers)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekend_in_holiday_week'
-    ]
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'weekend_in_work_week'
+    ] = (leisure_trips_per_weekend / len(weekend_day_numbers)) * float(
+        day_type_start_location_split.loc['home']['weekend_in_work_week']
+    )
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'weekend_in_holiday_week'
+    ] = (leisure_trips_per_weekend / len(weekend_day_numbers)) * float(
+        day_type_start_location_split.loc['home']['weekend_in_holiday_week']
+    )
     # For holiday departure and return weekends, we assume
     # that only those who do not travel can have a leisure-only trip
-    percentage_not_departing = 1 - (
+    percentage_not_departing: float = 1 - float(
         trip_probabilities_per_day_type.loc['holiday_outward'][
             'weekend_holiday_departures'
         ]
     )
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'weekend_holiday_departures'
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'weekend_holiday_departures'
     ] = (
         percentage_not_departing
         * leisure_trips_per_weekend
         / len(weekend_day_numbers)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekend_holiday_departures'
-    ]
-    percentage_not_returning = 1 - (
+    ) * float(
+        day_type_start_location_split.loc['home']['weekend_holiday_departures']
+    )
+    percentage_not_returning: float = 1 - float(
         trip_probabilities_per_day_type.loc['holiday_back'][
             'weekend_holiday_returns'
         ]
     )
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'weekend_holiday_returns'
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'weekend_holiday_returns'
     ] = (
         percentage_not_returning
         * leisure_trips_per_weekend
         / len(weekend_day_numbers)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekend_holiday_returns'
-    ]
+    ) * float(
+        day_type_start_location_split.loc['home']['weekend_holiday_returns']
+    )
     # For overlap weekends, we have:
-    percentage_not_departing_or_returning = 1 - (
+    percentage_not_departing_or_returning: float = 1 - float(
         trip_probabilities_per_day_type.loc['holiday_outward'][
             'holiday_overlap_weekend'
         ]
-        + trip_probabilities_per_day_type.loc['holiday_back'][
-            'holiday_overlap_weekend'
+        + trip_probabilities_per_day_type.loc[
+            'holiday_back', 'holiday_overlap_weekend'
         ]
     )
-    trip_probabilities_per_day_type.loc['leisure_only'][
-        'holiday_overlap_weekend'
+    trip_probabilities_per_day_type.loc[
+        'leisure_only', 'holiday_overlap_weekend'
     ] = (
         percentage_not_departing_or_returning
         * leisure_trips_per_weekend
         / len(weekend_day_numbers)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'holiday_overlap_weekend'
-    ]
+    ) * float(
+        day_type_start_location_split.loc['home']['holiday_overlap_weekend']
+    )
 
     # The amount of weekday leisure trips taking place on work weekdays is
     # then the difference between the total amount of weekday leisure trips and
     # the amount we just calculated.
-    weekday_leisure_trips_on_work_days_in_a_work_week = (
+    weekday_leisure_trips_on_work_days_in_a_work_week: float = (
         leisure_trips_per_week_outside_weekends
         - weekday_leisure_trips_on_non_work_days_in_a_work_week
     )
-    weekday_leisure_trips_on_work_days_in_a_holiday_week = (
+    weekday_leisure_trips_on_work_days_in_a_holiday_week: float = (
         leisure_trips_per_week_outside_weekends
         - weekday_leisure_trips_on_non_work_days_in_a_holiday_week
     )
 
     # We can also compute the probability to have a leisure trip on a
     # working weekday (we do not use the fill parameter).
-    leisure_trip_probability_on_a_work_weekday_in_a_work_week = (
+    leisure_trip_probability_on_a_work_weekday_in_a_work_week: float = (
         weekday_leisure_trips_on_work_days_in_a_work_week
         / worked_days_in_a_work_week
     )
 
-    leisure_trip_probability_on_a_work_weekday_in_a_holiday_week = (
+    leisure_trip_probability_on_a_work_weekday_in_a_holiday_week: float = (
         weekday_leisure_trips_on_work_days_in_a_holiday_week
         / worked_days_in_a_holiday_week
     )
@@ -532,119 +592,111 @@ def get_car_trip_probabilities_per_day_type(parameters):
 
     # This will be different for work weeks and holiday weeks.
     # We also assume that people don't work on weekends
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'weekday_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'weekday_in_work_week'
     ] = (
         probability_of_going_to_work_in_a_work_week
         * leisure_trip_probability_on_a_work_weekday_in_a_work_week
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekday_in_work_week'
-    ]
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'weekday_in_work_week'
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_work_week']
+    )
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'weekday_in_work_week'
     ] = (
         probability_of_going_to_work_in_a_work_week
         * (1 - leisure_trip_probability_on_a_work_weekday_in_a_work_week)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekday_in_work_week'
-    ]
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_work_week']
+    )
 
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'weekend_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'weekend_in_work_week'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'weekend_in_work_week'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'weekend_in_work_week'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'weekend_holiday_departures'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'weekend_holiday_departures'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'weekend_holiday_departures'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'weekend_holiday_departures'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'holiday_overlap_weekend'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'holiday_overlap_weekend'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'holiday_overlap_weekend'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'holiday_overlap_weekend'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'weekend_holiday_returns'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'weekend_holiday_returns'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'weekend_holiday_returns'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'weekend_holiday_returns'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'weekday_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'weekday_in_holiday_week'
     ] = (
         probability_of_going_to_work_in_a_holiday_week
         * leisure_trip_probability_on_a_work_weekday_in_a_holiday_week
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekday_in_holiday_week'
-    ]
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'weekday_in_holiday_week'
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+    )
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'weekday_in_holiday_week'
     ] = (
         probability_of_going_to_work_in_a_holiday_week
         * (1 - leisure_trip_probability_on_a_work_weekday_in_a_holiday_week)
-    ) * day_type_start_location_split.loc[
-        'home'
-    ][
-        'weekday_in_holiday_week'
-    ]
+    ) * float(
+        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+    )
 
-    trip_probabilities_per_day_type.loc['commute_to_work'][
-        'weekend_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work', 'weekend_in_holiday_week'
     ] = 0
 
-    trip_probabilities_per_day_type.loc['commute_to_work_and_leisure'][
-        'weekend_in_holiday_week'
+    trip_probabilities_per_day_type.loc[
+        'commute_to_work_and_leisure', 'weekend_in_holiday_week'
     ] = 0
 
     # Now that we computed all travelling trips, we look at the stay_put
     # trips as remainders
 
-    stay_put_trips = ['stay_put_home', 'stay_put_holiday']
-    travelling_trip_probabilities_per_day_type = (
+    stay_put_trips: ty.List[str] = ['stay_put_home', 'stay_put_holiday']
+    travelling_trip_probabilities_per_day_type: pd.DataFrame = (
         trip_probabilities_per_day_type.drop(stay_put_trips, axis=0)
     )
     # We drop the stayp put trips to have the sum of actual trips
     # We will put the stay put trips back later
-    stay_put_probabilities = (
+    stay_put_probabilities: pd.Series = (
         1 - travelling_trip_probabilities_per_day_type.sum()
     )
 
-    stay_put_split = {}
+    stay_put_split: ty.Dict[str, ty.Dict[str, float]] = {}
 
-    possible_stay_locations = ['home', 'holiday']
+    possible_stay_locations: ty.List[str] = ['home', 'holiday']
     for location in possible_stay_locations:
         stay_put_split[f'stay_put_{location}'] = {}
         for day_type in day_types:
-            stay_put_split[f'stay_put_{location}'][day_type] = (
-                day_type_start_location_split.loc[location, day_type]
+            stay_put_split[f'stay_put_{location}'][day_type] = float(
+                day_type_start_location_split.loc[location][day_type]
             )
     # We can now put the stay put probabilities
     for day_type in day_types:
         for stay_put_trip in stay_put_trips:
-            trip_probabilities_per_day_type.loc[stay_put_trip][day_type] = (
+            trip_probabilities_per_day_type.loc[stay_put_trip, day_type] = (
                 stay_put_probabilities[day_type]
                 * stay_put_split[stay_put_trip][day_type]
             )
 
-    table_name = f'{scenario}_trip_probabilities_per_day_type'
+    table_name: str = f'{scenario_name}_trip_probabilities_per_day_type'
 
     # For some file formats (stata, for example), we need to ensure that
     # the values are floats (or something else, but object does seem to be a
@@ -652,182 +704,234 @@ def get_car_trip_probabilities_per_day_type(parameters):
     trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
         'float'
     )
-
-    cook.save_dataframe(
-        trip_probabilities_per_day_type,
-        table_name,
-        groupfile_name,
-        output_folder,
-        parameters,
+    trip_probabilities_per_day_type.to_pickle(
+        f'{output_folder}/{table_name}.pkl'
     )
 
     return trip_probabilities_per_day_type
 
 
-def get_run_trip_probabilities(parameters):
+def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
     '''
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
 
-    trip_list = list(parameters['trips'].keys())
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    day_types: ty.List[str] = scenario['mobility_module']['day_types']
+    trip_list: ty.List[str] = list(scenario['trips'].keys())
+    scenario_name: str = scenario['scenario_name']
 
-    file_parameters = parameters['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
+    file_parameters: ty.Dict = scenario['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
-    run_range, run_hour_numbers = run_time.get_time_range(parameters)
-    run_trip_probabilities = pd.DataFrame(index=run_range)
+    run_range, run_hour_numbers = run_time.get_time_range(scenario)
+    run_trip_probabilities: pd.DataFrame = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
     run_trip_probabilities = run_time.add_day_type_to_time_stamped_dataframe(
-        run_trip_probabilities, parameters
+        run_trip_probabilities, scenario
     )
 
-    trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
-        parameters
+    trip_probabilities_per_day_type: pd.DataFrame = (
+        get_trip_probabilities_per_day_type(scenario, case_name)
     )
 
     for trip in trip_list:
-        trip_probabilities = [
-            trip_probabilities_per_day_type.loc[trip][day_type]
-            for day_type in run_trip_probabilities['Day Type']
-        ]
+        for day_type in day_types:
+            run_trip_probabilities.loc[
+                run_trip_probabilities['Day Type'] == day_type, trip
+            ] = trip_probabilities_per_day_type.loc[trip, day_type]
 
-        run_trip_probabilities[trip] = trip_probabilities
-
-    table_name = f'{scenario}_run_trip_probabilities'
-    cook.save_dataframe(
-        run_trip_probabilities,
-        table_name,
-        groupfile_name,
-        output_folder,
-        parameters,
-    )
+    table_name: str = f'{scenario_name}_run_trip_probabilities'
+    run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
 
     return run_trip_probabilities
 
 
-def get_mobility_matrix(parameters):
+def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     '''
     Makes a mobility matrix for the run that tracks departures
     from and to locations (tracks amount, kilometers, and weighted kilometers)
     '''
+    loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
 
-    run_trip_probabilities = get_run_trip_probabilities(parameters)
+    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
+        scenario, case_name
+    )
+    loop_timer.append(datetime.datetime.now())
+    trip_parameters: ty.Dict = scenario['trips']
+    trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
 
-    location_parameters = parameters['locations']
-    location_names = [location_name for location_name in location_parameters]
-    trip_parameters = parameters['trips']
-    trip_names = [trip_name for trip_name in trip_parameters]
-
-    run_time_tags = run_time.get_time_range(parameters)[0]
-    run_mobility_index_tuples = [
-        (start_location, end_location, time_tag)
-        for start_location in location_names
-        for end_location in location_names
+    run_time_tags: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
+    loop_timer.append(datetime.datetime.now())
+    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
+        get_mobility_location_tuples(scenario)
+    )
+    loop_timer.append(datetime.datetime.now())
+    run_mobility_index_tuples: ty.List[
+        ty.Tuple[str, str, datetime.datetime]
+    ] = [
+        (mobility_location_tuple[0], mobility_location_tuple[1], time_tag)
+        for mobility_location_tuple in mobility_location_tuples
         for time_tag in run_time_tags
     ]
-    mobility_index_names = parameters['mobility_module'][
+
+    mobility_index_names: ty.List[str] = scenario['mobility_module'][
         'mobility_index_names'
     ]
-    run_mobility_index = pd.MultiIndex.from_tuples(
+    run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
         run_mobility_index_tuples, names=mobility_index_names
     )
-    mobility_quantities = parameters['mobility_module']['mobility_quantities']
-    run_mobility_matrix = pd.DataFrame(
+    mobility_quantities: ty.List[str] = scenario['mobility_module'][
+        'mobility_quantities'
+    ]
+    run_mobility_matrix: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_mobility_index), len(mobility_quantities))),
         columns=mobility_quantities,
         index=run_mobility_index,
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
 
-    case_name = parameters['case_name']
-    scenario = parameters['scenario']
-    file_parameters = parameters['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
+    scenario_name: str = scenario['scenario_name']
+    file_parameters: ty.Dict = scenario['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    loop_timer.append(datetime.datetime.now())
     for trip_name in trip_names:
-        this_trip_run_probabilities = pd.DataFrame(
-            run_trip_probabilities[trip_name]
-        )
-        # We need a version for each start/end location combination
-        this_trip_run_probabilities_extended = pd.DataFrame()
-        for _ in range(len(location_names) * len(location_names)):
-            this_trip_run_probabilities_extended = pd.concat(
-                (
-                    this_trip_run_probabilities,
-                    this_trip_run_probabilities_extended,
-                ),
-                ignore_index=True,
+
+        trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
+
+        if len(trip_legs) > 0:
+
+            trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
+
+            for trip_leg in trip_legs:
+                leg_start: str = scenario['legs'][trip_leg]['locations'][
+                    'start'
+                ]
+                leg_end: str = scenario['legs'][trip_leg]['locations']['end']
+                leg_tuple: ty.Tuple[str, str] = (leg_start, leg_end)
+                # We wante to only have unique tuples
+                if leg_tuple not in trip_location_tuples:
+                    trip_location_tuples.append(leg_tuple)
+
+            this_trip_run_probabilities: pd.DataFrame = pd.DataFrame(
+                run_trip_probabilities[trip_name]
             )
-        trip_run_mobility_matrix_name = (
-            f'{scenario}_{trip_name}_run_mobility_matrix'
-        )
-        trip_run_mobility_matrix = cook.read_table_from_database(
-            trip_run_mobility_matrix_name,
-            f'{output_folder}/{groupfile_name}.sqlite3',
-        )
-        location_connections_headers = parameters['mobility_module'][
-            'location_connections_headers'
-        ]
 
-        trip_run_mobility_matrix = trip_run_mobility_matrix.set_index(
-            mobility_index_names
-        )
+            trip_run_mobility_matrix_name: str = (
+                f'{scenario_name}_{trip_name}_run_mobility_matrix'
+            )
 
-        probability_values_to_use = this_trip_run_probabilities_extended[
-            trip_name
-        ].values
+            trip_run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+                f'{output_folder}/{trip_run_mobility_matrix_name}.pkl'
+            ).astype(float)
 
-        for mobility_quantity in mobility_quantities:
-            if mobility_quantity not in location_connections_headers:
-                run_mobility_matrix[mobility_quantity] += (
-                    trip_run_mobility_matrix[mobility_quantity].values
-                    * probability_values_to_use
+            location_connections_headers: ty.List[str] = scenario[
+                'mobility_module'
+            ]['location_connections_headers']
+
+            # We need a version for each start/end location combination
+            # that appears in our trip mobility matrix. This ia also the
+            # amount of (unique) legsor the trip location tuples
+            this_trip_run_probabilities_extended: pd.DataFrame = pd.DataFrame()
+            for _ in range(len(trip_location_tuples)):
+                # -1 to get the right length
+                this_trip_run_probabilities_extended = pd.concat(
+                    (
+                        this_trip_run_probabilities,
+                        this_trip_run_probabilities_extended,
+                    ),
+                    ignore_index=True,
                 )
 
-    location_connections = cook.read_table_from_database(
-        f'{scenario}_location_connections',
-        f'{output_folder}/{groupfile_name}.sqlite3',
-    ).set_index(['From', 'To'])
-    for start_location in location_names:
-        for end_location in location_names:
-            run_mobility_matrix.loc[
-                (start_location, end_location), location_connections_headers
-            ] = location_connections.loc[(start_location, end_location)].values
+            probability_values_to_use = this_trip_run_probabilities_extended[
+                trip_name
+            ].values
 
-    cook.save_dataframe(
-        run_mobility_matrix,
-        f'{scenario}_run_mobility_matrix',
-        groupfile_name,
-        output_folder,
-        parameters,
+            for mobility_quantity in mobility_quantities:
+
+                if mobility_quantity not in location_connections_headers:
+
+                    weighted_mobility_quantity_to_use = (
+                        trip_run_mobility_matrix[mobility_quantity]
+                        * probability_values_to_use
+                    )
+
+                    # We need to place it at the right places in the run
+                    # mobility matrix
+
+                    for trip_location_tuple in trip_location_tuples:
+
+                        run_mobility_matrix.loc[
+                            (trip_location_tuple),
+                            mobility_quantity,
+                        ] = (
+                            pd.Series(
+                                run_mobility_matrix.loc[
+                                    trip_location_tuple, mobility_quantity
+                                ]
+                            ).values
+                            + weighted_mobility_quantity_to_use.loc[
+                                trip_location_tuple
+                            ].values
+                        )
+
+        location_connections: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_location_connections.pkl'
+        ).astype(float)
+
+    loop_timer.append(datetime.datetime.now())
+
+    for mobility_location_tuple in mobility_location_tuples:
+        these_locations_connections: pd.Series = pd.Series(
+            location_connections.loc[mobility_location_tuple]
+        )
+        run_mobility_matrix.loc[
+            (mobility_location_tuple), location_connections_headers
+        ] = these_locations_connections.values
+
+    loop_timer.append(datetime.datetime.now())
+    run_mobility_matrix.to_pickle(
+        f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
     )
-    return run_mobility_matrix
+    loop_timer.append(datetime.datetime.now())
+    loop_times: ty.List[float] = []
+    for timer_index, test_element in enumerate(loop_timer):
+        if timer_index > 0:
+            loop_times.append(
+                (test_element - loop_timer[timer_index - 1]).total_seconds()
+            )
+    print('Mobility matrix timer')
+    print(loop_times)
 
 
-def get_day_type_start_location_split(parameters):
+def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
     '''
     Tells us the proportion of vehicles
     that start their day at a given location (per day type)
     '''
-    mobility_module_parameters = parameters['mobility_module']
-    holiday_trips_taken = mobility_module_parameters['holiday_trips_taken']
-    holiday_departures_in_weekend_week_numbers = mobility_module_parameters[
-        'holiday_departures_in_weekend_week_numbers'
+    mobility_module_parameters: ty.Dict = scenario['mobility_module']
+    holiday_trips_taken: float = mobility_module_parameters[
+        'holiday_trips_taken'
     ]
-    number_of_holiday_departure_weekends = len(
+    holiday_departures_in_weekend_week_numbers: ty.List[int] = (
+        mobility_module_parameters[
+            'holiday_departures_in_weekend_week_numbers'
+        ]
+    )
+    number_of_holiday_departure_weekends: int = len(
         holiday_departures_in_weekend_week_numbers
     )
-    day_types = mobility_module_parameters['day_types']
-    location_parameters = parameters['locations']
-    location_names = [location_name for location_name in location_parameters]
+    day_types: ty.List[str] = mobility_module_parameters['day_types']
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+    location_parameters: ty.Dict = scenario['locations']
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
 
-    day_type_start_location_split = pd.DataFrame(
+    day_type_start_location_split: pd.DataFrame = pd.DataFrame(
         np.zeros((len(location_names), len(day_types))),
         columns=day_types,
         index=location_names,
@@ -835,7 +939,7 @@ def get_day_type_start_location_split(parameters):
     day_type_start_location_split.index.name = 'Location'
 
     # Outside holidays, the vehicles start at home
-    day_types_outside_holidays = [
+    day_types_outside_holidays: ty.List[str] = [
         'weekday_in_work_week',
         'weekend_in_work_week',
     ]
@@ -845,11 +949,11 @@ def get_day_type_start_location_split(parameters):
     # Outside of departure and returns, the proportion of vehicles
     # at the holiday destination is the amount of holiday trips taken
     # divided by the opportunities to go on holidays
-    percentage_on_holiday_in_holiday_week = (
+    percentage_on_holiday_in_holiday_week: float = (
         holiday_trips_taken / number_of_holiday_departure_weekends
     )
 
-    non_travelling_holiday_day_types = [
+    non_travelling_holiday_day_types: ty.List[str] = [
         'weekday_in_holiday_week',
         'weekend_in_holiday_week',
     ]
@@ -865,8 +969,8 @@ def get_day_type_start_location_split(parameters):
     # the weekend days (note that this is an approximation, as
     # we ideally should split the weekend in two, but that would make
     # the model complexer)
-    weekend_day_numbers = parameters['time']['weekend_day_numbers']
-    travelling_weekend_day_types = [
+    weekend_day_numbers: ty.List[int] = scenario['time']['weekend_day_numbers']
+    travelling_weekend_day_types: ty.List[str] = [
         'weekend_holiday_departures',
         'weekend_holiday_returns',
         'holiday_overlap_weekend',
@@ -882,171 +986,153 @@ def get_day_type_start_location_split(parameters):
     return day_type_start_location_split
 
 
-def get_location_split(parameters):
+def get_location_split(scenario: ty.Dict, case_name: str) -> None:
     '''
     Produces the location split of the vehicles for the whole run
     '''
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
+    scenario_name: str = scenario['scenario_name']
 
-    file_parameters = parameters['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
-    groupfile_name = f'{groupfile_root}_{case_name}'
-    location_parameters = parameters['locations']
-    location_names = [location_name for location_name in location_parameters]
-    run_range = run_time.get_time_range(parameters)[0]
-    location_split = pd.DataFrame(columns=location_names, index=run_range)
+    file_parameters: ty.Dict = scenario['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+    location_parameters: ty.Dict = scenario['locations']
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
+    run_range: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
+    location_split: pd.DataFrame = pd.DataFrame(
+        columns=location_names, index=run_range
+    )
 
     location_split.index.name = 'Time Tag'
 
-    location_split = get_starting_location_split(location_split, parameters)
+    location_split = get_starting_location_split(location_split, scenario)
 
-    run_mobility_matrix_name = f'{scenario}_run_mobility_matrix'
-    database_file = f'{output_folder}/{groupfile_name}.sqlite3'
+    loop_timer.append(datetime.datetime.now())
+    run_mobility_matrix_name: str = f'{scenario_name}_run_mobility_matrix'
 
-    run_mobility_matrix = cook.read_table_from_database(
-        run_mobility_matrix_name, database_file
+    run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{run_mobility_matrix_name}.pkl'
     )
-    mobility_index_names = parameters['mobility_module'][
-        'mobility_index_names'
-    ]
+    loop_timer.append(datetime.datetime.now())
 
-    run_mobility_matrix['Time Tag'] = pd.to_datetime(
-        run_mobility_matrix['Time Tag']
-    )
-    run_mobility_matrix = run_mobility_matrix.set_index(mobility_index_names)
-    previous_time_tag = run_range[0]
-    for time_tag in run_range:
-        if time_tag > run_range[0]:
-            for location in location_names:
-                departures = sum(
-                    run_mobility_matrix.loc[location, :, time_tag][
-                        'Departures amount'
-                    ]
-                    # *
-                    # location_split.loc[previous_time_tag][location]
-                )
-                # We need to reduce the arrivals by the driving time
-                # in the current hour, but add the one from the previous
-                # hour (and departures correspond to arrivals later)
-                arrivals = (
-                    sum(
-                        run_mobility_matrix.loc[:, location, time_tag][
-                            'Arrivals amount'
-                        ]
-                    )
-                    # -
-                    # sum(
-                    #     run_mobility_matrix.loc[
-                    #         :, location, time_tag][
-                    #             'Departures driving time']
-                    # )
-                    # +
-                    # sum(
-                    #     run_mobility_matrix.loc[
-                    #         :, location, previous_time_tag][
-                    #             'Departures driving time']
-                    # )
-                )
+    departures: pd.Series = run_mobility_matrix.groupby(
+        ['From', 'Time Tag']
+    ).sum()['Departures amount']
+    arrivals: pd.Series = run_mobility_matrix.groupby(
+        ['To', 'Time Tag']
+    ).sum()['Arrivals amount']
+    loop_timer.append(datetime.datetime.now())
+    for location in location_names:
+        cumulative_departures: pd.Series[float] = departures.loc[
+            location
+        ].cumsum()
+        cumulative_arrivals: pd.Series[float] = arrivals.loc[location].cumsum()
 
-                location_split.loc[time_tag][location] = (
-                    location_split.loc[previous_time_tag][location]
-                    + arrivals
-                    - departures
-                )
-            previous_time_tag = time_tag
+        location_split.loc[:, location] = (
+            location_split.loc[:, location]
+            + cumulative_arrivals
+            - cumulative_departures
+        )
 
-    driving = pd.DataFrame(index=location_split.index)
-    driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
-    connectivity_per_location = location_split.copy()
+    loop_timer.append(datetime.datetime.now())
+    percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
+    percentage_driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
+    connectivity_per_location: pd.DataFrame = location_split.copy()
+    loop_timer.append(datetime.datetime.now())
     for location_name in location_names:
         connectivity_per_location[location_name] = (
             connectivity_per_location[location_name]
             * location_parameters[location_name]['connectivity']
         )
-    maximal_delivered_power_location = connectivity_per_location.copy()
+    loop_timer.append(datetime.datetime.now())
+    maximail_delivered_power_per_location: pd.DataFrame = (
+        connectivity_per_location.copy()
+    )
     for location_name in location_names:
-        maximal_delivered_power_location[location_name] = (
-            maximal_delivered_power_location[location_name]
+        maximail_delivered_power_per_location[location_name] = (
+            maximail_delivered_power_per_location[location_name]
             * location_parameters[location_name]['charging_power']
             / location_parameters[location_name]['charger_efficiency']
             # Weare looking at the power delivered by the network
         )
-    connectivity = pd.DataFrame(index=connectivity_per_location.index)
+    loop_timer.append(datetime.datetime.now())
+    connectivity: pd.DataFrame = pd.DataFrame(
+        index=connectivity_per_location.index
+    )
     connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)
-    maximal_deivered_power = pd.DataFrame(
-        index=maximal_delivered_power_location.index
+    maximal_delivered_power: pd.DataFrame = pd.DataFrame(
+        index=maximail_delivered_power_per_location.index
     )
-    maximal_deivered_power['Maximal Delivered Power (kW)'] = (
-        maximal_delivered_power_location.sum(axis=1)
+    maximal_delivered_power['Maximal Delivered Power (kW)'] = (
+        maximail_delivered_power_per_location.sum(axis=1)
     )
-    cook.save_dataframe(
-        location_split,
-        f'{scenario}_location_split',
-        groupfile_name,
-        output_folder,
-        parameters,
+    loop_timer.append(datetime.datetime.now())
+    location_split.to_pickle(
+        f'{output_folder}/{scenario_name}_location_split.pkl'
     )
-    cook.save_dataframe(
-        driving,
-        f'{scenario}_percentage_driving',
-        groupfile_name,
-        output_folder,
-        parameters,
+    percentage_driving.to_pickle(
+        f'{output_folder}/{scenario_name}_percentage_driving.pkl'
     )
-    cook.save_dataframe(
-        connectivity_per_location,
-        f'{scenario}_connectivity_per_location',
-        groupfile_name,
-        output_folder,
-        parameters,
+    connectivity_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}_connectivity_per_location.pkl'
     )
-    cook.save_dataframe(
-        connectivity,
-        f'{scenario}_connectivity',
-        groupfile_name,
-        output_folder,
-        parameters,
+    connectivity.to_pickle(f'{output_folder}/{scenario_name}_connectivity.pkl')
+    maximail_delivered_power_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_maximal_delivered_power_per_location.pkl'
     )
-    cook.save_dataframe(
-        maximal_delivered_power_location,
-        f'{scenario}_maximal_delivered_power_per_location',
-        groupfile_name,
-        output_folder,
-        parameters,
+    maximal_delivered_power.to_pickle(
+        f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
     )
-    cook.save_dataframe(
-        maximal_deivered_power,
-        f'{scenario}_maximal_delivered_power',
-        groupfile_name,
-        output_folder,
-        parameters,
-    )
-    return location_split
+    loop_timer.append(datetime.datetime.now())
+    loop_times: ty.List[float] = []
+    for timer_index, test_element in enumerate(loop_timer):
+        if timer_index > 0:
+            loop_times.append(
+                (test_element - loop_timer[timer_index - 1]).total_seconds()
+            )
+    print(loop_times)
 
 
-def get_starting_location_split(location_split, parameters):
+def get_starting_location_split(
+    location_split: pd.DataFrame, scenario: ty.Dict
+) -> pd.DataFrame:
     '''
     Gets the location split at run start
     '''
-    location_parameters = parameters['locations']
-    location_names = [location_name for location_name in location_parameters]
-    mobility_module_parameters = parameters['mobility_module']
-    compute_start_location_split = mobility_module_parameters[
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+    location_parameters: ty.Dict = scenario['locations']
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
+    mobility_module_parameters: ty.Dict = scenario['mobility_module']
+    compute_start_location_split: bool = mobility_module_parameters[
         'compute_start_location_split'
     ]
     if compute_start_location_split:
-        run_start_time_tag = run_time.get_time_range(parameters)[0][0]
-        run_start_day_type = run_time.get_day_type(
-            run_start_time_tag, parameters
+        run_range: ty.List[datetime.datetime] = run_time.get_time_range(
+            scenario
+        )[0]
+        run_start_time_tag: datetime.datetime = run_range[0]
+        run_start_day_type: str = run_time.get_day_type(
+            run_start_time_tag, scenario
         )
-        day_type_start_location_split = get_day_type_start_location_split(
-            parameters
+        day_type_start_location_split: pd.DataFrame = (
+            get_day_type_start_location_split(scenario)
         )
 
         for location_name in location_names:
-            location_split.iloc[0][location_name] = (
+
+            location_split.loc[run_range, location_name] = (
                 day_type_start_location_split[run_start_day_type][
                     location_name
                 ]
@@ -1054,63 +1140,61 @@ def get_starting_location_split(location_split, parameters):
 
     else:
         for location_name in location_names:
-            location_split.iloc[0][location_name] = location_parameters[
+            location_split.loc[run_range, location_name] = location_parameters[
                 location_name
             ]['percentage_in_location_at_run_start']
 
     return location_split
 
 
-def get_kilometers_for_next_leg(parameters):
-    run_trip_probabilities = get_run_trip_probabilities(parameters)
+def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
+    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
+        scenario, case_name
+    )
 
-    scenario = parameters['scenario']
-    case_name = parameters['case_name']
+    scenario_name: str = scenario['scenario_name']
 
-    file_parameters = parameters['files']
-    output_folder = file_parameters['output_folder']
-    groupfile_root = file_parameters['groupfile_root']
+    file_parameters: ty.Dict = scenario['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
 
-    location_parameters = parameters['locations']
-    location_names = [location_name for location_name in location_parameters]
-    run_next_leg_kilometers = pd.DataFrame(
+    location_parameters: ty.Dict = scenario['locations']
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
+    run_next_leg_kilometers: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_trip_probabilities.index), len(location_names))),
         columns=location_names,
         index=run_trip_probabilities.index,
     )
-    run_next_leg_kilometers_cumulative = pd.DataFrame(
+    run_next_leg_kilometers_cumulative: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_trip_probabilities.index), len(location_names))),
         columns=location_names,
         index=run_trip_probabilities.index,
     )
 
-    trip_parameters = parameters['trips']
-    trip_names = [trip_name for trip_name in trip_parameters]
+    trip_parameters: ty.Dict = scenario['trips']
+    trip_names: ty.List[str] = [trip_name for trip_name in trip_parameters]
     for trip_name in trip_names:
-        trip_run_next_leg_kilometers = cook.read_table_from_database(
-            f'{scenario}_{trip_name}_run_next_leg_kilometers',
-            f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+        trip_run_next_leg_kilometers: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip_name}_run_next_leg_kilometers.pkl'
         )
-        trip_run_next_leg_kilometers['Time Tag'] = pd.to_datetime(
-            trip_run_next_leg_kilometers['Time Tag']
-        )
-        trip_run_next_leg_kilometers = trip_run_next_leg_kilometers.set_index(
-            'Time Tag'
-        )
-        trip_run_next_leg_kilometers_cumulative = (
-            cook.read_table_from_database(
-                f'{scenario}_{trip_name}_'
-                f'run_next_leg_kilometers_cumulative',
-                f'{output_folder}/{groupfile_root}_{case_name}.sqlite3',
+
+        trip_run_next_leg_kilometers_cumulative: pd.DataFrame = (
+            # cook.read_table_from_database(
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_{trip_name}_'
+                f'run_next_leg_kilometers_cumulative.pkl',
             )
         )
-        trip_run_next_leg_kilometers_cumulative['Time Tag'] = pd.to_datetime(
-            trip_run_next_leg_kilometers_cumulative['Time Tag']
+
+        this_trip_probabilities: pd.Series[float] = pd.Series(
+            run_trip_probabilities[trip_name]
         )
-        trip_run_next_leg_kilometers_cumulative = (
-            trip_run_next_leg_kilometers_cumulative.set_index('Time Tag')
-        )
-        this_trip_probabilities = pd.Series(run_trip_probabilities[trip_name])
 
         run_next_leg_kilometers += trip_run_next_leg_kilometers.mul(
             this_trip_probabilities, axis=0
@@ -1121,40 +1205,55 @@ def get_kilometers_for_next_leg(parameters):
             )
         )
 
-    cook.save_dataframe(
-        run_next_leg_kilometers,
-        f'{scenario}_next_leg_kilometers',
-        f'{groupfile_root}_{case_name}',
-        output_folder,
-        parameters,
+    run_next_leg_kilometers.to_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl'
     )
-    cook.save_dataframe(
-        run_next_leg_kilometers_cumulative,
-        f'{scenario}_next_leg_kilometers_cumulative',
-        f'{groupfile_root}_{case_name}',
-        output_folder,
-        parameters,
+    run_next_leg_kilometers_cumulative.to_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_kilometers_cumulative.pkl'
     )
 
-    return run_next_leg_kilometers
 
-
-def make_mobility_data(parameters):
-    trip_probabilities_per_day_type = get_trip_probabilities_per_day_type(
-        parameters
-    )
-
-    run_mobility_matrix = get_mobility_matrix(parameters)
-    location_split = get_location_split(parameters)
-    kilometers_for_next_leg = get_kilometers_for_next_leg(parameters)
+def make_mobility_data(scenario: ty.Dict, case_name: str) -> None:
+    timer: bool = True
+    start_time: datetime.datetime = datetime.datetime.now()
+    get_trip_probabilities_per_day_type(scenario, case_name)
+    per_day_type_time: datetime.datetime = datetime.datetime.now()
+    get_mobility_matrix(scenario, case_name)
+    mobility_matrix_time: datetime.datetime = datetime.datetime.now()
+    get_location_split(scenario, case_name)
+    location_split_time: datetime.datetime = datetime.datetime.now()
+    get_kilometers_for_next_leg(scenario, case_name)
+    next_leg_time: datetime.datetime = datetime.datetime.now()
+    if timer:
+        print(
+            f'Per day time: {(per_day_type_time - start_time).total_seconds()}'
+        )
+        print(
+            f'Mobility matrix: '
+            f'{(mobility_matrix_time - per_day_type_time).total_seconds()}'
+        )
+        print(
+            f'Location split: '
+            f'{(location_split_time - mobility_matrix_time).total_seconds()}'
+        )
+        print(
+            f'Next leg: '
+            f'{(next_leg_time - location_split_time).total_seconds()}'
+        )
 
 
 if __name__ == '__main__':
-    parameters_file_name = 'scenarios/baseline.toml'
-    parameters = cook.parameters_from_TOML(parameters_file_name)
+    start_time: datetime.datetime = datetime.datetime.now()
+    case_name = 'local_impact_BEVs'
+    test_scenario_name: str = 'baseline'
+    scenario_file_name: str = (
+        f'scenarios/{case_name}/{test_scenario_name}.toml'
+    )
+    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario['scenario_name'] = test_scenario_name
 
-    make_mobility_data(parameters)
-
+    make_mobility_data(scenario, case_name)
+    print((datetime.datetime.now() - start_time).total_seconds())
     print('Add spillover?')
     print('Use departures from and arrivals to for location split')
     print('Difference with zero is % driving')
