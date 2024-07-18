@@ -424,8 +424,8 @@ hour_in_day_factors = [
     1, 1, 1, 1, 1, 1, 1, 1
 ]
 [legs.bus_from_route_start_to_depot.locations]
-start = 'bus_depot'
-end = 'bus_route_start'
+start = 'bus_route_start'
+end = 'bus_depot'
 [legs.bus_from_route_start_to_depot.road_type_mix]
 # Give the road type mix
 # We need a value for each of the road_types (see above in [transport_factors])
@@ -451,8 +451,8 @@ hour_in_day_factors = [
     1, 1, 1, 1, 1, 1, 1, 1
 ]
 [legs.bus_from_route_start_to_route_end.locations]
-start = 'bus_depot'
-end = 'bus_route_start'
+start = 'bus_route_start'
+end = 'bus_route_end'
 [legs.bus_from_route_start_to_route_end.road_type_mix]
 # Give the road type mix
 # We need a value for each of the road_types (see above in [transport_factors])
@@ -479,7 +479,7 @@ hour_in_day_factors = [
     1, 1, 1, 1, 1, 1, 1, 1
 ]
 [legs.bus_from_route_end_to_route_start.locations]
-start = 'bus_depot'
+start = 'bus_route_end'
 end = 'bus_route_start'
 [legs.bus_from_route_end_to_route_start.road_type_mix]
 # Give the road type mix
@@ -524,13 +524,9 @@ start_probabilities = [
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-   1, 1, 1, 1, 1, 1, 1, 1,
-   1, 1, 1, 1, 1, 1, 1, 1,
-   1, 1, 1, 1, 1, 1, 1, 1,
-]  # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 [trips.commute_to_work_and_leisure]
 vehicle = 'car'
@@ -545,13 +541,9 @@ start_probabilities = [
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 [trips.leisure_only]
 vehicle = 'car'
@@ -566,13 +558,9 @@ start_probabilities = [
    0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 [trips.weekend_trip]
 vehicle = 'car'
@@ -587,13 +575,9 @@ start_probabilities = [
    0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 [trips.holiday_outward]
 vehicle = 'car'
@@ -608,13 +592,9 @@ start_probabilities = [
    0.03125, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 
 [trips.holiday_back]
@@ -630,13 +610,9 @@ start_probabilities = [
    0.03125, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 [trips.stay_put_home]
 vehicle = 'car'
@@ -651,13 +627,9 @@ start_probabilities = [
    0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 
 [trips.stay_put_holiday]
@@ -673,13 +645,9 @@ start_probabilities = [
    0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = []
-repetition_amounts = 0
-time_between_repetitions = 0 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0]
+time_between_repetitions = [0] # hours
+
 
 
 [trips.bus_weekday_in_workweek]
@@ -689,8 +657,12 @@ legs = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -700,16 +672,11 @@ start_probabilities = [
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = [
-    'bus_from_route_start_to_route_end',
-    'bus_from_route_end_to_route_start'
+    # 'bus_from_route_start_to_route_end',
+    # 'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = 10
-time_between_repetitions = 0.1 # hours
-time_between_legs_correction_factor = [
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-]   # Start at day stat hour
+repetition_amounts = [0, 3]
+time_between_repetitions = [0.1, 0.22] # hours
 
 
 

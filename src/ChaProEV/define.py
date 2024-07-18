@@ -136,13 +136,13 @@ class Trip:
         trip.repeated_sequence: ty.List[str] = trip_parameters[
             'repeated_sequence'
         ]
-        trip.repetition_amounts: int = trip_parameters['repetition_amounts']
-        trip.time_between_repetitions: float = trip_parameters[
+        trip.repetition_amounts: ty.List[int] = trip_parameters[
+            'repetition_amounts'
+        ]
+        trip.time_between_repetitions: ty.List[float] = trip_parameters[
             'time_between_repetitions'
         ]
-        trip.time_between_legs_correction_factor: ty.List[float] = (
-            trip_parameters['time_between_legs_correction_factor']
-        )
+
         trip.day_start_hour: int = scenario['mobility_module'][
             'day_start_hour'
         ]
@@ -152,6 +152,7 @@ class Trip:
         if len(trip.repeated_sequence) > 0:
             trip.legs = []
             trip.time_between_legs = []
+            repetition_iteration_index: int = 0
             for leg_index, leg in enumerate(trip_legs_store):
 
                 if leg not in trip.repeated_sequence:
@@ -161,7 +162,9 @@ class Trip:
                             time_between_legs_store[leg_index]
                         )
                 elif leg == trip.repeated_sequence[0]:
-                    for _ in range(trip.repetition_amounts):
+                    for repetition in range(
+                        trip.repetition_amounts[repetition_iteration_index]
+                    ):
                         for leg_to_add_index, leg_to_add in enumerate(
                             trip.repeated_sequence
                         ):
@@ -173,9 +176,26 @@ class Trip:
                                 trip.time_between_legs.append(
                                     time_between_legs_store[leg_index]
                                 )
-                        trip.time_between_legs.append(
-                            trip.time_between_repetitions
-                        )
+                        if (
+                            repetition
+                            < trip.repetition_amounts[
+                                repetition_iteration_index
+                            ]
+                            - 1
+                        ):
+                            trip.time_between_legs.append(
+                                trip.time_between_repetitions[
+                                    repetition_iteration_index
+                                ]
+                            )
+                        else:
+
+                            trip.time_between_legs.append(
+                                time_between_legs_store[
+                                    leg_index + len(trip.repeated_sequence) - 1
+                                ]
+                            )
+                    repetition_iteration_index += 1
 
         # We want to create a mobility matrix for the trip. This matrix will
         # have start and end locations (plus hour in day, starting
@@ -183,13 +203,17 @@ class Trip:
         # each with amounts, distances, weighted distances)
         HOURS_IN_A_DAY: int = scenario['time']['HOURS_IN_A_DAY']
         parameters_of_legs: ty.Dict = scenario['legs']
+        unique_legs: ty.List[str] = []
+        for trip_leg in trip.legs:
+            if trip_leg not in unique_legs:
+                unique_legs.append(trip_leg)
 
         leg_tuples: ty.List[ty.Tuple[str, str]] = [
             (
                 parameters_of_legs[trip_leg]['locations']['start'],
                 parameters_of_legs[trip_leg]['locations']['end'],
             )
-            for trip_leg in trip.legs
+            for trip_leg in unique_legs
         ]
 
         # We only want the start and end locations that are in the legs

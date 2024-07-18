@@ -108,15 +108,14 @@ midnight.
 7. **Repeated sequence:** A list of repeated legs 
 (which should follow each other) that form a repeated sequence.
 8. **Repetition amounts:** How often
-the repeated sequence is repeated.
+the repeated sequence is repeated. This is a list, with one value per leg
+repetition (the nth element corresponds to the nth appearance of
+the sequence in the leg list).
 9. **Time between repetitions:** The time between repetitions of each
-repeated sequence (in hours).
-10. **Time between legs correction factor:** A list of correction factors 
-to the time between legs, at a given hour slot. The index/position in the list 
-starts at the 
-[day start hour](scenario.md#day_start_hour), not at midnight. 
-This allows for things like more reduced time between legs 
-at peak hours, for example. This is also used for the time between repetitions.
+repeated sequence (in hours). This is a list, with one value per leg
+repetition (the nth element corresponds to the nth appearance of
+the sequence in the leg list).
+
 
 ### Mobility matrix
 
