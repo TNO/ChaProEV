@@ -766,6 +766,7 @@ def get_run_trip_probabilities(
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
 
+    moo = datetime.datetime.now()
     day_types: ty.List[str] = scenario['mobility_module']['day_types']
     scenario_vehicle: str = scenario['vehicle']['name']
     trip_list: ty.List[str] = []
@@ -774,6 +775,8 @@ def get_run_trip_probabilities(
         if trip_vehicle == scenario_vehicle:
             trip_list.append(trip_to_add)
     scenario_name: str = scenario['scenario_name']
+    print((datetime.datetime.now() - moo).total_seconds())
+    moo = datetime.datetime.now()
 
     file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
@@ -781,6 +784,9 @@ def get_run_trip_probabilities(
     run_range, run_hour_numbers = run_time.get_time_range(
         scenario, general_parameters
     )
+
+    print((datetime.datetime.now() - moo).total_seconds())
+    moo = datetime.datetime.now()
     run_trip_probabilities: pd.DataFrame = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
@@ -788,20 +794,29 @@ def get_run_trip_probabilities(
         run_trip_probabilities, scenario, general_parameters
     )
 
+    print((datetime.datetime.now() - moo).total_seconds())
+    moo = datetime.datetime.now()
     trip_probabilities_per_day_type: pd.DataFrame = (
         get_trip_probabilities_per_day_type(
             scenario, case_name, general_parameters
         )
     )
+    print((datetime.datetime.now() - moo).total_seconds())
+    moo = datetime.datetime.now()
 
     for trip in trip_list:
         for day_type in day_types:
             run_trip_probabilities.loc[
                 run_trip_probabilities['Day Type'] == day_type, trip
             ] = trip_probabilities_per_day_type.loc[trip, day_type]
+    print((datetime.datetime.now() - moo).total_seconds())
+    moo = datetime.datetime.now()
 
     table_name: str = f'{scenario_name}_run_trip_probabilities'
     run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
+    print((datetime.datetime.now() - moo).total_seconds())
+    moo = datetime.datetime.now()
+    # exit()
 
     return run_trip_probabilities
 
@@ -1083,7 +1098,7 @@ def get_location_split(
     location_split: pd.DataFrame = pd.DataFrame(
         columns=location_names, index=run_range
     )
-
+    loop_timer.append(datetime.datetime.now())
     location_split.index.name = 'Time Tag'
 
     location_split = get_starting_location_split(
@@ -1174,6 +1189,8 @@ def get_location_split(
             loop_times.append(
                 (test_element - loop_timer[timer_index - 1]).total_seconds()
             )
+    print('Loc split split')
+    print(sum(loop_times))
     print(loop_times)
 
 

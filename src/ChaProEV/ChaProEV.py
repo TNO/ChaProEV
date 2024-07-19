@@ -193,7 +193,7 @@ if __name__ == '__main__':
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
     case_name = 'local_impact_BEVs'
-    case_name = 'Mopo'
+    # case_name = 'Mopo'
     run_ChaProEV(case_name)
     print('Iterate over cases? At least as a separate fucntion')
     # writing.write_scenario_parameters(scenario)

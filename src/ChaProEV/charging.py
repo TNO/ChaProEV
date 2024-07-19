@@ -59,36 +59,13 @@ def travel_space_occupation(
     time_tag_index: int,
     run_range: pd.DatetimeIndex,
     run_mobility_matrix,  # This is a DataFrame, but MyPy has issues with it
-    # These issues might have to do with MultiIndex
-    scenario: ty.Dict,
-    general_parameters: ty.Dict,
+    # These issues might have to do with MultiIndex,
+    zero_threshold: float,
+    location_names: ty.List[str],
+    possible_destinations: ty.Dict[str, ty.List[str]],
+    distance_header: str,
+    electricity_consumption_kWh_per_km: float,
 ) -> ty.Dict[str, pd.DataFrame]:
-
-    zero_threshold: float = general_parameters['numbers']['zero_threshold']
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    vehicle_name: str = vehicle_parameters['name']
-
-    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-        'locations'
-    ]
-    location_names: ty.List[str] = [
-        location_name
-        for location_name in location_parameters
-        if location_parameters[location_name]['vehicle'] == vehicle_name
-    ]
-
-    possible_destinations: ty.Dict[str, ty.List[str]] = (
-        mobility.get_possible_destinations(scenario)
-    )
-
-    use_weighted_km: bool = vehicle_parameters['use_weighted']
-    if use_weighted_km:
-        distance_header: str = 'Weighted distance (km)'
-    else:
-        distance_header = 'Distance (km)'
-    electricity_consumption_kWh_per_km: float = vehicle_parameters[
-        'base_consumption_per_km'
-    ]['electricity_kWh']
 
     # We look at all movements starting at a given location
     for start_location in location_names:
@@ -661,6 +638,7 @@ def write_output(
 def get_charging_profile(
     scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+
     (
         battery_space,
         run_range,
@@ -675,6 +653,32 @@ def get_charging_profile(
         index=run_range,
     )
 
+    zero_threshold: float = general_parameters['numbers']['zero_threshold']
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
+
+    possible_destinations: ty.Dict[str, ty.List[str]] = (
+        mobility.get_possible_destinations(scenario)
+    )
+
+    use_weighted_km: bool = vehicle_parameters['use_weighted']
+    if use_weighted_km:
+        distance_header: str = 'Weighted distance (km)'
+    else:
+        distance_header = 'Distance (km)'
+    electricity_consumption_kWh_per_km: float = vehicle_parameters[
+        'base_consumption_per_km'
+    ]['electricity_kWh']
+
     # We look at how the available battery space in the vehicles moves around
     # (it increases with movements and decreases with charging)
     for time_tag_index, time_tag in enumerate(run_range):
@@ -687,9 +691,14 @@ def get_charging_profile(
             time_tag_index,
             run_range,
             run_mobility_matrix,
-            scenario,
-            general_parameters,
+            zero_threshold,
+            location_names,
+            possible_destinations,
+            distance_header,
+            electricity_consumption_kWh_per_km
         )
+
+        loop_mid: datetime.datetime = datetime.datetime.now()
 
         (
             battery_space,
@@ -703,10 +712,13 @@ def get_charging_profile(
             scenario,
             general_parameters,
         )
-
         loop_end: datetime.datetime = datetime.datetime.now()
         loop_time: float = (loop_end - loop_start).total_seconds()
+        loop_a: float = (loop_mid - loop_start).total_seconds()
+        loop_b: float = (loop_end - loop_mid).total_seconds()
         loop_times.loc[time_tag, 'Loop duration'] = loop_time
+        loop_times.loc[time_tag, 'Loop duration a'] = loop_a
+        loop_times.loc[time_tag, 'Loop duration b'] = loop_b
 
         # We start with the battery space reduction duw to moving
 
