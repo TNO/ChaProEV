@@ -31,13 +31,17 @@ except ModuleNotFoundError:
 # and does not include vheicle name --> stop program (option to switch it off)
 
 
-def get_run_kilometrage(scenario: ty.Dict) -> float:
+def get_run_kilometrage(
+    scenario: ty.Dict, general_parameters: ty.Dict
+) -> float:
     '''
     Gets the kilometrage over the whole run.
     '''
 
     yearly_kilometrage: float = scenario['vehicle']['yearly_kilometrage']
-    run_duration_years: float = run_time.get_run_duration(scenario)[1]
+    run_duration_years: float = run_time.get_run_duration(
+        scenario, general_parameters
+    )[1]
 
     run_kilometrage: float = yearly_kilometrage * run_duration_years
 
@@ -160,12 +164,12 @@ def get_time_proportions(
 
 
 def compute_run_driven_kilometers(
-    run_driven_kilometers: pd.DataFrame,
+    run_driven_kilometers: pd.DataFrame, general_parameters: ty.Dict
 ) -> pd.DataFrame:
     '''
     Adds the driven kilometers per time tag
     '''
-    run_kilometrage: float = get_run_kilometrage(scenario)
+    run_kilometrage: float = get_run_kilometrage(scenario, general_parameters)
 
     run_driven_kilometers['Driven kilometers (km)'] = (
         run_kilometrage
@@ -176,7 +180,7 @@ def compute_run_driven_kilometers(
 
 
 def get_run_driven_kilometers(
-    scenario: ty.Dict, case_name: str
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> pd.DataFrame:
     '''
     This gets a DataFrame with kilometers driven per time tag.
@@ -188,12 +192,12 @@ def get_run_driven_kilometers(
         run_driven_kilometers, scenario
     )
     run_driven_kilometers = compute_run_driven_kilometers(
-        run_driven_kilometers
+        run_driven_kilometers, general_parameters
     )
 
     scenario_name: str = scenario['scenario_name']
 
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
     run_driven_kilometers.to_pickle(
@@ -204,6 +208,12 @@ def get_run_driven_kilometers(
 
 
 if __name__ == '__main__':
+    print('Not currently in use')
+    exit()
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     scenario_file_name: str = (
@@ -212,7 +222,9 @@ if __name__ == '__main__':
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
 
-    run_driven_kilometers = get_run_driven_kilometers(scenario, case_name)
+    run_driven_kilometers = get_run_driven_kilometers(
+        scenario, case_name, general_parameters
+    )
 
     print(run_driven_kilometers)
     # Normal charge when act=0

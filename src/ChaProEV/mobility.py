@@ -89,12 +89,14 @@ def get_mobility_location_tuples(
 
 
 def get_trip_probabilities_per_day_type(
-    scenario: ty.Dict, case_name: str
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> pd.DataFrame:
     vehicle: str = scenario['vehicle']['name']
     if vehicle == 'car':
         trip_probabilities_per_day_type: pd.DataFrame = (
-            get_car_trip_probabilities_per_day_type(scenario, case_name)
+            get_car_trip_probabilities_per_day_type(
+                scenario, case_name, general_parameters
+            )
         )
     else:
         trip_probabilities_per_day_type = (
@@ -142,13 +144,13 @@ def get_trip_probabilities_per_day_type_other_vehicles(
 
 
 def get_car_trip_probabilities_per_day_type(
-    scenario: ty.Dict, case_name: str
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> pd.DataFrame:
     '''
     This function computes the trip probabilities per day type for cars
     '''
     day_type_start_location_split: pd.DataFrame = (
-        get_day_type_start_location_split(scenario)
+        get_day_type_start_location_split(scenario, general_parameters)
     )
     scenario_vehicle: str = scenario['vehicle']['name']
     trip_list: ty.List[str] = []
@@ -159,10 +161,10 @@ def get_car_trip_probabilities_per_day_type(
 
     scenario_name: str = scenario['scenario_name']
 
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
-    time_parameters: ty.Dict = scenario['time']
+    time_parameters: ty.Dict = general_parameters['time']
     DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
     DAYS_IN_A_WEEK: int = time_parameters['DAYS_IN_A_WEEK']
     weeks_in_a_year: float = DAYS_IN_A_YEAR / DAYS_IN_A_WEEK
@@ -757,7 +759,9 @@ def get_car_trip_probabilities_per_day_type(
     return trip_probabilities_per_day_type
 
 
-def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
+def get_run_trip_probabilities(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> pd.DataFrame:
     '''
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
@@ -771,19 +775,23 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
             trip_list.append(trip_to_add)
     scenario_name: str = scenario['scenario_name']
 
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
-    run_range, run_hour_numbers = run_time.get_time_range(scenario)
+    run_range, run_hour_numbers = run_time.get_time_range(
+        scenario, general_parameters
+    )
     run_trip_probabilities: pd.DataFrame = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
     run_trip_probabilities = run_time.add_day_type_to_time_stamped_dataframe(
-        run_trip_probabilities, scenario
+        run_trip_probabilities, scenario, general_parameters
     )
 
     trip_probabilities_per_day_type: pd.DataFrame = (
-        get_trip_probabilities_per_day_type(scenario, case_name)
+        get_trip_probabilities_per_day_type(
+            scenario, case_name, general_parameters
+        )
     )
 
     for trip in trip_list:
@@ -798,7 +806,9 @@ def get_run_trip_probabilities(scenario: ty.Dict, case_name) -> pd.DataFrame:
     return run_trip_probabilities
 
 
-def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
+def get_mobility_matrix(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     '''
     Makes a mobility matrix for the run that tracks departures
     from and to locations (tracks amount, kilometers, and weighted kilometers)
@@ -806,7 +816,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
     scenario_vehicle: str = scenario['vehicle']['name']
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
-        scenario, case_name
+        scenario, case_name, general_parameters
     )
     loop_timer.append(datetime.datetime.now())
     trip_parameters: ty.Dict = scenario['trips']
@@ -816,7 +826,9 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
         if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
     ]
 
-    run_time_tags: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
+    run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[0]
     loop_timer.append(datetime.datetime.now())
     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
         get_mobility_location_tuples(scenario)
@@ -847,7 +859,7 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     run_mobility_matrix = run_mobility_matrix.sort_index()
 
     scenario_name: str = scenario['scenario_name']
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     loop_timer.append(datetime.datetime.now())
     for trip_name in trip_names:
@@ -959,7 +971,9 @@ def get_mobility_matrix(scenario: ty.Dict, case_name: str) -> None:
     print(loop_times)
 
 
-def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
+def get_day_type_start_location_split(
+    scenario: ty.Dict, general_parameters: ty.Dict
+) -> pd.DataFrame:
     '''
     Tells us the proportion of vehicles
     that start their day at a given location (per day type)
@@ -1024,7 +1038,9 @@ def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
     # the weekend days (note that this is an approximation, as
     # we ideally should split the weekend in two, but that would make
     # the model complexer)
-    weekend_day_numbers: ty.List[int] = scenario['time']['weekend_day_numbers']
+    weekend_day_numbers: ty.List[int] = general_parameters['time'][
+        'weekend_day_numbers'
+    ]
     travelling_weekend_day_types: ty.List[str] = [
         'weekend_holiday_departures',
         'weekend_holiday_returns',
@@ -1041,14 +1057,16 @@ def get_day_type_start_location_split(scenario: ty.Dict) -> pd.DataFrame:
     return day_type_start_location_split
 
 
-def get_location_split(scenario: ty.Dict, case_name: str) -> None:
+def get_location_split(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     '''
     Produces the location split of the vehicles for the whole run
     '''
     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
     scenario_name: str = scenario['scenario_name']
 
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
     vehicle_parameters: ty.Dict = scenario['vehicle']
@@ -1059,14 +1077,18 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
         for location_name in location_parameters
         if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
-    run_range: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
+    run_range: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[0]
     location_split: pd.DataFrame = pd.DataFrame(
         columns=location_names, index=run_range
     )
 
     location_split.index.name = 'Time Tag'
 
-    location_split = get_starting_location_split(location_split, scenario)
+    location_split = get_starting_location_split(
+        location_split, scenario, general_parameters
+    )
 
     loop_timer.append(datetime.datetime.now())
     run_mobility_matrix_name: str = f'{scenario_name}_run_mobility_matrix'
@@ -1156,7 +1178,9 @@ def get_location_split(scenario: ty.Dict, case_name: str) -> None:
 
 
 def get_starting_location_split(
-    location_split: pd.DataFrame, scenario: ty.Dict
+    location_split: pd.DataFrame,
+    scenario: ty.Dict,
+    general_parameters: ty.Dict,
 ) -> pd.DataFrame:
     '''
     Gets the location split at run start
@@ -1175,14 +1199,14 @@ def get_starting_location_split(
     ]
     if compute_start_location_split:
         run_range: ty.List[datetime.datetime] = run_time.get_time_range(
-            scenario
+            scenario, general_parameters
         )[0]
         run_start_time_tag: datetime.datetime = run_range[0]
         run_start_day_type: str = run_time.get_day_type(
-            run_start_time_tag, scenario
+            run_start_time_tag, scenario, general_parameters
         )
         day_type_start_location_split: pd.DataFrame = (
-            get_day_type_start_location_split(scenario)
+            get_day_type_start_location_split(scenario, general_parameters)
         )
 
         for location_name in location_names:
@@ -1202,15 +1226,17 @@ def get_starting_location_split(
     return location_split
 
 
-def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
+def get_kilometers_for_next_leg(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
-        scenario, case_name
+        scenario, case_name, general_parameters
     )
 
     scenario_name: str = scenario['scenario_name']
     scenario_vehicle: str = scenario['vehicle']['name']
 
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
@@ -1273,16 +1299,20 @@ def get_kilometers_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     )
 
 
-def make_mobility_data(scenario: ty.Dict, case_name: str) -> None:
+def make_mobility_data(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     timer: bool = True
     start_time: datetime.datetime = datetime.datetime.now()
-    get_trip_probabilities_per_day_type(scenario, case_name)
+    get_trip_probabilities_per_day_type(
+        scenario, case_name, general_parameters
+    )
     per_day_type_time: datetime.datetime = datetime.datetime.now()
-    get_mobility_matrix(scenario, case_name)
+    get_mobility_matrix(scenario, case_name, general_parameters)
     mobility_matrix_time: datetime.datetime = datetime.datetime.now()
-    get_location_split(scenario, case_name)
+    get_location_split(scenario, case_name, general_parameters)
     location_split_time: datetime.datetime = datetime.datetime.now()
-    get_kilometers_for_next_leg(scenario, case_name)
+    get_kilometers_for_next_leg(scenario, case_name, general_parameters)
     next_leg_time: datetime.datetime = datetime.datetime.now()
     if timer:
         print(
@@ -1311,8 +1341,12 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
 
-    make_mobility_data(scenario, case_name)
+    make_mobility_data(scenario, case_name, general_parameters)
     print((datetime.datetime.now() - start_time).total_seconds())
     print('Add spillover?')
     print('Use departures from and arrivals to for location split')

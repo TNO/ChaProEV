@@ -14,15 +14,13 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def extra_end_outputs(scenario: ty.Dict, case_name: str) -> None:
+def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
     '''
     Saves the pickle files to other formats
     '''
-    file_parameters: ty.Dict = scenario['files']
-
-    output_root: str = file_parameters['output_root']
+    output_root: str = general_parameters['files']['output_root']
     output_folder: str = f'{output_root}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
+    groupfile_root: str = general_parameters['files']['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     for output_file in os.listdir(output_folder):
         if output_file.split('.')[1] == 'pkl':
@@ -35,11 +33,13 @@ def extra_end_outputs(scenario: ty.Dict, case_name: str) -> None:
                 table_name,
                 groupfile_name,
                 output_folder,
-                scenario,
+                general_parameters,
             )
 
 
-def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
+def write_scenario_parameters(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     '''
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
@@ -50,7 +50,8 @@ def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
     scenario_name: str = scenario['scenario_name']
     # groupfile_root: str = scenario['files']['groupfile_root']
     # groupfile_name: str = f'{groupfile_root}_{case_name}'
-    output_folder: str = scenario['files']['output_folder']
+    output_root: str = general_parameters['files']['output_root']
+    output_folder: str = f'{output_root}/{case_name}'
 
     for parameter_category in scenario_parameter_categories:
         parameter_values = scenario[parameter_category]
@@ -68,10 +69,14 @@ def write_scenario_parameters(scenario: ty.Dict, case_name: str) -> None:
 if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    extra_end_outputs(scenario, case_name)
-    write_scenario_parameters(scenario, case_name)
+    extra_end_outputs(case_name, general_parameters)
+    write_scenario_parameters(scenario, case_name, general_parameters)

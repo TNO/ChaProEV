@@ -135,14 +135,14 @@ between the start location and the end location. This corresponds to using
 different [road types](scenario.md#road_types), with given
 [weights](scenario.md#weights) and given [mixes](scenario.md#mix) to account
 for the fact that vehicles consume more on some road types.
-4. **Departures amount**: The chance that a vehicle, in a given hour,  leaves
+4. **Departures amount**: The chance that a vehicle, in a given hour, leaves
 the start location,
 going to the end location (amount and chance are equivalent
 here, as we compute on an individual vehicle basis).
 5. **Departures kilometers:** The kilometers driven by vehicles leaving the
 start location at a given hour and going to the end location. This is given
 by the departures amount times the distance.
-6. **Departures  weighted kilometers:** The weighted (by road type) kilometers 
+6. **Departures weighted kilometers:** The weighted (by road type) kilometers
 driven by vehicles leaving the start location at a given hour and going to the 
 end location. This is given
 by the departures amount times the weighted distance.
@@ -155,7 +155,7 @@ here, as we compute on an individual vehicle basis).
 end location at a given hour, having started at the start location. 
 This is given
 by the arrivals amount times the distance.
-9. **Arrivals  weighted kilometers:** The weighted (by road type) kilometers 
+9. **Arrivals weighted kilometers:** The weighted (by road type) kilometers
 driven by vehicles arriving to the end location at a given hour, having 
 started at the start location. This is given
 by the arrivals amount times the weighted distance.
@@ -181,4 +181,3 @@ Have one trip per day type for non-cars
 
 Reference to day start hour
 cross-links with scenario
-send Profiles to Berlin

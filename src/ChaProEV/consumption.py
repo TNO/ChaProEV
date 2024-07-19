@@ -9,12 +9,16 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def create_consumption_tables(scenario: ty.Dict, case_name: str) -> None:
+def create_consumption_tables(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     '''
     Creates the consumption tables
     '''
     scenario_name: str = scenario['scenario_name']
-    output_folder: str = f'{scenario["files"]["output_root"]}/{case_name}'
+    output_folder: str = (
+        f'{general_parameters["files"]["output_root"]}/{case_name}'
+    )
     vehicle_parameters: ty.Dict = scenario['vehicle']
     kilometers_column_for_consumption: str = vehicle_parameters[
         'kilometers_column_for_consumption'
@@ -118,8 +122,10 @@ def create_consumption_tables(scenario: ty.Dict, case_name: str) -> None:
     )
 
 
-def get_energy_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
-    file_parameters: ty.Dict = scenario['files']
+def get_energy_for_next_leg(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     scenario_name: str = scenario['scenario_name']
     next_leg_kilometers: pd.DataFrame = pd.read_pickle(
@@ -154,9 +160,11 @@ def get_energy_for_next_leg(scenario: ty.Dict, case_name: str) -> None:
     )
 
 
-def get_consumption_data(scenario: ty.Dict, case_name: str) -> None:
-    create_consumption_tables(scenario, case_name)
-    get_energy_for_next_leg(scenario, case_name)
+def get_consumption_data(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
+    create_consumption_tables(scenario, case_name, general_parameters)
+    get_energy_for_next_leg(scenario, case_name, general_parameters)
 
 
 if __name__ == '__main__':
@@ -167,4 +175,8 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    get_consumption_data(scenario, case_name)
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
+    get_consumption_data(scenario, case_name, general_parameters)

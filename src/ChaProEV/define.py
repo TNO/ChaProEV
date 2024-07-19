@@ -49,7 +49,9 @@ class Leg:
 
     class_name: str = 'legs'
 
-    def __init__(leg, name: str, scenario: ty.Dict) -> None:
+    def __init__(
+        leg, name: str, scenario: ty.Dict, general_parameters: ty.Dict
+    ) -> None:
         leg.name: str = name
 
         leg_parameters: ty.Dict = scenario['legs'][name]
@@ -77,7 +79,9 @@ class Location:
 
     class_name: str = 'locations'
 
-    def __init__(location, name: str, scenario: ty.Dict) -> None:
+    def __init__(
+        location, name: str, scenario: ty.Dict, general_parameters: ty.Dict
+    ) -> None:
         location.name: str = name
 
         location_parameters: ty.Dict = scenario['locations'][name]
@@ -109,7 +113,9 @@ class Trip:
 
     class_name: str = 'trips'
 
-    def __init__(trip, name: str, scenario: ty.Dict) -> None:
+    def __init__(
+        trip, name: str, scenario: ty.Dict, general_parameters: ty.Dict
+    ) -> None:
         trip.name: str = name
         vehicle_parameters: ty.Dict = scenario['vehicle']
         vehicle_name: str = vehicle_parameters['name']
@@ -224,7 +230,7 @@ class Trip:
         # have start and end locations (plus hour in day, starting
         # at day start) as an index, and departures, arrivals as columns (
         # each with amounts, distances, weighted distances)
-        HOURS_IN_A_DAY: int = scenario['time']['HOURS_IN_A_DAY']
+        HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
         parameters_of_legs: ty.Dict = scenario['legs']
         unique_legs: ty.List[str] = []
         for trip_leg in trip.legs:
@@ -477,7 +483,9 @@ class Trip:
             time_driving_previous_leg = time_driving
 
         # We now can create a mobility matrix for the whole run
-        run_time_tags: pd.DatetimeIndex = run_time.get_time_range(scenario)[0]
+        run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
+            scenario, general_parameters
+        )[0]
 
         # We only want the start and end locations that are in the legs
         run_mobility_index_tuples: ty.List[
@@ -508,6 +516,7 @@ class Trip:
                 run_time_tags,
                 trip.day_start_hour,
                 scenario,
+                general_parameters,
             )
             for mobility_quantity in mobility_quantities:
                 trip.run_mobility_matrix.at[
@@ -644,6 +653,7 @@ class Trip:
             run_time_tags,
             trip.day_start_hour,
             scenario,
+            general_parameters,
         )
         trip.run_next_leg_kilometers_cumulative: pd.DataFrame = (
             run_time.from_day_to_run(
@@ -651,12 +661,13 @@ class Trip:
                 run_time_tags,
                 trip.day_start_hour,
                 scenario,
+                general_parameters,
             )
         )
 
 
 def declare_class_instances(
-    Chosen_class: ty.Type, scenario: ty.Dict
+    Chosen_class: ty.Type, scenario: ty.Dict, general_parameters: ty.Dict
 ) -> ty.List[ty.Type]:
     '''
     This function creates the instances of a class (Chosen_class),
@@ -688,24 +699,30 @@ def declare_class_instances(
                 append_instance = False
 
         if append_instance:
-            instances.append(Chosen_class(class_instance, scenario))
+            instances.append(
+                Chosen_class(class_instance, scenario, general_parameters)
+            )
 
     return instances
 
 
 def declare_all_instances(
-    scenario: ty.Dict, case_name: str
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> ty.Tuple[ty.List[ty.Type], ...]:
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
     '''
     scenario_name: str = scenario['scenario_name']
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    locations: ty.List[ty.Type] = declare_class_instances(Location, scenario)
+    locations: ty.List[ty.Type] = declare_class_instances(
+        Location, scenario, general_parameters
+    )
 
-    legs: ty.List[ty.Type] = declare_class_instances(Leg, scenario)
+    legs: ty.List[ty.Type] = declare_class_instances(
+        Leg, scenario, general_parameters
+    )
 
     # We want to get the location connections
     location_connections_headers: ty.List[str] = scenario['mobility_module'][
@@ -748,7 +765,9 @@ def declare_all_instances(
         f'{output_folder}/{scenario_name}_location_connections.pkl'
     )
 
-    trips: ty.List[ty.Type] = declare_class_instances(Trip, scenario)
+    trips: ty.List[ty.Type] = declare_class_instances(
+        Trip, scenario, general_parameters
+    )
 
     # We want to save the moblity matrixes
     for trip in trips:
@@ -788,6 +807,10 @@ def declare_all_instances(
 
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     scenario_file_name: str = (
@@ -795,7 +818,9 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    legs, locations, trips = declare_all_instances(scenario, case_name)
+    legs, locations, trips = declare_all_instances(
+        scenario, case_name, general_parameters
+    )
 
     for leg in legs:
         print(

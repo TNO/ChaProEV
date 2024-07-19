@@ -101,7 +101,9 @@ def download_cds_weather_quantity(
     )
 
 
-def download_all_cds_weather_data(scenario: ty.Dict) -> None:
+def download_all_cds_weather_data(
+    scenario: ty.Dict, general_parameters: ty.Dict
+) -> None:
     '''
     Downloads all the necessary CDS ERA-5 weather data.
     You only need to use this function at the start of your project,
@@ -110,7 +112,7 @@ def download_all_cds_weather_data(scenario: ty.Dict) -> None:
     or if you want to gather other quantities, or look at other years.
     '''
 
-    time_parameters: ty.Dict = scenario['time']
+    time_parameters: ty.Dict = general_parameters['time']
     HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
     MONTHS_IN_A_YEAR: int = time_parameters['MONTHS_IN_A_YEAR']
     MAX_DAYS_IN_A_MONTH: int = time_parameters['MAX_DAYS_IN_A_MONTH']
@@ -740,7 +742,7 @@ def get_scenario_location_weather_quantity(
 
 
 def get_scenario_weather_data(
-    scenario: ty.Dict, case_name: str
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> pd.DataFrame:
     '''
     Fetches the weather data and efficiency factors and puts it into
@@ -757,7 +759,7 @@ def get_scenario_weather_data(
         f'{scenario_name}_{weather_factors_table_root_name}'
     )
 
-    file_parameters: ty.Dict = scenario['files']
+    file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
@@ -849,7 +851,7 @@ def get_scenario_weather_data(
             ].values
         ]
 
-        JOULES_IN_A_KWH: float = scenario['unit_conversions'][
+        JOULES_IN_A_KWH: float = general_parameters['unit_conversions'][
             'JOULES_IN_A_KWH'
         ]
         weather_dataframe['Vehicle solar panels production (kWhe/m2)'] = [
@@ -886,7 +888,9 @@ def solar_panels_efficiency_factor(temperature: float) -> float:
     return efficiency_factor
 
 
-def setup_weather(scenario: ty.Dict, case_name: str) -> None:
+def setup_weather(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
     '''
     This runs all the functions necessary to get the scenario weather factors
     for a given case. Downloading CDS weather data
@@ -906,7 +910,7 @@ def setup_weather(scenario: ty.Dict, case_name: str) -> None:
     make_weather_database: bool = get_extra_downloads['make_weather_database']
 
     if download_weather_data:
-        download_all_cds_weather_data(scenario)
+        download_all_cds_weather_data(scenario, general_parameters)
     if download_EV_tool_data:
         get_EV_tool_data(scenario)
         plot_temperature_efficiency(scenario)
@@ -923,7 +927,7 @@ def setup_weather(scenario: ty.Dict, case_name: str) -> None:
 
         get_all_hourly_values(scenario)
     try:
-        get_scenario_weather_data(scenario, case_name)
+        get_scenario_weather_data(scenario, case_name, general_parameters)
     except sqlite3.OperationalError:
         raise FileNotFoundError(
             'Weather database could not be opened, it may not exist.'
@@ -1011,6 +1015,10 @@ def get_location_weather_quantity(
 
 
 if __name__ == '__main__':
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     scenario_file_name: str = (
@@ -1019,7 +1027,7 @@ if __name__ == '__main__':
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
     plot_temperature_efficiency(scenario)
-    setup_weather(scenario, case_name)
+    setup_weather(scenario, case_name, general_parameters)
     print(
         get_location_weather_quantity(
             52.0,

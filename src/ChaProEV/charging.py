@@ -61,9 +61,10 @@ def travel_space_occupation(
     run_mobility_matrix,  # This is a DataFrame, but MyPy has issues with it
     # These issues might have to do with MultiIndex
     scenario: ty.Dict,
+    general_parameters: ty.Dict,
 ) -> ty.Dict[str, pd.DataFrame]:
 
-    zero_threshold: float = scenario['numbers']['zero_threshold']
+    zero_threshold: float = general_parameters['numbers']['zero_threshold']
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
 
@@ -316,8 +317,9 @@ def compute_charging_events(
     charge_drawn_from_network: pd.DataFrame,
     time_tag: datetime.datetime,
     scenario: ty.Dict,
+    general_parameters: ty.Dict,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
-    zero_threshold: float = scenario['numbers']['zero_threshold']
+    zero_threshold: float = general_parameters['numbers']['zero_threshold']
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
@@ -435,14 +437,18 @@ def compute_charging_events(
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
-def get_charging_framework(scenario: ty.Dict, case_name: str) -> ty.Tuple[
+def get_charging_framework(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> ty.Tuple[
     ty.Dict[str, pd.DataFrame],
     pd.DatetimeIndex,
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
 ]:
-    run_range, run_hour_numbers = run_time.get_time_range(scenario)
+    run_range, run_hour_numbers = run_time.get_time_range(
+        scenario, general_parameters
+    )
     # print(run_range[3573])
     # exit()
     SPINE_hour_numbers: ty.List[str] = [
@@ -460,7 +466,7 @@ def get_charging_framework(scenario: ty.Dict, case_name: str) -> ty.Tuple[
     ]
     scenario_name: str = scenario['scenario_name']
 
-    file_parameters: ty.Dict[str, str] = scenario['files']
+    file_parameters: ty.Dict[str, str] = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     location_split_table_name: str = f'{scenario_name}_location_split'
     location_split: pd.DataFrame = pd.read_pickle(
@@ -520,8 +526,11 @@ def write_output(
     charge_drawn_from_network: pd.DataFrame,
     scenario: ty.Dict,
     case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
-    run_range, run_hour_numbers = run_time.get_time_range(scenario)
+    run_range, run_hour_numbers = run_time.get_time_range(
+        scenario, general_parameters
+    )
 
     SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
@@ -538,7 +547,7 @@ def write_output(
     ]
     scenario_name: str = scenario['scenario_name']
 
-    file_parameters: ty.Dict[str, str] = scenario['files']
+    file_parameters: ty.Dict[str, str] = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
     for location_name in location_names:
@@ -650,7 +659,7 @@ def write_output(
 
 
 def get_charging_profile(
-    scenario: ty.Dict, case_name: str
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
     (
         battery_space,
@@ -658,7 +667,7 @@ def get_charging_profile(
         run_mobility_matrix,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_framework(scenario, case_name)
+    ) = get_charging_framework(scenario, case_name, general_parameters)
 
     loop_times: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), 1)),
@@ -679,6 +688,7 @@ def get_charging_profile(
             run_range,
             run_mobility_matrix,
             scenario,
+            general_parameters,
         )
 
         (
@@ -691,6 +701,7 @@ def get_charging_profile(
             charge_drawn_from_network,
             time_tag,
             scenario,
+            general_parameters,
         )
 
         loop_end: datetime.datetime = datetime.datetime.now()
@@ -712,6 +723,7 @@ def get_charging_profile(
         charge_drawn_from_network,
         scenario,
         case_name,
+        general_parameters,
     )
     loop_times.to_csv('Lopi.csv')
     # print('Write', (datetime.datetime.now()-write_out_start).total_seconds())
@@ -770,11 +782,15 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
 
     start_: datetime.datetime = datetime.datetime.now()
     (
         battery_space,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_profile(scenario, case_name)
+    ) = get_charging_profile(scenario, case_name, general_parameters)
     print((datetime.datetime.now() - start_).total_seconds())

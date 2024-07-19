@@ -76,6 +76,10 @@ except ModuleNotFoundError:
 
 def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
     cook.check_if_folder_exists(f'output/{case_name}')
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
         # To avoid issues if some files are not configuration files
@@ -88,7 +92,7 @@ def run_ChaProEV(case_name: str) -> None:
             print((datetime.datetime.now() - start_).total_seconds())
             decla_start: datetime.datetime = datetime.datetime.now()
             legs, locations, trips = define.declare_all_instances(
-                scenario, case_name
+                scenario, case_name, general_parameters
             )
             print(
                 'Declare',
@@ -96,13 +100,17 @@ def run_ChaProEV(case_name: str) -> None:
             )
 
             mob_start: datetime.datetime = datetime.datetime.now()
-            mobility.make_mobility_data(scenario, case_name)
+            mobility.make_mobility_data(
+                scenario, case_name, general_parameters
+            )
             print(
                 'Mobility',
                 (datetime.datetime.now() - mob_start).total_seconds(),
             )
             cons_start: datetime.datetime = datetime.datetime.now()
-            consumption.get_consumption_data(scenario, case_name)
+            consumption.get_consumption_data(
+                scenario, case_name, general_parameters
+            )
             print(
                 'Cons', (datetime.datetime.now() - cons_start).total_seconds()
             )
@@ -111,7 +119,9 @@ def run_ChaProEV(case_name: str) -> None:
                 battery_space,
                 charge_drawn_by_vehicles,
                 charge_drawn_from_network,
-            ) = charging.get_charging_profile(scenario, case_name)
+            ) = charging.get_charging_profile(
+                scenario, case_name, general_parameters
+            )
             print(
                 'Charge',
                 (datetime.datetime.now() - charge_start).total_seconds(),
@@ -120,22 +130,13 @@ def run_ChaProEV(case_name: str) -> None:
             # print(charge_drawn_from_network)
             write_start: datetime.datetime = datetime.datetime.now()
 
-            writing.extra_end_outputs(scenario, case_name)
-            print(
-                'Writing other outputs',
-                (datetime.datetime.now() - write_start).total_seconds(),
-            )
+    writing.extra_end_outputs(case_name, general_parameters)
+    print(
+        'Writing other outputs',
+        (datetime.datetime.now() - write_start).total_seconds(),
+    )
     print('Tot', (datetime.datetime.now() - start_).total_seconds())
 
-
-# HAVE caRs and non-caRs separate
-# Why is Declare so slow now?
-# Only do vehicle-relevanty things?
-# Or run cars only?
-# Excluded unconnected locations (and thus home-->home)???
-# Either at source or afterwards (if there are no legs)
-# Might have to do it in all functions afterwards
-# Maybe with an if connected
 
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
@@ -191,7 +192,8 @@ if __name__ == '__main__':
     print('Every x days')
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
-    case_name = 'Mopo 2'
+    case_name = 'local_impact_BEVs'
+    case_name = 'Mopo'
     run_ChaProEV(case_name)
     print('Iterate over cases? At least as a separate fucntion')
     # writing.write_scenario_parameters(scenario)

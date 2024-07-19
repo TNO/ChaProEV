@@ -24,17 +24,21 @@ import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def get_run_duration(scenario: ty.Dict) -> ty.Tuple[float, float]:
+def get_run_duration(
+    scenario: ty.Dict, general_parameters: ty.Dict
+) -> ty.Tuple[float, float]:
     '''
     Gets the run duration (in seconds and years)
     '''
-    run_range: pd.DatetimeIndex = get_time_range(scenario)[0]
+    run_range: pd.DatetimeIndex = get_time_range(scenario, general_parameters)[
+        0
+    ]
 
     run_duration_seconds: float = (
         run_range[-1] - run_range[0]
     ).total_seconds()
 
-    time_parameters: ty.Dict = scenario['time']
+    time_parameters: ty.Dict = general_parameters['time']
     SECONDS_PER_HOUR: int = time_parameters['SECONDS_PER_HOUR']
     HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
     DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
@@ -47,7 +51,7 @@ def get_run_duration(scenario: ty.Dict) -> ty.Tuple[float, float]:
 
 
 def get_time_range(
-    scenario: ty.Dict,
+    scenario: ty.Dict, general_parameters: ty.Dict
 ) -> ty.Tuple[pd.DatetimeIndex, ty.List[int]]:
     '''
     This function returns the time range of the run, and the
@@ -124,7 +128,7 @@ def get_time_range(
         # to say it is closed left
     )
 
-    time_parameters: ty.Dict[str, ty.Any] = scenario['time']
+    time_parameters: ty.Dict[str, ty.Any] = general_parameters['time']
     SECONDS_PER_HOUR: int = time_parameters['SECONDS_PER_HOUR']
     first_hour_number: int = time_parameters['first_hour_number']
 
@@ -143,14 +147,16 @@ def get_time_range(
 
 
 def get_time_stamped_dataframe(
-    scenario: ty.Dict, locations_as_columns: bool = True
+    scenario: ty.Dict,
+    general_parameters: ty.Dict,
+    locations_as_columns: bool = True,
 ) -> pd.DataFrame:
     '''
     This function creates a DataFrame with the timestamps of the
     run as index (and hour numbers, SPINE hour numbers as a column).
     '''
 
-    run_range, run_hour_numbers = get_time_range(scenario)
+    run_range, run_hour_numbers = get_time_range(scenario, general_parameters)
     time_stamped_dataframe: pd.DataFrame = pd.DataFrame(
         run_hour_numbers, columns=['Hour Number'], index=run_range
     )
@@ -160,7 +166,7 @@ def get_time_stamped_dataframe(
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
     time_stamped_dataframe = add_day_type_to_time_stamped_dataframe(
-        time_stamped_dataframe, scenario
+        time_stamped_dataframe, scenario, general_parameters
     )
 
     day_start_hour: int = scenario['mobility_module']['day_start_hour']
@@ -192,12 +198,16 @@ def get_time_stamped_dataframe(
     return time_stamped_dataframe
 
 
-def get_day_type(time_tag: datetime.datetime, scenario: ty.Dict) -> str:
+def get_day_type(
+    time_tag: datetime.datetime, scenario: ty.Dict, general_parameters: ty.Dict
+) -> str:
     '''
     Tells us the date type of a given time_tag.
     '''
 
-    weekend_day_numbers: ty.List[int] = scenario['time']['weekend_day_numbers']
+    weekend_day_numbers: ty.List[int] = general_parameters['time'][
+        'weekend_day_numbers'
+    ]
     holiday_weeks: ty.List[int] = scenario['mobility_module']['holiday_weeks']
     if time_tag.isoweekday() in weekend_day_numbers:
         day_type: str = 'weekend'
@@ -241,7 +251,7 @@ def get_day_type(time_tag: datetime.datetime, scenario: ty.Dict) -> str:
 
 
 def add_day_type_to_time_stamped_dataframe(
-    dataframe: pd.DataFrame, scenario: ty.Dict
+    dataframe: pd.DataFrame, scenario: ty.Dict, general_parameters: ty.Dict
 ) -> pd.DataFrame:
     '''
     Adds a column with the date type
@@ -250,7 +260,9 @@ def add_day_type_to_time_stamped_dataframe(
     day_start_hour: int = scenario['mobility_module']['day_start_hour']
     day_types: ty.List[str] = [
         get_day_type(
-            time_tag - datetime.timedelta(hours=day_start_hour), scenario
+            time_tag - datetime.timedelta(hours=day_start_hour),
+            scenario,
+            general_parameters,
         )
         for time_tag in dataframe.index
     ]
@@ -264,6 +276,7 @@ def from_day_to_run(
     run_range: pd.DatetimeIndex,
     day_start_hour: int,
     scenario: ty.Dict,
+    general_parameters: ty.Dict,
 ) -> pd.DataFrame:
     '''
     Clones dataframe for a day (with zero at day start) for
@@ -282,8 +295,8 @@ def from_day_to_run(
     ):
         rolled_dataframe_to_clone[column] = column_values
 
-    SECONDS_PER_HOUR: int = scenario['time']['SECONDS_PER_HOUR']
-    HOURS_IN_A_DAY: int = scenario['time']['HOURS_IN_A_DAY']
+    SECONDS_PER_HOUR: int = general_parameters['time']['SECONDS_PER_HOUR']
+    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
     run_number_of_seconds: float = (
         run_range[-1] - run_range[0]
     ).total_seconds()
@@ -342,8 +355,14 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    run_range, run_hour_numbers = get_time_range(scenario)
-    time_stamped_dataframe: pd.DataFrame = get_time_stamped_dataframe(scenario)
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
+    run_range, run_hour_numbers = get_time_range(scenario, general_parameters)
+    time_stamped_dataframe: pd.DataFrame = get_time_stamped_dataframe(
+        scenario, general_parameters
+    )
     print(run_range)
     print(run_hour_numbers)
     print(time_stamped_dataframe)
