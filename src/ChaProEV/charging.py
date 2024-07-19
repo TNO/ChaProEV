@@ -270,18 +270,6 @@ def travel_space_occupation(
                                     * (1 - first_arrival_shift_proportion)
                                 )
 
-                # We ensure that the columns of the battery space
-                # array are ordered
-                battery_space[end_location] = battery_space[
-                    end_location
-                ].reindex(sorted(battery_space[end_location].columns), axis=1)
-
-            # We ensure that the columns of the battery space
-            # array are ordered
-            battery_space[start_location] = battery_space[
-                start_location
-            ].reindex(sorted(battery_space[start_location].columns), axis=1)
-
     # Have  arrivals not connect at all if partial (until leave)
     # Or assume they move around get connected later
 
@@ -695,7 +683,7 @@ def get_charging_profile(
             location_names,
             possible_destinations,
             distance_header,
-            electricity_consumption_kWh_per_km
+            electricity_consumption_kWh_per_km,
         )
 
         loop_mid: datetime.datetime = datetime.datetime.now()
