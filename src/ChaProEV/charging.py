@@ -65,6 +65,9 @@ def travel_space_occupation(
     possible_destinations: ty.Dict[str, ty.List[str]],
     distance_header: str,
     electricity_consumption_kWh_per_km: float,
+    use_day_types_in_charge_computing: bool,
+    day_start_hour: int,
+    location_split: pd.DataFrame,
 ) -> ty.Dict[str, pd.DataFrame]:
 
     # We look at all movements starting at a given location
@@ -78,6 +81,13 @@ def travel_space_occupation(
             battery_space[start_location].iloc[time_tag_index] = (
                 battery_space[start_location].iloc[time_tag_index]
                 + battery_space[start_location].iloc[time_tag_index - 1]
+            )
+
+        if use_day_types_in_charge_computing and (
+            time_tag.hour == day_start_hour
+        ):
+            battery_space[start_location].loc[time_tag, 0] = (
+                location_split.loc[time_tag][start_location]
             )
 
         # We look at which battery spaces there are at this location
@@ -435,7 +445,6 @@ def get_charging_framework(
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     location_split_table_name: str = f'{scenario_name}_location_split'
     location_split: pd.DataFrame = pd.read_pickle(
-        # cook.read_table_from_database(
         f'{output_folder}/{location_split_table_name}.pkl'
     )
 
@@ -640,6 +649,35 @@ def get_charging_profile(
         columns=['Loop duration'],
         index=run_range,
     )
+    compute_charge: bool = True
+    day_types: ty.List[str] = scenario['mobility_module']['day_types']
+    use_day_types_in_charge_computing: bool = scenario['run'][
+        'use_day_types_in_charge_computing'
+    ]
+
+    if use_day_types_in_charge_computing:
+        compute_charge = False
+        day_types_to_compute: ty.List[str] = day_types.copy()
+        reference_day_type_time_tags: ty.Dict[
+            str, ty.List[datetime.datetime]
+        ] = {}
+        time_tags_of_day_type: ty.List[datetime.datetime] = []
+
+    day_start_hour: int = scenario['mobility_module']['day_start_hour']
+    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
+    day_end_hour: int = (day_start_hour - 1) % HOURS_IN_A_DAY
+    run_day_types: ty.List[str] = [
+        run_time.get_day_type(
+            time_tag - datetime.timedelta(hours=day_start_hour),
+            scenario,
+            general_parameters,
+        )
+        for time_tag in run_range
+    ]
+    run_hours_from_day_start: ty.List[int] = [
+        (time_tag.hour - day_start_hour) % HOURS_IN_A_DAY
+        for time_tag in run_range
+    ]
 
     zero_threshold: float = general_parameters['numbers']['zero_threshold']
     vehicle_parameters: ty.Dict = scenario['vehicle']
@@ -667,46 +705,80 @@ def get_charging_profile(
         'base_consumption_per_km'
     ]['electricity_kWh']
 
+    scenario_name: str = scenario['scenario_name']
+
+    file_parameters: ty.Dict[str, str] = general_parameters['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    location_split_table_name: str = f'{scenario_name}_location_split'
+    location_split: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{location_split_table_name}.pkl'
+    )
+
     # We look at how the available battery space in the vehicles moves around
     # (it increases with movements and decreases with charging)
-    for time_tag_index, time_tag in enumerate(run_range):
 
-        loop_start: datetime.datetime = datetime.datetime.now()
+    for time_tag_index, (time_tag, run_day_type) in enumerate(
+        zip(run_range, run_day_types)
+    ):
+        if (
+            use_day_types_in_charge_computing
+            and (time_tag.hour == day_start_hour)
+            and (run_day_type in day_types_to_compute)
+        ):
+            day_types_to_compute.remove(run_day_type)
+            compute_charge = True
+            time_tags_of_day_type = []
 
-        battery_space = travel_space_occupation(
-            battery_space,
-            time_tag,
-            time_tag_index,
-            run_range,
-            run_mobility_matrix,
-            zero_threshold,
-            location_names,
-            possible_destinations,
-            distance_header,
-            electricity_consumption_kWh_per_km,
-        )
+        if compute_charge:
+            loop_start: datetime.datetime = datetime.datetime.now()
+            if use_day_types_in_charge_computing:
+                time_tags_of_day_type.append(time_tag)
 
-        loop_mid: datetime.datetime = datetime.datetime.now()
+            battery_space = travel_space_occupation(
+                battery_space,
+                time_tag,
+                time_tag_index,
+                run_range,
+                run_mobility_matrix,
+                zero_threshold,
+                location_names,
+                possible_destinations,
+                distance_header,
+                electricity_consumption_kWh_per_km,
+                use_day_types_in_charge_computing,
+                day_start_hour,
+                location_split,
+            )
 
-        (
-            battery_space,
-            charge_drawn_by_vehicles,
-            charge_drawn_from_network,
-        ) = compute_charging_events(
-            battery_space,
-            charge_drawn_by_vehicles,
-            charge_drawn_from_network,
-            time_tag,
-            scenario,
-            general_parameters,
-        )
-        loop_end: datetime.datetime = datetime.datetime.now()
-        loop_time: float = (loop_end - loop_start).total_seconds()
-        loop_a: float = (loop_mid - loop_start).total_seconds()
-        loop_b: float = (loop_end - loop_mid).total_seconds()
-        loop_times.loc[time_tag, 'Loop duration'] = loop_time
-        loop_times.loc[time_tag, 'Loop duration a'] = loop_a
-        loop_times.loc[time_tag, 'Loop duration b'] = loop_b
+            loop_mid: datetime.datetime = datetime.datetime.now()
+
+            (
+                battery_space,
+                charge_drawn_by_vehicles,
+                charge_drawn_from_network,
+            ) = compute_charging_events(
+                battery_space,
+                charge_drawn_by_vehicles,
+                charge_drawn_from_network,
+                time_tag,
+                scenario,
+                general_parameters,
+            )
+            if use_day_types_in_charge_computing and (
+                time_tag.hour == day_end_hour
+            ):
+                compute_charge = False
+                reference_day_type_time_tags[run_day_type] = (
+                    time_tags_of_day_type
+                )
+
+            loop_end: datetime.datetime = datetime.datetime.now()
+            loop_time: float = (loop_end - loop_start).total_seconds()
+            loop_a: float = (loop_mid - loop_start).total_seconds()
+            loop_b: float = (loop_end - loop_mid).total_seconds()
+            loop_times.loc[time_tag, 'Loop duration'] = loop_time
+            loop_times.loc[time_tag, 'Loop duration a'] = loop_a
+            loop_times.loc[time_tag, 'Loop duration b'] = loop_b
 
         # We start with the battery space reduction duw to moving
 
@@ -716,6 +788,50 @@ def get_charging_profile(
 
     print('Other vehicles')
     print('Local values')
+
+    if use_day_types_in_charge_computing:
+        filter_dataframe: pd.DataFrame = pd.DataFrame(
+            run_day_types, columns=['Day Type'], index=run_range
+        )
+
+        filter_dataframe['Hours from day start'] = run_hours_from_day_start
+        # The battery space DataFramehas another index:
+        filter_for_battery_space: pd.DataFrame = pd.DataFrame(
+            run_day_types,
+            columns=['Day Type'],
+            index=battery_space[location_names[0]].index,
+        )
+        filter_for_battery_space['Hours from day start'] = (
+            run_hours_from_day_start
+        )
+        for day_type in day_types:
+            for hour_index in range(HOURS_IN_A_DAY):
+                charge_drawn_from_network.loc[
+                    (filter_dataframe['Day Type'] == day_type)
+                    & (filter_dataframe['Hours from day start'] == hour_index)
+                ] = charge_drawn_from_network.loc[
+                    reference_day_type_time_tags[day_type][hour_index]
+                ].values
+                charge_drawn_by_vehicles.loc[
+                    (filter_dataframe['Day Type'] == day_type)
+                    & (filter_dataframe['Hours from day start'] == hour_index)
+                ] = charge_drawn_by_vehicles.loc[
+                    reference_day_type_time_tags[day_type][hour_index]
+                ].values
+                for location_name in location_names:
+                    battery_space[location_name].loc[
+                        (filter_for_battery_space['Day Type'] == day_type)
+                        & (
+                            filter_for_battery_space['Hours from day start']
+                            == hour_index
+                        )
+                    ] = (
+                        battery_space[location_name]
+                        .loc[
+                            reference_day_type_time_tags[day_type][hour_index]
+                        ]
+                        .values
+                    )
 
     write_output(
         battery_space,

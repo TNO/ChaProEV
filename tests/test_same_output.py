@@ -6,7 +6,7 @@ import pandas as pd
 
 def test_all_files() -> None:
 
-    case_name: str = 'local_impact_BEVs'
+    case_name: str = 'Mopo'
 
     folder_to_test: str = f'output/{case_name}'
     reference_folder: str = 'reference_run'

@@ -10,6 +10,7 @@
 # Run parameters
 [run]
 weather_factors_table_root_name = 'weather_factors'
+use_day_types_in_charge_computing = false
 [run.start]
 year = 2020
 month = 1
@@ -1053,12 +1054,7 @@ time_between_repetitions = [0.1, 3, 0.1, 3] # hours
 day_start_hour = 5
 # Chosen so that no travel occurs in the first hour
 compute_start_location_split = true
-day_types = [
-    'weekday_in_work_week', 'weekend_in_work_week',
-    'weekday_in_holiday_week', 'weekend_in_holiday_week',
-    'weekend_holiday_departures', 'weekend_holiday_returns',
-    'holiday_overlap_weekend'
-]
+
 
 mobility_quantities = [
     'Departures amount', 'Departures kilometers',
@@ -1111,6 +1107,29 @@ holiday_trips_taken = 1
 time_spent_at_holiday_destination = 14  # days
 # percentage_of_outward_holiday_trips_on_weekends = 0.75
 # percentage_of_back_holiday_trips_on_weekends = 0.75
+
+day_types = [
+    'weekday_in_work_week', 'weekend_in_work_week',
+    'weekday_in_holiday_week', 'weekend_in_holiday_week',
+    'weekend_holiday_departures', 'weekend_holiday_returns',
+    'holiday_overlap_weekend'
+]
+# chosen_day_type_list = 'standard'
+# Force that for cars? And also modify start location split?
+#[mobility_module.day_type_lists]
+# standard = [
+#     'weekday_in_work_week', 'weekend_in_work_week',
+#     'weekday_in_holiday_week', 'weekend_in_holiday_week',
+#     'weekend_holiday_departures', 'weekend_holiday_returns',
+#     'holiday_overlap_weekend'
+# ]
+# without_holiday_extras = [
+#     'weekday_in_work_week', 'weekend_in_work_week',
+#     'weekday_in_holiday_week', 'weekend_in_holiday_week'
+# ]
+# without_holidays = [
+#   weekday_in_work_week, weekend_in_work_week
+# ]
 [mobility_module.trips_per_day_type]
 bus = [ # for vehicles other than cars
     'bus_weekday_in_workweek', 'bus_weekend_in_workweek',

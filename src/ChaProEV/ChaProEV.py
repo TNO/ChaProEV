@@ -84,7 +84,6 @@ def run_ChaProEV(case_name: str) -> None:
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
-
             scenario_file_name: str = f'scenarios/{case_name}/{scenario_file}'
             scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
             scenario['scenario_name'] = scenario_file.split('.')[0]
@@ -193,7 +192,7 @@ if __name__ == '__main__':
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
     case_name = 'local_impact_BEVs'
-    # case_name = 'Mopo'
+    case_name = 'Mopo'
     run_ChaProEV(case_name)
     print('Iterate over cases? At least as a separate fucntion')
     # writing.write_scenario_parameters(scenario)
