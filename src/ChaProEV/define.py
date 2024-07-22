@@ -811,8 +811,8 @@ if __name__ == '__main__':
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
-    case_name = 'local_impact_BEVs'
-    test_scenario_name: str = 'baseline'
+    case_name = 'Mopo'
+    test_scenario_name: str = 'XX_bus'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

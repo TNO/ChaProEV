@@ -490,7 +490,7 @@ mix = [0.8, 0.2]
 [legs.bus_from_route_start_to_route_end]
 vehicle = 'bus'
 distance = 20  # km
-duration = 1  # hours
+duration = 0.5  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -518,7 +518,7 @@ mix = [0.8, 0.2]
 [legs.bus_from_route_end_to_route_start]
 vehicle = 'bus'
 distance = 20  # km
-duration = 1  # hours
+duration = 0.5  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -663,6 +663,7 @@ mix = [0.8, 0.2]
 # name = 'van'
 # name = 'truck'
 name = 'bus'
+base_location = 'bus_depot' # not relevant for cars
 yearly_kilometrage = 42_000
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'

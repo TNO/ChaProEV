@@ -643,7 +643,7 @@ def get_charging_profile(
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
     ) = get_charging_framework(scenario, case_name, general_parameters)
-
+   
     loop_times: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), 1)),
         columns=['Loop duration'],
@@ -832,6 +832,81 @@ def get_charging_profile(
                         ]
                         .values
                     )
+        (
+            spillover_battery_space,
+            run_range,
+            run_mobility_matrix,
+            spillover_charge_drawn_by_vehicles,
+            spillover_charge_drawn_from_network,
+        ) = get_charging_framework(scenario, case_name, general_parameters)
+        for location_name in location_names:
+            spillover_battery_space[location_name][
+                battery_space[location_name].columns
+            ] = float(0)
+
+        for location_name in location_names:
+            day_end_battery_space: pd.DataFrame = battery_space[
+                location_name
+            ].loc[run_range.hour == day_end_hour]
+            non_empty_day_end_battery_space: pd.DataFrame = (
+                day_end_battery_space.drop(columns=float(0))
+            )
+            day_ends_with_leftover_battery_space = (
+                non_empty_day_end_battery_space.loc[
+                    non_empty_day_end_battery_space.sum(axis=1)
+                    > zero_threshold
+                ].index.get_level_values('Time Tag')
+            )
+            for day_end_time_tag in day_ends_with_leftover_battery_space:
+                print(
+                    spillover_battery_space[location_name].loc[
+                        day_end_time_tag
+                    ]
+                )
+                exit()
+                spillover_battery_space[location_name].loc[
+                    day_end_time_tag
+                ] = (battery_space[location_name].loc[day_end_time_tag].values)
+                print(
+                    spillover_battery_space[location_name].loc[
+                        day_end_time_tag
+                    ]
+                )
+                if vehicle_name == 'car':
+                    exit()
+
+            print(day_ends_with_leftover_battery_space)
+        #     filter_day_ends_with_leftover_battery_space: pd.DataFrame = (
+        #         filter_for_battery_space.loc[
+        #             day_ends_with_leftover_battery_space
+        #         ]
+        #     )
+        #     day_types_with_leftover_battery_space: ty.List[str] = list(
+        #         set(
+        #             filter_for_battery_space.loc[
+        #                 day_ends_with_leftover_battery_space
+        #             ]['Day Type']
+        #         )
+        #     )
+        #     print(day_types_with_leftover_battery_space)
+        #     time_tags_for_leftover: pd.Dict[
+        #         str, ty.List[datetime.datetime]
+        #     ] = {}
+        #     for (
+        #         day_type_with_leftover_battery_space
+        #     ) in day_types_with_leftover_battery_space:
+        #         time_tags_for_leftover[
+        #             day_type_with_leftover_battery_space
+        #         ] = filter_day_ends_with_leftover_battery_space.loc[
+        #             filter_day_ends_with_leftover_battery_space['Day Type']
+        #             == day_type_with_leftover_battery_space
+        #         ].index.get_level_values(
+        #             'Time Tag'
+        #         )
+
+        if vehicle_name == 'car':
+            # print(time_tags_for_leftover)
+            exit()
 
     write_output(
         battery_space,

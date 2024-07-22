@@ -816,7 +816,6 @@ def get_run_trip_probabilities(
     run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
     print((datetime.datetime.now() - moo).total_seconds())
     moo = datetime.datetime.now()
-    # exit()
 
     return run_trip_probabilities
 
@@ -1022,52 +1021,59 @@ def get_day_type_start_location_split(
     )
     day_type_start_location_split.index.name = 'Location'
 
-    # Outside holidays, the vehicles start at home
-    day_types_outside_holidays: ty.List[str] = [
-        'weekday_in_work_week',
-        'weekend_in_work_week',
-    ]
-    for day_type in day_types_outside_holidays:
-        day_type_start_location_split.loc['home', day_type] = 1
+    if vehicle_name == 'car':
 
-    # Outside of departure and returns, the proportion of vehicles
-    # at the holiday destination is the amount of holiday trips taken
-    # divided by the opportunities to go on holidays
-    percentage_on_holiday_in_holiday_week: float = (
-        holiday_trips_taken / number_of_holiday_departure_weekends
-    )
+        # Outside holidays, the vehicles start at home
+        day_types_outside_holidays: ty.List[str] = [
+            'weekday_in_work_week',
+            'weekend_in_work_week',
+        ]
+        for day_type in day_types_outside_holidays:
+            day_type_start_location_split.loc['home', day_type] = 1
 
-    non_travelling_holiday_day_types: ty.List[str] = [
-        'weekday_in_holiday_week',
-        'weekend_in_holiday_week',
-    ]
-    for day_type in non_travelling_holiday_day_types:
-        day_type_start_location_split.loc['home', day_type] = (
-            1 - percentage_on_holiday_in_holiday_week
-        )
-        day_type_start_location_split.loc['holiday', day_type] = (
-            percentage_on_holiday_in_holiday_week
+        # Outside of departure and returns, the proportion of vehicles
+        # at the holiday destination is the amount of holiday trips taken
+        # divided by the opportunities to go on holidays
+        percentage_on_holiday_in_holiday_week: float = (
+            holiday_trips_taken / number_of_holiday_departure_weekends
         )
 
-    # For departure and retrun weekends, this is split across
-    # the weekend days (note that this is an approximation, as
-    # we ideally should split the weekend in two, but that would make
-    # the model complexer)
-    weekend_day_numbers: ty.List[int] = general_parameters['time'][
-        'weekend_day_numbers'
-    ]
-    travelling_weekend_day_types: ty.List[str] = [
-        'weekend_holiday_departures',
-        'weekend_holiday_returns',
-        'holiday_overlap_weekend',
-    ]
-    for day_type in travelling_weekend_day_types:
-        day_type_start_location_split.loc['home', day_type] = 1 - (
-            percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
-        )
-        day_type_start_location_split.loc['holiday', day_type] = (
-            percentage_on_holiday_in_holiday_week / len(weekend_day_numbers)
-        )
+        non_travelling_holiday_day_types: ty.List[str] = [
+            'weekday_in_holiday_week',
+            'weekend_in_holiday_week',
+        ]
+        for day_type in non_travelling_holiday_day_types:
+            day_type_start_location_split.loc['home', day_type] = (
+                1 - percentage_on_holiday_in_holiday_week
+            )
+            day_type_start_location_split.loc['holiday', day_type] = (
+                percentage_on_holiday_in_holiday_week
+            )
+
+        # For departure and retrun weekends, this is split across
+        # the weekend days (note that this is an approximation, as
+        # we ideally should split the weekend in two, but that would make
+        # the model complexer)
+        weekend_day_numbers: ty.List[int] = general_parameters['time'][
+            'weekend_day_numbers'
+        ]
+        travelling_weekend_day_types: ty.List[str] = [
+            'weekend_holiday_departures',
+            'weekend_holiday_returns',
+            'holiday_overlap_weekend',
+        ]
+        for day_type in travelling_weekend_day_types:
+            day_type_start_location_split.loc['home', day_type] = 1 - (
+                percentage_on_holiday_in_holiday_week
+                / len(weekend_day_numbers)
+            )
+            day_type_start_location_split.loc['holiday', day_type] = (
+                percentage_on_holiday_in_holiday_week
+                / len(weekend_day_numbers)
+            )
+    else:
+        vehicle_base_location = vehicle_parameters['base_location']
+        day_type_start_location_split.loc[vehicle_base_location] = 1
 
     return day_type_start_location_split
 
@@ -1111,6 +1117,7 @@ def get_location_split(
     run_mobility_matrix: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{run_mobility_matrix_name}.pkl'
     )
+
     loop_timer.append(datetime.datetime.now())
 
     departures: pd.Series = run_mobility_matrix.groupby(
@@ -1119,6 +1126,7 @@ def get_location_split(
     arrivals: pd.Series = run_mobility_matrix.groupby(
         ['To', 'Time Tag']
     ).sum()['Arrivals amount']
+
     loop_timer.append(datetime.datetime.now())
     for location in location_names:
         cumulative_departures: pd.Series[float] = departures.loc[
@@ -1165,6 +1173,7 @@ def get_location_split(
         maximail_delivered_power_per_location.sum(axis=1)
     )
     loop_timer.append(datetime.datetime.now())
+
     location_split.to_pickle(
         f'{output_folder}/{scenario_name}_location_split.pkl'
     )

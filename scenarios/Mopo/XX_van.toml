@@ -661,6 +661,7 @@ mix = [0.8, 0.2]
 [vehicle]
 # name = 'car'
 name = 'van'
+base_location = 'van_base' # not relevant for cars
 # name = 'truck'
 # name = 'bus'
 yearly_kilometrage = 42_000
