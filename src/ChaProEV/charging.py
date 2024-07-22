@@ -643,7 +643,7 @@ def get_charging_profile(
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
     ) = get_charging_framework(scenario, case_name, general_parameters)
-   
+
     loop_times: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), 1)),
         columns=['Loop duration'],
@@ -832,6 +832,29 @@ def get_charging_profile(
                         ]
                         .values
                     )
+
+        # The per day type appraoch has possible issues with cases where
+        # a shift occurs over several days (such as holiday departures or
+        # returns occurring over the two days of a weekend).
+        # We therefore need to ensure that the sum of battery spaces is
+        # equal to the location split. We do this by adjustinmg the battery
+        # space with 0 kWh.
+        for location_name in location_names:
+            totals_from_battery_space: pd.DataFrame | pd.Series = (
+                battery_space[location_name].sum(axis=1)
+            )
+
+            target_location_split: pd.DataFrame | pd.Series = location_split[
+                location_name
+            ]
+            location_correction: pd.DataFrame | pd.Series = (
+                target_location_split - totals_from_battery_space
+            )
+
+            battery_space[location_name][0] = (
+                battery_space[location_name][0] + location_correction
+            )
+
         (
             spillover_battery_space,
             run_range,
@@ -858,22 +881,33 @@ def get_charging_profile(
                 ].index.get_level_values('Time Tag')
             )
             for day_end_time_tag in day_ends_with_leftover_battery_space:
-                print(
-                    spillover_battery_space[location_name].loc[
-                        day_end_time_tag
-                    ]
-                )
-                exit()
+
                 spillover_battery_space[location_name].loc[
                     day_end_time_tag
                 ] = (battery_space[location_name].loc[day_end_time_tag].values)
+            for location_name in location_names:
+                print(location_name)
                 print(
-                    spillover_battery_space[location_name].loc[
-                        day_end_time_tag
-                    ]
+                    spillover_battery_space[location_name]
+                    .iloc[89:105]  # 95:97
+                    # .sum(axis=1)
                 )
-                if vehicle_name == 'car':
-                    exit()
+                print(
+                    battery_space[location_name]
+                    .iloc[89:105]  # 95:97
+                    # .sum(axis=1)
+                )
+
+            if vehicle_name == 'car':
+                # for location_name in location_names:
+                #     zouki = battery_space[location_name].sum(axis=1).values
+                #     zaki = pd.DataFrame(
+                #         zouki, columns=['Baa'], index=run_range
+                #     )
+                #     zaki['LOc split'] = location_split[location_name].values
+                #     zaki['Corr'] = zaki['LOc split'] - zaki['Baa']
+                #     print(zaki.iloc[89:120])
+                exit()
 
             print(day_ends_with_leftover_battery_space)
         #     filter_day_ends_with_leftover_battery_space: pd.DataFrame = (

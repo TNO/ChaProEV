@@ -1151,12 +1151,12 @@ def get_location_split(
             * location_parameters[location_name]['connectivity']
         )
     loop_timer.append(datetime.datetime.now())
-    maximail_delivered_power_per_location: pd.DataFrame = (
+    maximal_delivered_power_per_location: pd.DataFrame = (
         connectivity_per_location.copy()
     )
     for location_name in location_names:
-        maximail_delivered_power_per_location[location_name] = (
-            maximail_delivered_power_per_location[location_name]
+        maximal_delivered_power_per_location[location_name] = (
+            maximal_delivered_power_per_location[location_name]
             * location_parameters[location_name]['charging_power']
             / location_parameters[location_name]['charger_efficiency']
             # Weare looking at the power delivered by the network
@@ -1167,10 +1167,10 @@ def get_location_split(
     )
     connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)
     maximal_delivered_power: pd.DataFrame = pd.DataFrame(
-        index=maximail_delivered_power_per_location.index
+        index=maximal_delivered_power_per_location.index
     )
     maximal_delivered_power['Maximal Delivered Power (kW)'] = (
-        maximail_delivered_power_per_location.sum(axis=1)
+        maximal_delivered_power_per_location.sum(axis=1)
     )
     loop_timer.append(datetime.datetime.now())
 
@@ -1184,7 +1184,7 @@ def get_location_split(
         f'{output_folder}/{scenario_name}_connectivity_per_location.pkl'
     )
     connectivity.to_pickle(f'{output_folder}/{scenario_name}_connectivity.pkl')
-    maximail_delivered_power_per_location.to_pickle(
+    maximal_delivered_power_per_location.to_pickle(
         f'{output_folder}/{scenario_name}'
         f'_maximal_delivered_power_per_location.pkl'
     )
