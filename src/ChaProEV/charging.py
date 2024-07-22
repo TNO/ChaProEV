@@ -849,7 +849,7 @@ def get_charging_profile(
             ]
             location_correction: pd.DataFrame | pd.Series = (
                 target_location_split - totals_from_battery_space
-            )
+            ).astype(float) # astype to keep type
 
             battery_space[location_name][0] = (
                 battery_space[location_name][0] + location_correction
@@ -947,6 +947,10 @@ def get_charging_profile(
                     )
                     # print(amount_in_spillover)
                     # exit()
+                    # print(battery_space[location_name].dtypes)
+                    # print(spillover_battery_space[location_name].dtypes)
+                    # exit()
+
                     # print(battery_space[location_name].loc[spillover_time_tag])
                     battery_space[location_name].loc[
                         spillover_time_tag, float(0)
