@@ -855,6 +855,8 @@ def get_charging_profile(
                 battery_space[location_name][0] + location_correction
             )
 
+        # Some trips result in charging events spilling over int the next day
+
         (
             spillover_battery_space,
             run_range,
@@ -885,31 +887,151 @@ def get_charging_profile(
                 spillover_battery_space[location_name].loc[
                     day_end_time_tag
                 ] = (battery_space[location_name].loc[day_end_time_tag].values)
-            for location_name in location_names:
-                print(location_name)
-                print(
+
+                spillover_time_tag_index: int = list(run_range).index(
+                    day_end_time_tag
+                )
+
+                amount_in_spillover = (
                     spillover_battery_space[location_name]
-                    .iloc[89:105]  # 95:97
-                    # .sum(axis=1)
-                )
-                print(
-                    battery_space[location_name]
-                    .iloc[89:105]  # 95:97
-                    # .sum(axis=1)
+                    .loc[day_end_time_tag]
+                    .drop(columns=float(0))
+                    .sum(axis=1)
+                    .values[0]
                 )
 
-            if vehicle_name == 'car':
-                # for location_name in location_names:
-                #     zouki = battery_space[location_name].sum(axis=1).values
-                #     zaki = pd.DataFrame(
-                #         zouki, columns=['Baa'], index=run_range
-                #     )
-                #     zaki['LOc split'] = location_split[location_name].values
-                #     zaki['Corr'] = zaki['LOc split'] - zaki['Baa']
-                #     print(zaki.iloc[89:120])
-                exit()
+                while amount_in_spillover > zero_threshold:
+                    spillover_time_tag_index += 1
+                    spillover_time_tag: ty.Any = run_range[
+                        spillover_time_tag_index
+                    ]
+                    # used Any (and less hints above because MyPy seems
+                    # to get wrong type matches)
+                    spillover_battery_space = travel_space_occupation(
+                        spillover_battery_space,
+                        spillover_time_tag,
+                        spillover_time_tag_index,
+                        run_range,
+                        run_mobility_matrix,
+                        zero_threshold,
+                        location_names,
+                        possible_destinations,
+                        distance_header,
+                        electricity_consumption_kWh_per_km,
+                        use_day_types_in_charge_computing,
+                        day_start_hour,
+                        location_split,
+                    )
 
-            print(day_ends_with_leftover_battery_space)
+                    (
+                        spillover_battery_space,
+                        spillover_charge_drawn_by_vehicles,
+                        spillover_charge_drawn_from_network,
+                    ) = compute_charging_events(
+                        spillover_battery_space,
+                        spillover_charge_drawn_by_vehicles,
+                        spillover_charge_drawn_from_network,
+                        spillover_time_tag,
+                        scenario,
+                        general_parameters,
+                    )
+
+                    #             # update baat space and charge drawn
+
+                    amount_in_spillover = (
+                        spillover_battery_space[location_name]
+                        .loc[spillover_time_tag]
+                        .drop(columns=float(0))
+                        .sum(axis=1)
+                        .values[0]
+                    )
+                    # print(amount_in_spillover)
+                    # exit()
+                    # print(battery_space[location_name].loc[spillover_time_tag])
+                    battery_space[location_name].loc[
+                        spillover_time_tag, float(0)
+                    ] = (
+                        battery_space[location_name]
+                        .loc[spillover_time_tag][float(0)]
+                        .values
+                        - amount_in_spillover
+                    )
+                    # print(battery_space[location_name].loc[spillover_time_tag])
+                    # exit()
+                    non_zero_battery_spaces = battery_space[
+                        location_name
+                    ].columns[1:]
+                    # print(non_zero_battery_spaces)
+                    battery_space[location_name].loc[
+                        spillover_time_tag, non_zero_battery_spaces
+                    ] = (
+                        battery_space[location_name]
+                        .loc[spillover_time_tag][non_zero_battery_spaces]
+                        .values
+                        + spillover_battery_space[location_name]
+                        .loc[spillover_time_tag][non_zero_battery_spaces]
+                        .values
+                    )
+                    charge_drawn_by_vehicles.loc[
+                        spillover_time_tag, location_name
+                    ] = (
+                        # charge_drawn_by_vehicles.loc[spillover_time_tag][
+                        #     location_name
+                        # ]
+                        # +
+                        spillover_charge_drawn_by_vehicles.loc[
+                            spillover_time_tag
+                        ][location_name]
+                    )
+
+                    charge_drawn_from_network.loc[
+                        spillover_time_tag, location_name
+                    ] = (
+                        # charge_drawn_by_vehicles.loc[spillover_time_tag][
+                        #     location_name
+                        # ]
+                        # +
+                        spillover_charge_drawn_from_network.loc[
+                            spillover_time_tag
+                        ][location_name]
+                    )
+                    # print(battery_space[location_name].loc[spillover_time_tag])
+                    # print(
+                    #     charge_drawn_by_vehicles.loc[
+                    #         spillover_time_tag, location_name
+                    #     ]
+                    # )
+
+                    # exit()
+
+        #         # remove spillover from zero and addspillover elements until
+        #         # they are zero
+        #     for location_name in location_names:
+        #         print(location_name)
+        #         print(
+        #             spillover_battery_space[location_name].iloc[
+        #                 89:105
+        #             ]  # 95:97
+        #             # .sum(axis=1)
+        #         )
+        #         print(
+        #             battery_space[location_name].iloc[89:105]  # 95:97
+        #             # .sum(axis=1)
+        #         )
+        #     #     # print(run_range.get_loc(day_end_time_tag))
+
+        # if vehicle_name == 'car':
+        #     # for location_name in location_names:
+        #     #     zouki = battery_space[location_name].sum(axis=1).values
+        #     #     zaki = pd.DataFrame(
+        #     #         zouki, columns=['Baa'], index=run_range
+        #     #     )
+        #     #     zaki['LOc split'] = location_split[location_name].values
+        #     #     zaki['Corr'] = zaki['LOc split'] - zaki['Baa']
+        #     #     print(zaki.iloc[89:120])
+        #     exit()
+
+        # print(day_ends_with_leftover_battery_space)
         #     filter_day_ends_with_leftover_battery_space: pd.DataFrame = (
         #         filter_for_battery_space.loc[
         #             day_ends_with_leftover_battery_space
@@ -938,9 +1060,9 @@ def get_charging_profile(
         #             'Time Tag'
         #         )
 
-        if vehicle_name == 'car':
-            # print(time_tags_for_leftover)
-            exit()
+        # if vehicle_name == 'car':
+        #     # print(time_tags_for_leftover)
+        #     exit()
 
     write_output(
         battery_space,
