@@ -191,7 +191,6 @@ if __name__ == '__main__':
     print('Every x days')
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
-    case_name = 'local_impact_BEVs'
     case_name = 'Mopo'
 
     run_ChaProEV(case_name)

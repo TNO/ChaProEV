@@ -10,7 +10,7 @@
 # Run parameters
 [run]
 weather_factors_table_root_name = 'weather_factors'
-use_day_types_in_charge_computing = false
+use_day_types_in_charge_computing = true
 [run.start]
 year = 2020
 month = 1

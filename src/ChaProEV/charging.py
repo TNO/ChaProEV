@@ -329,11 +329,6 @@ def travel_space_occupation(
     # Have  arrivals not connect at all if partial (until leave)
     # Or assume they move around get connected
 
-    # print(battery_space['truck_hub'].iloc[54])
-    # if time_tag_index == 52:
-    #     print(time_tag)
-    #     print(battery_space['truck_hub'])
-    #     exit()
     return battery_space
 
 
