@@ -10,7 +10,7 @@
 # Run parameters
 [run]
 weather_factors_table_root_name = 'weather_factors'
-use_day_types_in_charge_computing = true
+use_day_types_in_charge_computing = false
 [run.start]
 year = 2020
 month = 1
@@ -663,6 +663,7 @@ name = 'car'
 # name = 'van'
 # name = 'truck'
 # name = 'bus'
+base_location = 'home' # not relevant for cars
 yearly_kilometrage = 42_000
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
@@ -943,7 +944,7 @@ time_between_legs = [0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -967,7 +968,7 @@ time_between_legs = [0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -977,6 +978,8 @@ repeated_sequence = [
     ]
 repetition_amounts = [2]
 time_between_repetitions = [1] # hours
+
+
 
 
 

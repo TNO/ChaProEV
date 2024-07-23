@@ -546,8 +546,8 @@ mix = [0.8, 0.2]
 
 [legs.truck_to_customer]
 vehicle = 'truck'
-distance = 200  # km
-duration = 3  # hours
+distance = 150  # km
+duration = 2  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -572,8 +572,8 @@ end = 'truck_customer'
 mix = [0.8, 0.2]
 [legs.truck_to_hub]
 vehicle = 'truck'
-distance = 200  # km
-duration = 3  # hours
+distance = 150  # km
+duration = 2  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -944,7 +944,7 @@ time_between_legs = [0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -968,7 +968,7 @@ time_between_legs = [0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
