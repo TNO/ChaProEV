@@ -812,7 +812,7 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_bus'
+    test_scenario_name: str = 'XX_van'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

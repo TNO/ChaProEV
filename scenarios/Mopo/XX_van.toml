@@ -10,7 +10,7 @@
 # Run parameters
 [run]
 weather_factors_table_root_name = 'weather_factors'
-use_day_types_in_charge_computing = false
+use_day_types_in_charge_computing = true
 [run.start]
 year = 2020
 month = 1
@@ -490,7 +490,7 @@ mix = [0.8, 0.2]
 [legs.bus_from_route_start_to_route_end]
 vehicle = 'bus'
 distance = 20  # km
-duration = 1  # hours
+duration = 0.75  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -518,7 +518,7 @@ mix = [0.8, 0.2]
 [legs.bus_from_route_end_to_route_start]
 vehicle = 'bus'
 distance = 20  # km
-duration = 1  # hours
+duration = 0.75  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -829,12 +829,12 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+time_between_legs = [0, 0.25, 0, 1, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -842,8 +842,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [3, 3]
-time_between_repetitions = [0.1, 0.22] # hours
+repetition_amounts = [3, 2]
+time_between_repetitions = [0.1, 0.12] # hours
 
 [trips.bus_weekend_in_workweek]
 vehicle = 'bus'
@@ -862,7 +862,7 @@ time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -891,7 +891,7 @@ time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -919,7 +919,7 @@ time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -1002,7 +1002,7 @@ time_between_legs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0, 0.25, 0.5, 0.25, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -1010,8 +1010,8 @@ repeated_sequence = [
     'van_to_customer',
     'van_to_base',
     ]
-repetition_amounts = [4, 2, 4, 2]
-time_between_repetitions = [0.1, 2, 0.1, 2] # hours
+repetition_amounts = [3, 1, 3, 1]
+time_between_repetitions = [0.75, 1, 0.75, 1] # hours
 
 [trips.van_weekend]
 vehicle = 'van'
@@ -1032,7 +1032,7 @@ time_between_legs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5 , 0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0, 0.25, 0.5, 0.25, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -1040,8 +1040,8 @@ repeated_sequence = [
     'van_to_customer',
     'van_to_base',
     ]
-repetition_amounts = [2, 2, 2, 1]
-time_between_repetitions = [0.1, 3, 0.1, 3] # hours
+repetition_amounts = [2, 1, 2, 1]
+time_between_repetitions = [2, 2, 2, 2] # hours
 
 
 

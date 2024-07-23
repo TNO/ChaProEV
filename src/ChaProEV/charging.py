@@ -580,7 +580,13 @@ def write_output(
         battery_space[location_name] = battery_space[location_name].set_index(
             ['Time Tag', 'Hour Number', 'SPINE_Hour_Number']
         )
+        zero_threshold: float = general_parameters['numbers']['zero_threshold']
 
+        battery_space[location_name] = battery_space[location_name][
+            battery_space[location_name].columns[
+                battery_space[location_name].sum() > zero_threshold
+            ]
+        ]
         battery_space[location_name].to_pickle(
             f'{output_folder}/{scenario_name}_'
             f'{location_name}_battery_space.pkl'
@@ -773,7 +779,8 @@ def get_charging_profile(
     for time_tag_index, (time_tag, run_day_type) in enumerate(
         zip(run_range, run_day_types)
     ):
-        # if time_tag_index > 54:
+        # print(time_tag_index)
+        # if time_tag_index > 5:
         #     print(time_tag)
         #     exit()
         if (
@@ -790,7 +797,7 @@ def get_charging_profile(
             if use_day_types_in_charge_computing:
                 time_tags_of_day_type.append(time_tag)
             # print('Before')
-            # print(battery_space['truck_hub'].iloc[time_tag_index-2:time_tag_index+4])
+            # print(battery_space['van_base'].iloc[2:6])
 
             battery_space = travel_space_occupation(
                 battery_space,
@@ -809,7 +816,19 @@ def get_charging_profile(
             )
             # print(time_tag)
             # print('After')
-            # print(battery_space['truck_hub'].iloc[time_tag_index-2:time_tag_index+4])
+            # print(battery_space['van_base'].iloc[2:6])
+            # if vehicle_name == 'van':
+            #     # print(time_tag_index)
+            #     for location_name in location_names:
+            #         # print(location_name)
+            #         mii = (location_split.loc[time_tag][location_name])
+            #         moo = (battery_space[location_name].loc[time_tag].sum())
+            #         if abs(mii-moo) > zero_threshold:
+            #             print(time_tag)
+            #             print(moo)
+
+            #         if time_tag_index == 1000000:
+            #             exit()
 
             loop_mid: datetime.datetime = datetime.datetime.now()
 
@@ -826,7 +845,7 @@ def get_charging_profile(
                 general_parameters,
             )
             # print('After compute')
-            # print(battery_space['truck_hub'].iloc[time_tag_index-2:time_tag_index+4])
+            # print(battery_space['van_base'].iloc[2:6])
             if use_day_types_in_charge_computing and (
                 time_tag.hour == day_end_hour
             ):
@@ -844,6 +863,8 @@ def get_charging_profile(
             loop_times.loc[time_tag, 'Loop duration b'] = loop_b
 
         # We start with the battery space reduction duw to moving
+    # print(battery_space['van_base'].iloc[2:6])
+    # exit()
 
     print('Keep float precision?')
     print('Check totals and such?')
@@ -895,6 +916,7 @@ def get_charging_profile(
                         ]
                         .values
                     )
+        # print(battery_space['van_base'].iloc[2:6])
 
         # The per day type appraoch has possible issues with cases where
         # a shift occurs over several days (such as holiday departures or
@@ -903,6 +925,7 @@ def get_charging_profile(
         # equal to the location split. We do this by adjustinmg the battery
         # space with 0 kWh.
         for location_name in location_names:
+            # print(location_name)
             totals_from_battery_space: pd.DataFrame | pd.Series = (
                 battery_space[location_name].sum(axis=1)
             )
@@ -910,15 +933,22 @@ def get_charging_profile(
             target_location_split: pd.DataFrame | pd.Series = location_split[
                 location_name
             ]
+            # print(target_location_split)
+            # exit()
             location_correction: pd.DataFrame | pd.Series = (
                 target_location_split - totals_from_battery_space
             ).astype(
                 float
             )  # astype to keep type
+            # print(battery_space['van_base'].iloc[2:6])
 
             battery_space[location_name][0] = (
                 battery_space[location_name][0] + location_correction
             )
+            # print(battery_space['van_base'].iloc[2:6])
+
+        # print('S')
+        # print(battery_space['van_base'].iloc[2:6])
 
         # Some trips result in charging events spilling over int the next day
 
@@ -1194,7 +1224,7 @@ if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     case_name = 'Mopo'
-    test_scenario_name = 'XX_truck'
+    test_scenario_name = 'XX_van'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

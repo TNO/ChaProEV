@@ -2,11 +2,13 @@ import pandas as pd
 
 if __name__ == '__main__':
 
-    charge_drawn = pd.read_pickle(
-        'output/Mopo/XX_car_charge_drawn_by_vehicles.pkl'
+    boo = pd.read_pickle(
+        'output/Mopo/XX_bus_bus_depot_battery_space.pkl'
     )
-
-    print(charge_drawn.iloc[89:100])
+    bii = boo[boo.columns[boo.sum()>0]]
+    print(boo)
+    print(bii)
+    # print(charge_drawn.iloc[89:100])
     exit()
 
     batt_space = pd.read_pickle('output/Mopo/XX_car_home_battery_space.pkl')
