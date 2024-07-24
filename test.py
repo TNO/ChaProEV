@@ -3,11 +3,11 @@ import pandas as pd
 if __name__ == '__main__':
 
     boo = pd.read_pickle(
-        'output/Mopo/XX_bus_bus_depot_battery_space.pkl'
+        'output/Mopo/XX_bus_bus_weekday_in_holiday_week_mobility_matrix.pkl'
     )
-    bii = boo[boo.columns[boo.sum()>0]]
-    print(boo)
-    print(bii)
+    # bii = boo[boo.columns[boo.sum()>0]]
+    print(boo.loc['bus_route_start', 'bus_depot'])
+    # print(bii)
     # print(charge_drawn.iloc[89:100])
     exit()
 

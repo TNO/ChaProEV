@@ -752,7 +752,7 @@ def get_scenario_weather_data(
 
     scenario_name: str = scenario['scenario_name']
 
-    weather_factors_table_root_name: str = scenario['run'][
+    weather_factors_table_root_name: str = scenario['weather'][
         'weather_factors_table_root_name'
     ]
     weather_factors_table_name: str = (

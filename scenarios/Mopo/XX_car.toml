@@ -9,7 +9,6 @@
 
 # Run parameters
 [run]
-weather_factors_table_root_name = 'weather_factors'
 use_day_types_in_charge_computing = true
 [run.start]
 year = 2020
@@ -1229,7 +1228,7 @@ weights = [0.66, 1.6]
 
 # Weather-related parameters
 [weather]
-
+weather_factors_table_root_name = 'weather_factors'
 # These parameters define what we want to get from the source
 # (CDS ERA-5)
 [weather.source_data]

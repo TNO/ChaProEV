@@ -136,9 +136,10 @@ class Trip:
         trip.percentage_station_users: float = trip_parameters[
             'percentage_station_users'
         ]
-        trip.start_probabilities: ty.List[float] = trip_parameters[
-            'start_probabilities'
-        ]
+    
+        trip.start_probabilities: np.ndarray = np.array(
+            trip_parameters['start_probabilities']
+        )
         trip.repeated_sequence: ty.List[str] = trip_parameters[
             'repeated_sequence'
         ]
@@ -267,14 +268,26 @@ class Trip:
 
         trip.mobility_matrix = trip.mobility_matrix.sort_index()
 
-        # We want to track the probabilities and time driving of previous legs
-        previous_leg_start_probabilities: np.ndarray = np.array(
-            trip.start_probabilities
-        )
+        # # We want to track the probabilities and time driving of previous
+        #  legs
+        # previous_leg_start_probabilities: np.ndarray = np.array(
+        #     trip.start_probabilities
+        # )
         time_driving_previous_leg: float = float(0)
 
         # To fill in the mobility matrix, we iterate over the legs of the trip
         for leg_index, leg_name in enumerate(trip.legs):
+            # moki = False
+            # maak = False
+            # if trip.name == 'bus_weekday_in_holiday_week':
+            #     # print(trip.legs)
+            #     maak = True
+            #     # exit()
+            #     if leg_name == 'bus_from_route_start_to_depot':
+            #         moki = True
+            #         print(leg_name)
+            #         print(leg_index)
+            #     # exit()
             leg_parameters: ty.Dict = scenario['legs'][leg_name]
             start_location: str = leg_parameters['locations']['start']
             end_location: str = leg_parameters['locations']['end']
@@ -304,7 +317,14 @@ class Trip:
             )
             weighted_distance: float = road_type_factor * distance
 
-            if leg_index > 0:
+            if leg_index == 0:
+                # The first leg is not shifted, by definition of the trip
+                # start probabilities, as the trip starts with the first leg
+                time_shift: float = 0
+                current_leg_start_probabilities: np.ndarray = (
+                    trip.start_probabilities
+                )
+            else:
                 # We want to know how much time there is between legs
                 # so that we can shift the start probabilities accordingly.
                 # To get the time between a leg and the previous leg, we need
@@ -314,46 +334,96 @@ class Trip:
                 time_spent_at_location: float = trip.time_between_legs[
                     leg_index - 1
                 ]
-                time_shift: float = (
+                # We can now increment the time shift
+                time_shift += (
                     time_driving_previous_leg + time_spent_at_location
                 )
-                # For previous leg departures in slot N, the corresponding
-                # current leg departures.
+                # The leg departueres
                 # take place into two time slots. These two slots
-                # have numbers N+slot_shift and N+slot_shift+1
+                # have numbers slot_shift and slot_shift+1
                 slot_shift: int = math.floor(time_shift)
-                # For example, if the time shift is 9.25 slots (9.25 hours if
+                # For example, if the time shift is 9.25 slots from the
+                # day start, (9.25 hours if
                 # hours are your units), then arrivals will occur in time
-                # slots (hours if you use them) N+9 and N+10
+                # slots (hours if you use them) 9 and 10
                 # The portion in the first slot is:
                 first_slot_proportion: float = 1 - time_shift % 1
                 # In the example above, the decimal part is 0.25, so the
                 # proportion is (1-0.25)=0.75
-                current_leg_start_probabilities: (
-                    np.ndarray
-                ) = first_slot_proportion * np.roll(
-                    previous_leg_start_probabilities, slot_shift
-                ) + (
-                    1 - first_slot_proportion
-                ) * np.roll(
-                    previous_leg_start_probabilities, slot_shift + 1
-                )
-
-            else:
-                # The first leg is not shifted, by definition of the trip
-                # start probabilities, as the trip starts with the first leg
-                time_shift = 0
                 current_leg_start_probabilities = (
-                    previous_leg_start_probabilities
+                    first_slot_proportion
+                    * np.roll(trip.start_probabilities, slot_shift)
+                    + (1 - first_slot_proportion)
+                    * np.roll(trip.start_probabilities, slot_shift + 1)
                 )
+                # if maak:
+                #     print(leg_index, leg_name)
+                #     print(current_leg_start_probabilities)
+                # if moki:
+                #     print(leg_index, leg_name)
+                #     print(current_leg_start_probabilities)
+                #     exit()
 
-            # For a departure in slot N, the corresponding arrivals
+            # if leg_index > 0:
+            #     # We want to know how much time there is between legs
+            #     # so that we can shift the start probabilities accordingly.
+            #     # To get the time between a leg and the previous leg, we need
+            #     # to know two things: the time spent driving in the
+            #     # previous leg, and the
+            #     # time spent between legs (i.e. the idle time)
+            #     time_spent_at_location: float = trip.time_between_legs[
+            #         leg_index - 1
+            #     ]
+            #     time_shift: float = (
+            #         time_driving_previous_leg + time_spent_at_location
+            #     )
+            #     if maak:
+            #         print(time_shift)
+            #     # For previous leg departures in slot N, the corresponding
+            #     # current leg departures.
+            #     # take place into two time slots. These two slots
+            #     # have numbers N+slot_shift and N+slot_shift+1
+            #     slot_shift: int = math.floor(time_shift)
+            #     # For example, if the time shift is 9.25 slots (9.25 hours if
+            #     # hours are your units), then arrivals will occur in time
+            #     # slots (hours if you use them) N+9 and N+10
+            #     # The portion in the first slot is:
+            #     first_slot_proportion: float = 1 - time_shift % 1
+            #     # In the example above, the decimal part is 0.25, so the
+            #     # proportion is (1-0.25)=0.75
+            #     current_leg_start_probabilities: (
+            #         np.ndarray
+            #     ) = first_slot_proportion * np.roll(
+            #         previous_leg_start_probabilities, slot_shift
+            #     ) + (
+            #         1 - first_slot_proportion
+            #     ) * np.roll(
+            #         previous_leg_start_probabilities, slot_shift + 1
+            #     )
+            #     if maak:
+            #         print(leg_index, leg_name)
+            #         print(current_leg_start_probabilities)
+            #     if moki:
+            #         print(leg_index, leg_name)
+            #         print(current_leg_start_probabilities)
+            #         exit()
+
+            # else:
+            #     # The first leg is not shifted, by definition of the trip
+            #     # start probabilities, as the trip starts with the first leg
+            #     time_shift = 0
+            #     current_leg_start_probabilities = (
+            #         previous_leg_start_probabilities
+            #     )
+
+            # For a departure shifted by timne shift, the corresponding
+            # arrivals are shifted by the time driving and
             # take place into two time slots. These two slots
-            # have numbers N+slot_shift and N+slot_shift+1
-            slot_shift = math.floor(time_driving)
+            # have numbers slot_shift and slot_shift+1
+            slot_shift = math.floor(time_shift + time_driving)
             # For example, if the time driving is 1.25 slots (1.25 hours if
             # hours are your units), then arrivals will occur in time
-            # slots (hours if you use them) N+1 and N+2
+            # slots (hours if you use them) +1 and +2
             # The portion in the first slot is:
             first_slot_proportion = 1 - time_driving % 1
             # In the example above, the decimal part is 0.25, so the proportion
@@ -361,12 +431,19 @@ class Trip:
             current_leg_end_probabilities: (
                 np.ndarray
             ) = first_slot_proportion * np.roll(
-                current_leg_start_probabilities, slot_shift
+                trip.start_probabilities, slot_shift
             ) + (
                 1 - first_slot_proportion
             ) * np.roll(
-                current_leg_start_probabilities, slot_shift + 1
+                trip.start_probabilities, slot_shift + 1
             )
+            # if moki:
+            #     print(current_leg_end_probabilities)
+            #     exit()
+            # if moki:
+            #     print(start_location, end_location)
+            #     print(trip.mobility_matrix.loc[start_location, end_location])
+            #     # exit()
 
             # With this, we can add this leg's contribution to the
             # mobility matrix
@@ -398,9 +475,24 @@ class Trip:
             # We need to convert the first element to Series for type hinting
             # reasons, as MyPy does not know it is a Series otherwise
 
+            # if moki:
+            #     print(trip.name)
+            #     print('<<<<')
+            #     print(trip.mobility_matrix.loc[start_location, end_location])
+            #     # exit()
+
             start_distance_probabilities: np.ndarray = np.array(
-                current_leg_start_probabilities * distance
+                [
+                    current_leg_start_probability * distance
+                    for (
+                        current_leg_start_probability
+                    ) in current_leg_start_probabilities
+                ]
             )
+
+            # print(start_distance_probabilities)
+            # print(current_leg_start_probabilities)
+            # exit()
             trip.mobility_matrix.loc[
                 (start_location, end_location), 'Departures kilometers'
             ] = (
@@ -478,9 +570,15 @@ class Trip:
                 (start_location, end_location), 'Weighted distance (km)'
             ] = weighted_distance
 
-            # Finally, we update the previous leg values with the current ones
-            previous_leg_start_probabilities = current_leg_start_probabilities
+            # # Finally, we update the previous leg values with the current
+            # ones
+            # previous_leg_start_probabilities =
+            # current_leg_start_probabilities
             time_driving_previous_leg = time_driving
+        # if trip.name == 'bus_weekday_in_holiday_week':
+        #     print('<<<<>>>>>>>')
+        #     print(trip.mobility_matrix.loc['bus_route_start', 'bus_depot'])
+        #     exit()
 
         # We now can create a mobility matrix for the whole run
         run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
@@ -812,7 +910,7 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_van'
+    test_scenario_name: str = 'XX_bus'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
@@ -842,7 +940,11 @@ if __name__ == '__main__':
             trip.legs,
             trip.percentage_station_users,
             trip.start_probabilities,
+            trip.time_between_legs,
         )
+        if trip.name == 'bus_weekday_in_holiday_week':
+            print(trip.mobility_matrix.loc['bus_route_start', 'bus_depot'])
+            exit()
 
     print((datetime.datetime.now() - start_).total_seconds())
 

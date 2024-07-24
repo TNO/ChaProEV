@@ -9,8 +9,7 @@
 
 # Run parameters
 [run]
-weather_factors_table_root_name = 'weather_factors'
-use_day_types_in_charge_computing = true
+use_day_types_in_charge_computing = false
 [run.start]
 year = 2020
 month = 1
@@ -829,7 +828,7 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 2, 0, 0.25, 0]
+time_between_legs = [0, 0.25, 0, 2, 0, 0.5, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -857,7 +856,7 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 2, 0, 0.25, 0]
+time_between_legs = [0, 0.25, 0, 2, 0, 0.5, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -886,12 +885,12 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 2, 0, 0.25, 0]
+time_between_legs = [0, 0.25, 0, 3, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0.8, 0.2, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -899,8 +898,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [3, 3]
-time_between_repetitions = [0.5, 0.5] # hours
+repetition_amounts = [4, 2]
+time_between_repetitions = [0.25, 0.25] # hours # [1, 1]
 
 [trips.bus_weekend_in_holiday_week]
 vehicle = 'bus'
@@ -914,7 +913,9 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 2, 0, 0.25, 0]
+time_between_legs = [0, 0.5, 1, 2, 0, 0.5, 0]
+# time_between_legs = [0, 0.25, 0, 2, 0, 0.5, 0]
+
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -1230,7 +1231,7 @@ weights = [0.66, 1.6]
 
 # Weather-related parameters
 [weather]
-
+weather_factors_table_root_name = 'weather_factors'
 # These parameters define what we want to get from the source
 # (CDS ERA-5)
 [weather.source_data]
