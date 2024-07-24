@@ -1142,7 +1142,8 @@ def get_location_split(
 
     loop_timer.append(datetime.datetime.now())
     percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
-    percentage_driving['Driving percent'] = 1 - sum(location_split.sum(axis=1))
+    percentage_driving['Driving percent'] = 1 - location_split.sum(axis=1)
+
     connectivity_per_location: pd.DataFrame = location_split.copy()
     loop_timer.append(datetime.datetime.now())
     for location_name in location_names:

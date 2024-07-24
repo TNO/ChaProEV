@@ -943,7 +943,7 @@ if __name__ == '__main__':
             trip.time_between_legs,
         )
         if trip.name == 'bus_weekday_in_holiday_week':
-            print(trip.mobility_matrix.loc['bus_route_start', 'bus_depot'])
+            print(trip.mobility_matrix.loc['bus_route_start', 'bus_route_end'])
             exit()
 
     print((datetime.datetime.now() - start_).total_seconds())
