@@ -25,9 +25,10 @@ def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
     for output_file in os.listdir(output_folder):
         if output_file.split('.')[1] == 'pkl':
             table_name: str = output_file.split('.')[0]
-            table_to_save = pd.read_pickle(
-                f'{output_root}/{case_name}/{output_file}'
+            table_to_save = pd.DataFrame(
+                pd.read_pickle(f'{output_root}/{case_name}/{output_file}')
             )
+
             cook.save_dataframe(
                 table_to_save,
                 table_name,
@@ -67,16 +68,17 @@ def write_scenario_parameters(
 
 
 if __name__ == '__main__':
-    case_name = 'local_impact_BEVs'
-    test_scenario_name: str = 'baseline'
+    case_name = 'Mopo'
+    # test_scenario_name: str = 'baseline'
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
-    scenario_file_name: str = (
-        f'scenarios/{case_name}/{test_scenario_name}.toml'
-    )
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
+    # scenario_file_name: str = (
+    #     f'scenarios/{case_name}/{test_scenario_name}.toml'
+    # )
+    # scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    # scenario['scenario_name'] = test_scenario_name
     extra_end_outputs(case_name, general_parameters)
+    exit()
     write_scenario_parameters(scenario, case_name, general_parameters)

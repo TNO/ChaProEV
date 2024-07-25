@@ -821,7 +821,10 @@ def get_run_trip_probabilities(
 
 
 def get_mobility_matrix(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    run_trip_probabilities: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
     '''
     Makes a mobility matrix for the run that tracks departures
@@ -829,9 +832,7 @@ def get_mobility_matrix(
     '''
     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
     scenario_vehicle: str = scenario['vehicle']['name']
-    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
-        scenario, case_name, general_parameters
-    )
+
     loop_timer.append(datetime.datetime.now())
     trip_parameters: ty.Dict = scenario['trips']
     trip_names: ty.List[str] = [
@@ -1079,7 +1080,10 @@ def get_day_type_start_location_split(
 
 
 def get_location_split(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    run_trip_probabilities: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
     '''
     Produces the location split of the vehicles for the whole run
@@ -1092,87 +1096,122 @@ def get_location_split(
 
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
-    location_parameters: ty.Dict = scenario['locations']
+
+    trip_list: ty.List[str] = [
+        trip_name
+        for trip_name in scenario['trips'].keys()
+        if scenario['trips'][trip_name]['vehicle'] == vehicle_name
+    ]
+
     location_names: ty.List[str] = [
         location_name
-        for location_name in location_parameters
-        if location_parameters[location_name]['vehicle'] == vehicle_name
+        for location_name in scenario['locations'].keys()
+        if scenario['locations'][location_name]['vehicle'] == vehicle_name
     ]
-    run_range: pd.DatetimeIndex = run_time.get_time_range(
-        scenario, general_parameters
-    )[0]
+    run_range: pd.Index | pd.DatetimeIndex = run_trip_probabilities.index
+
     location_split: pd.DataFrame = pd.DataFrame(
-        columns=location_names, index=run_range
+        np.zeros((len(run_range), len(location_names))),
+        columns=location_names,
+        index=run_range,
     )
-    loop_timer.append(datetime.datetime.now())
-    location_split.index.name = 'Time Tag'
-
-    location_split = get_starting_location_split(
-        location_split, scenario, general_parameters
-    )
-
-    loop_timer.append(datetime.datetime.now())
-    run_mobility_matrix_name: str = f'{scenario_name}_run_mobility_matrix'
-
-    run_mobility_matrix: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{run_mobility_matrix_name}.pkl'
+    connectivity_per_location: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), len(location_names))),
+        columns=location_names,
+        index=run_range,
     )
 
-    loop_timer.append(datetime.datetime.now())
-
-    departures: pd.Series = run_mobility_matrix.groupby(
-        ['From', 'Time Tag']
-    ).sum()['Departures amount']
-    arrivals: pd.Series = run_mobility_matrix.groupby(
-        ['To', 'Time Tag']
-    ).sum()['Arrivals amount']
-
-    loop_timer.append(datetime.datetime.now())
-    for location in location_names:
-        cumulative_departures: pd.Series[float] = departures.loc[
-            location
-        ].cumsum()
-        cumulative_arrivals: pd.Series[float] = arrivals.loc[location].cumsum()
-
-        location_split.loc[:, location] = (
-            location_split.loc[:, location]
-            + cumulative_arrivals
-            - cumulative_departures
-        )
-
-    loop_timer.append(datetime.datetime.now())
-    percentage_driving: pd.DataFrame = pd.DataFrame(index=location_split.index)
-    percentage_driving['Driving percent'] = 1 - location_split.sum(axis=1)
-
-    connectivity_per_location: pd.DataFrame = location_split.copy()
-    loop_timer.append(datetime.datetime.now())
-    for location_name in location_names:
-        connectivity_per_location[location_name] = (
-            connectivity_per_location[location_name]
-            * location_parameters[location_name]['connectivity']
-        )
-    loop_timer.append(datetime.datetime.now())
-    maximal_delivered_power_per_location: pd.DataFrame = (
-        connectivity_per_location.copy()
+    maximal_delivered_power_per_location: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), len(location_names))),
+        columns=location_names,
+        index=run_range,
     )
-    for location_name in location_names:
-        maximal_delivered_power_per_location[location_name] = (
-            maximal_delivered_power_per_location[location_name]
-            * location_parameters[location_name]['charging_power']
-            / location_parameters[location_name]['charger_efficiency']
-            # Weare looking at the power delivered by the network
-        )
-    loop_timer.append(datetime.datetime.now())
+
+    percentage_driving: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), 1)),
+        columns=['Driving percent'],
+        index=run_range,
+    )
     connectivity: pd.DataFrame = pd.DataFrame(
-        index=connectivity_per_location.index
+        np.zeros((len(run_range), 1)),
+        columns=['Connectivity'],
+        index=run_range,
     )
-    connectivity['Connectivity'] = connectivity_per_location.sum(axis=1)
+
     maximal_delivered_power: pd.DataFrame = pd.DataFrame(
-        index=maximal_delivered_power_per_location.index
+        np.zeros((len(run_range), 1)),
+        columns=['Maximal Delivered Power (kW)'],
+        index=run_range,
     )
-    maximal_delivered_power['Maximal Delivered Power (kW)'] = (
-        maximal_delivered_power_per_location.sum(axis=1)
-    )
+    
+    for trip_name in trip_list:
+        trip_location_split: pd.api.extensions.ExtensionArray = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_location_split.pkl'
+        )
+        trip_connectivity_per_location: pd.api.extensions.ExtensionArray = (
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_{trip_name}'
+                f'_run_connectivity_per_location.pkl'
+            )
+        )
+        trip_percentage_driving: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_percentage_driving.pkl'
+        )
+        trip_connectivity: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_connectivity.pkl'
+        )
+        trip_maximal_delivered_power_per_location: (
+            pd.api.extensions.ExtensionArray
+        ) = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_maximal_delivered_power_per_location.pkl'
+        )
+        trip_maximal_delivered_power: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_maximal_delivered_power.pkl'
+        )
+
+        percentage_driving['Driving percent'] = (
+            percentage_driving['Driving percent'].values
+            + trip_percentage_driving.values
+            * run_trip_probabilities[trip_name].values
+        )
+        connectivity['Connectivity'] = (
+            connectivity['Connectivity'].values
+            + trip_connectivity.values
+            * run_trip_probabilities[trip_name].values
+        )
+        maximal_delivered_power['Maximal Delivered Power (kW)'] = (
+            maximal_delivered_power['Maximal Delivered Power (kW)'].values
+            + trip_maximal_delivered_power.values
+            * run_trip_probabilities[trip_name].values
+        )
+
+        for location_name in location_names:
+            location_split[location_name] = location_split[
+                location_name
+            ].values + (
+                trip_location_split[location_name].values
+                * run_trip_probabilities[trip_name].values
+            )
+
+            connectivity_per_location[
+                location_name
+            ] = connectivity_per_location[location_name].values + (
+                trip_connectivity_per_location[location_name].values
+                * run_trip_probabilities[trip_name].values
+            )
+
+            maximal_delivered_power_per_location[
+                location_name
+            ] = maximal_delivered_power_per_location[location_name].values + (
+                trip_maximal_delivered_power_per_location[location_name].values
+                * run_trip_probabilities[trip_name].values
+            )
+
     loop_timer.append(datetime.datetime.now())
 
     location_split.to_pickle(
@@ -1254,11 +1293,11 @@ def get_starting_location_split(
 
 
 def get_kilometers_for_next_leg(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    run_trip_probabilities: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
-    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
-        scenario, case_name, general_parameters
-    )
 
     scenario_name: str = scenario['scenario_name']
     scenario_vehicle: str = scenario['vehicle']['name']
@@ -1331,15 +1370,24 @@ def make_mobility_data(
 ) -> None:
     timer: bool = True
     start_time: datetime.datetime = datetime.datetime.now()
+    run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
+        scenario, case_name, general_parameters
+    )
     get_trip_probabilities_per_day_type(
         scenario, case_name, general_parameters
     )
     per_day_type_time: datetime.datetime = datetime.datetime.now()
-    get_mobility_matrix(scenario, case_name, general_parameters)
+    get_mobility_matrix(
+        run_trip_probabilities, scenario, case_name, general_parameters
+    )
     mobility_matrix_time: datetime.datetime = datetime.datetime.now()
-    get_location_split(scenario, case_name, general_parameters)
+    get_location_split(
+        run_trip_probabilities, scenario, case_name, general_parameters
+    )
     location_split_time: datetime.datetime = datetime.datetime.now()
-    get_kilometers_for_next_leg(scenario, case_name, general_parameters)
+    get_kilometers_for_next_leg(
+        run_trip_probabilities, scenario, case_name, general_parameters
+    )
     next_leg_time: datetime.datetime = datetime.datetime.now()
     if timer:
         print(
@@ -1362,7 +1410,7 @@ def make_mobility_data(
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_van'
+    test_scenario_name: str = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

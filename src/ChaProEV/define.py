@@ -136,7 +136,7 @@ class Trip:
         trip.percentage_station_users: float = trip_parameters[
             'percentage_station_users'
         ]
-    
+
         trip.start_probabilities: np.ndarray = np.array(
             trip_parameters['start_probabilities']
         )
@@ -268,12 +268,40 @@ class Trip:
 
         trip.mobility_matrix = trip.mobility_matrix.sort_index()
 
-        # # We want to track the probabilities and time driving of previous
-        #  legs
-        # previous_leg_start_probabilities: np.ndarray = np.array(
-        #     trip.start_probabilities
-        # )
+        # We want to track the probabilities and time driving of previous
+        # legs
+        previous_leg_start_probabilities: np.ndarray = np.array(
+            trip.start_probabilities
+        )
         time_driving_previous_leg: float = float(0)
+
+        # We want to track where the vehicle is
+        trip.location_split: pd.DataFrame = pd.DataFrame(
+            np.zeros((HOURS_IN_A_DAY, len(location_names))),
+            columns=location_names,
+            index=range(HOURS_IN_A_DAY),
+        )
+        trip.location_split.index.name = 'Hour in day (from day start)'
+        if trip.name.startswith('stay_put_'):
+            stay_put_location: str = trip.name.split('stay_put_')[1]
+            trip.location_split[stay_put_location] = 1
+        else:
+            start_leg_name: str = trip.legs[0]
+            initial_location: str = scenario['legs'][start_leg_name][
+                'locations'
+            ]['start']
+            at_location_in_departure_hour: np.ndarray = (
+                trip.start_probabilities / 2
+            )
+            vehicles_staying_put_whole_hour: np.ndarray = (
+                1 - trip.start_probabilities.cumsum()
+            )
+            vehicles_that_did_not_start_trip_yet: np.ndarray = (
+                at_location_in_departure_hour + vehicles_staying_put_whole_hour
+            )
+            trip.location_split[initial_location] = (
+                vehicles_that_did_not_start_trip_yet
+            )
 
         # To fill in the mobility matrix, we iterate over the legs of the trip
         for leg_index, leg_name in enumerate(trip.legs):
@@ -335,9 +363,7 @@ class Trip:
                     leg_index - 1
                 ]
                 # We can now increment the time shift
-                time_shift += (
-                    time_driving_previous_leg + time_spent_at_location
-                )
+                time_shift = time_driving_previous_leg + time_spent_at_location
                 # The leg departueres
                 # take place into two time slots. These two slots
                 # have numbers slot_shift and slot_shift+1
@@ -352,9 +378,9 @@ class Trip:
                 # proportion is (1-0.25)=0.75
                 current_leg_start_probabilities = (
                     first_slot_proportion
-                    * np.roll(trip.start_probabilities, slot_shift)
+                    * np.roll(previous_leg_start_probabilities, slot_shift)
                     + (1 - first_slot_proportion)
-                    * np.roll(trip.start_probabilities, slot_shift + 1)
+                    * np.roll(previous_leg_start_probabilities, slot_shift + 1)
                 )
                 # if maak:
                 #     print(leg_index, leg_name)
@@ -420,7 +446,7 @@ class Trip:
             # arrivals are shifted by the time driving and
             # take place into two time slots. These two slots
             # have numbers slot_shift and slot_shift+1
-            slot_shift = math.floor(time_shift + time_driving)
+            arrival_slot_shift: int = math.floor(time_driving)
             # For example, if the time driving is 1.25 slots (1.25 hours if
             # hours are your units), then arrivals will occur in time
             # slots (hours if you use them) +1 and +2
@@ -431,11 +457,11 @@ class Trip:
             current_leg_end_probabilities: (
                 np.ndarray
             ) = first_slot_proportion * np.roll(
-                trip.start_probabilities, slot_shift
+                current_leg_start_probabilities, arrival_slot_shift
             ) + (
                 1 - first_slot_proportion
             ) * np.roll(
-                trip.start_probabilities, slot_shift + 1
+                current_leg_start_probabilities, arrival_slot_shift + 1
             )
             # if moki:
             #     print(current_leg_end_probabilities)
@@ -570,15 +596,216 @@ class Trip:
                 (start_location, end_location), 'Weighted distance (km)'
             ] = weighted_distance
 
-            # # Finally, we update the previous leg values with the current
+            # Finally, we update the previous leg values with the current
             # ones
-            # previous_leg_start_probabilities =
-            # current_leg_start_probabilities
+            previous_leg_start_probabilities = current_leg_start_probabilities
+
+            # exit()
             time_driving_previous_leg = time_driving
-        # if trip.name == 'bus_weekday_in_holiday_week':
-        #     print('<<<<>>>>>>>')
-        #     print(trip.mobility_matrix.loc['bus_route_start', 'bus_depot'])
-        #     exit()
+
+            # start_time_at_destination: float = time_shift + time_driving
+            if leg_index < len(trip.legs) - 1:
+                time_spent_at_destination: float = trip.time_between_legs[
+                    leg_index
+                ]
+            else:
+                time_spent_at_destination = (
+                    8
+                    # HOURS_IN_A_DAY - start_time_at_destination - 6
+                )
+            time_slots_at_destination: int = math.ceil(
+                time_spent_at_destination
+            )
+            full_time_slots_at_destination: int = math.floor(
+                time_spent_at_destination
+            )
+            remainder_in_partial_slot: float = time_spent_at_destination % 1
+
+            if leg_index < len(trip.legs) - 1:
+                # if len(trip.legs) > 2:
+                #     print(leg_index)
+                #     print(current_leg_start_probabilities)
+                #     print(current_leg_end_probabilities)
+                #     if leg_index == 2:
+                #         exit()
+                for arriving_group_slot, arriving_group_size in enumerate(
+                    current_leg_end_probabilities
+                ):
+
+                    if (
+                        arriving_group_slot + full_time_slots_at_destination
+                        < HOURS_IN_A_DAY
+                    ):  # This should not matter, as the trips end before the
+                        # day ends, by definition, but we can have issues due
+                        # to the way we iterate.
+
+                        # print(arriving_group_slot, arriving_group_size)
+                        for stay_slot in range(time_slots_at_destination):
+                            if stay_slot < full_time_slots_at_destination:
+                                trip.location_split.loc[
+                                    arriving_group_slot + stay_slot,
+                                    end_location,
+                                ] = (
+                                    trip.location_split.loc[
+                                        arriving_group_slot + stay_slot
+                                    ][end_location]
+                                    + arriving_group_size
+                                )
+                            else:
+                                trip.location_split.loc[
+                                    arriving_group_slot + stay_slot,
+                                    end_location,
+                                ] = trip.location_split.loc[
+                                    arriving_group_slot + stay_slot
+                                ][
+                                    end_location
+                                ] + (
+                                    arriving_group_size
+                                    * remainder_in_partial_slot
+                                )
+                            # if remainder_in_partial_slot > 0:
+                            # print(leg_name)
+                            # if arriving_group_size > 0:
+                            #     print(leg_name)
+                            #     print(arriving_group_size)
+                            #     print(time_slots_at_destination)
+                            #     print(end_location)
+                            #         print(trip.location_split)
+
+                        # The vehicles arrive uniformaly in the first slot
+                        first_slot_correction: float = arriving_group_size / 2
+
+                        trip.location_split.loc[
+                            arriving_group_slot, end_location
+                        ] = (
+                            trip.location_split.loc[arriving_group_slot][
+                                end_location
+                            ]
+                            - first_slot_correction
+                        )
+
+                        # This propagates through to the first non-full slot:
+                        trip.location_split.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination,
+                            end_location,
+                        ] = (
+                            trip.location_split.loc[
+                                arriving_group_slot
+                                + full_time_slots_at_destination
+                            ][end_location]
+                            + first_slot_correction
+                        )
+
+                        # For partial stays (less than an hour), there is
+                        # another correction:
+                        partial_stay_correction = arriving_group_size * (
+                            remainder_in_partial_slot
+                            * (remainder_in_partial_slot)
+                            / 2
+                        )
+                        # Example: if the vehicle satys for X.25 hours,
+                        # 3/4 of vehicles will use that in the first
+                        # non-full slot. For the remaining 1/4, half will be in
+                        # that slot, and half in the next one
+                        if partial_stay_correction > 0:
+                            # We do not necessarily need that filter, but it
+                            # avoids using elements beyond the end of the day
+
+                            # print(partial_stay_correction)
+                            # print(remainder_in_partial_slot)
+                            # exit()
+                            trip.location_split.loc[
+                                arriving_group_slot
+                                + full_time_slots_at_destination,
+                                end_location,
+                            ] = (
+                                trip.location_split.loc[
+                                    arriving_group_slot
+                                    + full_time_slots_at_destination
+                                ][end_location]
+                                - partial_stay_correction
+                            )
+
+                            trip.location_split.loc[
+                                arriving_group_slot
+                                + full_time_slots_at_destination
+                                + 1,
+                                end_location,
+                            ] = (
+                                trip.location_split.loc[
+                                    arriving_group_slot
+                                    + full_time_slots_at_destination
+                                    + 1
+                                ][end_location]
+                                + partial_stay_correction
+                            )
+
+                        # if remainder_in_partial_slot > 0:
+                        #     if arriving_group_size > 0:
+                        #         print(leg_name)
+                        #         print(arriving_group_size)
+                        #         print(trip.location_split)
+                        #         print(trip.location_split.sum())
+                        #         exit()
+
+            else:
+                arriving_in_first_time_slot: np.ndarray = (
+                    current_leg_end_probabilities / 2
+                )
+                arriving_in_next_time_slot: np.ndarray = np.roll(
+                    arriving_in_first_time_slot, 1
+                )
+                arrivals_together: np.ndarray = (
+                    arriving_in_first_time_slot + arriving_in_next_time_slot
+                )
+                cumuluative_arrivals: np.ndarray = arrivals_together.cumsum()
+
+                trip.location_split[end_location] = (
+                    trip.location_split[end_location] + cumuluative_arrivals
+                )
+
+        # We can also get the percentage driving
+
+        trip.percentage_driving: pd.Series[float] = (
+            1 - trip.location_split.sum(axis=1)
+        )
+
+        # We also get the connectivity:
+        trip.connectivity_per_location: pd.DataFrame = (
+            trip.location_split.copy()
+        )
+        trip.maximal_delivered_power_per_location: pd.DataFrame = (
+            trip.location_split.copy()
+        )
+
+        for location_name in location_names:
+            location_connectivity: float = scenario['locations'][
+                location_name
+            ]['connectivity']
+            charging_power: float = scenario['locations'][location_name][
+                'charging_power'
+            ]
+            charger_efficiency: float = scenario['locations'][location_name][
+                'charger_efficiency'
+            ]
+            this_location_maximal_delivered_power: float = (
+                location_connectivity * charging_power / charger_efficiency
+            )
+            trip.connectivity_per_location[location_name] = (
+                trip.connectivity_per_location[location_name]
+                * location_connectivity
+            )
+            trip.maximal_delivered_power_per_location[location_name] = (
+                trip.maximal_delivered_power_per_location[location_name]
+                * this_location_maximal_delivered_power
+            )
+        trip.connectivity: pd.Series = trip.connectivity_per_location.sum(
+            axis=1
+        )
+        trip.maximal_delivered_power: pd.Series = (
+            trip.maximal_delivered_power_per_location.sum(axis=1)
+        )
 
         # We now can create a mobility matrix for the whole run
         run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
@@ -620,6 +847,46 @@ class Trip:
                 trip.run_mobility_matrix.at[
                     (leg_tuple[0], leg_tuple[1]), mobility_quantity
                 ] = cloned_mobility_matrix[mobility_quantity].values
+
+        # We also do this for some other quantities
+        day_start_hour: int = scenario['mobility_module']['day_start_hour']
+        trip.run_location_split: pd.DataFrame = run_time.from_day_to_run(
+            trip.location_split,
+            run_time_tags,
+            day_start_hour,
+            scenario,
+            general_parameters,
+        )
+
+        trip.run_connectivity_per_location: pd.DataFrame = (
+            run_time.from_day_to_run(
+                trip.connectivity_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_maximal_delivered_power_per_location: pd.DataFrame = (
+            run_time.from_day_to_run(
+                trip.maximal_delivered_power_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+
+        trip.run_percentage_driving: pd.Series = (
+            1 - trip.run_location_split.sum(axis=1)
+        )
+
+        trip.run_connectivity: pd.Series = (
+            trip.run_connectivity_per_location.sum(axis=1)
+        )
+        trip.run_maximal_delivered_power: pd.Series = (
+            trip.run_maximal_delivered_power_per_location.sum(axis=1)
+        )
 
         trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
             np.zeros((HOURS_IN_A_DAY, len(location_names))),
@@ -899,6 +1166,57 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
         )
+        trip.location_split.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_location_split.pkl'
+        )
+        trip.run_location_split.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_location_split.pkl'
+        )
+        trip.percentage_driving.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_percentage_driving.pkl'
+        )
+        trip.run_percentage_driving.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_percentage_driving.pkl'
+        )
+
+        trip.connectivity_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_connectivity_per_location.pkl'
+        )
+        trip.run_connectivity_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_connectivity_per_location.pkl'
+        )
+
+        trip.connectivity.to_pickle(
+            f'{output_folder}/{scenario_name}_' f'{trip.name}_connectivity.pkl'
+        )
+        trip.run_connectivity.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_connectivity.pkl'
+        )
+
+        trip.maximal_delivered_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_maximal_delivered_power_per_location.pkl'
+        )
+        trip.run_maximal_delivered_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_maximal_delivered_power_per_location.pkl'
+        )
+
+        trip.maximal_delivered_power.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_maximal_delivered_power.pkl'
+        )
+        trip.run_maximal_delivered_power.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_maximal_delivered_power.pkl'
+        )
 
     return legs, locations, trips
 
@@ -941,10 +1259,17 @@ if __name__ == '__main__':
             trip.percentage_station_users,
             trip.start_probabilities,
             trip.time_between_legs,
+            # trip.location_split
         )
-        if trip.name == 'bus_weekday_in_holiday_week':
-            print(trip.mobility_matrix.loc['bus_route_start', 'bus_route_end'])
-            exit()
+        print(trip.name)
+        print(trip.location_split)
+        print(trip.connectivity)
+        print(trip.percentage_driving)
+        print(trip.percentage_driving.sum())
+        # if trip.name == 'bus_weekday_in_holiday_week':
+        #     print(trip.mobility_matrix.loc['bus_route_start',
+        # 'bus_route_end'])
+        #     exit()
 
     print((datetime.datetime.now() - start_).total_seconds())
 
