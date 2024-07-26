@@ -81,4 +81,4 @@ if __name__ == '__main__':
     # scenario['scenario_name'] = test_scenario_name
     extra_end_outputs(case_name, general_parameters)
     exit()
-    write_scenario_parameters(scenario, case_name, general_parameters)
+    # write_scenario_parameters(scenario, case_name, general_parameters)

@@ -1143,7 +1143,7 @@ def get_location_split(
         columns=['Maximal Delivered Power (kW)'],
         index=run_range,
     )
-    
+
     for trip_name in trip_list:
         trip_location_split: pd.api.extensions.ExtensionArray = pd.read_pickle(
             f'{output_folder}/{scenario_name}_{trip_name}'
