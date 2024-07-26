@@ -252,6 +252,9 @@ def get_car_trip_probabilities_per_day_type(
         columns=day_types, index=trip_list
     )
     trip_probabilities_per_day_type.index.name = 'Trip'
+    trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
+        float
+    )
 
     # We start with trips that are independent of others,
     # and holiday trips
@@ -298,11 +301,13 @@ def get_car_trip_probabilities_per_day_type(
     holiday_departure_probability: float = holiday_trips_taken / (
         number_of_holiday_departure_weekends * len(weekend_day_numbers)
     )
+    on_holiday_in_a_holiday_period: float = (
+        holiday_departure_probability * len(weekend_day_numbers)
+    )
 
     holiday_return_probability: float = holiday_trips_taken / (
         number_of_holiday_return_weekends * len(weekend_day_numbers)
     )
-
     trip_probabilities_per_day_type.loc[
         'holiday_outward', 'weekend_holiday_departures'
     ] = holiday_departure_probability
@@ -564,7 +569,10 @@ def get_car_trip_probabilities_per_day_type(
         trip_probabilities_per_day_type.loc['holiday_outward'][
             'weekend_holiday_departures'
         ]
+        * len(weekend_day_numbers)
+        # We need to account for departures on all days
     )
+
     trip_probabilities_per_day_type.loc[
         'leisure_only', 'weekend_holiday_departures'
     ] = (
@@ -578,6 +586,8 @@ def get_car_trip_probabilities_per_day_type(
         trip_probabilities_per_day_type.loc['holiday_back'][
             'weekend_holiday_returns'
         ]
+        * len(weekend_day_numbers)
+        # We need to take into account returns on both days
     )
     trip_probabilities_per_day_type.loc[
         'leisure_only', 'weekend_holiday_returns'
@@ -589,14 +599,18 @@ def get_car_trip_probabilities_per_day_type(
         day_type_start_location_split.loc['home']['weekend_holiday_returns']
     )
     # For overlap weekends, we have:
+
     percentage_not_departing_or_returning: float = 1 - float(
         trip_probabilities_per_day_type.loc['holiday_outward'][
             'holiday_overlap_weekend'
         ]
-        + trip_probabilities_per_day_type.loc[
-            'holiday_back', 'holiday_overlap_weekend'
+        * len(weekend_day_numbers)
+        + trip_probabilities_per_day_type.loc['holiday_back'][
+            'holiday_overlap_weekend'
         ]
+        * len(weekend_day_numbers)
     )
+
     trip_probabilities_per_day_type.loc[
         'leisure_only', 'holiday_overlap_weekend'
     ] = (
@@ -717,32 +731,55 @@ def get_car_trip_probabilities_per_day_type(
     # Now that we computed all travelling trips, we look at the stay_put
     # trips as remainders
 
-    stay_put_trips: ty.List[str] = ['stay_put_home', 'stay_put_holiday']
+    # We do the holidays first:
+    # There are none in work weeks
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'weekday_in_work_week'
+    ] = 0
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'weekend_in_work_week'
+    ] = 0
+    # For days without holiday departures and arrivals, we
+    # have the amount of people on holidays during that period
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'weekday_in_holiday_week'
+    ] = on_holiday_in_a_holiday_period
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'weekend_in_holiday_week'
+    ] = on_holiday_in_a_holiday_period
+    # For (one-way) departures and arrivals weekends, we have no stay puts
+    # on either the first day (for departures on the last day), etc.
+    # If the arrivalsare over N days, then we have 0 stays on the first day,
+    # 1 unit (of departure probability) on the second day, two units on the
+    # third day, etc. This sum is equal to (N-1) * N  / 2. To have
+    # the avrage occupancy, we divide this by N, so we have N/2
+
+    average_occupancy: float = len(weekend_day_numbers) / 2
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'weekend_holiday_departures'
+    ] = (holiday_departure_probability * average_occupancy)
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'weekend_holiday_returns'
+    ] = (holiday_departure_probability * average_occupancy)
+
+    # For the overlap weekends, we hve both (not yet returned on the first day
+    # and already arrived on the second day of the weekend)
+    trip_probabilities_per_day_type.loc[
+        'stay_put_holiday', 'holiday_overlap_weekend'
+    ] = (holiday_departure_probability * average_occupancy * 2)
+
+    # Finally, the remainder goes to staying put at home:
     travelling_trip_probabilities_per_day_type: pd.DataFrame = (
-        trip_probabilities_per_day_type.drop(stay_put_trips, axis=0)
+        trip_probabilities_per_day_type.drop('stay_put_home', axis=0)
     )
     # We drop the stayp put trips to have the sum of actual trips
     # We will put the stay put trips back later
     stay_put_probabilities: pd.Series = (
         1 - travelling_trip_probabilities_per_day_type.sum()
     )
-
-    stay_put_split: ty.Dict[str, ty.Dict[str, float]] = {}
-
-    possible_stay_locations: ty.List[str] = ['home', 'holiday']
-    for location in possible_stay_locations:
-        stay_put_split[f'stay_put_{location}'] = {}
-        for day_type in day_types:
-            stay_put_split[f'stay_put_{location}'][day_type] = float(
-                day_type_start_location_split.loc[location][day_type]
-            )
-    # We can now put the stay put probabilities
-    for day_type in day_types:
-        for stay_put_trip in stay_put_trips:
-            trip_probabilities_per_day_type.loc[stay_put_trip, day_type] = (
-                stay_put_probabilities[day_type]
-                * stay_put_split[stay_put_trip][day_type]
-            )
+    trip_probabilities_per_day_type.loc['stay_put_home'] = (
+        stay_put_probabilities
+    )
 
     table_name: str = f'{scenario_name}_trip_probabilities_per_day_type'
 
@@ -801,6 +838,7 @@ def get_run_trip_probabilities(
             scenario, case_name, general_parameters
         )
     )
+
     print((datetime.datetime.now() - moo).total_seconds())
     moo = datetime.datetime.now()
 
@@ -811,6 +849,11 @@ def get_run_trip_probabilities(
             ] = trip_probabilities_per_day_type.loc[trip, day_type]
     print((datetime.datetime.now() - moo).total_seconds())
     moo = datetime.datetime.now()
+
+    print(run_trip_probabilities)
+    print(trip_probabilities_per_day_type)
+    print('hhh')
+    exit()
 
     table_name: str = f'{scenario_name}_run_trip_probabilities'
     run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')

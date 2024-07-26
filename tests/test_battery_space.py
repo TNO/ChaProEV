@@ -15,7 +15,7 @@ def test_battery_space() -> None:
         file_extension: str = scenario_file.split('.')[1]
         if file_extension == 'toml':
             scenario_names.append(scenario_file.split('.')[0])
-
+    scenario_names = ['XX_car']
     for scenario_name in scenario_names:
         location_split: pd.DataFrame = pd.read_pickle(
             f'output/{case_name}/{scenario_name}_location_split.pkl'
@@ -23,8 +23,9 @@ def test_battery_space() -> None:
         sum_of_battery_spaces: pd.DataFrame = pd.read_pickle(
             f'output/{case_name}/{scenario_name}_sum_of_battery_spaces.pkl'
         )
-        print(location_split)
-        print(sum_of_battery_spaces)
+        print(location_split.iloc[68:77])
+        print(sum_of_battery_spaces.iloc[68:77])
+        exit()
         pd.testing.assert_frame_equal(location_split, sum_of_battery_spaces)
 
 

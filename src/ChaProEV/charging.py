@@ -283,6 +283,8 @@ def travel_space_occupation(
                             ] = float(0)
 
                         # print('Hoo?')
+                        # print(time_tag)
+                        # exit()
                         # # print(battery_space['truck_hub'].iloc[54])
                         # print(time_tag)
                         # print(first_arrival_shift_time)

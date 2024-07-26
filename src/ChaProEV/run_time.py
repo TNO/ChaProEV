@@ -170,7 +170,7 @@ def get_time_stamped_dataframe(
     )
 
     day_start_hour: int = scenario['mobility_module']['day_start_hour']
-    HOURS_IN_A_DAY = scenario['time']['HOURS_IN_A_DAY']
+    HOURS_IN_A_DAY = general_parameters['time']['HOURS_IN_A_DAY']
     hour_in_day: ty.List[int] = [
         (
             timestamp.hour - day_start_hour
@@ -365,4 +365,4 @@ if __name__ == '__main__':
     )
     print(run_range)
     print(run_hour_numbers)
-    print(time_stamped_dataframe)
+    print(time_stamped_dataframe.iloc[68:77])
