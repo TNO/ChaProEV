@@ -752,9 +752,9 @@ def get_car_trip_probabilities_per_day_type(
     # If the arrivalsare over N days, then we have 0 stays on the first day,
     # 1 unit (of departure probability) on the second day, two units on the
     # third day, etc. This sum is equal to (N-1) * N  / 2. To have
-    # the avrage occupancy, we divide this by N, so we have N/2
+    # the avrage occupancy, we divide this by N, so we have (N-1)/2
 
-    average_occupancy: float = len(weekend_day_numbers) / 2
+    average_occupancy: float = (len(weekend_day_numbers)-1) / 2
     trip_probabilities_per_day_type.loc[
         'stay_put_holiday', 'weekend_holiday_departures'
     ] = (holiday_departure_probability * average_occupancy)
@@ -850,8 +850,11 @@ def get_run_trip_probabilities(
     print((datetime.datetime.now() - moo).total_seconds())
     moo = datetime.datetime.now()
 
-    print(run_trip_probabilities)
+    # SAT SUNcorrection !!! for stay put
+
+    print(run_trip_probabilities.iloc[92:100])
     print(trip_probabilities_per_day_type)
+    print(run_trip_probabilities.loc[run_trip_probabilities['Day Type'] == 'weekend_holiday_returns'])
     print('hhh')
     exit()
 
