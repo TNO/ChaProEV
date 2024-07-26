@@ -1,21 +1,36 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
 
-    boo = pd.read_pickle('reference_run/XX_car_home_battery_space.pkl')
-    baa = pd.read_pickle('reference_run/XX_car_location_split.pkl')
-    pii = pd.read_pickle('output/Mopo/XX_van_van_customer_battery_space.pkl')
+    # boo = pd.read_pickle('reference_run/XX_car_home_battery_space.pkl')
+    baa = pd.read_pickle('output/Mopo//XX_car_location_split.pkl')
+
+    baka = pd.read_pickle('output/Mopo/XX_car_charge_drawn_by_vehicles.pkl')
+    book = pd.read_pickle('reference_run/XX_car_charge_drawn_by_vehicles.pkl')
+
+    print(baka)
+    print(book)
+    print(max((baka-book)['holiday'].values))
+    print(baka.sum())
+    print(book.sum())
+    exit()
+    baa.plot()
+
+    plt.show()
+    # pii = pd.read_pickle('output/Mopo/XX_van_van_customer_battery_space.pkl')
     # bii = boo[boo.columns[boo.sum()>0]]
     # print(boo.loc['bus_route_start', 'bus_depot'])
     # print(bii)
     # print(charge_drawn.iloc[89:100])
-    print(boo.iloc[78:86].sum(axis=1))
-    print(baa.iloc[78:86]['home'])
+    # print(boo.iloc[78:86].sum(axis=1))
+    # print(baa.iloc[78:86]['home'])
 
-    print(boo.iloc[0:12].sum(axis=1))
-    print(baa.iloc[0:12]['home'])
-    print(pii)
-    print(boo)
+    # print(boo.iloc[0:12].sum(axis=1))
+    # print(baa.iloc[0:12]['home'])
+    # print(pii)
+    # print(boo)
+    # print(baa)
     exit()
 
     batt_space = pd.read_pickle('output/Mopo/XX_car_home_battery_space.pkl')

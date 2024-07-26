@@ -754,7 +754,7 @@ def get_car_trip_probabilities_per_day_type(
     # third day, etc. This sum is equal to (N-1) * N  / 2. To have
     # the avrage occupancy, we divide this by N, so we have (N-1)/2
 
-    average_occupancy: float = (len(weekend_day_numbers)-1) / 2
+    average_occupancy: float = (len(weekend_day_numbers) - 1) / 2
     trip_probabilities_per_day_type.loc[
         'stay_put_holiday', 'weekend_holiday_departures'
     ] = (holiday_departure_probability * average_occupancy)
@@ -794,6 +794,183 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     return trip_probabilities_per_day_type
+
+
+def car_holiday_departures_returns_corrections(
+    run_trip_probabilities: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
+) -> pd.DataFrame:
+    '''
+    # For holiday departures and returns weekends, we need to do some
+    # shifting, as the probabilities are averages for the
+    # whole weekend. Example: if stay put holiday is 4% on average,
+    # it should be 0% on Saturdays (where the first batch travels)
+    # and 8% on Sundays (where that batch has arrived and stays at the
+    # holiday destination), which needs to be balanced with stay_put_home
+    # This is only necessary for the one-way shifts. The ones with
+    # both departures and returns are already fine
+    '''
+    run_range, run_hour_numbers = run_time.get_time_range(
+        scenario, general_parameters
+    )
+    departures_filter: pd.Series[bool] = (
+        run_trip_probabilities['Day Type'] == 'weekend_holiday_departures'
+    )
+
+    returns_filter: pd.Series[bool] = (
+        run_trip_probabilities['Day Type'] == 'weekend_holiday_returns'
+    )
+
+    saturday_filter: pd.Series[bool] = run_range.isocalendar().day == 6
+    sunday_filter: pd.Series[bool] = run_range.isocalendar().day == 7
+    day_start_hour: int = scenario['mobility_module']['day_start_hour']
+    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
+    day_start_hour_filter: pd.Series[bool] = run_range.hour == day_start_hour
+
+    departure_saturdays_starts: ty.List[datetime.datetime] = run_range[
+        departures_filter & saturday_filter & day_start_hour_filter
+    ]
+
+    departure_saturdays: ty.List[pd.DatetimeIndex] = [
+        pd.date_range(
+            start=departure_saturdays_start, periods=HOURS_IN_A_DAY, freq='h'
+        )
+        for departure_saturdays_start in departure_saturdays_starts
+    ]
+
+    departure_sundays_starts: ty.List[datetime.datetime] = run_range[
+        departures_filter & sunday_filter & day_start_hour_filter
+    ]
+
+    departure_sundays: ty.List[pd.DatetimeIndex] = [
+        pd.date_range(
+            start=departure_sundays_start, periods=HOURS_IN_A_DAY, freq='h'
+        )
+        for departure_sundays_start in departure_sundays_starts
+    ]
+
+    departure_shift_values: ty.List[float] = [
+        float(
+            run_trip_probabilities.loc[departure_saturdays_start][
+                'stay_put_holiday'
+            ]
+        )
+        for departure_saturdays_start in departure_saturdays_starts
+    ]
+
+    for departure_saturday, departure_shift_value in zip(
+        departure_saturdays, departure_shift_values
+    ):
+
+        run_trip_probabilities.loc[departure_saturday, 'stay_put_home'] = (
+            run_trip_probabilities.loc[departure_saturday][
+                'stay_put_home'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            + departure_shift_value
+        )
+        run_trip_probabilities.loc[departure_saturday, 'stay_put_holiday'] = (
+            run_trip_probabilities.loc[departure_saturday][
+                'stay_put_holiday'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            - departure_shift_value
+        )
+    for departure_sunday, departure_shift_value in zip(
+        departure_sundays, departure_shift_values
+    ):
+
+        run_trip_probabilities.loc[departure_sunday, 'stay_put_home'] = (
+            run_trip_probabilities.loc[departure_sunday][
+                'stay_put_home'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            - departure_shift_value
+        )
+        run_trip_probabilities.loc[departure_sunday, 'stay_put_holiday'] = (
+            run_trip_probabilities.loc[departure_sunday][
+                'stay_put_holiday'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            + departure_shift_value
+        )
+
+    return_saturdays_starts: ty.List[datetime.datetime] = run_range[
+        returns_filter & saturday_filter & day_start_hour_filter
+    ]
+
+    return_saturdays: ty.List[pd.DatetimeIndex] = [
+        pd.date_range(
+            start=return_saturdays_start, periods=HOURS_IN_A_DAY, freq='h'
+        )
+        for return_saturdays_start in return_saturdays_starts
+    ]
+
+    return_sundays_starts: ty.List[datetime.datetime] = run_range[
+        returns_filter & sunday_filter & day_start_hour_filter
+    ]
+
+    return_sundays: ty.List[pd.DatetimeIndex] = [
+        pd.date_range(
+            start=return_sundays_start, periods=HOURS_IN_A_DAY, freq='h'
+        )
+        for return_sundays_start in return_sundays_starts
+    ]
+
+    return_shift_values: ty.List[float] = [
+        float(
+            run_trip_probabilities.loc[return_saturdays_start][
+                'stay_put_holiday'
+            ]
+        )
+        for return_saturdays_start in return_saturdays_starts
+    ]
+
+    for return_saturday, return_shift_value in zip(
+        return_saturdays, return_shift_values
+    ):
+
+        run_trip_probabilities.loc[return_saturday, 'stay_put_home'] = (
+            run_trip_probabilities.loc[return_saturday][
+                'stay_put_home'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            - return_shift_value
+        )
+        run_trip_probabilities.loc[return_saturday, 'stay_put_holiday'] = (
+            run_trip_probabilities.loc[return_saturday][
+                'stay_put_holiday'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            + return_shift_value
+        )
+    for return_sunday, return_shift_value in zip(
+        return_sundays, return_shift_values
+    ):
+
+        run_trip_probabilities.loc[return_sunday, 'stay_put_home'] = (
+            run_trip_probabilities.loc[return_sunday]['stay_put_home'].values[
+                0
+            ]  # The values are the same across an acitivty day
+            + return_shift_value
+        )
+        run_trip_probabilities.loc[return_sunday, 'stay_put_holiday'] = (
+            run_trip_probabilities.loc[return_sunday][
+                'stay_put_holiday'
+            ].values[
+                0
+            ]  # The values are the same across an acitivty day
+            - return_shift_value
+        )
+    return run_trip_probabilities
 
 
 def get_run_trip_probabilities(
@@ -850,18 +1027,17 @@ def get_run_trip_probabilities(
     print((datetime.datetime.now() - moo).total_seconds())
     moo = datetime.datetime.now()
 
-    # SAT SUNcorrection !!! for stay put
-
-    print(run_trip_probabilities.iloc[92:100])
-    print(trip_probabilities_per_day_type)
-    print(run_trip_probabilities.loc[run_trip_probabilities['Day Type'] == 'weekend_holiday_returns'])
-    print('hhh')
-    exit()
-
     table_name: str = f'{scenario_name}_run_trip_probabilities'
     run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
     print((datetime.datetime.now() - moo).total_seconds())
     moo = datetime.datetime.now()
+
+    vehicle_name: str = scenario['vehicle']['name']
+    if vehicle_name == 'car':
+        run_trip_probabilities = car_holiday_departures_returns_corrections(
+            run_trip_probabilities, scenario, case_name, general_parameters
+        )
+    print('Weekend corrs', (datetime.datetime.now() - moo).total_seconds())
 
     return run_trip_probabilities
 
@@ -985,7 +1161,7 @@ def get_mobility_matrix(
                     )
 
                     # We need to place it at the right places in the run
-                    # mobility matrix
+                    # ix timememeemememememix
 
                     for trip_location_tuple in trip_location_tuples:
 
@@ -1097,7 +1273,7 @@ def get_day_type_start_location_split(
                 percentage_on_holiday_in_holiday_week
             )
 
-        # For departure and retrun weekends, this is split across
+        # For departure and return weekends, this is split across
         # the weekend days (note that this is an approximation, as
         # we ideally should split the weekend in two, but that would make
         # the model complexer)
