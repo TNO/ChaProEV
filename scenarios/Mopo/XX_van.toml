@@ -1010,7 +1010,7 @@ repeated_sequence = [
     'van_to_base',
     ]
 repetition_amounts = [3, 1, 3, 1]
-time_between_repetitions = [0.75, 1, 0.75, 1] # hours
+time_between_repetitions =  [0.75, 1, 0.75, 1] # hours
 
 [trips.van_weekend]
 vehicle = 'van'

@@ -98,11 +98,15 @@ def travel_space_occupation(
             # the battery space. We do so because travels can propagate to
             # future time tags. I f we just copied the value from
             # the previous time tag, we would delete these
+            # print(time_tag_index, start_location)
+            # print(battery_space['truck_hub'].iloc[8])
 
             battery_space[start_location].iloc[time_tag_index] = (
                 battery_space[start_location].iloc[time_tag_index]
                 + battery_space[start_location].iloc[time_tag_index - 1]
             )
+            # print(time_tag, 'ryuryrury')
+            # print(battery_space['truck_hub'].iloc[8])
 
         if use_day_types_in_charge_computing and (
             time_tag.hour == day_start_hour
@@ -135,6 +139,14 @@ def travel_space_occupation(
             departures: float = run_mobility_matrix.loc[
                 start_location, end_location, time_tag
             ]['Departures amount']
+            # Given that the departures happen unifoirmly,
+            # their impact in the current time slot is reduced,
+            # as some will stay for some time. On average, they
+            # stay for half of the time. That means that we have to shift some
+            # of the impact to thenext time slot
+            departures_impact_this_time_slot: float = departures / 2
+            departures_impact_next_time_slot: float = departures / 2
+            # print('Dep', departures)
 
             if departures > zero_threshold:
                 # If there are no departures, we can skip this
@@ -195,13 +207,41 @@ def travel_space_occupation(
                         # departures, then we take the remaining departures,
                         # otherwise we take all the vehicles with the current
                         # space and move to the next one
+                        # This needs to be done separately for the current
+                        # time slot and the next one
+                        # (because of the issue of effective impact, as
+                        # some vehicles stay some of the time)
 
-                        this_battery_space_departures: float = min(
-                            departures,
+                        this_battery_space_departures_impact_this_time: (
+                            float
+                        ) = min(
+                            departures_impact_this_time_slot,
                             battery_space[start_location].at[
                                 time_tag, departing_battery_space
                             ],
                         )
+                        this_battery_space_departures_impact_nxt_time: (
+                            float
+                        ) = min(
+                            departures_impact_next_time_slot,
+                            battery_space[start_location].at[
+                                time_tag, departing_battery_space
+                            ],
+                        )
+                        # Note that we use the current time tag for the
+                        # available battery spaces in looking at the impact of
+                        # in the next time tag/slot. This is because the
+                        # reference occupancy is in the current time slot.
+                        # This might lead to negative occupancy values
+                        # for an iteration, but these will be compensated
+                        # when copying the occupancies down one step
+                        # see above, where we add the values from the
+                        # previous time
+
+                        # print('ggg')
+                        # print(this_battery_space_departures_impact_this_time)
+                        # print(this_battery_space_departures_impact_next_time)
+
                         # if start_location == 'home':
                         #     print(time_tag, end_location)
                         #     print(
@@ -219,7 +259,10 @@ def travel_space_occupation(
 
                         # We add these departures to the arriving amounts,
                         # as these will arrive to the end location
-                        arriving_amounts.append(this_battery_space_departures)
+                        arriving_amounts.append(
+                            this_battery_space_departures_impact_this_time
+                            + this_battery_space_departures_impact_nxt_time
+                        )
 
                         # We also add the corresponding battery space at
                         # arrival, given by the original battery space plus
@@ -230,20 +273,28 @@ def travel_space_occupation(
 
                         # We update the departures (i.e. how many remain
                         # for larger battery spaces)
-                        departures -= this_battery_space_departures
+                        departures_impact_this_time_slot -= (
+                            this_battery_space_departures_impact_this_time
+                        )
+                        departures_impact_next_time_slot -= (
+                            this_battery_space_departures_impact_nxt_time
+                        )
 
                         # Finally, we remove the departures from the start
                         # location for the current time slot
-
+                        # print(time_tag_index, 'zaa')
+                        # print(battery_space['truck_hub'].iloc[time_tag_index-1:time_tag_index+2])
                         battery_space[start_location].loc[
                             time_tag, departing_battery_space
                         ] = (
                             battery_space[start_location].loc[time_tag][
                                 departing_battery_space
                             ]
-                            - this_battery_space_departures / 2
-                            # / 1
+                            - this_battery_space_departures_impact_this_time
                         )
+                        # print(time_tag_index, 'zee')
+                        # print(battery_space['truck_hub'].iloc[
+                        # time_tag_index-1: time_tag_index+2])
                         # The effects on the current time tag are halved,
                         # as the vehicles leave unifornmly
                         # The rest of the impact is in the next
@@ -255,9 +306,12 @@ def travel_space_occupation(
                                 battery_space[start_location].loc[
                                     next_time_tag
                                 ][departing_battery_space]
-                                - this_battery_space_departures / 2
-                                # * 0
+                                - this_battery_space_departures_impact_nxt_time
                             )
+
+                        # print(time_tag_index, 'zii')
+                        # print(battery_space['truck_hub'].iloc
+                        # [time_tag_index-1: time_tag_index+2])
 
                 # # We only need to do this if there are actually
                 # # travels between
@@ -268,7 +322,10 @@ def travel_space_occupation(
                 for arriving_battery_space, arriving_amount in zip(
                     arriving_battery_spaces, arriving_amounts
                 ):
-
+                    # print(time_tag)
+                    # print(end_location)
+                    # print(arriving_battery_spaces)
+                    # print(arriving_amounts)
                     if arriving_amount > zero_threshold:
                         # No need to compute if there are no arrivals
 
@@ -431,6 +488,10 @@ def travel_space_occupation(
                                         / 2
                                         # * 0
                                     )
+            # print(time_tag_index, 'zoo')
+            # print(battery_space['truck_hub'].iloc[time_tag_index-1:
+            #
+            # time_tag_index+2])
 
     # Have  arrivals not connect at all if partial (until leave)
     # Or assume they move around get connected
@@ -686,13 +747,14 @@ def write_output(
         battery_space[location_name] = battery_space[location_name].set_index(
             ['Time Tag', 'Hour Number', 'SPINE_Hour_Number']
         )
-        zero_threshold: float = general_parameters['numbers']['zero_threshold']
+        # zero_threshold: float = general_parameters['numbers']
+        # ['zero_threshold']
 
-        battery_space[location_name] = battery_space[location_name][
-            battery_space[location_name].columns[
-                battery_space[location_name].sum() > zero_threshold
-            ]
-        ]
+        # battery_space[location_name] = battery_space[location_name][
+        #     battery_space[location_name].columns[
+        #         battery_space[location_name].sum() > zero_threshold
+        #     ]
+        # ]
         battery_space[location_name].to_pickle(
             f'{output_folder}/{scenario_name}_'
             f'{location_name}_battery_space.pkl'
@@ -904,8 +966,9 @@ def get_charging_profile(
         zip(run_range, run_day_types)
     ):
         # print(time_tag_index)
-        # if time_tag_index > 5:
-        #     print(time_tag)
+        # if time_tag_index > 100:
+        #     # print(battery_space['truck_hub'].iloc[89:100])
+        #     # print(time_tag)
         #     exit()
         if (
             use_day_types_in_charge_computing
@@ -954,8 +1017,12 @@ def get_charging_profile(
             #         if time_tag_index == 1000000:
             #             exit()
 
+            # print(time_tag)
+            # print(battery_space['truck_hub'].iloc[0:11])
             loop_mid: datetime.datetime = datetime.datetime.now()
+            # if time_tag_index == 20:
 
+            #     exit()
             (
                 battery_space,
                 charge_drawn_by_vehicles,
@@ -968,6 +1035,9 @@ def get_charging_profile(
                 scenario,
                 general_parameters,
             )
+            # print(time_tag, '777')
+            # print(battery_space['truck_hub'].iloc[0:11])
+
             # print('After compute')
             # print(battery_space['van_base'].iloc[2:6])
             if use_day_types_in_charge_computing and (
@@ -1382,7 +1452,7 @@ if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     case_name = 'Mopo'
-    test_scenario_name = 'XX_car'
+    test_scenario_name = 'XX_truck'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

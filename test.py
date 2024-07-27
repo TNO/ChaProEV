@@ -1,5 +1,5 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 if __name__ == '__main__':
 
@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     print(baka)
     print(book)
-    print(max((baka-book)['holiday'].values))
+    print(max((baka - book)['holiday'].values))
     print(baka.sum())
     print(book.sum())
     exit()

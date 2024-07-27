@@ -938,7 +938,7 @@ legs = [
     'truck_to_hub',
 ]
 
-time_between_legs = [0.5]
+time_between_legs = [1] #[0.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -962,7 +962,7 @@ legs = [
     'truck_to_hub',
 ]
 
-time_between_legs = [0.5]
+time_between_legs = [1] #[0.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
