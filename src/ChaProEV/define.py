@@ -303,6 +303,17 @@ class Trip:
                 vehicles_that_did_not_start_trip_yet
             )
 
+        # We want to track the partial time corrections,
+        # which tells us how much the vehicles stay before departing
+        trip.partial_time_corrections: pd.DataFrame = pd.DataFrame(
+            np.zeros((HOURS_IN_A_DAY, len(location_names))),
+            index=range(HOURS_IN_A_DAY),
+            columns=location_names,
+        )
+        trip.partial_time_corrections.index.name = (
+            'Hour in day (from day start)'
+        )
+        # To store partial stay corrections
         # To fill in the mobility matrix, we iterate over the legs of the trip
         for leg_index, leg_name in enumerate(trip.legs):
             # moki = False
@@ -699,12 +710,66 @@ class Trip:
 
                         # For partial stays (less than an hour), there is
                         # another correction:
-                        partial_stay_correction = arriving_group_size * (
-                            remainder_in_partial_slot
-                            * (remainder_in_partial_slot)
-                            / 2
+                        partial_stay_correction: float = (
+                            arriving_group_size
+                            * (
+                                remainder_in_partial_slot
+                                * (remainder_in_partial_slot)
+                                / 2
+                            )
                         )
-                        # Example: if the vehicle satys for X.25 hours,
+                        partial_time_correction_factor: float = (
+                            remainder_in_partial_slot
+                            * remainder_in_partial_slot
+                            / 2
+                            + remainder_in_partial_slot
+                            * (1 - remainder_in_partial_slot)
+                        )
+                        if partial_time_correction_factor > 0:
+                            if arriving_group_size > 0:
+                                # print(remainder_in_partial_slot)
+                                # exit()
+                                # print(
+                                #     remainder_in_partial_slot
+                                #     * remainder_in_partial_slot
+                                #     / 2
+                                # )
+                                # # exit()
+                                # print(remainder_in_partial_slot)
+                                # print(partial_time_correction_factor)
+                                # print(leg_name)
+                                # print(arriving_group_slot)
+                                # print(full_time_slots_at_destination)
+
+                                trip.partial_time_corrections.loc[
+                                    arriving_group_slot
+                                    + full_time_slots_at_destination,
+                                    end_location,
+                                ] = (
+                                    # trip.partial_time_corrections.loc[
+                                    #     arriving_group_slot
+                                    #     + full_time_slots_at_destination
+                                    # ][end_location]
+                                    # + partial_time_correction_factor
+                                    remainder_in_partial_slot
+                                )
+                                # trip.partial_time_corrections.loc[
+                                #     arriving_group_slot
+                                #     + full_time_slots_at_destination+1,
+                                #     end_location,
+                                # ] = (
+                                #     trip.partial_time_corrections.loc[
+                                #         arriving_group_slot
+                                #         + full_time_slots_at_destination+1
+                                #     ][end_location]
+
+                                #     + (remainder_in_partial_slot
+                                # - partial_time_correction_factor)
+                                # )
+                                print(trip.partial_time_corrections)
+                                # exit()
+
+                        # Example: if the vehicle stays for X.25 hours,
                         # 3/4 of vehicles will use that in the first
                         # non-full slot. For the remaining 1/4, half will be in
                         # that slot, and half in the next one
@@ -764,6 +829,8 @@ class Trip:
                 trip.location_split[end_location] = (
                     trip.location_split[end_location] + cumuluative_arrivals
                 )
+        # print(trip.name)
+        # print(trip.partial_time_corrections)
 
         # We can also get the percentage driving
 
@@ -870,6 +937,15 @@ class Trip:
         trip.run_maximal_delivered_power_per_location: pd.DataFrame = (
             run_time.from_day_to_run(
                 trip.maximal_delivered_power_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_partial_time_corrections: pd.DataFrame = (
+            run_time.from_day_to_run(
+                trip.partial_time_corrections,
                 run_time_tags,
                 day_start_hour,
                 scenario,
@@ -1216,6 +1292,14 @@ def declare_all_instances(
         trip.run_maximal_delivered_power.to_pickle(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_maximal_delivered_power.pkl'
+        )
+        trip.partial_time_corrections.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_partial_time_corrections.pkl'
+        )
+        trip.run_partial_time_corrections.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_partial_time_corrections.pkl'
         )
 
     return legs, locations, trips

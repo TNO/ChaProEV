@@ -68,6 +68,7 @@ def travel_space_occupation(
     use_day_types_in_charge_computing: bool,
     day_start_hour: int,
     location_split: pd.DataFrame,
+    partial_time_corrections: pd.DataFrame,
 ) -> ty.Dict[str, pd.DataFrame]:
     next_time_tag: datetime.datetime = time_tag + datetime.timedelta(hours=1)
 
@@ -143,9 +144,27 @@ def travel_space_occupation(
             # their impact in the current time slot is reduced,
             # as some will stay for some time. On average, they
             # stay for half of the time. That means that we have to shift some
-            # of the impact to thenext time slot
-            departures_impact_this_time_slot: float = departures / 2
-            departures_impact_next_time_slot: float = departures / 2
+            # of the impact to thenext time slot.
+            # With a partial correction factor,
+            # this becomes (1-partial time correction)/2
+            this_location_and_time_slot_partial_time_correction: float = float(
+                partial_time_corrections.loc[time_tag][start_location]
+            )
+
+            this_time_slot_departure_correction_factor: float = (
+                1 - this_location_and_time_slot_partial_time_correction
+            ) / 2
+            next_time_slot_departure_correction_factor: float = (
+                1 - this_time_slot_departure_correction_factor
+            )
+            
+            departures_impact_this_time_slot: float = (
+                departures * this_time_slot_departure_correction_factor
+            )
+            departures_impact_next_time_slot: float = (
+                departures * next_time_slot_departure_correction_factor
+            )
+            
             # print('Dep', departures)
 
             if departures > zero_threshold:
@@ -959,6 +978,13 @@ def get_charging_profile(
         f'{output_folder}/{location_split_table_name}.pkl'
     )
 
+    partial_time_corrections_table_name: str = (
+        f'{scenario_name}_partial_time_corrections'
+    )
+    partial_time_corrections: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{partial_time_corrections_table_name}.pkl'
+    )
+
     # We look at how the available battery space in the vehicles moves around
     # (it increases with movements and decreases with charging)
 
@@ -1000,6 +1026,7 @@ def get_charging_profile(
                 use_day_types_in_charge_computing,
                 day_start_hour,
                 location_split,
+                partial_time_corrections,
             )
             # print(time_tag)
             # print('After')
@@ -1232,6 +1259,7 @@ def get_charging_profile(
                         use_day_types_in_charge_computing,
                         day_start_hour,
                         location_split,
+                        partial_time_corrections,
                     )
 
                     (
@@ -1387,10 +1415,10 @@ def get_charging_profile(
     # location_split: pd.DataFrame = pd.read_pickle(
     #     f'{output_folder}/{location_split_table_name}.pkl'
     # )
-    # print(location_split)
-    # for location_name in location_names:
-    #     print(battery_space[location_name].sum(axis=1))
-    # exit()
+    print(location_split.iloc[0:10])
+    for location_name in location_names:
+        print(battery_space[location_name].sum(axis=1).iloc[0:10])
+    exit()
     write_output(
         battery_space,
         charge_drawn_by_vehicles,
