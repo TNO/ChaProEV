@@ -98,6 +98,37 @@ class Location:
         ]
 
 
+def update_partial_time_stay_corrections(
+    partial_time_stay_corrections: pd.DataFrame,
+    arriving_group_slot: int,
+    arriving_group_size: float,
+    full_time_slots_at_destination: int,
+    remainder_in_partial_slot: float,
+    destination,
+) -> pd.DataFrame:
+
+    first_slot_correction: float = (-remainder_in_partial_slot) / 2
+    last_slot_correction: float = 1 - first_slot_correction
+    partial_time_stay_corrections.loc[
+        arriving_group_slot + full_time_slots_at_destination, destination
+    ] = (
+        partial_time_stay_corrections.loc[
+            arriving_group_slot
+            # + full_time_slots_at_destination
+        ][destination]
+        + first_slot_correction
+    ) % 1
+    partial_time_stay_corrections.loc[
+        arriving_group_slot + full_time_slots_at_destination + 1, destination
+    ] = (
+        partial_time_stay_corrections.loc[
+            arriving_group_slot + full_time_slots_at_destination + 1
+        ][destination]
+        + last_slot_correction
+    ) % 1
+    return partial_time_stay_corrections
+
+
 class Trip:
     '''
     This class defines the  trips and their properties, from a scenario
@@ -305,12 +336,12 @@ class Trip:
 
         # We want to track the partial time corrections,
         # which tells us how much the vehicles stay before departing
-        trip.partial_time_corrections: pd.DataFrame = pd.DataFrame(
-            np.zeros((HOURS_IN_A_DAY, len(location_names))),
+        trip.partial_time_stay_corrections: pd.DataFrame = pd.DataFrame(
+            0.5 * np.ones((HOURS_IN_A_DAY, len(location_names))),
             index=range(HOURS_IN_A_DAY),
             columns=location_names,
         )
-        trip.partial_time_corrections.index.name = (
+        trip.partial_time_stay_corrections.index.name = (
             'Hour in day (from day start)'
         )
         # To store partial stay corrections
@@ -614,25 +645,37 @@ class Trip:
             # exit()
             time_driving_previous_leg = time_driving
 
-            # start_time_at_destination: float = time_shift + time_driving
+            # # start_time_at_destination: float = time_shift + time_driving
+            # if leg_index < len(trip.legs) - 1:
+            #     time_spent_at_destination: float = trip.time_between_legs[
+            #         leg_index
+            #     ]
+            # # else:
+            # #     time_spent_at_destination = (
+            # #         8
+            # #         # HOURS_IN_A_DAY - start_time_at_destination - 6
+            # #     )
+            # time_slots_at_destination: int = math.ceil(
+            #     time_spent_at_destination
+            # )
+            # full_time_slots_at_destination: int = math.floor(
+            #     time_spent_at_destination
+            # )
+            # remainder_in_partial_slot: float = time_spent_at_destination % 1
+
             if leg_index < len(trip.legs) - 1:
                 time_spent_at_destination: float = trip.time_between_legs[
                     leg_index
                 ]
-            else:
-                time_spent_at_destination = (
-                    8
-                    # HOURS_IN_A_DAY - start_time_at_destination - 6
+                time_slots_at_destination: int = math.ceil(
+                    time_spent_at_destination
                 )
-            time_slots_at_destination: int = math.ceil(
-                time_spent_at_destination
-            )
-            full_time_slots_at_destination: int = math.floor(
-                time_spent_at_destination
-            )
-            remainder_in_partial_slot: float = time_spent_at_destination % 1
-
-            if leg_index < len(trip.legs) - 1:
+                full_time_slots_at_destination: int = math.floor(
+                    time_spent_at_destination
+                )
+                remainder_in_partial_slot: float = (
+                    time_spent_at_destination % 1
+                )
                 # if len(trip.legs) > 2:
                 #     print(leg_index)
                 #     print(current_leg_start_probabilities)
@@ -718,56 +761,93 @@ class Trip:
                                 / 2
                             )
                         )
-                        partial_time_correction_factor: float = (
-                            remainder_in_partial_slot
-                            * remainder_in_partial_slot
-                            / 2
-                            + remainder_in_partial_slot
-                            * (1 - remainder_in_partial_slot)
-                        )
-                        if partial_time_correction_factor > 0:
+                        if partial_stay_correction > 0:
                             if arriving_group_size > 0:
-                                # print(remainder_in_partial_slot)
-                                # exit()
-                                # print(
-                                #     remainder_in_partial_slot
-                                #     * remainder_in_partial_slot
-                                #     / 2
-                                # )
-                                # # exit()
-                                # print(remainder_in_partial_slot)
-                                # print(partial_time_correction_factor)
-                                # print(leg_name)
-                                # print(arriving_group_slot)
-                                # print(full_time_slots_at_destination)
-
-                                trip.partial_time_corrections.loc[
-                                    arriving_group_slot
-                                    + full_time_slots_at_destination,
-                                    end_location,
-                                ] = (
-                                    # trip.partial_time_corrections.loc[
-                                    #     arriving_group_slot
-                                    #     + full_time_slots_at_destination
-                                    # ][end_location]
-                                    # + partial_time_correction_factor
-                                    remainder_in_partial_slot
+                                trip.partial_time_stay_corrections = (
+                                    update_partial_time_stay_corrections(
+                                        trip.partial_time_stay_corrections,
+                                        arriving_group_slot,
+                                        arriving_group_size,
+                                        full_time_slots_at_destination,
+                                        remainder_in_partial_slot,
+                                        end_location,
+                                    )
                                 )
-                                # trip.partial_time_corrections.loc[
+                                # print(zooka)
+                                # exit()
+                                # trip.partial_time_stay_corrections.loc[
                                 #     arriving_group_slot
-                                #     + full_time_slots_at_destination+1,
+                                #     + full_time_slots_at_destination,
                                 #     end_location,
                                 # ] = (
-                                #     trip.partial_time_corrections.loc[
-                                #         arriving_group_slot
-                                #         + full_time_slots_at_destination+1
-                                #     ][end_location]
-
-                                #     + (remainder_in_partial_slot
-                                # - partial_time_correction_factor)
+                                #     partial_stay_correction * 2
                                 # )
-                                print(trip.partial_time_corrections)
+                                # trip.partial_time_stay_corrections.loc[
+                                #     arriving_group_slot
+                                #     + full_time_slots_at_destination
+                                #     + 1,
+                                #     end_location,
+                                # ] = (
+                                #     1 - partial_stay_correction * 2
+                                # )
+                                # print(trip.partial_time_stay_corrections)
                                 # exit()
+                        # partial_time_correction_factor: float = (
+                        #     remainder_in_partial_slot
+                        #     * remainder_in_partial_slot
+                        #     / 2
+                        #     + remainder_in_partial_slot
+                        #     * (1 - remainder_in_partial_slot)
+                        # # )
+                        # if partial_time_correction_factor > 0:
+                        #     if arriving_group_size > 0:
+                        #         print(partial_time_correction_factor)
+
+                        #         exit()
+                        # print(remainder_in_partial_slot)
+                        # exit()
+                        # print(
+                        #     remainder_in_partial_slot
+                        #     * remainder_in_partial_slot
+                        #     / 2
+                        # )
+                        # # exit()
+                        # print(remainder_in_partial_slot)
+                        # print(partial_time_correction_factor)
+                        # print(leg_name)
+                        # print(arriving_group_slot)
+                        # print(full_time_slots_at_destination)
+
+                        # trip.partial_time_stay_corrections.loc[
+                        #     arriving_group_slot
+                        #     # + full_time_slots_at_destination
+                        #     ,
+                        #     end_location,
+                        # ] = (
+                        #     # trip.partial_time_stay_corrections.loc[
+                        #     #     arriving_group_slot
+                        #     #     + full_time_slots_at_destination
+                        #     # ][end_location]
+                        #     # + partial_time_correction_factor
+                        #     (1 - remainder_in_partial_slot)
+                        #     / 2
+                        # )
+                        # # trip.partial_time_stay_corrections.loc[
+                        # #     arriving_group_slot
+                        # #     + full_time_slots_at_destination+1,
+                        # #     end_location,
+                        # # ] = (
+                        # #     trip.partial_time_stay_corrections.loc[
+                        # #         arriving_group_slot
+                        # #         + full_time_slots_at_destination+1
+                        # #     ][end_location]
+
+                        # #     + (remainder_in_partial_slot
+                        # # - partial_time_correction_factor)
+                        # # )
+                        # print(arriving_group_slot)
+                        # print(trip.partial_time_stay_corrections)
+                        # exit()
 
                         # Example: if the vehicle stays for X.25 hours,
                         # 3/4 of vehicles will use that in the first
@@ -830,7 +910,8 @@ class Trip:
                     trip.location_split[end_location] + cumuluative_arrivals
                 )
         # print(trip.name)
-        # print(trip.partial_time_corrections)
+        # print(trip.partial_time_stay_corrections)
+        # exit()
 
         # We can also get the percentage driving
 
@@ -943,9 +1024,9 @@ class Trip:
                 general_parameters,
             )
         )
-        trip.run_partial_time_corrections: pd.DataFrame = (
+        trip.run_partial_time_stay_corrections: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.partial_time_corrections,
+                trip.partial_time_stay_corrections,
                 run_time_tags,
                 day_start_hour,
                 scenario,
@@ -1293,13 +1374,13 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_maximal_delivered_power.pkl'
         )
-        trip.partial_time_corrections.to_pickle(
+        trip.partial_time_stay_corrections.to_pickle(
             f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_partial_time_corrections.pkl'
+            f'{trip.name}_partial_time_stay_corrections.pkl'
         )
-        trip.run_partial_time_corrections.to_pickle(
+        trip.run_partial_time_stay_corrections.to_pickle(
             f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_partial_time_corrections.pkl'
+            f'{trip.name}_run_partial_time_stay_corrections.pkl'
         )
 
     return legs, locations, trips
@@ -1322,34 +1403,35 @@ if __name__ == '__main__':
         scenario, case_name, general_parameters
     )
 
-    for leg in legs:
-        print(
-            leg.name,
-            leg.distance,
-            leg.duration,
-            leg.hour_in_day_factors,
-            leg.start_location,
-            leg.end_location,
-            leg.road_type_mix,
-        )
+    # for leg in legs:
+    #     print(
+    #         leg.name,
+    #         leg.distance,
+    #         leg.duration,
+    #         leg.hour_in_day_factors,
+    #         leg.start_location,
+    #         leg.end_location,
+    #         leg.road_type_mix,
+    #     )
 
-    for location in locations:
-        print(location.name, location.connectivity, location.charging_power)
+    # for location in locations:
+    #     print(location.name, location.connectivity, location.charging_power)
 
     for trip in trips:
-        print(
-            trip.name,
-            trip.legs,
-            trip.percentage_station_users,
-            trip.start_probabilities,
-            trip.time_between_legs,
-            # trip.location_split
-        )
-        print(trip.name)
-        print(trip.location_split)
-        print(trip.connectivity)
-        print(trip.percentage_driving)
-        print(trip.percentage_driving.sum())
+        # print(
+        #     trip.name,
+        #     trip.legs,
+        #     trip.percentage_station_users,
+        #     trip.start_probabilities,
+        #     trip.time_between_legs,
+        #     # trip.location_split
+        # )
+        # print(trip.name)
+        # print(trip.location_split)
+        # print(trip.connectivity)
+        # print(trip.percentage_driving)
+        # print(trip.percentage_driving.sum())
+        print(trip.partial_time_stay_corrections)
         # if trip.name == 'bus_weekday_in_holiday_week':
         #     print(trip.mobility_matrix.loc['bus_route_start',
         # 'bus_route_end'])

@@ -14,9 +14,16 @@ if __name__ == '__main__':
     print(max((baka - book)['holiday'].values))
     print(baka.sum())
     print(book.sum())
+    zoo = pd.read_pickle('output/Mopo/XX_truck_sum_of_battery_spaces.pkl')
+    print(zoo.iloc[0:24])
+    zika = pd.read_pickle('output/Mopo/XX_truck_run_mobility_matrix.pkl')
+    print(zika.loc['truck_hub'].iloc[0:10])
+    goka = pd.read_pickle('output/Mopo/XX_truck_partial_time_corrections.pkl')
+    print('HHHHHHH')
+    print(goka.iloc[0:24])
+    # haha = pd.read_pickle()
     exit()
     baa.plot()
-
     plt.show()
     # pii = pd.read_pickle('output/Mopo/XX_van_van_customer_battery_space.pkl')
     # bii = boo[boo.columns[boo.sum()>0]]

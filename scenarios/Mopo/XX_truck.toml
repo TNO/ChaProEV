@@ -943,7 +943,7 @@ time_between_legs = [1] #[0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.5, 0.5, 0, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -962,12 +962,12 @@ legs = [
     'truck_to_hub',
 ]
 
-time_between_legs = [1] #[0.5]
+time_between_legs = [1] # [1.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.5, 0.5, 0, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -976,7 +976,7 @@ repeated_sequence = [
     'truck_to_hub',
     ]
 repetition_amounts = [2]
-time_between_repetitions = [1] # hours
+time_between_repetitions = [1.5] # hours
 
 
 
