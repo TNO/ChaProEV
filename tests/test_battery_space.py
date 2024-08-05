@@ -23,8 +23,9 @@ def test_battery_space() -> None:
         sum_of_battery_spaces: pd.DataFrame = pd.read_pickle(
             f'output/{case_name}/{scenario_name}_sum_of_battery_spaces.pkl'
         )
-        print(location_split)
-        print(sum_of_battery_spaces)
+        print(location_split.iloc[0:24])
+        print(sum_of_battery_spaces.iloc[0:24])
+        # exit()
 
         pd.testing.assert_frame_equal(location_split, sum_of_battery_spaces)
 

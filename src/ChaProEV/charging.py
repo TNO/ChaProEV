@@ -524,6 +524,10 @@ def travel_space_occupation(
             departures_impact_next_time_slot_store.loc[
                 start_location, end_location
             ] = (departures * next_time_slot_departure_correction_factor)
+            if time_tag_index == 10:
+                print('Foo')
+                print(departures)
+                print(next_time_slot_departure_correction_factor)
             # print(time_tag_index)
             # print(start_location, end_location)
             # print(departures_impact_this_time_slot)
@@ -1518,6 +1522,11 @@ def get_charging_profile(
                     departures_impact_next_time_slot_store,
                 )
             )
+            if time_tag_index == 10:
+                print(time_tag)
+                print(battery_space['truck_hub'].iloc[0:14])
+                print(departures_impact_next_time_slot_store)
+                exit()
             # print(time_tag)
             # print('After')
             # print(battery_space['van_base'].iloc[2:6])

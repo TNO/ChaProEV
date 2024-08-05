@@ -17,7 +17,7 @@ if __name__ == '__main__':
     zoo = pd.read_pickle('output/Mopo/XX_truck_sum_of_battery_spaces.pkl')
     print(zoo.iloc[0:24])
     zika = pd.read_pickle('output/Mopo/XX_truck_run_mobility_matrix.pkl')
-    print(zika.loc['truck_hub'].iloc[0:10])
+    print(zika.loc['truck_hub'].iloc[0:24])
     goka = pd.read_pickle('output/Mopo/XX_truck_partial_time_corrections.pkl')
     print('HHHHHHH')
     print(goka.iloc[0:24])

@@ -313,6 +313,9 @@ class Trip:
             index=range(HOURS_IN_A_DAY),
         )
         trip.location_split.index.name = 'Hour in day (from day start)'
+        trip.departures_impact: pd.DataFrame = trip.location_split.copy()
+        trip.arrivals_impact: pd.DataFrame = trip.location_split.copy()
+
         if trip.name.startswith('stay_put_'):
             stay_put_location: str = trip.name.split('stay_put_')[1]
             trip.location_split[stay_put_location] = 1
@@ -332,6 +335,12 @@ class Trip:
             )
             trip.location_split[initial_location] = (
                 vehicles_that_did_not_start_trip_yet
+            )
+            # The departures have half their impact in their first slot and
+            # half in their second
+            trip.departures_impact[initial_location] = -(
+                trip.start_probabilities / 2
+                + np.roll(trip.start_probabilities / 2, 1)
             )
 
         # We want to track the partial time corrections,
@@ -682,12 +691,15 @@ class Trip:
                 #     print(current_leg_end_probabilities)
                 #     if leg_index == 2:
                 #         exit()
+
                 for arriving_group_slot, arriving_group_size in enumerate(
                     current_leg_end_probabilities
                 ):
 
                     if (
-                        arriving_group_slot + full_time_slots_at_destination
+                        arriving_group_slot
+                        + full_time_slots_at_destination
+                        + 2
                         < HOURS_IN_A_DAY
                     ):  # This should not matter, as the trips end before the
                         # day ends, by definition, but we can have issues due
@@ -695,7 +707,10 @@ class Trip:
 
                         # print(arriving_group_slot, arriving_group_size)
                         for stay_slot in range(time_slots_at_destination):
+                            # print(stay_slot)
+                            # print(trip.location_split)
                             if stay_slot < full_time_slots_at_destination:
+
                                 trip.location_split.loc[
                                     arriving_group_slot + stay_slot,
                                     end_location,
@@ -705,6 +720,7 @@ class Trip:
                                     ][end_location]
                                     + arriving_group_size
                                 )
+
                             else:
                                 trip.location_split.loc[
                                     arriving_group_slot + stay_slot,
@@ -717,6 +733,18 @@ class Trip:
                                     arriving_group_size
                                     * remainder_in_partial_slot
                                 )
+                                # trip.departures_impact.loc[
+                                #     arriving_group_slot + stay_slot,
+                                #     end_location,
+                                # ] = trip.departures_impact.loc[
+                                #     arriving_group_slot + stay_slot
+                                # ][
+                                #     end_location
+                                # ] - (
+                                #     arriving_group_size
+                                #     * remainder_in_partial_slot
+                                # )
+
                             # if remainder_in_partial_slot > 0:
                             # print(leg_name)
                             # if arriving_group_size > 0:
@@ -727,7 +755,11 @@ class Trip:
                             #         print(trip.location_split)
 
                         # The vehicles arrive uniformaly in the first slot
-                        first_slot_correction: float = arriving_group_size / 2
+                        travel_time_correction_factor: float = 0.5
+                        first_slot_correction: float = (
+                            arriving_group_size * travel_time_correction_factor
+                        )
+                        print('No, they do not (if travel time is non-integer')
 
                         trip.location_split.loc[
                             arriving_group_slot, end_location
@@ -743,13 +775,63 @@ class Trip:
                             arriving_group_slot
                             + full_time_slots_at_destination,
                             end_location,
+                        ] = trip.location_split.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination
+                        ][
+                            end_location
+                        ] + (
+                            arriving_group_size - first_slot_correction
+                        )
+
+                        # For the arrivals impact, we have:
+                        trip.arrivals_impact.loc[
+                            arriving_group_slot, end_location
                         ] = (
-                            trip.location_split.loc[
-                                arriving_group_slot
-                                + full_time_slots_at_destination
-                            ][end_location]
+                            trip.arrivals_impact.loc[arriving_group_slot][
+                                end_location
+                            ]
+                            + arriving_group_size
+                            - first_slot_correction
+                        )
+                        trip.arrivals_impact.loc[
+                            arriving_group_slot + 1, end_location
+                        ] = (
+                            trip.arrivals_impact.loc[arriving_group_slot + 1][
+                                end_location
+                            ]
                             + first_slot_correction
                         )
+                        # print(trip.location_split)
+                        # input()
+                        # exit()
+
+                        # # Each of these has a corresponding departure impact:
+                        # # print(time_slots_at_destination)
+                        # # print(arriving_group_slot)
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot + time_slots_at_destination,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot + time_slots_at_destination
+                        #     ][end_location]
+                        #     - arriving_group_size
+                        #     + first_slot_correction
+                        # )
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot
+                        #     + time_slots_at_destination
+                        #     + 1,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot
+                        #         + time_slots_at_destination
+                        #         + 1
+                        #     ][end_location]
+                        #     - first_slot_correction
+                        # )
 
                         # For partial stays (less than an hour), there is
                         # another correction:
@@ -761,6 +843,124 @@ class Trip:
                                 / 2
                             )
                         )
+
+                        # The impact on departures is:
+                        trip.departures_impact.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination,
+                            end_location,
+                        ] = (
+                            trip.departures_impact.loc[
+                                arriving_group_slot
+                                + full_time_slots_at_destination
+                            ][end_location]
+                            - arriving_group_size
+                            * (1 - remainder_in_partial_slot)
+                            * (1 - remainder_in_partial_slot)
+                            / 2
+                        )
+
+                        trip.departures_impact.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination
+                            + 1,
+                            end_location,
+                        ] = trip.departures_impact.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination
+                            + 1
+                        ][
+                            end_location
+                        ] - arriving_group_size * (
+                            1
+                            - (1 - remainder_in_partial_slot)
+                            * (1 - remainder_in_partial_slot)
+                            / 2
+                            - remainder_in_partial_slot
+                            * remainder_in_partial_slot
+                            / 2
+                        )
+
+                        trip.departures_impact.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination
+                            + 2,
+                            end_location,
+                        ] = trip.departures_impact.loc[
+                            arriving_group_slot
+                            + full_time_slots_at_destination
+                            + 2
+                        ][
+                            end_location
+                        ] - arriving_group_size * (
+                            
+                             (remainder_in_partial_slot)
+                            * (remainder_in_partial_slot) /2
+                        )
+
+                        # WHih=ch is right? This or the loc split one?
+                        # Most probably loc split
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot
+                        #     + time_slots_at_destination
+                        #     + 1,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot
+                        #         + time_slots_at_destination
+                        #         + 1
+                        #     ][end_location]
+                        #     - first_slot_correction
+                        # )
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot
+                        #     + full_time_slots_at_destination,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot
+                        #         + full_time_slots_at_destination
+                        #     ][end_location]
+                        #     - partial_stay_correction
+                        # )
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot
+                        #     + full_time_slots_at_destination
+                        #     + 1,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot
+                        #         + full_time_slots_at_destination
+                        #         + 1
+                        #     ][end_location]
+                        #     + partial_stay_correction
+                        # )
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot + full_time_slots_at_destination+1,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot + full_time_slots_at_destination +1
+                        #     ][end_location]
+                        #     + partial_stay_correction
+
+                        # )
+                        # trip.departures_impact.loc[
+                        #     arriving_group_slot
+                        #     + time_slots_at_destination
+                        #     + 1,
+                        #     end_location,
+                        # ] = (
+                        #     trip.departures_impact.loc[
+                        #         arriving_group_slot
+                        #         + time_slots_at_destination
+                        #         + 1
+                        #     ][end_location]
+                        #     - first_slot_correction
+                        # )
+
                         if partial_stay_correction > 0:
                             if arriving_group_size > 0:
                                 trip.partial_time_stay_corrections = (
@@ -885,6 +1085,101 @@ class Trip:
                                 ][end_location]
                                 + partial_stay_correction
                             )
+                            # print(trip.departures_impact)
+                            # print(partial_stay_correction)
+                            # # exit()
+                            # if (
+                            #     end_location == 'truck_hub'
+                            #     and arriving_group_slot > 5
+                            # ):
+                            #     print(trip.departures_impact)
+                            # trip.departures_impact.loc[
+                            #     arriving_group_slot
+                            #     + full_time_slots_at_destination,
+                            #     end_location,
+                            # ] = (
+                            #     trip.departures_impact.loc[
+                            #         arriving_group_slot
+                            #         + full_time_slots_at_destination
+                            #     ][end_location]
+                            #     - partial_stay_correction
+                            #     # + arriving_group_size
+                            #     # * remainder_in_partial_slot
+                            # )
+
+                            # trip.departures_impact.loc[
+                            #     arriving_group_slot
+                            #     + full_time_slots_at_destination
+                            #     + 1,
+                            #     end_location,
+                            # ] = (
+                            #     trip.departures_impact.loc[
+                            #         arriving_group_slot
+                            #         + full_time_slots_at_destination
+                            #         + 1
+                            #     ][end_location]
+                            #     + partial_stay_correction
+                            #     # - arriving_group_size
+                            #     # * remainder_in_partial_slot
+                            # )
+
+                            # trip.departures_impact.loc[
+                            #     arriving_group_slot
+                            #     + time_slots_at_destination
+                            #     ,
+                            #     end_location,
+                            # ] = (
+                            #     trip.departures_impact.loc[
+                            #         arriving_group_slot
+                            #         + time_slots_at_destination
+
+                            #     ][end_location]
+                            #     + partial_stay_correction
+                            #     # + arriving_group_size
+                            #     # * remainder_in_partial_slot
+                            # )
+
+                            # trip.departures_impact.loc[
+                            #     arriving_group_slot
+                            #     + time_slots_at_destination
+                            #     + 1,
+                            #     end_location,
+                            # ] = (
+                            #     trip.departures_impact.loc[
+                            #         arriving_group_slot
+                            #         + time_slots_at_destination
+                            #         + 1
+                            #     ][end_location]
+                            #     # + arriving_group_size
+                            #     # - first_slot_correction
+                            #     + partial_stay_correction
+                            #     # - arriving_group_size
+                            #     # * remainder_in_partial_slot
+                            # )
+                            # print(partial_stay_correction)
+                            # print(arriving_group_size)
+                            # print(remainder_in_partial_slot)
+                            # exit()
+                            print('Rrrrrrrrr')
+                            if (
+                                end_location == 'truck_hub'
+                                and arriving_group_slot > 5
+                            ):
+                                print(
+                                    arriving_group_slot
+                                    + full_time_slots_at_destination
+                                )
+                                print(
+                                    arriving_group_slot
+                                    + time_slots_at_destination
+                                    + 1
+                                )
+                            # print(trip.departures_impact)
+                            # # exit()
+                            # print(partial_stay_correction)
+                            # print(trip.arrivals_impact)
+                            # print(trip.location_split)
+                            # exit()
 
                         # if remainder_in_partial_slot > 0:
                         #     if arriving_group_size > 0:
@@ -895,12 +1190,18 @@ class Trip:
                         #         exit()
 
             else:
+                travel_time_correction_factor = 0.5
                 arriving_in_first_time_slot: np.ndarray = (
-                    current_leg_end_probabilities / 2
+                    current_leg_end_probabilities
+                    * travel_time_correction_factor
                 )
+                print('Correct this too!')
                 arriving_in_next_time_slot: np.ndarray = np.roll(
-                    arriving_in_first_time_slot, 1
+                    current_leg_end_probabilities
+                    * (1 - travel_time_correction_factor),
+                    1,
                 )
+
                 arrivals_together: np.ndarray = (
                     arriving_in_first_time_slot + arriving_in_next_time_slot
                 )
@@ -909,9 +1210,33 @@ class Trip:
                 trip.location_split[end_location] = (
                     trip.location_split[end_location] + cumuluative_arrivals
                 )
-        # print(trip.name)
+                trip.arrivals_impact[end_location] = (
+                    trip.arrivals_impact[end_location] + arrivals_together
+                )
+        print(trip.name)
         # print(trip.partial_time_stay_corrections)
+        print(trip.location_split)
         # exit()
+        # print(trip.arrivals_impact)
+        # print(trip.departures_impact)
+        zooki = pd.DataFrame(
+            np.zeros((24, 2)), columns=location_names, index=range(24)
+        )
+        zooki.loc[0, 'truck_hub'] = 1
+        rouki = (
+            zooki.cumsum(axis=0)
+            + trip.arrivals_impact.cumsum(axis=0)
+            + trip.departures_impact.cumsum(axis=0)
+        )
+        rox = trip.location_split - rouki
+        print(rouki)
+        print(rox)
+        # exit()
+        # print(trip.departures_impact)
+        print('ooooo')
+        exit()
+        print(trip.arrivals_impact)
+        exit()
 
         # We can also get the percentage driving
 
@@ -1432,6 +1757,9 @@ if __name__ == '__main__':
         # print(trip.percentage_driving)
         # print(trip.percentage_driving.sum())
         print(trip.partial_time_stay_corrections)
+        print(trip.time_between_legs)
+        print(trip.location_split)
+        print(trip.location_split.sum(axis=0))
         # if trip.name == 'bus_weekday_in_holiday_week':
         #     print(trip.mobility_matrix.loc['bus_route_start',
         # 'bus_route_end'])
