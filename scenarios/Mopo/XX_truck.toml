@@ -546,7 +546,7 @@ mix = [0.8, 0.2]
 [legs.truck_to_customer]
 vehicle = 'truck'
 distance = 150  # km
-duration = 2  # hours
+duration = 2.2  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -572,7 +572,7 @@ mix = [0.8, 0.2]
 [legs.truck_to_hub]
 vehicle = 'truck'
 distance = 150  # km
-duration = 2  # hours
+duration = 2.2  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -938,12 +938,12 @@ legs = [
     'truck_to_hub',
 ]
 
-time_between_legs =  [1.02] #[1.5] #  [2] # [0.5]
+time_between_legs =  [0.8] #[1.5] #  [2] # [0.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -952,7 +952,7 @@ repeated_sequence = [
     'truck_to_hub',
     ]
 repetition_amounts = [2]
-time_between_repetitions = [4.95] # [4.5] # [0.5] # [1.5]  # [0.5] # hours
+time_between_repetitions = [1.7] # [4.5] # [0.5] # [1.5]  # [0.5] # hours
 
 
 [trips.truck_weekend]
@@ -1063,10 +1063,13 @@ day_types = [
 
 mobility_quantities = [
     'Departures amount', 'Departures kilometers',
-    'Departures weighted kilometers',
+    'Departures weighted kilometers', 'Departures impact',
+    'Departures impact kilometers', 'Departures impact weighted kilometers',
     'Arrivals amount', 'Arrivals kilometers',
     'Arrivals weighted kilometers',
-    'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
+    'Arrivals impact', 'Arrivals impact kilometers', 
+    'Arrivals impact weighted kilometers',
+    # 'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
 ]
 
 location_connections_headers = [

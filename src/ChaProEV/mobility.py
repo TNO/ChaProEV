@@ -1366,11 +1366,11 @@ def get_location_split(
         index=run_range,
     )
 
-    partial_time_stay_corrections: pd.DataFrame = pd.DataFrame(
-        np.zeros((len(run_range), len(location_names))),
-        columns=location_names,
-        index=run_range,
-    )
+    # partial_time_stay_corrections: pd.DataFrame = pd.DataFrame(
+    #     np.zeros((len(run_range), len(location_names))),
+    #     columns=location_names,
+    #     index=run_range,
+    # )
 
     for trip_name in trip_list:
         trip_location_split: pd.api.extensions.ExtensionArray = pd.read_pickle(
@@ -1401,12 +1401,12 @@ def get_location_split(
             f'{output_folder}/{scenario_name}_{trip_name}'
             f'_run_maximal_delivered_power.pkl'
         )
-        trip_partial_time_stay_corrections: (
-            pd.api.extensions.ExtensionArray
-        ) = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_partial_time_stay_corrections.pkl'
-        )
+        # trip_partial_time_stay_corrections: (
+        #     pd.api.extensions.ExtensionArray
+        # ) = pd.read_pickle(
+        #     f'{output_folder}/{scenario_name}_{trip_name}'
+        #     f'_run_partial_time_stay_corrections.pkl'
+        # )
 
         percentage_driving['Driving percent'] = (
             percentage_driving['Driving percent'].values
@@ -1445,12 +1445,12 @@ def get_location_split(
                 trip_maximal_delivered_power_per_location[location_name].values
                 * run_trip_probabilities[trip_name].values
             )
-            partial_time_stay_corrections[
-                location_name
-            ] = partial_time_stay_corrections[location_name].values + (
-                trip_partial_time_stay_corrections[location_name].values
-                * run_trip_probabilities[trip_name].values
-            )
+            # partial_time_stay_corrections[
+            #     location_name
+            # ] = partial_time_stay_corrections[location_name].values + (
+            #     trip_partial_time_stay_corrections[location_name].values
+            #     * run_trip_probabilities[trip_name].values
+            # )
 
     loop_timer.append(datetime.datetime.now())
 
@@ -1471,10 +1471,10 @@ def get_location_split(
     maximal_delivered_power.to_pickle(
         f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
     )
-    partial_time_stay_corrections.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_partial_time_stay_corrections.pkl'
-    )
+    # partial_time_stay_corrections.to_pickle(
+    #     f'{output_folder}/{scenario_name}'
+    #     f'_partial_time_stay_corrections.pkl'
+    # )
     loop_timer.append(datetime.datetime.now())
     loop_times: ty.List[float] = []
     for timer_index, test_element in enumerate(loop_timer):
