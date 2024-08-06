@@ -1071,7 +1071,7 @@ mobility_quantities = [
     'Departures weighted kilometers',
     'Arrivals amount', 'Arrivals kilometers',
     'Arrivals weighted kilometers',
-    'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
+    # 'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
 ]
 
 location_connections_headers = [
