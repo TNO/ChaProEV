@@ -39,6 +39,37 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+def mobility_matrix_to_run_mobility_matrix(
+    matrix_to_expand,  # It is a DataFRame, but MyPy seems to have issues
+    # with DataFrmes with a MultiIndex
+    leg_tuples: ty.List[ty.Tuple[str, str]],
+    run_index: pd.MultiIndex,
+    run_time_tags: pd.DatetimeIndex,
+    start_hour: int,
+    scenario: ty.Dict,
+    general_parameters: ty.Dict,
+) -> pd.DataFrame:
+    run_matrix: pd.DataFrame = pd.DataFrame(
+        columns=matrix_to_expand.columns, index=run_index
+    )
+    run_matrix = run_matrix.sort_index()
+    for leg_tuple in leg_tuples:
+        cloned_matrix: pd.DataFrame = run_time.from_day_to_run(
+            matrix_to_expand.loc[
+                (leg_tuple[0], leg_tuple[1]), matrix_to_expand.columns
+            ],
+            run_time_tags,
+            start_hour,
+            scenario,
+            general_parameters,
+        )
+        for matrix_quantity in matrix_to_expand.columns:
+            run_matrix.at[(leg_tuple[0], leg_tuple[1]), matrix_quantity] = (
+                cloned_matrix[matrix_quantity].values
+            )
+    return run_matrix
+
+
 def get_slot_split(
     percent_in_first_slot, travelling_group_size
 ) -> ty.Tuple[float, float, float]:
@@ -84,7 +115,14 @@ def compute_travel_impact(
     leg_destination: str,
     distance: float,
     weighted_distance: float,
+    battery_space_shifts: ty.Dict,
+    vehicle_electricity_consumption: float,
 ) -> pd.DataFrame:
+
+    leg_consumption: float = vehicle_electricity_consumption * distance
+    weighted_leg_consumption: float = (
+        vehicle_electricity_consumption * weighted_distance
+    )
 
     first_slot_impact, second_slot_impact, third_slot_impact = get_slot_split(
         percent_in_first_slot, travelling_group_size
@@ -146,6 +184,43 @@ def compute_travel_impact(
         + travelling_group_size * percent_in_first_slot * weighted_distance
     )
 
+    battery_space_shifts[(impacted_type, 'Impact')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot),
+        leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Impact')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot
+        ][leg_consumption]
+        + first_slot_impact
+    )
+    battery_space_shifts[(impacted_type, 'Amount')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot),
+        leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Amount')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot
+        ][leg_consumption]
+        + travelling_group_size * percent_in_first_slot
+    )
+    battery_space_shifts[(impacted_type, 'Impact Weighted')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot),
+        weighted_leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Impact Weighted')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot
+        ][weighted_leg_consumption]
+        + first_slot_impact
+    )
+    battery_space_shifts[(impacted_type, 'Amount Weighted')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot),
+        weighted_leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Amount Weighted')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot
+        ][weighted_leg_consumption]
+        + travelling_group_size * percent_in_first_slot
+    )
+
     mobility_matrix.loc[
         (leg_origin, leg_destination, travelling_group_first_slot + 1),
         f'{impacted_type} impact',
@@ -205,6 +280,45 @@ def compute_travel_impact(
         * weighted_distance
     )
 
+    battery_space_shifts[(impacted_type, 'Impact')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot + 1),
+        leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Impact')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot + 1
+        ][leg_consumption]
+        + second_slot_impact
+    )
+    battery_space_shifts[(impacted_type, 'Amount')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot + 1),
+        leg_consumption,
+    ] = battery_space_shifts[(impacted_type, 'Amount')].loc[
+        leg_origin, leg_destination, travelling_group_first_slot + 1
+    ][
+        leg_consumption
+    ] + travelling_group_size * (
+        1 - percent_in_first_slot
+    )
+    battery_space_shifts[(impacted_type, 'Impact Weighted')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot + 1),
+        weighted_leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Impact Weighted')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot + 1
+        ][weighted_leg_consumption]
+        + second_slot_impact
+    )
+    battery_space_shifts[(impacted_type, 'Amount Weighted')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot + 1),
+        weighted_leg_consumption,
+    ] = battery_space_shifts[(impacted_type, 'Amount Weighted')].loc[
+        leg_origin, leg_destination, travelling_group_first_slot + 1
+    ][
+        weighted_leg_consumption
+    ] + travelling_group_size * (
+        1 - percent_in_first_slot
+    )
+
     mobility_matrix.loc[
         (leg_origin, leg_destination, travelling_group_first_slot + 2),
         f'{impacted_type} impact',
@@ -233,6 +347,26 @@ def compute_travel_impact(
             leg_origin, leg_destination, travelling_group_first_slot + 2
         ][f'{impacted_type} impact weighted kilometers']
         + third_slot_impact * weighted_distance
+    )
+
+    battery_space_shifts[(impacted_type, 'Impact')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot + 2),
+        leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Impact')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot + 2
+        ][leg_consumption]
+        + third_slot_impact
+    )
+
+    battery_space_shifts[(impacted_type, 'Impact Weighted')].loc[
+        (leg_origin, leg_destination, travelling_group_first_slot + 2),
+        weighted_leg_consumption,
+    ] = (
+        battery_space_shifts[(impacted_type, 'Impact Weighted')].loc[
+            leg_origin, leg_destination, travelling_group_first_slot + 2
+        ][weighted_leg_consumption]
+        + third_slot_impact
     )
 
     return mobility_matrix
@@ -290,6 +424,8 @@ def get_travelling_group_travel_impact(
     end_locations_of_legs: ty.List[str],
     leg_distances: ty.List[float],
     leg_weighted_distances: ty.List[float],
+    battery_space_shifts: ty.Dict[ty.Tuple[str, str], pd.DataFrame],
+    vehicle_electricity_consumption: float,
     HOURS_IN_A_DAY: int,
 ) -> pd.DataFrame:
 
@@ -326,6 +462,8 @@ def get_travelling_group_travel_impact(
             leg_destination,
             distance,
             weighted_distance,
+            battery_space_shifts,
+            vehicle_electricity_consumption,
         )
 
         # We update the slots of the group
@@ -347,6 +485,8 @@ def get_travelling_group_travel_impact(
             leg_destination,
             distance,
             weighted_distance,
+            battery_space_shifts,
+            vehicle_electricity_consumption,
         )
 
         # We update the slots of the group
@@ -376,6 +516,8 @@ def get_location_split_and_impact_of_departures_and_arrivals(
     end_locations_of_legs: ty.List[str],
     leg_distances: ty.List[float],
     weighted_leg_distances: ty.List[float],
+    battery_space_shifts: ty.Dict[ty.Tuple[str, str], pd.DataFrame],
+    vehicle_electricity_consumption: float,
     HOURS_IN_A_DAY: int,
 ) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
     if len(leg_driving_times) > 0:
@@ -400,6 +542,8 @@ def get_location_split_and_impact_of_departures_and_arrivals(
                     end_locations_of_legs,
                     leg_distances,
                     weighted_leg_distances,
+                    battery_space_shifts,
+                    vehicle_electricity_consumption,
                     HOURS_IN_A_DAY,
                 )
         # print(mobility_matrix.loc['truck_hub'])
@@ -692,6 +836,26 @@ class Trip:
             leg_weighted_distance: float = leg_distance * road_type_factor
             trip.weighted_leg_distances.append(leg_weighted_distance)
 
+        trip.unique_leg_distances: ty.List[float] = list(
+            set(trip.leg_distances)
+        )
+        trip.unique_weighted_leg_distances: ty.List[float] = list(
+            set(trip.weighted_leg_distances)
+        )
+        vehicle_electricity_consumption: float = scenario['vehicle'][
+            'base_consumption_per_km'
+        ]['electricity_kWh']
+
+        trip.unique_leg_consumptions: ty.List[float] = [
+            unique_distance * vehicle_electricity_consumption
+            for unique_distance in trip.unique_leg_distances
+        ]
+
+        trip.unique_weighted_leg_consumptions: ty.List[float] = [
+            unique_distance * vehicle_electricity_consumption
+            for unique_distance in trip.unique_weighted_leg_distances
+        ]
+
         # We want to create a mobility matrix for the trip. This matrix will
         # have start and end locations (plus hour in day, starting
         # at day start) as an index, and departures, arrivals as columns (
@@ -733,6 +897,105 @@ class Trip:
 
         trip.mobility_matrix = trip.mobility_matrix.sort_index()
 
+        # We also want to store the battery space shifts true to legs.
+        # We track this as departure and arrivals (including a version with
+        # impact versions).
+        base_dataframe_for_battery_space_shifts: pd.DataFrame = pd.DataFrame(
+            np.zeros((len(mobility_index), len(trip.unique_leg_consumptions))),
+            columns=trip.unique_leg_consumptions,
+            index=mobility_index,
+        )
+        base_dataframe_for_weighted_battery_space_shifts: pd.DataFrame = (
+            pd.DataFrame(
+                np.zeros(
+                    (
+                        len(mobility_index),
+                        len(trip.unique_weighted_leg_consumptions),
+                    )
+                ),
+                columns=trip.unique_weighted_leg_consumptions,
+                index=mobility_index,
+            )
+        )
+        base_dataframe_for_weighted_battery_space_shifts = (
+            base_dataframe_for_weighted_battery_space_shifts.sort_index()
+        )
+        trip.battery_space_shifts_departures: pd.DataFrame = (
+            base_dataframe_for_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_departures = (
+            trip.battery_space_shifts_departures.sort_index()
+        )
+        trip.battery_space_shifts_departures_impact: pd.DataFrame = (
+            base_dataframe_for_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_departures_impact = (
+            trip.battery_space_shifts_departures_impact.sort_index()
+        )
+        trip.battery_space_shifts_arrivals: pd.DataFrame = (
+            base_dataframe_for_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_arrivals = (
+            trip.battery_space_shifts_arrivals.sort_index()
+        )
+        trip.battery_space_shifts_arrivals_impact: pd.DataFrame = (
+            base_dataframe_for_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_arrivals_impact = (
+            trip.battery_space_shifts_arrivals_impact.sort_index()
+        )
+        trip.battery_space_shifts_departures_weighted: pd.DataFrame = (
+            base_dataframe_for_weighted_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_departures_weighted = (
+            trip.battery_space_shifts_departures_weighted.sort_index()
+        )
+        trip.battery_space_shifts_departures_impact_weighted: pd.DataFrame = (
+            base_dataframe_for_weighted_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_departures_impact_weighted = (
+            trip.battery_space_shifts_departures_impact_weighted.sort_index()
+        )
+        trip.battery_space_shifts_arrivals_weighted: pd.DataFrame = (
+            base_dataframe_for_weighted_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_arrivals_weighted = (
+            trip.battery_space_shifts_arrivals_weighted.sort_index()
+        )
+        trip.battery_space_shifts_arrivals_impact_weighted: pd.DataFrame = (
+            base_dataframe_for_weighted_battery_space_shifts.copy()
+        )
+        trip.battery_space_shifts_arrivals_impact_weighted = (
+            trip.battery_space_shifts_arrivals_impact_weighted.sort_index()
+        )
+        trip.battery_space_shifts: ty.Dict[
+            ty.Tuple[str, str], pd.DataFrame
+        ] = {}
+        trip.battery_space_shifts[('Departures', 'Amount')] = (
+            trip.battery_space_shifts_departures
+        )
+        trip.battery_space_shifts[('Departures', 'Impact')] = (
+            trip.battery_space_shifts_departures_impact
+        )
+        trip.battery_space_shifts[('Departures', 'Amount Weighted')] = (
+            trip.battery_space_shifts_departures_weighted
+        )
+        trip.battery_space_shifts[('Departures', 'Impact Weighted')] = (
+            trip.battery_space_shifts_departures_impact_weighted
+        )
+        trip.battery_space_shifts[('Arrivals', 'Amount')] = (
+            trip.battery_space_shifts_arrivals
+        )
+        trip.battery_space_shifts[('Arrivals', 'Impact')] = (
+            trip.battery_space_shifts_arrivals_impact
+        )
+        trip.battery_space_shifts[('Arrivals', 'Amount Weighted')] = (
+            trip.battery_space_shifts_arrivals_weighted
+        )
+        trip.battery_space_shifts[('Arrivals', 'Impact Weighted')] = (
+            trip.battery_space_shifts_arrivals_impact_weighted
+        )
+
         # # We want to track the probabilities and time driving of previous
         # # legs
         # previous_leg_start_probabilities: np.ndarray = np.array(
@@ -757,7 +1020,6 @@ class Trip:
                 'locations'
             ]['start']
             trip.location_split[initial_location] = 1
-
         trip.location_split, trip.mobility_matrix = (
             get_location_split_and_impact_of_departures_and_arrivals(
                 location_names,
@@ -770,11 +1032,12 @@ class Trip:
                 trip.end_locations_of_legs,
                 trip.leg_distances,
                 trip.weighted_leg_distances,
+                trip.battery_space_shifts,
+                vehicle_electricity_consumption,
                 HOURS_IN_A_DAY,
             )
         )
 
-        # # print(trip.location_split)
         # # exit()
 
         # # at_location_in_departure_hour: np.ndarray = (
@@ -1864,25 +2127,127 @@ class Trip:
             run_mobility_index_tuples, names=mobility_index_names
         )
 
-        trip.run_mobility_matrix: pd.DataFrame = pd.DataFrame(
-            columns=mobility_quantities, index=run_mobility_index
-        )
-        trip.run_mobility_matrix = trip.run_mobility_matrix.sort_index()
+        # trip.run_mobility_matrix: pd.DataFrame = pd.DataFrame(
+        #     columns=mobility_quantities, index=run_mobility_index
+        # )
+        # trip.run_mobility_matrix = trip.run_mobility_matrix.sort_index()
 
-        for leg_tuple in leg_tuples:
-            cloned_mobility_matrix: pd.DataFrame = run_time.from_day_to_run(
-                trip.mobility_matrix.loc[
-                    (leg_tuple[0], leg_tuple[1]), mobility_quantities
-                ],
+        # for leg_tuple in leg_tuples:
+        #     cloned_mobility_matrix: pd.DataFrame = run_time.from_day_to_run(
+        #         trip.mobility_matrix.loc[
+        #             (leg_tuple[0], leg_tuple[1]), mobility_quantities
+        #         ],
+        #         run_time_tags,
+        #         trip.day_start_hour,
+        #         scenario,
+        #         general_parameters,
+        #     )
+        #     for mobility_quantity in mobility_quantities:
+        #         trip.run_mobility_matrix.at[
+        #             (leg_tuple[0], leg_tuple[1]), mobility_quantity
+        #         ] = cloned_mobility_matrix[mobility_quantity].values
+
+        trip.run_mobility_matrix: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.mobility_matrix,
+                leg_tuples,
+                run_mobility_index,
                 run_time_tags,
                 trip.day_start_hour,
                 scenario,
                 general_parameters,
             )
-            for mobility_quantity in mobility_quantities:
-                trip.run_mobility_matrix.at[
-                    (leg_tuple[0], leg_tuple[1]), mobility_quantity
-                ] = cloned_mobility_matrix[mobility_quantity].values
+        )
+
+        trip.run_battery_space_shifts_departures: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.battery_space_shifts_departures,
+                leg_tuples,
+                run_mobility_index,
+                run_time_tags,
+                trip.day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_battery_space_shifts_departures_impact: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.battery_space_shifts_departures_impact,
+                leg_tuples,
+                run_mobility_index,
+                run_time_tags,
+                trip.day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_battery_space_shifts_arrivals: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.battery_space_shifts_arrivals,
+                leg_tuples,
+                run_mobility_index,
+                run_time_tags,
+                trip.day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_battery_space_shifts_arrivals_impact: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.battery_space_shifts_arrivals_impact,
+                leg_tuples,
+                run_mobility_index,
+                run_time_tags,
+                trip.day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+
+        trip.run_battery_space_shifts_departures_weighted: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.battery_space_shifts_departures_weighted,
+                leg_tuples,
+                run_mobility_index,
+                run_time_tags,
+                trip.day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_battery_space_shifts_departures_impact_weighted: (
+            pd.DataFrame
+        ) = mobility_matrix_to_run_mobility_matrix(
+            trip.battery_space_shifts_departures_impact_weighted,
+            leg_tuples,
+            run_mobility_index,
+            run_time_tags,
+            trip.day_start_hour,
+            scenario,
+            general_parameters,
+        )
+        trip.run_battery_space_shifts_arrivals_weighted: pd.DataFrame = (
+            mobility_matrix_to_run_mobility_matrix(
+                trip.battery_space_shifts_arrivals_weighted,
+                leg_tuples,
+                run_mobility_index,
+                run_time_tags,
+                trip.day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+        trip.run_battery_space_shifts_arrivals_impact_weighted: (
+            pd.DataFrame
+        ) = mobility_matrix_to_run_mobility_matrix(
+            trip.battery_space_shifts_arrivals_impact_weighted,
+            leg_tuples,
+            run_mobility_index,
+            run_time_tags,
+            trip.day_start_hour,
+            scenario,
+            general_parameters,
+        )
 
         # We also do this for some other quantities
         day_start_hour: int = scenario['mobility_module']['day_start_hour']
@@ -2262,6 +2627,103 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_maximal_delivered_power.pkl'
         )
+
+        trip.battery_space_shifts_departures.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_departures'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_departures_impact.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_departures_impact'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_arrivals.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_arrivals'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_arrivals_impact.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_arrivals_impact'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_departures_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_departures_weighted'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_departures_impact_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_departures_impact_weighted'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_arrivals_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_arrivals_weighted'
+            f'.pkl'
+        )
+
+        trip.battery_space_shifts_arrivals_impact_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'battery_space_shifts_arrivals_impact_weighted'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_departures.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_departures'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_departures_impact.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_departures_impact'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_arrivals.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_arrivals'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_arrivals_impact.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_arrivals_impact'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_departures_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_departures_weighted'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_departures_impact_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_departures_impact_weighted'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_arrivals_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_arrivals_weighted'
+            f'.pkl'
+        )
+
+        trip.run_battery_space_shifts_arrivals_impact_weighted.to_pickle(
+            f'{output_folder}/{scenario_name}_{trip.name}_'
+            f'run_battery_space_shifts_arrivals_impact_weighted'
+            f'.pkl'
+        )
+
         # trip.partial_time_stay_corrections.to_pickle(
         #     f'{output_folder}/{scenario_name}_'
         #     f'{trip.name}_partial_time_stay_corrections.pkl'

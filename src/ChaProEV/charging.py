@@ -86,12 +86,12 @@ def impact_of_departures(
         arriving_battery_spaces: ty.List[float] = []
         arriving_amounts: ty.List[float] = []
 
-        # We also need the duration of the leg
-        travelling_time: float = float(
-            run_mobility_matrix.loc[start_location, end_location, time_tag][
-                'Duration (hours)'
-            ]
-        )
+        # # We also need the duration of the leg
+        # travelling_time: float = float(
+        #     run_mobility_matrix.loc[start_location, end_location, time_tag][
+        #         'Duration (hours)'
+        #     ]
+        # )
 
         # We iterate through the departing battery spaces
         # (reminder, they are ordered from lowest to highest,
@@ -123,27 +123,27 @@ def impact_of_departures(
             if time_slot_departures > zero_threshold:
                 # We do this until there are no departures left
 
-                # We need to know in which slots the vehicles
-                # will arrive at their destination and the proprtion
-                # of these slots
-                first_arrival_shift: int = math.floor(travelling_time)
-                if first_wave:
-                    # This isfor departures in the original time slot
-                    first_arrival_shift_time: datetime.timedelta = (
-                        datetime.timedelta(hours=first_arrival_shift)
-                    )
-                    second_arrival_shift_time: datetime.timedelta = (
-                        datetime.timedelta(hours=first_arrival_shift + 1)
-                    )
-                else:
-                    # This is for departures in the next time slot
-                    first_arrival_shift_time = datetime.timedelta(
-                        hours=first_arrival_shift - 1
-                    )
-                    second_arrival_shift_time = datetime.timedelta(
-                        hours=first_arrival_shift
-                    )
-                first_arrival_shift_proportion: float = 1 - travelling_time % 1
+                # # We need to know in which slots the vehicles
+                # # will arrive at their destination and the proprtion
+                # # of these slots
+                # first_arrival_shift: int = math.floor(travelling_time)
+                # if first_wave:
+                #     # This isfor departures in the original time slot
+                #     first_arrival_shift_time: datetime.timedelta = (
+                #         datetime.timedelta(hours=first_arrival_shift)
+                #     )
+                #     second_arrival_shift_time: datetime.timedelta = (
+                #         datetime.timedelta(hours=first_arrival_shift + 1)
+                #     )
+                # else:
+                #     # This is for departures in the next time slot
+                #     first_arrival_shift_time = datetime.timedelta(
+                #         hours=first_arrival_shift - 1
+                #     )
+                #     second_arrival_shift_time = datetime.timedelta(
+                #         hours=first_arrival_shift
+                #     )
+                # first_arrival_shift_proportion: float = 1 - travelling_time % 1
 
                 # We want to know how many departures will come from
                 # the battery space we are looking at. If there are
@@ -314,6 +314,267 @@ def impact_of_departures(
     return battery_space
 
 
+# def impact_of_departures(
+#     battery_space: ty.Dict,
+#     start_location: str,
+#     end_location: str,
+#     time_slot_departures: float,
+#     time_tag: datetime.datetime,
+#     next_time_tag: datetime.datetime,
+#     run_range: pd.DatetimeIndex,
+#     run_mobility_matrix,  # It is a DataFrame, but MyPy gives an error
+#     distance_header: str,
+#     electricity_consumption_kWh_per_km: float,
+#     zero_threshold: float,
+#     first_wave: bool,
+# ) -> ty.Dict:
+#     '''
+#     THis function looks at the impact of a set of departures on the battery
+#     spaces. It has to be called separately for departures in the
+#     current time slot and for those in the next time slot.
+#     The latter needs to be computed on the basis of the battery spaces
+#     after the former has taken place and after the charging in the current
+#     time slot has taken place. In other words, it has to occur at the top
+#     of the next time slot.
+#     '''
+
+#     if time_slot_departures > zero_threshold:
+#         # If there are no departures, we can skip this
+
+#         # We want to know what the arriving battery spaces
+#         # will be and the amounts/percentages of the fleet vehicles
+#         # for each arriving battery space
+#         arriving_battery_spaces: ty.List[float] = []
+#         arriving_amounts: ty.List[float] = []
+
+#         # We also need the duration of the leg
+#         travelling_time: float = float(
+#             run_mobility_matrix.loc[start_location, end_location, time_tag][
+#                 'Duration (hours)'
+#             ]
+#         )
+
+#         # We iterate through the departing battery spaces
+#         # (reminder, they are ordered from lowest to highest,
+#         # as we assumed that the lower the battery space, the higher
+#         # the likelihood to leave, as vehicleswith more battery space/
+#         # less available battery capacity wll want to charge first).
+
+#         # We look at which battery spaces there are at this location
+#         # and sort them. The lowest battery spaces will be first.
+#         # These are the ones we assume aremore likely to leave,
+#         # as others might want to charge first
+#         departing_battery_spaces: ty.List[float] = sorted(
+#             battery_space[start_location].columns.values
+#         )
+
+#         for departing_battery_space in departing_battery_spaces:
+#             # We will be removing the departures from the lower
+#             # battery spaces from the pool, until we have reached
+#             # all departures. For example, if we have 0.2 departures
+#             # and 0.19 vehicles with space equal to zero, 0.2 vehicles
+#             # with space 1, and 0.3 vehicles with space 1.6,
+#             # then we will first take all the
+#             # 0.19 vehicles with space 0,
+#             # 0.01 vehicles with space 1,
+#             # and 0 vehicles with space 1.6,
+#             # leaving us with 0 vehicles wth space 0,
+#             # 0.19 vehicles with
+#             # space 1, and 0.3 vehicles with space 1.6
+#             if time_slot_departures > zero_threshold:
+#                 # We do this until there are no departures left
+
+#                 # We need to know in which slots the vehicles
+#                 # will arrive at their destination and the proprtion
+#                 # of these slots
+#                 first_arrival_shift: int = math.floor(travelling_time)
+#                 if first_wave:
+#                     # This isfor departures in the original time slot
+#                     first_arrival_shift_time: datetime.timedelta = (
+#                         datetime.timedelta(hours=first_arrival_shift)
+#                     )
+#                     second_arrival_shift_time: datetime.timedelta = (
+#                         datetime.timedelta(hours=first_arrival_shift + 1)
+#                     )
+#                 else:
+#                     # This is for departures in the next time slot
+#                     first_arrival_shift_time = datetime.timedelta(
+#                         hours=first_arrival_shift - 1
+#                     )
+#                     second_arrival_shift_time = datetime.timedelta(
+#                         hours=first_arrival_shift
+#                     )
+#                 first_arrival_shift_proportion: float = 1 - travelling_time % 1
+
+#                 # We want to know how many departures will come from
+#                 # the battery space we are looking at. If there are
+#                 # more vehicles with the current space than remaining
+#                 # departures, then we take the remaining departures,
+#                 # otherwise we take all the vehicles with the current
+#                 # space and move to the next one
+#                 # This needs to be done separately for the current
+#                 # time slot and the next one
+#                 # (because of the issue of effective impact, as
+#                 # some vehicles stay some of the time)
+
+#                 this_battery_space_departures_impact_this_time: float = min(
+#                     time_slot_departures,
+#                     battery_space[start_location].at[
+#                         time_tag, departing_battery_space
+#                     ],
+#                 )
+
+#                 # We add these departures to the arriving amounts,
+#                 # as these will arrive to the end location
+
+#                 arriving_amounts.append(
+#                     this_battery_space_departures_impact_this_time
+#                 )
+#                 # print(time_tag)
+#                 # print(first_wave)
+#                 # print(start_location)
+#                 # print(end_location)
+#                 # print(sum(arriving_amounts))
+
+#                 # We
+#                 # look up the consumption
+#                 this_leg_consumption: float = float(
+#                     run_mobility_matrix.loc[
+#                         start_location, end_location, time_tag
+#                     ][distance_header]
+#                     * electricity_consumption_kWh_per_km
+#                 )
+
+#                 # We also add the corresponding battery space at
+#                 # arrival, given by the original battery space plus
+#                 # the leg's consumption
+#                 arriving_battery_spaces.append(
+#                     departing_battery_space + this_leg_consumption
+#                 )
+#                 # We update the departures (i.e. how many remain
+#                 # for larger battery spaces)
+#                 time_slot_departures -= (
+#                     this_battery_space_departures_impact_this_time
+#                 )
+
+#                 # Now, we remove the departures from the start
+#                 # location for the current time slot
+#                 battery_space[start_location].loc[
+#                     time_tag, departing_battery_space
+#                 ] = (
+#                     battery_space[start_location].loc[time_tag][
+#                         departing_battery_space
+#                     ]
+#                     - this_battery_space_departures_impact_this_time
+#                 )
+
+#         # We now can update the battery spaces in the end location.
+#         for arriving_battery_space, arriving_amount in zip(
+#             arriving_battery_spaces, arriving_amounts
+#         ):
+#             if arriving_amount > zero_threshold:
+#                 # No need to cmpute if there are no
+
+#                 # If the end location does not have the incoming
+#                 # battery space in its columns, we add the column
+#                 # (with zeroes)
+#                 if arriving_battery_space not in (
+#                     battery_space[end_location].columns
+#                 ):
+#                     battery_space[end_location][arriving_battery_space] = (
+#                         float(0)
+#                     )
+
+#                 if first_arrival_shift_proportion > zero_threshold:
+#                     # Otherwise there is no first shift arrival
+#                     # We check if the arrivals in the first slot
+#                     # are in the run range
+#                     # if they are not, then we don't take them into
+#                     # account (as the are not in the run) and add them
+#                     # in the end_location battery space DataFrame
+#                     if time_tag + first_arrival_shift_time <= (run_range[-1]):
+#                         battery_space[end_location].loc[
+#                             time_tag + first_arrival_shift_time,
+#                             arriving_battery_space,
+#                         ] = battery_space[end_location].loc[
+#                             time_tag + first_arrival_shift_time
+#                         ][
+#                             arriving_battery_space
+#                         ] + (
+#                             arriving_amount
+#                             * first_arrival_shift_proportion
+#                             / 2
+#                             # / 1
+#                         )
+
+#                         # The effects on the current time tag are
+#                         # halved,
+#                         # as the vehicles arrive unifornmly
+#                         # The rest of the impact is in the next
+#                         # time tag
+#                         if next_time_tag + first_arrival_shift_time <= (
+#                             run_range[-1]
+#                         ):
+#                             battery_space[end_location].loc[
+#                                 next_time_tag + first_arrival_shift_time,
+#                                 arriving_battery_space,
+#                             ] = battery_space[end_location].loc[
+#                                 next_time_tag + first_arrival_shift_time
+#                             ][
+#                                 arriving_battery_space
+#                             ] + (
+#                                 arriving_amount
+#                                 * first_arrival_shift_proportion
+#                                 / 2
+#                                 # * 0
+#                             )
+#                 if (1 - first_arrival_shift_proportion) > zero_threshold:
+
+#                     # Otherwise there is no first shift arrival
+#                     # We check if the arrivals in the second slot
+#                     # are in the run range
+#                     # if they are not, then we don't take them into
+#                     # account (as the are not in the run)  and add them
+#                     # in the end_location battery space DataFrame
+#                     if time_tag + second_arrival_shift_time <= (run_range[-1]):
+#                         battery_space[end_location].loc[
+#                             time_tag + second_arrival_shift_time,
+#                             arriving_battery_space,
+#                         ] = battery_space[end_location].loc[
+#                             time_tag + second_arrival_shift_time
+#                         ][
+#                             arriving_battery_space
+#                         ] + (
+#                             arriving_amount
+#                             * (1 - first_arrival_shift_proportion)
+#                             / 2
+#                             # / 1
+#                         )
+
+#                         # The effects on the current time tag are
+#                         # halved,
+#                         # as the vehicles arrive unifornmly
+#                         # The rest of the impact is in the next
+#                         # time tag
+#                         if next_time_tag + second_arrival_shift_time <= (
+#                             run_range[-1]
+#                         ):
+#                             battery_space[end_location].loc[
+#                                 next_time_tag + second_arrival_shift_time,
+#                                 arriving_battery_space,
+#                             ] = battery_space[end_location].loc[
+#                                 next_time_tag + second_arrival_shift_time
+#                             ][
+#                                 arriving_battery_space
+#                             ] + (
+#                                 arriving_amount
+#                                 * (1 - first_arrival_shift_proportion)
+#                                 / 2
+#                                 # * 0
+#                             )
+#     return battery_space
+
+
 def travel_space_occupation(
     battery_space: ty.Dict[str, pd.DataFrame],
     time_tag: datetime.datetime,
@@ -447,6 +708,103 @@ def travel_space_occupation(
 
         # We look at all the possible destinations
         for end_location in possible_destinations[start_location]:
+            departures_impact_this_time_slot = run_mobility_matrix.loc[
+                start_location, end_location, time_tag
+            ]['Departures impact']
+            battery_space = impact_of_departures(
+                battery_space,
+                start_location,
+                end_location,
+                departures_impact_this_time_slot,
+                time_tag,
+                next_time_tag,
+                run_range,
+                run_mobility_matrix,
+                distance_header,
+                electricity_consumption_kWh_per_km,
+                zero_threshold,
+                first_wave=True,
+            )
+
+            #     # )
+            #     departures_impact: float = run_mobility_matrix.loc[
+            #         start_location, end_location, time_tag
+            #     ]['Departures impact']
+
+            #     if departures_impact > zero_threshold:
+            #         # If there are no departures, we can skip this
+
+            #         # We want to know what the arriving battery spaces
+            #         # will be and the amounts/percentages of the fleet vehicles
+            #         # for each arriving battery space
+            #         arriving_battery_spaces: ty.List[float] = []
+            #         arriving_amounts: ty.List[float] = []
+
+            #         # We iterate through the departing battery spaces
+            #         # (reminder, they are ordered from lowest to highest,
+            #         # as we assumed that the lower the battery space, the higher
+            #         # the likelihood to leave, as vehicleswith more battery space/
+            #         # less available battery capacity wll want to charge first).
+
+            #         # We look at which battery spaces there are at this location
+            #         # and sort them. The lowest battery spaces will be first.
+            #         # These are the ones we assume aremore likely to leave,
+            #         # as others might want to charge first
+            #         departing_battery_spaces: ty.List[float] = sorted(
+            #             battery_space[start_location].columns.values
+            #         )
+
+            #         for departing_battery_space in departing_battery_spaces:
+            #             # We will be removing the departures from the lower
+            #             # battery spaces from the pool, until we have reached
+            #             # all departures. For example, if we have 0.2 departures
+            #             # and 0.19 vehicles with space equal to zero, 0.2 vehicles
+            #             # with space 1, and 0.3 vehicles with space 1.6,
+            #             # then we will first take all the
+            #             # 0.19 vehicles with space 0,
+            #             # 0.01 vehicles with space 1,
+            #             # and 0 vehicles with space 1.6,
+            #             # leaving us with 0 vehicles wth space 0,
+            #             # 0.19 vehicles with
+            #             # space 1, and 0.3 vehicles with space 1.6
+            #             if departures_impact > zero_threshold:
+            #                 # We do this until there are no departures left
+
+            #                 # We want to know how many departures will come from
+            #                 # the battery space we are looking at. If there are
+            #                 # more vehicles with the current space than remaining
+            #                 # departures, then we take the remaining departures,
+            #                 # otherwise we take all the vehicles with the current
+            #                 # space and move to the next one
+            #                 # This needs to be done separately for the current
+            #                 # time slot and the next one
+            #                 # (because of the issue of effective impact, as
+            #                 # some vehicles stay some of the time)
+
+            #                 this_battery_space_departures_impact_this_time: (
+            #                     float
+            #                 ) = min(
+            #                     departures_impact,
+            #                     battery_space[start_location].at[
+            #                         time_tag, departing_battery_space
+            #                     ],
+            #                 )
+
+            #                 # We add these departures to the arriving amounts,
+            #                 # as these will arrive to the end location
+
+            #                 arriving_amounts.append(
+            #                 this_battery_space_departures_impact_this_time
+            #                 )
+
+            #     print(
+            #         run_mobility_matrix.loc[start_location, end_location, time_tag]
+            #     )
+            #     departures_impact: float = run_mobility_matrix.loc[
+            #         start_location, end_location, time_tag
+            #     ]['Departures impact']
+            #     print(departures_impact)
+            #     exit()
 
             # # For each leg (start/end location combination), we
             # # look up the consumption
@@ -458,9 +816,9 @@ def travel_space_occupation(
             # )
 
             # We also look up how many vehicles depart
-            departures: float = run_mobility_matrix.loc[
-                start_location, end_location, time_tag
-            ]['Departures amount']
+            # departures: float = run_mobility_matrix.loc[
+            #     start_location, end_location, time_tag
+            # ]['Departures amount']
             # if time_tag_index == 1:
             #     print('Soo')
             #     exit()
@@ -471,33 +829,33 @@ def travel_space_occupation(
             # of the impact to thenext time slot.
             # With a partial correction factor,
             # this becomes (1-partial time correction)/2
-            this_location_and_time_slot_partial_time_stay_correction: float = (
-                float(
-                    partial_time_stay_corrections.loc[time_tag][start_location]
-                )
-            )
+            # this_location_and_time_slot_partial_time_stay_correction: float = (
+            #     float(
+            #         partial_time_stay_corrections.loc[time_tag][start_location]
+            #     )
+            # )
             # if this_location_and_time_slot_partial_time_stay > 0:
             #     print(this_location_and_time_slot_partial_time_stay)
             #     exit()
             # if (this_location_and_time_slot_partial_time_correction) > 0:
             # print(this_location_and_time_slot_partial_time_correction)
 
-            this_time_slot_departure_correction_factor: float = (
-                # 1 / 2
-                # -
-                this_location_and_time_slot_partial_time_stay_correction
-                # * 2
-                # 1 - this_location_and_time_slot_partial_time_correction
-                # / 2
-            )
+            # this_time_slot_departure_correction_factor: float = (
+            #     # 1 / 2
+            #     # -
+            #     this_location_and_time_slot_partial_time_stay_correction
+            #     # * 2
+            #     # 1 - this_location_and_time_slot_partial_time_correction
+            #     # / 2
+            # )
 
             # print(this_time_slot_departure_correction_factor)
             # exit()
             # else:
             #     this_time_slot_departure_correction_factor = 0
-            next_time_slot_departure_correction_factor: float = (
-                1 - this_time_slot_departure_correction_factor
-            )
+            # next_time_slot_departure_correction_factor: float = (
+            #     1 - this_time_slot_departure_correction_factor
+            # )
             # # if this_location_and_time_slot_partial_time_stay_correction
             # > 0:
             # print(time_tag_index)
@@ -518,16 +876,16 @@ def travel_space_occupation(
             #     # print(run_mobility_matrix.loc['truck_customer'].iloc[0:24])
             #     exit()
 
-            departures_impact_this_time_slot: float = (
-                departures * this_time_slot_departure_correction_factor
-            )
-            departures_impact_next_time_slot_store.loc[
-                start_location, end_location
-            ] = (departures * next_time_slot_departure_correction_factor)
-            if time_tag_index == 10:
-                print('Foo')
-                print(departures)
-                print(next_time_slot_departure_correction_factor)
+            # departures_impact_this_time_slot: float = (
+            #     departures * this_time_slot_departure_correction_factor
+            # )
+            # departures_impact_next_time_slot_store.loc[
+            #     start_location, end_location
+            # ] = (departures * next_time_slot_departure_correction_factor)
+            # if time_tag_index == 10:
+            #     print('Foo')
+            #     print(departures)
+            #     print(next_time_slot_departure_correction_factor)
             # print(time_tag_index)
             # print(start_location, end_location)
             # print(departures_impact_this_time_slot)
