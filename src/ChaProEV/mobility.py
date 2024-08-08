@@ -5,9 +5,8 @@ It contains the following functions:
 probabilities per day type.
 2. **get_run_trip_probabilities:** Gets a DataFrame containing the trip
 probabilities for the whole run.
-3. **get_mobility_matrix:**Makes a mobility matrix for the run
-that tracks departures
-from and to locations (tracks amount, kilometers, and weighted kilometers)
+3. **matrix_trips_to_run:**Takes the matrices for different trips and adds
+them up (weighed on probability) to get a matrix for the whole run.
 4. **get_day_type_start_location:** Tells us the proportion of vehicles
 that start their day at a given location (per day type)
 5. **get_location_split:** Produces the location split of the vehicles
@@ -34,6 +33,146 @@ except ModuleNotFoundError:
 # So that it works both as a standalone (1st) and as a package (2nd)
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
+
+
+def matrix_trips_to_run(
+    matrix_type_to_compute: str,
+    matrix_columns: ty.List,
+    run_trip_probabilities: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
+) -> None:
+    '''
+    Takes the matrices for different trips and adds them up (weighed on
+    probability) to get a matrix for the whole run.
+    '''
+    scenario_vehicle: str = scenario['vehicle']['name']
+    trip_parameters: ty.Dict = scenario['trips']
+    trip_names: ty.List[str] = [
+        trip_name
+        for trip_name in trip_parameters
+        if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
+    ]
+
+    run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[0]
+
+    location_tuples: ty.List[ty.Tuple[str, str]] = (
+        get_mobility_location_tuples(scenario)
+    )
+    run_index_tuples: ty.List[ty.Tuple[str, str, datetime.datetime]] = [
+        (location_tuple[0], location_tuple[1], time_tag)
+        for location_tuple in location_tuples
+        for time_tag in run_time_tags
+    ]
+
+    mobility_index_names: ty.List[str] = scenario['mobility_module'][
+        'mobility_index_names'
+    ]
+    run_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
+        run_index_tuples, names=mobility_index_names
+    )
+
+    run_matrix: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_index), len(matrix_columns))),
+        columns=matrix_columns,
+        index=run_index,
+    )
+
+    run_matrix = run_matrix.sort_index()
+
+    scenario_name: str = scenario['scenario_name']
+    file_parameters: ty.Dict = general_parameters['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+
+    for trip_name in trip_names:
+
+        trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
+
+        if len(trip_legs) > 0:
+
+            trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
+
+            for trip_leg in trip_legs:
+                leg_start: str = scenario['legs'][trip_leg]['locations'][
+                    'start'
+                ]
+                leg_end: str = scenario['legs'][trip_leg]['locations']['end']
+                leg_tuple: ty.Tuple[str, str] = (leg_start, leg_end)
+                # We wante to only have unique tuples
+                if leg_tuple not in trip_location_tuples:
+                    trip_location_tuples.append(leg_tuple)
+
+            this_trip_run_probabilities: pd.DataFrame = pd.DataFrame(
+                run_trip_probabilities[trip_name]
+            )
+
+            trip_matrix: pd.DataFrame = pd.read_pickle(
+                f'{output_folder}/{scenario_name}_{trip_name}'
+                f'_run_{matrix_type_to_compute}.pkl'
+            ).astype(float)
+            location_connections_headers: ty.List[str] = scenario[
+                'mobility_module'
+            ]['location_connections_headers']
+
+            # We need a version for each start/end location combination
+            # that appears in our trip mobility matrix. This ia also the
+            # amount of (unique) legs or the trip location tuples
+            this_trip_run_probabilities_extended: pd.DataFrame = pd.DataFrame()
+            for _ in range(len(trip_location_tuples)):
+                # -1 to get the right length
+                this_trip_run_probabilities_extended = pd.concat(
+                    (
+                        this_trip_run_probabilities,
+                        this_trip_run_probabilities_extended,
+                    ),
+                    ignore_index=True,
+                )
+
+            probability_values_to_use = this_trip_run_probabilities_extended[
+                trip_name
+            ].values
+
+            for quantity in run_matrix.columns:
+
+                if quantity not in location_connections_headers:
+
+                    weighted_mobility_quantity_to_use = (
+                        trip_matrix[quantity] * probability_values_to_use
+                    )
+
+                    # We need to place it at the right places in the run
+                    # ix timememeemememememix
+
+                    for trip_location_tuple in trip_location_tuples:
+
+                        run_matrix.loc[
+                            (trip_location_tuple),
+                            quantity,
+                        ] = (
+                            pd.Series(
+                                run_matrix.loc[trip_location_tuple, quantity]
+                            ).values
+                            + weighted_mobility_quantity_to_use.loc[
+                                trip_location_tuple
+                            ].values
+                        )
+
+        location_connections: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_location_connections.pkl'
+        ).astype(float)
+        for location_tuple in location_tuples:
+            these_locations_connections: pd.Series = pd.Series(
+                location_connections.loc[location_tuple]
+            )
+            run_matrix.loc[(location_tuple), location_connections_headers] = (
+                these_locations_connections.values
+            )
+        run_matrix.to_pickle(
+            f'{output_folder}/{scenario_name}_run_{matrix_type_to_compute}.pkl'
+        )
 
 
 def get_possible_destinations(scenario: ty.Dict) -> ty.Dict[str, ty.List[str]]:
@@ -1042,170 +1181,173 @@ def get_run_trip_probabilities(
     return run_trip_probabilities
 
 
-def get_mobility_matrix(
-    run_trip_probabilities: pd.DataFrame,
-    scenario: ty.Dict,
-    case_name: str,
-    general_parameters: ty.Dict,
-) -> None:
-    '''
-    Makes a mobility matrix for the run that tracks departures
-    from and to locations (tracks amount, kilometers, and weighted kilometers)
-    '''
-    loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
-    scenario_vehicle: str = scenario['vehicle']['name']
+# def get_mobility_matrix(
+#     run_trip_probabilities: pd.DataFrame,
+#     scenario: ty.Dict,
+#     case_name: str,
+#     general_parameters: ty.Dict,
+# ) -> None:
+#     '''
+#     Makes a mobility matrix for the run that tracks departures
+#     from and to locations (tracks amount, kilometers, and weighted
+# kilometers)
+#     '''
+#     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
+#     scenario_vehicle: str = scenario['vehicle']['name']
 
-    loop_timer.append(datetime.datetime.now())
-    trip_parameters: ty.Dict = scenario['trips']
-    trip_names: ty.List[str] = [
-        trip_name
-        for trip_name in trip_parameters
-        if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
-    ]
+#     loop_timer.append(datetime.datetime.now())
+#     trip_parameters: ty.Dict = scenario['trips']
+#     trip_names: ty.List[str] = [
+#         trip_name
+#         for trip_name in trip_parameters
+#         if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
+#     ]
 
-    run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
-        scenario, general_parameters
-    )[0]
-    loop_timer.append(datetime.datetime.now())
-    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
-        get_mobility_location_tuples(scenario)
-    )
-    loop_timer.append(datetime.datetime.now())
-    run_mobility_index_tuples: ty.List[
-        ty.Tuple[str, str, datetime.datetime]
-    ] = [
-        (mobility_location_tuple[0], mobility_location_tuple[1], time_tag)
-        for mobility_location_tuple in mobility_location_tuples
-        for time_tag in run_time_tags
-    ]
+#     run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
+#         scenario, general_parameters
+#     )[0]
+#     loop_timer.append(datetime.datetime.now())
+#     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
+#         get_mobility_location_tuples(scenario)
+#     )
+#     loop_timer.append(datetime.datetime.now())
+#     run_mobility_index_tuples: ty.List[
+#         ty.Tuple[str, str, datetime.datetime]
+#     ] = [
+#         (mobility_location_tuple[0], mobility_location_tuple[1], time_tag)
+#         for mobility_location_tuple in mobility_location_tuples
+#         for time_tag in run_time_tags
+#     ]
 
-    mobility_index_names: ty.List[str] = scenario['mobility_module'][
-        'mobility_index_names'
-    ]
-    run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
-        run_mobility_index_tuples, names=mobility_index_names
-    )
-    mobility_quantities: ty.List[str] = scenario['mobility_module'][
-        'mobility_quantities'
-    ]
-    run_mobility_matrix: pd.DataFrame = pd.DataFrame(
-        np.zeros((len(run_mobility_index), len(mobility_quantities))),
-        columns=mobility_quantities,
-        index=run_mobility_index,
-    )
-    run_mobility_matrix = run_mobility_matrix.sort_index()
+#     mobility_index_names: ty.List[str] = scenario['mobility_module'][
+#         'mobility_index_names'
+#     ]
+#     run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
+#         run_mobility_index_tuples, names=mobility_index_names
+#     )
+#     mobility_quantities: ty.List[str] = scenario['mobility_module'][
+#         'mobility_quantities'
+#     ]
+#     run_mobility_matrix: pd.DataFrame = pd.DataFrame(
+#         np.zeros((len(run_mobility_index), len(mobility_quantities))),
+#         columns=mobility_quantities,
+#         index=run_mobility_index,
+#     )
+#     run_mobility_matrix = run_mobility_matrix.sort_index()
 
-    scenario_name: str = scenario['scenario_name']
-    file_parameters: ty.Dict = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    loop_timer.append(datetime.datetime.now())
-    for trip_name in trip_names:
+#     scenario_name: str = scenario['scenario_name']
+#     file_parameters: ty.Dict = general_parameters['files']
+#     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+#     loop_timer.append(datetime.datetime.now())
+#     for trip_name in trip_names:
 
-        trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
+#         trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
 
-        if len(trip_legs) > 0:
+#         if len(trip_legs) > 0:
 
-            trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
+#             trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
 
-            for trip_leg in trip_legs:
-                leg_start: str = scenario['legs'][trip_leg]['locations'][
-                    'start'
-                ]
-                leg_end: str = scenario['legs'][trip_leg]['locations']['end']
-                leg_tuple: ty.Tuple[str, str] = (leg_start, leg_end)
-                # We wante to only have unique tuples
-                if leg_tuple not in trip_location_tuples:
-                    trip_location_tuples.append(leg_tuple)
+#             for trip_leg in trip_legs:
+#                 leg_start: str = scenario['legs'][trip_leg]['locations'][
+#                     'start'
+#                 ]
+#                 leg_end: str = scenario['legs'][trip_leg]['locations']['end']
+#                 leg_tuple: ty.Tuple[str, str] = (leg_start, leg_end)
+#                 # We wante to only have unique tuples
+#                 if leg_tuple not in trip_location_tuples:
+#                     trip_location_tuples.append(leg_tuple)
 
-            this_trip_run_probabilities: pd.DataFrame = pd.DataFrame(
-                run_trip_probabilities[trip_name]
-            )
+#             this_trip_run_probabilities: pd.DataFrame = pd.DataFrame(
+#                 run_trip_probabilities[trip_name]
+#             )
 
-            trip_run_mobility_matrix_name: str = (
-                f'{scenario_name}_{trip_name}_run_mobility_matrix'
-            )
+#             trip_run_mobility_matrix_name: str = (
+#                 f'{scenario_name}_{trip_name}_run_mobility_matrix'
+#             )
 
-            trip_run_mobility_matrix: pd.DataFrame = pd.read_pickle(
-                f'{output_folder}/{trip_run_mobility_matrix_name}.pkl'
-            ).astype(float)
+#             trip_run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+#                 f'{output_folder}/{trip_run_mobility_matrix_name}.pkl'
+#             ).astype(float)
 
-            location_connections_headers: ty.List[str] = scenario[
-                'mobility_module'
-            ]['location_connections_headers']
+#             location_connections_headers: ty.List[str] = scenario[
+#                 'mobility_module'
+#             ]['location_connections_headers']
 
-            # We need a version for each start/end location combination
-            # that appears in our trip mobility matrix. This ia also the
-            # amount of (unique) legsor the trip location tuples
-            this_trip_run_probabilities_extended: pd.DataFrame = pd.DataFrame()
-            for _ in range(len(trip_location_tuples)):
-                # -1 to get the right length
-                this_trip_run_probabilities_extended = pd.concat(
-                    (
-                        this_trip_run_probabilities,
-                        this_trip_run_probabilities_extended,
-                    ),
-                    ignore_index=True,
-                )
+#             # We need a version for each start/end location combination
+#             # that appears in our trip mobility matrix. This ia also the
+#             # amount of (unique) legs or the trip location tuples
+#             this_trip_run_probabilities_extended: pd.DataFrame =
+# pd.DataFrame()
+#             for _ in range(len(trip_location_tuples)):
+#                 # -1 to get the right length
+#                 this_trip_run_probabilities_extended = pd.concat(
+#                     (
+#                         this_trip_run_probabilities,
+#                         this_trip_run_probabilities_extended,
+#                     ),
+#                     ignore_index=True,
+#                 )
 
-            probability_values_to_use = this_trip_run_probabilities_extended[
-                trip_name
-            ].values
+#             probability_values_to_use = this_trip_run_probabilities_extended[
+#                 trip_name
+#             ].values
 
-            for mobility_quantity in mobility_quantities:
+#             for mobility_quantity in mobility_quantities:
 
-                if mobility_quantity not in location_connections_headers:
+#                 if mobility_quantity not in location_connections_headers:
 
-                    weighted_mobility_quantity_to_use = (
-                        trip_run_mobility_matrix[mobility_quantity]
-                        * probability_values_to_use
-                    )
+#                     weighted_mobility_quantity_to_use = (
+#                         trip_run_mobility_matrix[mobility_quantity]
+#                         * probability_values_to_use
+#                     )
 
-                    # We need to place it at the right places in the run
-                    # ix timememeemememememix
+#                     # We need to place it at the right places in the run
+#                     # ix timememeemememememix
 
-                    for trip_location_tuple in trip_location_tuples:
+#                     for trip_location_tuple in trip_location_tuples:
 
-                        run_mobility_matrix.loc[
-                            (trip_location_tuple),
-                            mobility_quantity,
-                        ] = (
-                            pd.Series(
-                                run_mobility_matrix.loc[
-                                    trip_location_tuple, mobility_quantity
-                                ]
-                            ).values
-                            + weighted_mobility_quantity_to_use.loc[
-                                trip_location_tuple
-                            ].values
-                        )
+#                         run_mobility_matrix.loc[
+#                             (trip_location_tuple),
+#                             mobility_quantity,
+#                         ] = (
+#                             pd.Series(
+#                                 run_mobility_matrix.loc[
+#                                     trip_location_tuple, mobility_quantity
+#                                 ]
+#                             ).values
+#                             + weighted_mobility_quantity_to_use.loc[
+#                                 trip_location_tuple
+#                             ].values
+#                         )
 
-        location_connections: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_location_connections.pkl'
-        ).astype(float)
+#         location_connections: pd.DataFrame = pd.read_pickle(
+#             f'{output_folder}/{scenario_name}_location_connections.pkl'
+#         ).astype(float)
 
-    loop_timer.append(datetime.datetime.now())
+#     loop_timer.append(datetime.datetime.now())
 
-    for mobility_location_tuple in mobility_location_tuples:
-        these_locations_connections: pd.Series = pd.Series(
-            location_connections.loc[mobility_location_tuple]
-        )
-        run_mobility_matrix.loc[
-            (mobility_location_tuple), location_connections_headers
-        ] = these_locations_connections.values
+#     for mobility_location_tuple in mobility_location_tuples:
+#         these_locations_connections: pd.Series = pd.Series(
+#             location_connections.loc[mobility_location_tuple]
+#         )
+#         run_mobility_matrix.loc[
+#             (mobility_location_tuple), location_connections_headers
+#         ] = these_locations_connections.values
 
-    loop_timer.append(datetime.datetime.now())
-    run_mobility_matrix.to_pickle(
-        f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
-    )
-    loop_timer.append(datetime.datetime.now())
-    loop_times: ty.List[float] = []
-    for timer_index, test_element in enumerate(loop_timer):
-        if timer_index > 0:
-            loop_times.append(
-                (test_element - loop_timer[timer_index - 1]).total_seconds()
-            )
-    print('Mobility matrix timer')
-    print(loop_times)
+#     loop_timer.append(datetime.datetime.now())
+
+#     run_mobility_matrix.to_pickle(
+#         f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
+#     )
+#     loop_timer.append(datetime.datetime.now())
+#     loop_times: ty.List[float] = []
+#     for timer_index, test_element in enumerate(loop_timer):
+#         if timer_index > 0:
+#             loop_times.append(
+#                 (test_element - loop_timer[timer_index - 1]).total_seconds()
+#             )
+#     print('Mobility matrix timer')
+#     print(loop_times)
 
 
 def get_day_type_start_location_split(
@@ -1621,9 +1763,84 @@ def make_mobility_data(
         scenario, case_name, general_parameters
     )
     per_day_type_time: datetime.datetime = datetime.datetime.now()
-    get_mobility_matrix(
-        run_trip_probabilities, scenario, case_name, general_parameters
+    # get_mobility_matrix(
+    #     run_trip_probabilities, scenario, case_name, general_parameters
+    # )
+    mobility_quantities: ty.List = scenario['mobility_module'][
+        'mobility_quantities'
+    ]
+    matrix_trips_to_run(
+        'mobility_matrix',
+        mobility_quantities,
+        run_trip_probabilities,
+        scenario,
+        case_name,
+        general_parameters,
     )
+    battery_space_shift_quantities: ty.List[str] = scenario['mobility_module'][
+        'battery_space_shift_quantities'
+    ]
+    leg_consumptions: ty.List[float] = sorted(
+        list(
+            set(
+                [
+                    scenario['legs'][leg]['distance']
+                    * scenario['vehicle']['base_consumption_per_km'][
+                        'electricity_kWh'
+                    ]
+                    for leg in scenario['legs']
+                    if scenario['legs'][leg]['vehicle']
+                    == scenario['vehicle']['name']
+                ]
+            )
+        )
+    )
+    leg_weighted_consumptions: ty.List[float] = []
+    for leg in scenario['legs']:
+        if scenario['legs'][leg]['vehicle'] == scenario['vehicle']['name']:
+            leg_distance: float = scenario['legs'][leg]['distance']
+            road_type_mix: np.ndarray = np.array(
+                scenario['legs'][leg]['road_type_mix']['mix']
+            )
+            road_type_weights: np.ndarray = np.array(
+                scenario['transport_factors']['weights']
+            )
+            road_type_factor: float = float(
+                sum(road_type_mix * road_type_weights)
+            )
+            weighted_distance: float = road_type_factor * leg_distance
+            weighted_consumption: float = (
+                weighted_distance
+                * scenario['vehicle']['base_consumption_per_km'][
+                    'electricity_kWh'
+                ]
+            )
+            leg_weighted_consumptions.append(weighted_consumption)
+    leg_weighted_consumptions = sorted(list(set(leg_weighted_consumptions)))
+
+    for battery_space_shift_quantity in battery_space_shift_quantities:
+        if 'weighted' in battery_space_shift_quantity:
+            shift_columns: ty.List[float] = leg_weighted_consumptions
+        else:
+            shift_columns = leg_consumptions
+
+        matrix_trips_to_run(
+            f'battery_space_shifts_{battery_space_shift_quantity}',
+            shift_columns,
+            run_trip_probabilities,
+            scenario,
+            case_name,
+            general_parameters,
+        )
+    # print(moo)
+    # print(maa)
+    # maa.loc[
+    #     ('truck_hub', 'truck_customer', datetime.datetime(2020, 8, 5, 7)),
+    #     'Distance (km)',
+    # ] = 1989
+    # pd.testing.assert_frame_equal(moo, maa)
+    # print(666)
+    # exit()
     mobility_matrix_time: datetime.datetime = datetime.datetime.now()
     get_location_split(
         run_trip_probabilities, scenario, case_name, general_parameters

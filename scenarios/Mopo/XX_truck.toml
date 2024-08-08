@@ -1072,6 +1072,12 @@ mobility_quantities = [
     # 'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
 ]
 
+battery_space_shift_quantities = [
+    'departures', 'departures_weighted',
+    'departures_impact', 'departures_impact_weighted',
+    'arrivals', 'arrivals_weighted',
+    'arrivals_impact', 'arrivals_impact_weighted',
+]
 location_connections_headers = [
     'Duration (hours)', 'Distance (km)', 'Weighted distance (km)']
 
