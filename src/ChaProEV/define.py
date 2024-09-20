@@ -431,7 +431,13 @@ def get_travelling_group_travel_impact(
 
     travelling_group_first_slot: int = travelling_group_start_slot
     percent_in_first_slot: float = 1
+    if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
+        print('Trip extending beond day end. Check your entry')
+        exit()
     # The trips start uniformly within the first slot
+
+    print(travelling_group_first_slot)
+    print(percent_in_first_slot)
 
     for leg_index, (
         leg_origin,
@@ -474,6 +480,16 @@ def get_travelling_group_travel_impact(
             travelling_group_first_slot += 1
             percent_in_first_slot = 1 + percent_in_first_slot
 
+        if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
+            print('Trip extending beond day end. Check your entry')
+            exit()
+
+        # if leg_index == 2:
+        #     print(travelling_group_size)
+        #     print(percent_in_first_slot)
+        #     print(travelling_group_first_slot)
+        #     print(mobility_matrix.loc['truck_hub', 'truck_customer'].iloc[0:15])
+            # exit()
         # We now look at the impact of arrivals
         mobility_matrix = compute_travel_impact(
             'Arrivals',
@@ -488,6 +504,10 @@ def get_travelling_group_travel_impact(
             battery_space_shifts,
             vehicle_electricity_consumption,
         )
+        # if leg_index == 2:
+        #     print(mobility_matrix.loc['truck_hub', 'truck_customer'].iloc[0:15])
+        #     exit()
+
 
         # We update the slots of the group
         travelling_group_first_slot += math.floor(time_after_leg)
@@ -496,11 +516,13 @@ def get_travelling_group_travel_impact(
         if percent_in_first_slot <= 0:
             travelling_group_first_slot += 1
             percent_in_first_slot = 1 + percent_in_first_slot
+        print(travelling_group_first_slot)
+        print(percent_in_first_slot)
 
         if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
             print('Trip extending beond day end. Check your entry')
             exit()
-
+    # exit()
     return mobility_matrix
 
 

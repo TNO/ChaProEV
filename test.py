@@ -3,6 +3,11 @@ import pandas as pd
 
 if __name__ == '__main__':
 
+    mazinger = pd.read_pickle('output/Mopo/XX_truck_location_split.pkl')
+    print(mazinger.iloc[3:13].sum())
+    print(mazinger.iloc[0:12])
+    exit()
+
     # boo = pd.read_pickle('reference_run/XX_car_home_battery_space.pkl')
     baa = pd.read_pickle('output/Mopo//XX_car_location_split.pkl')
 
