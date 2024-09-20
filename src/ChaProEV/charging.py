@@ -57,6 +57,7 @@ def get_charging_framework(
     pd.DataFrame,
     pd.DataFrame,
     pd.Series,
+    pd.Series,
 ]:
     '''
     Produces the structures we want for the charging profiles
@@ -111,6 +112,9 @@ def get_charging_framework(
     run_arrivals_impact: pd.Series = run_mobility_matrix[
         'Arrivals impact'
     ].copy()
+    run_departures_impact: pd.Series = run_mobility_matrix[
+        'Departures impact'
+    ].copy()
 
     battery_space_shift_arrivals_impact: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{scenario_name}_'
@@ -139,6 +143,7 @@ def get_charging_framework(
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
+        run_departures_impact
     )
 
 
@@ -155,8 +160,28 @@ def travel_space_occupation(
     day_start_hour: int,
     location_split: pd.DataFrame,
     run_arrivals_impact: pd.Series,
+    run_departuere_impact: pd.Series,
     run_range: pd.DatetimeIndex,
 ) -> ty.Dict[str, pd.DataFrame]:
+
+    for location_to_compute in location_names:
+
+        if time_tag_index > 0:
+            # We add the values from the previous time tag to
+            # the battery space. We do so because travels can propagate to
+            # future time tags. I f we just copied the value from
+            # the previous time tag, we would delete these
+            battery_space[location_to_compute].iloc[time_tag_index] = (
+                battery_space[location_to_compute].iloc[time_tag_index]
+                + battery_space[location_to_compute].iloc[time_tag_index - 1]
+            )
+
+        if use_day_types_in_charge_computing and (
+            time_tag.hour == day_start_hour
+        ):
+            battery_space[location_to_compute].loc[time_tag, 0] = (
+                location_split.loc[time_tag][location_to_compute]
+            )
 
     return battery_space
 
@@ -404,7 +429,7 @@ def copy_day_type_profiles_to_whole_run(
     #     spillover_charge_drawn_by_vehicles,
     #     spillover_charge_drawn_from_network,
     #     battery_space_shift_arrivals_impact,
-    #     run_arrivals_impact,
+    #     run_arrivals_impact, run _departures_impact
     # ) = get_charging_framework(scenario, case_name, general_parameters)
 
 
@@ -590,7 +615,7 @@ def get_charging_profile(
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
-        run_arrivals_impact,
+        run_arrivals_impact, run_departures_impact
     ) = get_charging_framework(scenario, case_name, general_parameters)
 
     # We want to either compute charging for the whole run, or only
@@ -678,6 +703,7 @@ def get_charging_profile(
                 day_start_hour,
                 location_split,
                 run_arrivals_impact,
+                run_departures_impact,
                 run_range,
             )
 
