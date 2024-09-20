@@ -170,6 +170,121 @@ def compute_charging_events(
     general_parameters: ty.Dict,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
 
+    zero_threshold: float = general_parameters['numbers']['zero_threshold']
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
+
+    for charging_location in location_names:
+        charging_location_parameters: ty.Dict[str, float] = (
+            location_parameters[charging_location]
+        )
+        charger_efficiency: float = charging_location_parameters[
+            'charger_efficiency'
+        ]
+        percent_charging: float = charging_location_parameters['connectivity']
+        max_charge: float = charging_location_parameters['charging_power']
+
+        # This variable is useful if new battery spaces
+        # are added within this charging procedure
+        original_battery_spaces: np.ndarray = battery_space[
+            charging_location
+        ].columns.values
+        charge_drawn_per_charging_vehicle: np.ndarray = np.array(
+            [
+                min(this_battery_space, max_charge)
+                for this_battery_space in original_battery_spaces
+            ]
+        )
+        network_charge_drawn_per_charging_vehicle: np.ndarray = (
+            charge_drawn_per_charging_vehicle / charger_efficiency
+        )
+
+        vehicles_charging: ty.Any = (
+            percent_charging * battery_space[charging_location].loc[time_tag]
+        )  # It is a flaot, but MyPy does not get it
+
+        charge_drawn_by_vehicles_this_time_tag_per_battery_space: (
+            pd.Series[float] | pd.DataFrame
+        ) = (vehicles_charging * charge_drawn_per_charging_vehicle)
+        charge_drawn_by_vehicles_this_time_tag: float | pd.Series[float] = (
+            charge_drawn_by_vehicles_this_time_tag_per_battery_space
+        ).sum()
+
+        network_charge_drawn_by_vehicles_this_time_tag_per_battery_space: (
+            pd.Series[float] | pd.DataFrame
+        ) = (vehicles_charging * network_charge_drawn_per_charging_vehicle)
+        network_charge_drawn_by_vehicles_this_time_tag: (
+            float | pd.Series[float]
+        ) = (
+            network_charge_drawn_by_vehicles_this_time_tag_per_battery_space
+        ).sum()
+
+        # We only do the charge computations if there is a charge to be drawn
+        if charge_drawn_by_vehicles_this_time_tag > zero_threshold:
+            charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
+                charge_drawn_by_vehicles.loc[time_tag][charging_location]
+                + charge_drawn_by_vehicles_this_time_tag
+            )
+
+            charge_drawn_from_network.loc[time_tag, charging_location] = (
+                charge_drawn_from_network.loc[time_tag][charging_location]
+                + network_charge_drawn_by_vehicles_this_time_tag
+            )
+
+            battery_spaces_after_charging: np.ndarray = (
+                battery_space[charging_location].columns.values
+                - charge_drawn_per_charging_vehicle
+            )
+
+            for (
+                battery_space_after_charging,
+                original_battery_space,
+                vehicles_that_get_to_this_space,
+            ) in zip(
+                battery_spaces_after_charging,
+                original_battery_spaces,
+                vehicles_charging,
+            ):
+                # To avoid unnecessary calculations
+                if vehicles_that_get_to_this_space > zero_threshold:
+                    if original_battery_space > zero_threshold:
+                        if battery_space_after_charging not in (
+                            battery_space[charging_location].columns.values
+                        ):
+                            battery_space[charging_location][
+                                battery_space_after_charging
+                            ] = float(0)
+
+                        battery_space[charging_location].loc[
+                            time_tag, battery_space_after_charging
+                        ] = (
+                            battery_space[charging_location].loc[time_tag][
+                                battery_space_after_charging
+                            ]
+                            + vehicles_that_get_to_this_space
+                        )
+
+                        battery_space[charging_location].loc[
+                            time_tag, original_battery_space
+                        ] = (
+                            battery_space[charging_location].loc[time_tag][
+                                original_battery_space
+                            ]
+                            - vehicles_that_get_to_this_space
+                        )
+
+            battery_space[charging_location] = battery_space[
+                charging_location
+            ].reindex(sorted(battery_space[charging_location].columns), axis=1)
+
     return battery_space, charge_drawn_by_vehicles, charge_drawn_from_network
 
 
