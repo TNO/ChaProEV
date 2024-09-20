@@ -175,7 +175,9 @@ def matrix_trips_to_run(
         )
 
 
-def get_possible_destinations(scenario: ty.Dict) -> ty.Dict[str, ty.List[str]]:
+def get_possible_destinations_and_origins(
+    scenario: ty.Dict,
+) -> ty.Tuple[ty.Dict[str, ty.List[str]], ty.Dict[str, ty.List[str]]]:
     '''
     For each location, this gets the possible destinations
     '''
@@ -188,8 +190,10 @@ def get_possible_destinations(scenario: ty.Dict) -> ty.Dict[str, ty.List[str]]:
         if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
     possible_destinations: ty.Dict[str, ty.List[str]] = {}
+    possible_origins: ty.Dict[str, ty.List[str]] = {}
     for location_name in location_names:
         possible_destinations[location_name] = []
+        possible_origins[location_name] = []
     mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
         get_mobility_location_tuples(scenario)
     )
@@ -198,8 +202,10 @@ def get_possible_destinations(scenario: ty.Dict) -> ty.Dict[str, ty.List[str]]:
         destination: str = mobility_location_tuple[1]
         if destination not in possible_destinations[start_location]:
             possible_destinations[start_location].append(destination)
+        if start_location not in possible_origins[destination]:
+            possible_origins[destination].append(start_location)
 
-    return possible_destinations
+    return possible_destinations, possible_origins
 
 
 def get_mobility_location_tuples(

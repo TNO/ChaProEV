@@ -488,8 +488,9 @@ def get_travelling_group_travel_impact(
         #     print(travelling_group_size)
         #     print(percent_in_first_slot)
         #     print(travelling_group_first_slot)
-        #     print(mobility_matrix.loc['truck_hub', 'truck_customer'].iloc[0:15])
-            # exit()
+        #     print(mobility_matrix.loc['truck_hub', 'truck_customer']
+        # .iloc[0:15])
+        # exit()
         # We now look at the impact of arrivals
         mobility_matrix = compute_travel_impact(
             'Arrivals',
@@ -505,9 +506,9 @@ def get_travelling_group_travel_impact(
             vehicle_electricity_consumption,
         )
         # if leg_index == 2:
-        #     print(mobility_matrix.loc['truck_hub', 'truck_customer'].iloc[0:15])
+        #     print(mobility_matrix.loc['truck_hub', 'truck_customer']
+        # .iloc[0:15])
         #     exit()
-
 
         # We update the slots of the group
         travelling_group_first_slot += math.floor(time_after_leg)

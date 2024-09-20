@@ -1,5 +1,4 @@
 import datetime
-import math
 import typing as ty
 
 import numpy as np
@@ -19,19 +18,6 @@ except ModuleNotFoundError:
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
 
-
-try:
-    import define  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import define  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
 
 try:
     import mobility  # type: ignore
@@ -143,8 +129,28 @@ def get_charging_framework(
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
-        run_departures_impact
+        run_departures_impact,
     )
+
+
+def impact_of_departures(
+    battery_space: ty.Dict[str, pd.DataFrame],
+    start_location: str,
+    end_location: str,
+    run_departures_impact: pd.Series,
+) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.Series]:
+
+    return battery_space, run_departures_impact
+
+
+def impact_of_arrivals(
+    battery_space: ty.Dict[str, pd.DataFrame],
+    start_location: str,
+    end_location: str,
+    run_arrivals_impact: pd.Series,
+) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.Series]:
+
+    return battery_space, run_arrivals_impact
 
 
 def travel_space_occupation(
@@ -156,6 +162,7 @@ def travel_space_occupation(
     zero_threshold: float,
     location_names: ty.List[str],
     possible_destinations: ty.Dict[str, ty.List[str]],
+    possible_origins: ty.Dict[str, ty.List[str]],
     use_day_types_in_charge_computing: bool,
     day_start_hour: int,
     location_split: pd.DataFrame,
@@ -181,6 +188,21 @@ def travel_space_occupation(
         ):
             battery_space[location_to_compute].loc[time_tag, 0] = (
                 location_split.loc[time_tag][location_to_compute]
+            )
+
+        for end_location in possible_destinations[location_to_compute]:
+            battery_space, run_departures_impact = impact_of_departures(
+                battery_space,
+                location_to_compute,
+                end_location,
+                run_arrivals_impact,
+            )
+        for start_location in possible_origins[location_to_compute]:
+            battery_space, run_arrivals_impact = impact_of_arrivals(
+                battery_space,
+                start_location,
+                location_to_compute,
+                run_departures_impact,
             )
 
     return battery_space
@@ -615,7 +637,8 @@ def get_charging_profile(
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
-        run_arrivals_impact, run_departures_impact
+        run_arrivals_impact,
+        run_departures_impact,
     ) = get_charging_framework(scenario, case_name, general_parameters)
 
     # We want to either compute charging for the whole run, or only
@@ -659,8 +682,8 @@ def get_charging_profile(
         if location_parameters[location_name]['vehicle'] == vehicle_name
     ]
 
-    possible_destinations: ty.Dict[str, ty.List[str]] = (
-        mobility.get_possible_destinations(scenario)
+    possible_destinations, possible_origins = (
+        mobility.get_possible_detinations_and_origins(scenario)
     )
     scenario_name: str = scenario['scenario_name']
 
@@ -699,6 +722,7 @@ def get_charging_profile(
                 zero_threshold,
                 location_names,
                 possible_destinations,
+                possible_origins,
                 use_day_types_in_charge_computing,
                 day_start_hour,
                 location_split,
