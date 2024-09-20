@@ -2617,7 +2617,7 @@ def get_charging_profile(
         )
 
         filter_dataframe['Hours from day start'] = run_hours_from_day_start
-        # The battery space DataFramehas another index:
+        # The battery space DataFrame has another index:
         filter_for_battery_space: pd.DataFrame = pd.DataFrame(
             run_day_types,
             columns=['Day Type'],
