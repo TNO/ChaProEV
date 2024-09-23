@@ -152,9 +152,10 @@ def impact_of_departures(
     start_location: str,
     end_location: str,
     run_departures_impact: pd.Series,
-) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.Series]:
+    travelling_battery_spaces: pd.DataFrame,
+) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame]:
 
-    return battery_space, run_departures_impact
+    return battery_space, travelling_battery_spaces
 
 
 def impact_of_arrivals(
@@ -162,9 +163,10 @@ def impact_of_arrivals(
     start_location: str,
     end_location: str,
     run_arrivals_impact: pd.Series,
-) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.Series]:
+    travelling_battery_spaces: pd.DataFrame,
+) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame]:
 
-    return battery_space, run_arrivals_impact
+    return battery_space, travelling_battery_spaces
 
 
 def travel_space_occupation(
@@ -181,8 +183,9 @@ def travel_space_occupation(
     day_start_hour: int,
     location_split: pd.DataFrame,
     run_arrivals_impact: pd.Series,
-    run_departuere_impact: pd.Series,
+    run_departures_impact: pd.Series,
     run_range: pd.DatetimeIndex,
+    travelling_battery_spaces: pd.DataFrame,
 ) -> ty.Dict[str, pd.DataFrame]:
 
     for location_to_compute in location_names:
@@ -205,18 +208,20 @@ def travel_space_occupation(
             )
 
         for end_location in possible_destinations[location_to_compute]:
-            battery_space, run_departures_impact = impact_of_departures(
+            battery_space, travelling_battery_spaces = impact_of_departures(
                 battery_space,
                 location_to_compute,
                 end_location,
                 run_arrivals_impact,
+                travelling_battery_spaces,
             )
         for start_location in possible_origins[location_to_compute]:
-            battery_space, run_arrivals_impact = impact_of_arrivals(
+            battery_space, travelling_battery_spaces = impact_of_arrivals(
                 battery_space,
                 start_location,
                 location_to_compute,
                 run_departures_impact,
+                travelling_battery_spaces,
             )
 
     return battery_space
@@ -745,6 +750,7 @@ def get_charging_profile(
                 run_arrivals_impact,
                 run_departures_impact,
                 run_range,
+                travelling_battery_spaces,
             )
 
             # We then look at which charging happens
