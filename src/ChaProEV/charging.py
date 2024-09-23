@@ -44,6 +44,7 @@ def get_charging_framework(
     pd.DataFrame,
     pd.Series,
     pd.Series,
+    pd.DataFrame,
 ]:
     '''
     Produces the structures we want for the charging profiles
@@ -121,6 +122,18 @@ def get_charging_framework(
     )
     charge_drawn_from_network.index.name = 'Time Tag'
 
+    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
+        mobility.get_mobility_location_tuples(scenario)
+    )
+    mobility_locations_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
+        mobility_location_tuples, names=['Origin', 'Destination']
+    )
+    travelling_battery_spaces: pd.DataFrame = pd.DataFrame(
+        np.zeros([len(mobility_locations_index), 1]),
+        columns=[float(0)],
+        index=mobility_locations_index,
+    )
+
     return (
         battery_space,
         run_range,
@@ -130,6 +143,7 @@ def get_charging_framework(
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
         run_departures_impact,
+        travelling_battery_spaces,
     )
 
 
@@ -451,7 +465,8 @@ def copy_day_type_profiles_to_whole_run(
     #     spillover_charge_drawn_by_vehicles,
     #     spillover_charge_drawn_from_network,
     #     battery_space_shift_arrivals_impact,
-    #     run_arrivals_impact, run _departures_impact
+    #     run_arrivals_impact, run _departures_impact,
+    #     travelling_battery_spaces
     # ) = get_charging_framework(scenario, case_name, general_parameters)
 
 
@@ -639,6 +654,7 @@ def get_charging_profile(
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
         run_departures_impact,
+        travelling_battery_spaces,
     ) = get_charging_framework(scenario, case_name, general_parameters)
 
     # We want to either compute charging for the whole run, or only
@@ -683,7 +699,7 @@ def get_charging_profile(
     ]
 
     possible_destinations, possible_origins = (
-        mobility.get_possible_detinations_and_origins(scenario)
+        mobility.get_possible_destinations_and_origins(scenario)
     )
     scenario_name: str = scenario['scenario_name']
 
