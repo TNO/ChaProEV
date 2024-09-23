@@ -44,6 +44,8 @@ def get_charging_framework(
     pd.DataFrame,
     pd.Series,
     pd.Series,
+    pd.Series,
+    pd.Series,
     pd.DataFrame,
 ]:
     '''
@@ -99,9 +101,14 @@ def get_charging_framework(
     run_arrivals_impact: pd.Series = run_mobility_matrix[
         'Arrivals impact'
     ].copy()
+
     run_departures_impact: pd.Series = run_mobility_matrix[
         'Departures impact'
     ].copy()
+
+    run_arrivals: pd.Series = run_mobility_matrix['Arrivals amount'].copy()
+
+    run_departures: pd.Series = run_mobility_matrix['Departures amount'].copy()
 
     battery_space_shift_arrivals_impact: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{scenario_name}_'
@@ -142,29 +149,231 @@ def get_charging_framework(
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
+        run_arrivals,
         run_departures_impact,
+        run_departures,
         travelling_battery_spaces,
     )
 
 
 def impact_of_departures(
+    time_tag: datetime.datetime,
     battery_space: ty.Dict[str, pd.DataFrame],
     start_location: str,
     end_location: str,
     run_departures_impact: pd.Series,
-    travelling_battery_spaces: pd.DataFrame,
+    run_departures: pd.Series,
+    travelling_battery_spaces,  # it's a DataFarame but MyPy gives an error,
+    zero_threshold: float,
+    run_mobility_matrix,  # it's a DataFarame but MyPy gives an error,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame]:
+
+    time_tag_departures_impact: float = run_departures_impact.loc[
+        start_location, end_location, time_tag
+    ]
+    time_tag_departures: float = run_departures.loc[
+        start_location, end_location, time_tag
+    ]
+
+    if time_tag_departures_impact > zero_threshold:
+
+        # We look at which battery spaces there are at this location
+        # and sort them. The lowest battery spaces will be first.
+        # These are the ones we assume are more likely to leave,
+        # as others might want to charge first.
+        departing_battery_spaces: ty.List[float] = sorted(
+            battery_space[start_location].columns.values
+        )
+
+        # We iterate through the departing battery spaces
+        # (reminder, they are ordered from lowest to highest,
+        # as we assumed that the lower the battery space, the higher
+        # the likelihood to leave, as vehicleswith more battery space/
+        # less available battery capacity wll want to charge first).
+
+        for departing_battery_space in departing_battery_spaces:
+            # We will be removing the departures from the lower
+            # battery spaces from the pool, until we have reached
+            # all departures. For example, if we have 0.2 departures
+            # and 0.19 vehicles with space equal to zero, 0.2 vehicles
+            # with space 1, and 0.3 vehicles with space 1.6,
+            # then we will first take all the
+            # 0.19 vehicles with space 0,
+            # 0.01 vehicles with space 1,
+            # and 0 vehicles with space 1.6,
+            # leaving us with 0 vehicles wth space 0,
+            # 0.19 vehicles with
+            # space 1, and 0.3 vehicles with space 1.6
+            if time_tag_departures_impact > zero_threshold:
+                # We do this until there are no departures left
+
+                # We want to know how many departures will come from
+                # the battery space we are looking at. If there are
+                # more vehicles with the current space than remaining
+                # departures, then we take the remaining departures,
+                # otherwise we take all the vehicles with the current
+                # space and move to the next one
+                # This needs to be done separately for the current
+                # time slot and the next one
+                # (because of the issue of effective impact, as
+                # some vehicles stay some of the time)
+
+                this_battery_space_departures_impact_this_time: float = min(
+                    time_tag_departures_impact,
+                    battery_space[start_location].at[
+                        time_tag, departing_battery_space
+                    ],
+                )
+
+                # We update the departures (i.e. how many remain
+                # for larger battery spaces)
+                time_tag_departures_impact -= (
+                    this_battery_space_departures_impact_this_time
+                )
+
+                # We remove the departures from the start
+                # location for the current time slot
+                battery_space[start_location].loc[
+                    time_tag, departing_battery_space
+                ] = (
+                    battery_space[start_location].loc[time_tag][
+                        departing_battery_space
+                    ]
+                    - this_battery_space_departures_impact_this_time
+                )
+
+                # We also add these departures to the travelling battery spaces
+
+                # We we also need the consumption of the leg
+                leg_distance: float = run_mobility_matrix.loc[
+                    start_location, end_location, time_tag
+                ]['Distance (km)']
+                vehicle_electricity_consumption: float = scenario['vehicle'][
+                    'base_consumption_per_km'
+                ]['electricity_kWh']
+
+                this_leg_consumption: float = (
+                    leg_distance * vehicle_electricity_consumption
+                )
+                travelling_battery_space: float = (
+                    departing_battery_space + this_leg_consumption
+                )
+                if (
+                    travelling_battery_space
+                    not in travelling_battery_spaces.columns
+                ):
+                    travelling_battery_spaces[
+                        float(travelling_battery_space)
+                    ] = float(0)
+                travelling_battery_spaces.loc[
+                    (start_location, end_location), travelling_battery_space
+                ] = (
+                    travelling_battery_spaces.loc[
+                        start_location, end_location
+                    ][travelling_battery_space]
+                    + this_battery_space_departures_impact_this_time
+                )
 
     return battery_space, travelling_battery_spaces
 
 
 def impact_of_arrivals(
+    time_tag: datetime.datetime,
     battery_space: ty.Dict[str, pd.DataFrame],
     start_location: str,
     end_location: str,
     run_arrivals_impact: pd.Series,
-    travelling_battery_spaces: pd.DataFrame,
+    run_arrival: pd.Series,
+    travelling_battery_spaces,  #: It's a DataFrame, but MyPy gives an error (
+    # due to the MultiIndex)
+    zero_threshold: float,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame]:
+
+    time_tag_arrivals_impact: float = run_arrivals_impact.loc[
+        start_location, end_location, time_tag
+    ]
+
+    battery_spaces_arriving_to_this_location = travelling_battery_spaces.loc[
+        (start_location, end_location)
+    ]
+
+    if time_tag_arrivals_impact > zero_threshold:
+
+        # We look at which battery spaces can arrive at the end
+        # location. We sort them by size, as the ones with a lower
+        # battery space are more likely to have left their origin first
+
+        arriving_battery_spaces: ty.List[float] = sorted(
+            travelling_battery_spaces.loc[start_location, end_location].index
+        )
+
+        # We iterate through the arriving battery spaces
+        # (reminder, they are ordered from lowest to highest,
+        # as we assumed that the lower the battery space, the higher
+        # the likelihood to leave, as vehicles with more battery space/
+        # less available battery capacity wll want to charge first).
+
+        for arriving_battery_space in arriving_battery_spaces:
+            # We will be removing the arrivals from the lower
+            # battery spaces from the pool, until we have reached
+            # all arrivals. For example, if we have 0.2 arrivals
+            # and 0.19 vehicles with space equal to zero, 0.2 vehicles
+            # with space 1, and 0.3 vehicles with space 1.6,
+            # then we will first take all the
+            # 0.19 vehicles with space 0,
+            # 0.01 vehicles with space 1,
+            # and 0 vehicles with space 1.6,
+            # leaving us with 0 vehicles wth space 0,
+            # 0.19 vehicles with
+            # space 1, and 0.3 vehicles with space 1.6
+            if time_tag_arrivals_impact > zero_threshold:
+                # We do this until there are no departures left
+
+                # We look at how much impact the travelling spaces
+                # can have (it cannot be more than the arrivals impact from
+                # the mobility matrix)
+                this_battery_space_arrivals_impact_this_time: float = min(
+                    time_tag_arrivals_impact,
+                    battery_spaces_arriving_to_this_location.loc[
+                        arriving_battery_space
+                    ],
+                )
+
+                # We update the arrivals:
+                time_tag_arrivals_impact -= (
+                    this_battery_space_arrivals_impact_this_time
+                )
+                # We update the battery spaces:
+                if (
+                    this_battery_space_arrivals_impact_this_time
+                    > zero_threshold
+                ):
+                    if (
+                        arriving_battery_space
+                        not in battery_space[end_location].columns
+                    ):
+                        battery_space[end_location][arriving_battery_space] = (
+                            float(0)
+                        )
+                battery_space[end_location].loc[
+                    time_tag, arriving_battery_space
+                ] = (
+                    battery_space[end_location].loc[time_tag][
+                        arriving_battery_space
+                    ]
+                    + this_battery_space_arrivals_impact_this_time
+                )
+
+                # We alo update the travelling battery spaces (as they have
+                # arrived)
+                travelling_battery_spaces.loc[
+                    (start_location, end_location), arriving_battery_space
+                ] = (
+                    travelling_battery_spaces.loc[
+                        start_location, end_location
+                    ][arriving_battery_space]
+                    - this_battery_space_arrivals_impact_this_time
+                )
 
     return battery_space, travelling_battery_spaces
 
@@ -183,7 +392,9 @@ def travel_space_occupation(
     day_start_hour: int,
     location_split: pd.DataFrame,
     run_arrivals_impact: pd.Series,
+    run_arrivals: pd.Series,
     run_departures_impact: pd.Series,
+    run_departures: pd.Series,
     run_range: pd.DatetimeIndex,
     travelling_battery_spaces: pd.DataFrame,
 ) -> ty.Dict[str, pd.DataFrame]:
@@ -207,21 +418,34 @@ def travel_space_occupation(
                 location_split.loc[time_tag][location_to_compute]
             )
 
-        for end_location in possible_destinations[location_to_compute]:
-            battery_space, travelling_battery_spaces = impact_of_departures(
-                battery_space,
-                location_to_compute,
-                end_location,
-                run_arrivals_impact,
-                travelling_battery_spaces,
-            )
+        # We need to look at the impact of arrivals first
+        # because if we look at departures first, we might go wrong,
+        # as some departures will be deemd not happening because
+        # the battery space occupation would drop below zero (and
+        # because we do the computations for occupations above zero)
         for start_location in possible_origins[location_to_compute]:
             battery_space, travelling_battery_spaces = impact_of_arrivals(
+                time_tag,
                 battery_space,
                 start_location,
                 location_to_compute,
-                run_departures_impact,
+                run_arrivals_impact,
+                run_arrivals,
                 travelling_battery_spaces,
+                zero_threshold,
+            )
+
+        for end_location in possible_destinations[location_to_compute]:
+            battery_space, travelling_battery_spaces = impact_of_departures(
+                time_tag,
+                battery_space,
+                location_to_compute,
+                end_location,
+                run_departures_impact,
+                run_departures,
+                travelling_battery_spaces,
+                zero_threshold,
+                run_mobility_matrix,
             )
 
     return battery_space
@@ -470,7 +694,8 @@ def copy_day_type_profiles_to_whole_run(
     #     spillover_charge_drawn_by_vehicles,
     #     spillover_charge_drawn_from_network,
     #     battery_space_shift_arrivals_impact,
-    #     run_arrivals_impact, run _departures_impact,
+    #     run_arrivals_impact, run_arrivals, run _departures_impact,
+    #     run_departures
     #     travelling_battery_spaces
     # ) = get_charging_framework(scenario, case_name, general_parameters)
 
@@ -658,7 +883,9 @@ def get_charging_profile(
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
+        run_arrivals,
         run_departures_impact,
+        run_departures,
         travelling_battery_spaces,
     ) = get_charging_framework(scenario, case_name, general_parameters)
 
@@ -748,7 +975,9 @@ def get_charging_profile(
                 day_start_hour,
                 location_split,
                 run_arrivals_impact,
+                run_arrivals,
                 run_departures_impact,
+                run_departures,
                 run_range,
                 travelling_battery_spaces,
             )
