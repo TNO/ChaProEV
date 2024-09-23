@@ -44,8 +44,6 @@ def get_charging_framework(
     pd.DataFrame,
     pd.Series,
     pd.Series,
-    pd.Series,
-    pd.Series,
     pd.DataFrame,
 ]:
     '''
@@ -106,10 +104,6 @@ def get_charging_framework(
         'Departures impact'
     ].copy()
 
-    run_arrivals: pd.Series = run_mobility_matrix['Arrivals amount'].copy()
-
-    run_departures: pd.Series = run_mobility_matrix['Departures amount'].copy()
-
     battery_space_shift_arrivals_impact: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{scenario_name}_'
         f'run_battery_space_shifts_departures_impact.pkl'
@@ -149,9 +143,7 @@ def get_charging_framework(
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
-        run_arrivals,
         run_departures_impact,
-        run_departures,
         travelling_battery_spaces,
     )
 
@@ -162,16 +154,12 @@ def impact_of_departures(
     start_location: str,
     end_location: str,
     run_departures_impact: pd.Series,
-    run_departures: pd.Series,
     travelling_battery_spaces,  # it's a DataFarame but MyPy gives an error,
     zero_threshold: float,
     run_mobility_matrix,  # it's a DataFarame but MyPy gives an error,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame]:
 
     time_tag_departures_impact: float = run_departures_impact.loc[
-        start_location, end_location, time_tag
-    ]
-    time_tag_departures: float = run_departures.loc[
         start_location, end_location, time_tag
     ]
 
@@ -283,7 +271,6 @@ def impact_of_arrivals(
     start_location: str,
     end_location: str,
     run_arrivals_impact: pd.Series,
-    run_arrival: pd.Series,
     travelling_battery_spaces,  #: It's a DataFrame, but MyPy gives an error (
     # due to the MultiIndex)
     zero_threshold: float,
@@ -392,9 +379,7 @@ def travel_space_occupation(
     day_start_hour: int,
     location_split: pd.DataFrame,
     run_arrivals_impact: pd.Series,
-    run_arrivals: pd.Series,
     run_departures_impact: pd.Series,
-    run_departures: pd.Series,
     run_range: pd.DatetimeIndex,
     travelling_battery_spaces: pd.DataFrame,
 ) -> ty.Dict[str, pd.DataFrame]:
@@ -430,7 +415,6 @@ def travel_space_occupation(
                 start_location,
                 location_to_compute,
                 run_arrivals_impact,
-                run_arrivals,
                 travelling_battery_spaces,
                 zero_threshold,
             )
@@ -442,7 +426,6 @@ def travel_space_occupation(
                 location_to_compute,
                 end_location,
                 run_departures_impact,
-                run_departures,
                 travelling_battery_spaces,
                 zero_threshold,
                 run_mobility_matrix,
@@ -589,115 +572,117 @@ def copy_day_type_profiles_to_whole_run(
     This copies the day type runs to whe whole run
     '''
 
-    # day_start_hour: int = scenario['mobility_module']['day_start_hour']
-    # HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
-    # run_hours_from_day_start: ty.List[int] = [
-    #     (time_tag.hour - day_start_hour) % HOURS_IN_A_DAY
-    #     for time_tag in run_range
-    # ]
+    day_start_hour: int = scenario['mobility_module']['day_start_hour']
+    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
+    run_hours_from_day_start: ty.List[int] = [
+        (time_tag.hour - day_start_hour) % HOURS_IN_A_DAY
+        for time_tag in run_range
+    ]
 
-    # run_day_types: ty.List[str] = [
-    #     run_time.get_day_type(
-    #         time_tag - datetime.timedelta(hours=day_start_hour),
-    #         scenario,
-    #         general_parameters,
-    #     )
-    #     for time_tag in run_range
-    # ]
+    run_day_types: ty.List[str] = [
+        run_time.get_day_type(
+            time_tag - datetime.timedelta(hours=day_start_hour),
+            scenario,
+            general_parameters,
+        )
+        for time_tag in run_range
+    ]
 
-    # vehicle_parameters: ty.Dict = scenario['vehicle']
-    # vehicle_name: str = vehicle_parameters['name']
+    vehicle_parameters: ty.Dict = scenario['vehicle']
+    vehicle_name: str = vehicle_parameters['name']
 
-    # location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-    #     'locations'
-    # ]
-    # location_names: ty.List[str] = [
-    #     location_name
-    #     for location_name in location_parameters
-    #     if location_parameters[location_name]['vehicle'] == vehicle_name
-    # ]
+    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
+        'locations'
+    ]
+    location_names: ty.List[str] = [
+        location_name
+        for location_name in location_parameters
+        if location_parameters[location_name]['vehicle'] == vehicle_name
+    ]
 
-    # filter_dataframe: pd.DataFrame = pd.DataFrame(
-    #     run_day_types, columns=['Day Type'], index=run_range
-    # )
+    filter_dataframe: pd.DataFrame = pd.DataFrame(
+        run_day_types, columns=['Day Type'], index=run_range
+    )
 
-    # filter_dataframe['Hours from day start'] = run_hours_from_day_start
-    # # The battery space DataFrame has another index:
-    # filter_for_battery_space: pd.DataFrame = pd.DataFrame(
-    #     run_day_types,
-    #     columns=['Day Type'],
-    #     index=battery_space[location_names[0]].index,
-    # )
-    # filter_for_battery_space['Hours from day start'] = run_hours_from_day_start
-    # day_types: ty.List[str] = scenario['mobility_module']['day_types']
+    filter_dataframe['Hours from day start'] = run_hours_from_day_start
+    # The battery space DataFrame has another index:
+    filter_for_battery_space: pd.DataFrame = pd.DataFrame(
+        run_day_types,
+        columns=['Day Type'],
+        index=battery_space[location_names[0]].index,
+    )
+    filter_for_battery_space['Hours from day start'] = run_hours_from_day_start
+    day_types: ty.List[str] = scenario['mobility_module']['day_types']
 
-    # for day_type in day_types:
-    #     for hour_index in range(HOURS_IN_A_DAY):
-    #         charge_drawn_from_network.loc[
-    #             (filter_dataframe['Day Type'] == day_type)
-    #             & (filter_dataframe['Hours from day start'] == hour_index)
-    #         ] = charge_drawn_from_network.loc[
-    #             reference_day_type_time_tags[day_type][hour_index]
-    #         ].values
-    #         charge_drawn_by_vehicles.loc[
-    #             (filter_dataframe['Day Type'] == day_type)
-    #             & (filter_dataframe['Hours from day start'] == hour_index)
-    #         ] = charge_drawn_by_vehicles.loc[
-    #             reference_day_type_time_tags[day_type][hour_index]
-    #         ].values
-    #         for location_name in location_names:
-    #             battery_space[location_name].loc[
-    #                 (filter_for_battery_space['Day Type'] == day_type)
-    #                 & (
-    #                     filter_for_battery_space['Hours from day start']
-    #                     == hour_index
-    #                 )
-    #             ] = (
-    #                 battery_space[location_name]
-    #                 .loc[reference_day_type_time_tags[day_type][hour_index]]
-    #                 .values
-    #             )
+    for day_type in day_types:
+        for hour_index in range(HOURS_IN_A_DAY):
+            charge_drawn_from_network.loc[
+                (filter_dataframe['Day Type'] == day_type)
+                & (filter_dataframe['Hours from day start'] == hour_index)
+            ] = charge_drawn_from_network.loc[
+                reference_day_type_time_tags[day_type][hour_index]
+            ].values
+            charge_drawn_by_vehicles.loc[
+                (filter_dataframe['Day Type'] == day_type)
+                & (filter_dataframe['Hours from day start'] == hour_index)
+            ] = charge_drawn_by_vehicles.loc[
+                reference_day_type_time_tags[day_type][hour_index]
+            ].values
+            for location_name in location_names:
+                battery_space[location_name].loc[
+                    (filter_for_battery_space['Day Type'] == day_type)
+                    & (
+                        filter_for_battery_space['Hours from day start']
+                        == hour_index
+                    )
+                ] = (
+                    battery_space[location_name]
+                    .loc[reference_day_type_time_tags[day_type][hour_index]]
+                    .values
+                )
 
-    # # The per day type appraoch has possible issues with cases where
-    # # a shift occurs over several days (such as holiday departures or
-    # # returns occurring over the two days of a weekend).
-    # # We therefore need to ensure that the sum of battery spaces is
-    # # equal to the location split. We do this by adjustinmg the battery
-    # # space with 0 kWh.
+    # The per day type approach has possible issues with cases where
+    # a shift occurs over several days (such as holiday departures or
+    # returns occurring over the two days of a weekend).
+    # We therefore need to ensure that the sum of battery spaces is
+    # equal to the location split. We do this by adjustinmg the battery
+    # space with 0 kWh.
 
-    # for location_name in location_names:
+    for location_name in location_names:
 
-    #     totals_from_battery_space: pd.DataFrame | pd.Series = battery_space[
-    #         location_name
-    #     ].sum(axis=1)
+        totals_from_battery_space: pd.DataFrame | pd.Series = battery_space[
+            location_name
+        ].sum(axis=1)
 
-    #     target_location_split: pd.DataFrame | pd.Series = location_split[
-    #         location_name
-    #     ]
+        target_location_split: pd.DataFrame | pd.Series = location_split[
+            location_name
+        ]
 
-    #     location_correction: pd.DataFrame | pd.Series = (
-    #         target_location_split - totals_from_battery_space
-    #     ).astype(
-    #         float
-    #     )  # astype to keep type
+        location_correction: pd.DataFrame | pd.Series = (
+            target_location_split - totals_from_battery_space
+        ).astype(
+            float
+        )  # astype to keep type
 
-    #     battery_space[location_name][0] = (
-    #         battery_space[location_name][0] + location_correction
-    #     )
+        battery_space[location_name][0] = (
+            battery_space[location_name][0] + location_correction
+        )
 
-    # # Some trips result in charging events spilling over int the next day
+    # Some trips result in charging events spilling over int the next day
 
-    # (
-    #     spillover_battery_space,
-    #     run_range,
-    #     run_mobility_matrix,
-    #     spillover_charge_drawn_by_vehicles,
-    #     spillover_charge_drawn_from_network,
-    #     battery_space_shift_arrivals_impact,
-    #     run_arrivals_impact, run_arrivals, run _departures_impact,
-    #     run_departures
-    #     travelling_battery_spaces
-    # ) = get_charging_framework(scenario, case_name, general_parameters)
+    (
+        spillover_battery_space,
+        run_range,
+        run_mobility_matrix,
+        spillover_charge_drawn_by_vehicles,
+        spillover_charge_drawn_from_network,
+        battery_space_shift_arrivals_impact,
+        run_arrivals_impact,
+        run_arrivals,
+        run_departures_impact,
+        run_departures,
+        travelling_battery_spaces,
+    ) = get_charging_framework(scenario, case_name, general_parameters)
 
 
 def write_output(
@@ -883,9 +868,7 @@ def get_charging_profile(
         charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
-        run_arrivals,
         run_departures_impact,
-        run_departures,
         travelling_battery_spaces,
     ) = get_charging_framework(scenario, case_name, general_parameters)
 
@@ -975,9 +958,7 @@ def get_charging_profile(
                 day_start_hour,
                 location_split,
                 run_arrivals_impact,
-                run_arrivals,
                 run_departures_impact,
-                run_departures,
                 run_range,
                 travelling_battery_spaces,
             )
