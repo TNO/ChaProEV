@@ -567,6 +567,11 @@ def copy_day_type_profiles_to_whole_run(
     reference_day_type_time_tags: ty.Dict[str, ty.List[datetime.datetime]],
     location_split: pd.DataFrame,
     battery_space: ty.Dict[str, pd.DataFrame],
+    day_end_hour: int,
+    zero_threshold: float,
+    possible_destinations: ty.Dict[str, ty.List[str]],
+    possible_origins: ty.Dict[str, ty.List[str]],
+    use_day_types_in_charge_computing: bool,
 ) -> None:
     '''
     This copies the day type runs to whe whole run
@@ -678,11 +683,128 @@ def copy_day_type_profiles_to_whole_run(
         spillover_charge_drawn_from_network,
         battery_space_shift_arrivals_impact,
         run_arrivals_impact,
-        run_arrivals,
         run_departures_impact,
-        run_departures,
         travelling_battery_spaces,
     ) = get_charging_framework(scenario, case_name, general_parameters)
+
+    for location_name in location_names:
+        spillover_battery_space[location_name][
+            battery_space[location_name].columns
+        ] = float(0)
+
+    for location_name in location_names:
+        day_end_battery_space: pd.DataFrame = battery_space[location_name].loc[
+            run_range.hour == day_end_hour
+        ]
+        non_empty_day_end_battery_space: pd.DataFrame = (
+            day_end_battery_space.drop(columns=float(0))
+        )
+        day_ends_with_leftover_battery_space = (
+            non_empty_day_end_battery_space.loc[
+                non_empty_day_end_battery_space.sum(axis=1) > zero_threshold
+            ].index.get_level_values('Time Tag')
+        )
+
+        for day_end_time_tag in day_ends_with_leftover_battery_space:
+
+            spillover_battery_space[location_name].loc[day_end_time_tag] = (
+                battery_space[location_name].loc[day_end_time_tag].values
+            )
+
+            spillover_time_tag_index: int = list(run_range).index(
+                day_end_time_tag
+            )
+
+            amount_in_spillover = (
+                spillover_battery_space[location_name]
+                .drop(columns=float(0))
+                .loc[day_end_time_tag]
+                .sum()
+            )
+
+            while amount_in_spillover > zero_threshold:
+                spillover_time_tag_index += 1
+                if spillover_time_tag_index >= len(run_range) - 1:
+                    amount_in_spillover = 0
+
+                spillover_time_tag: ty.Any = run_range[
+                    spillover_time_tag_index
+                ]
+                # used Any (and less hints above because MyPy seems
+                # to get wrong type matches)
+                (spillover_battery_space) = travel_space_occupation(
+                    spillover_battery_space,
+                    spillover_time_tag,
+                    spillover_time_tag_index,
+                    run_mobility_matrix,
+                    zero_threshold,
+                    location_names,
+                    possible_destinations,
+                    possible_origins,
+                    use_day_types_in_charge_computing,
+                    day_start_hour,
+                    location_split,
+                    run_arrivals_impact,
+                    run_departures_impact,
+                    run_range,
+                    travelling_battery_spaces,
+                )
+
+                (
+                    spillover_battery_space,
+                    spillover_charge_drawn_by_vehicles,
+                    spillover_charge_drawn_from_network,
+                ) = compute_charging_events(
+                    spillover_battery_space,
+                    spillover_charge_drawn_by_vehicles,
+                    spillover_charge_drawn_from_network,
+                    spillover_time_tag,
+                    scenario,
+                    general_parameters,
+                )
+
+                amount_in_spillover = (
+                    spillover_battery_space[location_name]
+                    .drop(columns=float(0))
+                    .loc[spillover_time_tag]
+                    .sum()
+                )
+
+                battery_space[location_name].loc[
+                    spillover_time_tag, float(0)
+                ] = (
+                    battery_space[location_name].loc[spillover_time_tag][
+                        float(0)
+                    ]
+                    - amount_in_spillover
+                )
+
+                non_zero_battery_spaces = battery_space[location_name].columns[
+                    1:
+                ]
+                battery_space[location_name].loc[
+                    spillover_time_tag, non_zero_battery_spaces
+                ] = (
+                    battery_space[location_name].loc[spillover_time_tag][
+                        non_zero_battery_spaces
+                    ]
+                    + spillover_battery_space[location_name].loc[
+                        spillover_time_tag
+                    ][non_zero_battery_spaces]
+                )
+                charge_drawn_by_vehicles.loc[
+                    spillover_time_tag, location_name
+                ] = spillover_charge_drawn_by_vehicles.loc[spillover_time_tag][
+                    location_name
+                ]
+
+                charge_drawn_from_network.loc[
+                    spillover_time_tag, location_name
+                ] = spillover_charge_drawn_from_network.loc[
+                    spillover_time_tag
+                ][
+                    location_name
+                ]
 
 
 def write_output(
@@ -992,6 +1114,11 @@ def get_charging_profile(
             reference_day_type_time_tags,
             location_split,
             battery_space,
+            day_end_hour,
+            zero_threshold,
+            possible_destinations,
+            possible_origins,
+            use_day_types_in_charge_computing,
         )
 
     write_output(
