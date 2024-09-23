@@ -436,8 +436,8 @@ def get_travelling_group_travel_impact(
         exit()
     # The trips start uniformly within the first slot
 
-    print(travelling_group_first_slot)
-    print(percent_in_first_slot)
+    # print(travelling_group_first_slot)
+    # print(percent_in_first_slot)
 
     for leg_index, (
         leg_origin,
@@ -517,8 +517,8 @@ def get_travelling_group_travel_impact(
         if percent_in_first_slot <= 0:
             travelling_group_first_slot += 1
             percent_in_first_slot = 1 + percent_in_first_slot
-        print(travelling_group_first_slot)
-        print(percent_in_first_slot)
+        # print(travelling_group_first_slot)
+        # print(percent_in_first_slot)
 
         if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
             print('Trip extending beond day end. Check your entry')
@@ -570,8 +570,18 @@ def get_location_split_and_impact_of_departures_and_arrivals(
                     HOURS_IN_A_DAY,
                 )
         # print(mobility_matrix.loc['truck_hub'])
+        print(location_split)
+        print(mobility_matrix)
+        print(location_names)
+        possible_origins: ty.List[str] = list(
+            set(
+                mobility_matrix.index.get_level_values('From')
+            )
+        )
+        # print(possible_origins)
         # exit()
-        for start_location in location_names:
+        # exit()
+        for start_location in possible_origins:
             possible_destinations: ty.List[str] = list(
                 set(
                     (
@@ -713,16 +723,7 @@ class Trip:
     ) -> None:
         trip.name: str = name
         vehicle_parameters: ty.Dict = scenario['vehicle']
-        vehicle_name: str = vehicle_parameters['name']
 
-        location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-            'locations'
-        ]
-        location_names: ty.List[str] = [
-            location_name
-            for location_name in location_parameters
-            if location_parameters[location_name]['vehicle'] == vehicle_name
-        ]
         trip_parameters: ty.Dict = scenario['trips'][name]
         trip.legs: ty.List[str] = trip_parameters['legs']
         trip.time_between_legs: ty.List[float] = trip_parameters[
@@ -753,6 +754,7 @@ class Trip:
         ]
 
         trip_legs_store: ty.List[str] = trip.legs.copy()
+
         time_between_legs_store: ty.List[float] = trip.time_between_legs.copy()
         leg_driving_times_store: ty.List[float] = trip.leg_driving_times.copy()
         if len(trip.repeated_sequence) > 0:
@@ -840,6 +842,10 @@ class Trip:
             scenario['legs'][leg_name]['locations']['end']
             for leg_name in trip.legs
         ]
+        trip.location_names: ty.List[str] = list(
+            set(trip.start_locations_of_legs + trip.end_locations_of_legs)
+        )
+
         trip.leg_distances: ty.List[float] = [
             scenario['legs'][leg_name]['distance'] for leg_name in trip.legs
         ]
@@ -912,6 +918,7 @@ class Trip:
         mobility_quantities: ty.List[str] = scenario['mobility_module'][
             'mobility_quantities'
         ]
+
         trip.mobility_matrix: pd.DataFrame = pd.DataFrame(
             np.zeros((len(mobility_index), len(mobility_quantities))),
             columns=mobility_quantities,
@@ -1028,8 +1035,8 @@ class Trip:
 
         # We want to track where the vehicle is
         trip.location_split: pd.DataFrame = pd.DataFrame(
-            np.zeros((HOURS_IN_A_DAY, len(location_names))),
-            columns=location_names,
+            np.zeros((HOURS_IN_A_DAY, len(trip.location_names))),
+            columns=trip.location_names,
             index=range(HOURS_IN_A_DAY),
         )
         trip.location_split.index.name = 'Hour in day (from day start)'
@@ -1043,9 +1050,10 @@ class Trip:
                 'locations'
             ]['start']
             trip.location_split[initial_location] = 1
+
         trip.location_split, trip.mobility_matrix = (
             get_location_split_and_impact_of_departures_and_arrivals(
-                location_names,
+                trip.location_names,
                 trip.location_split,
                 trip.mobility_matrix,
                 trip.start_probabilities,
@@ -2101,7 +2109,7 @@ class Trip:
             trip.location_split.copy()
         )
 
-        for location_name in location_names:
+        for location_name in trip.location_names:
             location_connectivity: float = scenario['locations'][
                 location_name
             ]['connectivity']
@@ -2322,8 +2330,8 @@ class Trip:
         )
 
         trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
-            np.zeros((HOURS_IN_A_DAY, len(location_names))),
-            columns=location_names,
+            np.zeros((HOURS_IN_A_DAY, len(trip.location_names))),
+            columns=trip.location_names,
             index=range(HOURS_IN_A_DAY),
         )
         trip.next_leg_kilometers.index.name = 'Hour number (from day start)'
@@ -2766,7 +2774,7 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_truck'
+    test_scenario_name: str = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
@@ -2790,28 +2798,28 @@ if __name__ == '__main__':
     # for location in locations:
     #     print(location.name, location.connectivity, location.charging_power)
 
-    for trip in trips:
-        # print(
-        #     trip.name,
-        #     trip.legs,
-        #     trip.percentage_station_users,
-        #     trip.start_probabilities,
-        #     trip.time_between_legs,
-        #     # trip.location_split
-        # )
-        # print(trip.name)
-        # print(trip.location_split)
-        # print(trip.connectivity)
-        # print(trip.percentage_driving)
-        # print(trip.percentage_driving.sum())
-        # print(trip.partial_time_stay_corrections)
-        print(trip.time_between_legs)
-        print(trip.location_split)
-        print(trip.location_split.sum(axis=0))
-        # if trip.name == 'bus_weekday_in_holiday_week':
-        #     print(trip.mobility_matrix.loc['bus_route_start',
-        # 'bus_route_end'])
-        #     exit()
+    # for trip in trips:
+    #     # print(
+    #     #     trip.name,
+    #     #     trip.legs,
+    #     #     trip.percentage_station_users,
+    #     #     trip.start_probabilities,
+    #     #     trip.time_between_legs,
+    #     #     # trip.location_split
+    #     # )
+    #     # print(trip.name)
+    #     # print(trip.location_split)
+    #     # print(trip.connectivity)
+    #     # print(trip.percentage_driving)
+    #     # print(trip.percentage_driving.sum())
+    #     # print(trip.partial_time_stay_corrections)
+    #     print(trip.time_between_legs)
+    #     print(trip.location_split)
+    #     print(trip.location_split.sum(axis=0))
+    #     # if trip.name == 'bus_weekday_in_holiday_week':
+    #     #     print(trip.mobility_matrix.loc['bus_route_start',
+    #     # 'bus_route_end'])
+    #     exit()
 
     print((datetime.datetime.now() - start_).total_seconds())
 

@@ -113,7 +113,7 @@ percentage_in_location_at_run_start = 0
 [locations.bus_depot]
 vehicle = 'bus'
 connectivity = 1
-charging_power = 200  # kW
+charging_power = 600  # kW
 charger_efficiency = 0.85
 latitude = 52
 longitude = 6.2
@@ -126,7 +126,7 @@ percentage_in_location_at_run_start = 1
 [locations.bus_route_start]
 vehicle = 'bus'
 connectivity = 1
-charging_power = 200  # kW
+charging_power = 600  # kW
 charger_efficiency = 0.85
 latitude = 52
 longitude = 6.2
@@ -139,7 +139,7 @@ percentage_in_location_at_run_start = 1
 [locations.bus_route_end]
 vehicle = 'bus'
 connectivity = 1
-charging_power = 200  # kW
+charging_power = 600  # kW
 charger_efficiency = 0.85
 latitude = 52
 longitude = 6.2
@@ -828,12 +828,12 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 2, 0, 0.5, 0]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -842,7 +842,7 @@ repeated_sequence = [
     'bus_from_route_end_to_route_start'
     ]
 repetition_amounts = [3, 3]
-time_between_repetitions = [0.5, 0.5] # hours
+time_between_repetitions = [0.1, 0.22] # hours
 
 [trips.bus_weekend_in_workweek]
 vehicle = 'bus'
@@ -856,12 +856,12 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 2, 0, 0.5, 0]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -870,7 +870,7 @@ repeated_sequence = [
     'bus_from_route_end_to_route_start'
     ]
 repetition_amounts = [2, 2]
-time_between_repetitions = [0.5, 0.5] # hours
+time_between_repetitions = [0.1, 0.22] # hours
 
 
 [trips.bus_weekday_in_holiday_week]
@@ -885,12 +885,12 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 3, 0, 0.25, 0]
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.8, 0.2, 0, 0, 0, 0, 0,
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -898,8 +898,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [4, 2]
-time_between_repetitions = [0.25, 0.25] # hours # [1, 1]
+repetition_amounts = [2, 2]
+time_between_repetitions = [0.2, 0.42] # hours
 
 [trips.bus_weekend_in_holiday_week]
 vehicle = 'bus'
@@ -913,14 +913,12 @@ legs = [
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.5, 1, 2, 0, 0.5, 0]
-# time_between_legs = [0, 0.25, 0, 2, 0, 0.5, 0]
-
+time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -929,8 +927,7 @@ repeated_sequence = [
     'bus_from_route_end_to_route_start'
     ]
 repetition_amounts = [1, 1]
-time_between_repetitions = [0.5, 0.5] # hours
-
+time_between_repetitions = [0.1, 0.22] # hours
 
 
 
@@ -941,31 +938,7 @@ legs = [
     'truck_to_hub',
 ]
 
-time_between_legs = [0.5]
-# This is the time spent at each interim location (same units as used
-# general
-percentage_station_users = 0
-start_probabilities = [
-    0, 0.5, 0.5, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0
-]  # Start at day start hour
-repeated_sequence = [
-    'truck_to_customer',
-    'truck_to_hub',
-    ]
-repetition_amounts = [3]
-time_between_repetitions = [0.5] # hours
-
-
-[trips.truck_weekend]
-vehicle = 'truck'
-legs = [
-    'truck_to_customer',
-    'truck_to_hub',
-]
-
-time_between_legs = [0.5]
+time_between_legs =  [0.8] #[1.5] #  [2] # [0.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -979,9 +952,31 @@ repeated_sequence = [
     'truck_to_hub',
     ]
 repetition_amounts = [2]
-time_between_repetitions = [1] # hours
+time_between_repetitions = [1.7] # [4.5] # [0.5] # [1.5]  # [0.5] # hours
 
 
+[trips.truck_weekend]
+vehicle = 'truck'
+legs = [
+    'truck_to_customer',
+    'truck_to_hub',
+]
+
+time_between_legs =  [1] #[1.5]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 1, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    'truck_to_customer',
+    'truck_to_hub',
+    ]
+repetition_amounts = [2]
+time_between_repetitions = [1] #[1.5] # hours
 
 
 
@@ -1006,7 +1001,7 @@ time_between_legs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0, 0.25, 0.5, 0.25, 0, 0,
+    0, 0, 0.25, 0.5, 0.55, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -1036,7 +1031,7 @@ time_between_legs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5 , 0.5]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0, 0.25, 0.5, 0.25, 0, 0,
+    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -1068,12 +1063,21 @@ day_types = [
 
 mobility_quantities = [
     'Departures amount', 'Departures kilometers',
-    'Departures weighted kilometers',
+    'Departures weighted kilometers', 'Departures impact',
+    'Departures impact kilometers', 'Departures impact weighted kilometers',
     'Arrivals amount', 'Arrivals kilometers',
     'Arrivals weighted kilometers',
+    'Arrivals impact', 'Arrivals impact kilometers', 
+    'Arrivals impact weighted kilometers',
     # 'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
 ]
 
+battery_space_shift_quantities = [
+    'departures', 'departures_weighted',
+    'departures_impact', 'departures_impact_weighted',
+    'arrivals', 'arrivals_weighted',
+    'arrivals_impact', 'arrivals_impact_weighted',
+]
 location_connections_headers = [
     'Duration (hours)', 'Distance (km)', 'Weighted distance (km)']
 
@@ -1324,3 +1328,5 @@ fitting_polynomial_order = 6
 
 
 [charging]
+
+

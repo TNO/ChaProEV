@@ -41,7 +41,6 @@ def get_charging_framework(
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
-    pd.DataFrame,
     pd.Series,
     pd.Series,
     pd.DataFrame,
@@ -104,11 +103,6 @@ def get_charging_framework(
         'Departures impact'
     ].copy()
 
-    battery_space_shift_arrivals_impact: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}_'
-        f'run_battery_space_shifts_departures_impact.pkl'
-    )
-
     # We create the Dataframes for the charge drawn
     charge_drawn_by_vehicles: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), len(location_names))),
@@ -141,7 +135,6 @@ def get_charging_framework(
         run_mobility_matrix,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-        battery_space_shift_arrivals_impact,
         run_arrivals_impact,
         run_departures_impact,
         travelling_battery_spaces,
@@ -149,6 +142,7 @@ def get_charging_framework(
 
 
 def impact_of_departures(
+    scenario: ty.Dict,
     time_tag: datetime.datetime,
     battery_space: ty.Dict[str, pd.DataFrame],
     start_location: str,
@@ -247,20 +241,32 @@ def impact_of_departures(
                     departing_battery_space + this_leg_consumption
                 )
                 if (
-                    travelling_battery_space
-                    not in travelling_battery_spaces.columns
+                    this_battery_space_departures_impact_this_time
+                    > zero_threshold
                 ):
-                    travelling_battery_spaces[
-                        float(travelling_battery_space)
-                    ] = float(0)
-                travelling_battery_spaces.loc[
-                    (start_location, end_location), travelling_battery_space
-                ] = (
+                    if (
+                        travelling_battery_space
+                        not in travelling_battery_spaces.columns
+                    ):
+                        travelling_battery_spaces[
+                            float(travelling_battery_space)
+                        ] = float(0)
+                        travelling_battery_spaces = (
+                            travelling_battery_spaces.reindex(
+                                sorted(travelling_battery_spaces.columns),
+                                axis=1,
+                            )
+                        )
+
                     travelling_battery_spaces.loc[
-                        start_location, end_location
-                    ][travelling_battery_space]
-                    + this_battery_space_departures_impact_this_time
-                )
+                        (start_location, end_location),
+                        travelling_battery_space,
+                    ] = (
+                        travelling_battery_spaces.loc[
+                            start_location, end_location
+                        ][travelling_battery_space]
+                        + this_battery_space_departures_impact_this_time
+                    )
 
     return battery_space, travelling_battery_spaces
 
@@ -301,6 +307,7 @@ def impact_of_arrivals(
         # less available battery capacity wll want to charge first).
 
         for arriving_battery_space in arriving_battery_spaces:
+            
             # We will be removing the arrivals from the lower
             # battery spaces from the pool, until we have reached
             # all arrivals. For example, if we have 0.2 arrivals
@@ -314,6 +321,9 @@ def impact_of_arrivals(
             # 0.19 vehicles with
             # space 1, and 0.3 vehicles with space 1.6
             if time_tag_arrivals_impact > zero_threshold:
+                # print(arriving_battery_space)
+                # print(battery_spaces_arriving_to_this_location)
+
                 # We do this until there are no departures left
 
                 # We look at how much impact the travelling spaces
@@ -325,23 +335,21 @@ def impact_of_arrivals(
                         arriving_battery_space
                     ],
                 )
-
+                # print('Sort index!')
                 # We update the arrivals:
                 time_tag_arrivals_impact -= (
                     this_battery_space_arrivals_impact_this_time
                 )
                 # We update the battery spaces:
                 if (
-                    this_battery_space_arrivals_impact_this_time
-                    > zero_threshold
+                    arriving_battery_space
+                    not in battery_space[end_location].columns.values
                 ):
-                    if (
-                        arriving_battery_space
-                        not in battery_space[end_location].columns
-                    ):
-                        battery_space[end_location][arriving_battery_space] = (
-                            float(0)
-                        )
+                    battery_space[end_location][arriving_battery_space] = (
+                        float(0)
+                    )
+
+                # print(battery_space[end_location])
                 battery_space[end_location].loc[
                     time_tag, arriving_battery_space
                 ] = (
@@ -366,6 +374,7 @@ def impact_of_arrivals(
 
 
 def travel_space_occupation(
+    scenario: ty.Dict,
     battery_space: ty.Dict[str, pd.DataFrame],
     time_tag: datetime.datetime,
     time_tag_index: int,
@@ -421,6 +430,7 @@ def travel_space_occupation(
 
         for end_location in possible_destinations[location_to_compute]:
             battery_space, travelling_battery_spaces = impact_of_departures(
+                scenario,
                 time_tag,
                 battery_space,
                 location_to_compute,
@@ -535,6 +545,7 @@ def compute_charging_events(
                             battery_space[charging_location][
                                 battery_space_after_charging
                             ] = float(0)
+                            
 
                         battery_space[charging_location].loc[
                             time_tag, battery_space_after_charging
@@ -681,7 +692,6 @@ def copy_day_type_profiles_to_whole_run(
         run_mobility_matrix,
         spillover_charge_drawn_by_vehicles,
         spillover_charge_drawn_from_network,
-        battery_space_shift_arrivals_impact,
         run_arrivals_impact,
         run_departures_impact,
         travelling_battery_spaces,
@@ -733,6 +743,7 @@ def copy_day_type_profiles_to_whole_run(
                 # used Any (and less hints above because MyPy seems
                 # to get wrong type matches)
                 (spillover_battery_space) = travel_space_occupation(
+                    scenario,
                     spillover_battery_space,
                     spillover_time_tag,
                     spillover_time_tag_index,
@@ -988,7 +999,6 @@ def get_charging_profile(
         run_mobility_matrix,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-        battery_space_shift_arrivals_impact,
         run_arrivals_impact,
         run_departures_impact,
         travelling_battery_spaces,
@@ -1050,7 +1060,8 @@ def get_charging_profile(
     for time_tag_index, (time_tag, run_day_type) in enumerate(
         zip(run_range, run_day_types)
     ):
-
+        if time_tag.hour == 0:
+            print(time_tag.day, time_tag.month)
         if (
             use_day_types_in_charge_computing
             and (time_tag.hour == day_start_hour)
@@ -1068,6 +1079,7 @@ def get_charging_profile(
             # We start by looking at how travel changes the
             # available battery spaces at each location
             battery_space = travel_space_occupation(
+                scenario,
                 battery_space,
                 time_tag,
                 time_tag_index,
@@ -1137,7 +1149,7 @@ if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     case_name = 'Mopo'
-    test_scenario_name = 'XX_truck'
+    test_scenario_name = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

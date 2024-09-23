@@ -80,7 +80,8 @@ def matrix_trips_to_run(
         columns=matrix_columns,
         index=run_index,
     )
-
+    print('ppp')
+    print(matrix_columns)
     run_matrix = run_matrix.sort_index()
 
     scenario_name: str = scenario['scenario_name']
@@ -138,7 +139,7 @@ def matrix_trips_to_run(
             for quantity in run_matrix.columns:
 
                 if quantity not in location_connections_headers:
-
+                    # print(run_matrix)
                     weighted_mobility_quantity_to_use = (
                         trip_matrix[quantity] * probability_values_to_use
                     )
@@ -1572,7 +1573,10 @@ def get_location_split(
             * run_trip_probabilities[trip_name].values
         )
 
-        for location_name in location_names:
+        # print(location_names)
+        # print(trip_location_split)
+        # print('uuuuuuu')
+        for location_name in trip_location_split.columns:
             location_split[location_name] = location_split[
                 location_name
             ].values + (
@@ -1775,6 +1779,8 @@ def make_mobility_data(
     mobility_quantities: ty.List = scenario['mobility_module'][
         'mobility_quantities'
     ]
+    print('TTt')
+    print(mobility_quantities)
     matrix_trips_to_run(
         'mobility_matrix',
         mobility_quantities,
@@ -1783,24 +1789,24 @@ def make_mobility_data(
         case_name,
         general_parameters,
     )
-    battery_space_shift_quantities: ty.List[str] = scenario['mobility_module'][
-        'battery_space_shift_quantities'
-    ]
-    leg_consumptions: ty.List[float] = sorted(
-        list(
-            set(
-                [
-                    scenario['legs'][leg]['distance']
-                    * scenario['vehicle']['base_consumption_per_km'][
-                        'electricity_kWh'
-                    ]
-                    for leg in scenario['legs']
-                    if scenario['legs'][leg]['vehicle']
-                    == scenario['vehicle']['name']
-                ]
-            )
-        )
-    )
+    # battery_space_shift_quantities: ty.List[str] = scenario['mobility_module'][
+    #     'battery_space_shift_quantities'
+    # ]
+    # leg_consumptions: ty.List[float] = sorted(
+    #     list(
+    #         set(
+    #             [
+    #                 scenario['legs'][leg]['distance']
+    #                 * scenario['vehicle']['base_consumption_per_km'][
+    #                     'electricity_kWh'
+    #                 ]
+    #                 for leg in scenario['legs']
+    #                 if scenario['legs'][leg]['vehicle']
+    #                 == scenario['vehicle']['name']
+    #             ]
+    #         )
+    #     )
+    # )
     leg_weighted_consumptions: ty.List[float] = []
     for leg in scenario['legs']:
         if scenario['legs'][leg]['vehicle'] == scenario['vehicle']['name']:
@@ -1824,20 +1830,20 @@ def make_mobility_data(
             leg_weighted_consumptions.append(weighted_consumption)
     leg_weighted_consumptions = sorted(list(set(leg_weighted_consumptions)))
 
-    for battery_space_shift_quantity in battery_space_shift_quantities:
-        if 'weighted' in battery_space_shift_quantity:
-            shift_columns: ty.List[float] = leg_weighted_consumptions
-        else:
-            shift_columns = leg_consumptions
+    # for battery_space_shift_quantity in battery_space_shift_quantities:
+    #     if 'weighted' in battery_space_shift_quantity:
+    #         shift_columns: ty.List[float] = leg_weighted_consumptions
+    #     else:
+    #         shift_columns = leg_consumptions
 
-        matrix_trips_to_run(
-            f'battery_space_shifts_{battery_space_shift_quantity}',
-            shift_columns,
-            run_trip_probabilities,
-            scenario,
-            case_name,
-            general_parameters,
-        )
+    #     matrix_trips_to_run(
+    #         f'battery_space_shifts_{battery_space_shift_quantity}',
+    #         shift_columns,
+    #         run_trip_probabilities,
+    #         scenario,
+    #         case_name,
+    #         general_parameters,
+    #     )
     # print(moo)
     # print(maa)
     # maa.loc[
@@ -1877,7 +1883,7 @@ def make_mobility_data(
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_truck'
+    test_scenario_name: str = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
