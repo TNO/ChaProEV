@@ -80,8 +80,8 @@ def matrix_trips_to_run(
         columns=matrix_columns,
         index=run_index,
     )
-    print('ppp')
-    print(matrix_columns)
+    # print('ppp')
+    # print(matrix_columns)
     run_matrix = run_matrix.sort_index()
 
     scenario_name: str = scenario['scenario_name']
@@ -1522,7 +1522,8 @@ def get_location_split(
     # )
 
     for trip_name in trip_list:
-        trip_location_split: pd.api.extensions.ExtensionArray = pd.read_pickle(
+        # This is a DataFrame,. but MyPy hasd issues with MultiIndex
+        trip_location_split = pd.read_pickle(
             f'{output_folder}/{scenario_name}_{trip_name}'
             f'_run_location_split.pkl'
         )
@@ -1575,6 +1576,7 @@ def get_location_split(
 
         # print(location_names)
         # print(trip_location_split)
+        # exit()
         # print('uuuuuuu')
         for location_name in trip_location_split.columns:
             location_split[location_name] = location_split[
@@ -1779,8 +1781,8 @@ def make_mobility_data(
     mobility_quantities: ty.List = scenario['mobility_module'][
         'mobility_quantities'
     ]
-    print('TTt')
-    print(mobility_quantities)
+    # print('TTt')
+    # print(mobility_quantities)
     matrix_trips_to_run(
         'mobility_matrix',
         mobility_quantities,
@@ -1789,7 +1791,8 @@ def make_mobility_data(
         case_name,
         general_parameters,
     )
-    # battery_space_shift_quantities: ty.List[str] = scenario['mobility_module'][
+    # battery_space_shift_quantities: ty.List[str] =
+    # scenario['mobility_module'][
     #     'battery_space_shift_quantities'
     # ]
     # leg_consumptions: ty.List[float] = sorted(

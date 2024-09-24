@@ -574,9 +574,7 @@ def get_location_split_and_impact_of_departures_and_arrivals(
         print(mobility_matrix)
         print(location_names)
         possible_origins: ty.List[str] = list(
-            set(
-                mobility_matrix.index.get_level_values('From')
-            )
+            set(mobility_matrix.index.get_level_values('From'))
         )
         # print(possible_origins)
         # exit()
@@ -722,7 +720,6 @@ class Trip:
         trip, name: str, scenario: ty.Dict, general_parameters: ty.Dict
     ) -> None:
         trip.name: str = name
-        vehicle_parameters: ty.Dict = scenario['vehicle']
 
         trip_parameters: ty.Dict = scenario['trips'][name]
         trip.legs: ty.List[str] = trip_parameters['legs']

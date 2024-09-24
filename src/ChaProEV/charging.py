@@ -240,6 +240,9 @@ def impact_of_departures(
                 travelling_battery_space: float = (
                     departing_battery_space + this_leg_consumption
                 )
+                # this_battery_space_departures_impact_this_time = round(
+                #     this_battery_space_departures_impact_this_time, 5
+                # )
                 if (
                     this_battery_space_departures_impact_this_time
                     > zero_threshold
@@ -251,12 +254,12 @@ def impact_of_departures(
                         travelling_battery_spaces[
                             float(travelling_battery_space)
                         ] = float(0)
-                        travelling_battery_spaces = (
-                            travelling_battery_spaces.reindex(
-                                sorted(travelling_battery_spaces.columns),
-                                axis=1,
-                            )
-                        )
+                        # travelling_battery_spaces = (
+                        #     travelling_battery_spaces.reindex(
+                        #         sorted(travelling_battery_spaces.columns),
+                        #         axis=1,
+                        #     )
+                        # )
 
                     travelling_battery_spaces.loc[
                         (start_location, end_location),
@@ -307,7 +310,7 @@ def impact_of_arrivals(
         # less available battery capacity wll want to charge first).
 
         for arriving_battery_space in arriving_battery_spaces:
-            
+
             # We will be removing the arrivals from the lower
             # battery spaces from the pool, until we have reached
             # all arrivals. For example, if we have 0.2 arrivals
@@ -545,7 +548,6 @@ def compute_charging_events(
                             battery_space[charging_location][
                                 battery_space_after_charging
                             ] = float(0)
-                            
 
                         battery_space[charging_location].loc[
                             time_tag, battery_space_after_charging
@@ -1060,8 +1062,8 @@ def get_charging_profile(
     for time_tag_index, (time_tag, run_day_type) in enumerate(
         zip(run_range, run_day_types)
     ):
-        if time_tag.hour == 0:
-            print(time_tag.day, time_tag.month)
+        # if time_tag.hour == 0:
+        #     print(time_tag.day, time_tag.month)
         if (
             use_day_types_in_charge_computing
             and (time_tag.hour == day_start_hour)
@@ -1149,7 +1151,7 @@ if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
     test_scenario_name: str = 'baseline'
     case_name = 'Mopo'
-    test_scenario_name = 'XX_car'
+    test_scenario_name = 'XX_truck'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

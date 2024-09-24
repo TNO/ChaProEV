@@ -78,7 +78,7 @@ def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name 
+        general_parameters_file_name
     )
     cook.check_if_folder_exists(f'output/{case_name}')
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
