@@ -1886,7 +1886,7 @@ def make_mobility_data(
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_car'
+    test_scenario_name: str = 'XX_van'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )

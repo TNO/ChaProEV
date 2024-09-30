@@ -15,7 +15,12 @@ def test_battery_space() -> None:
         file_extension: str = scenario_file.split('.')[1]
         if file_extension == 'toml':
             scenario_names.append(scenario_file.split('.')[0])
-    scenario_names = ['XX_truck']  # , 'XX_car', 'XX_van']
+    scenario_names = [
+        'XX_truck', 
+        'XX_van',
+        'XX_bus', 
+        'XX_car'
+    ]
     for scenario_name in scenario_names:
         location_split: pd.DataFrame = pd.read_pickle(
             f'output/{case_name}/{scenario_name}_location_split.pkl'
@@ -32,3 +37,5 @@ def test_battery_space() -> None:
 
 if __name__ == '__main__':
     test_battery_space()
+
+    # staysa at route start?

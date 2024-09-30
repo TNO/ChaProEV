@@ -432,6 +432,7 @@ def get_travelling_group_travel_impact(
     travelling_group_first_slot: int = travelling_group_start_slot
     percent_in_first_slot: float = 1
     if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
+
         print('Trip extending beond day end. Check your entry')
         exit()
     # The trips start uniformly within the first slot
@@ -481,6 +482,7 @@ def get_travelling_group_travel_impact(
             percent_in_first_slot = 1 + percent_in_first_slot
 
         if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
+
             print('Trip extending beond day end. Check your entry')
             exit()
 
@@ -521,6 +523,7 @@ def get_travelling_group_travel_impact(
         # print(percent_in_first_slot)
 
         if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
+
             print('Trip extending beond day end. Check your entry')
             exit()
     # exit()
@@ -2771,7 +2774,7 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_car'
+    test_scenario_name: str = 'XX_van'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
