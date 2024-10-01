@@ -16,9 +16,9 @@ def test_battery_space() -> None:
         if file_extension == 'toml':
             scenario_names.append(scenario_file.split('.')[0])
     scenario_names = [
-        'XX_truck', 
+        'XX_truck',
         'XX_van',
-        'XX_bus', 
+        'XX_bus',
         'XX_car'
     ]
     for scenario_name in scenario_names:

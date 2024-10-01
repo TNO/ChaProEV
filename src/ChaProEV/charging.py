@@ -219,9 +219,9 @@ def impact_of_departures(
         - battery_space[start_location].sum(axis=1).loc[time_tag],
     )
 
-    h=8 van Base 
-    do travles update?
-    should get travelling from base to cust?
+    # h=8 van Base
+    # do travles update?
+    # should get travelling from base to cust?
 
     # if departures_gap > 0:
     #     print('Departures gap')
@@ -403,6 +403,12 @@ def impact_of_arrivals(
         time_tag_arrivals_impact
         - sum(battery_spaces_arriving_to_this_location),
     )
+    # if time_tag.hour == 6:
+    #     if time_tag_arrivals_impact >0:
+    #         print(time_tag_arrivals_impact)
+    #         print(travelling_battery_spaces)
+
+    #         exit()
 
     # if arrivals_gap > 0:
     #     print('Arrivals gap')
@@ -531,6 +537,89 @@ def travel_space_occupation(
     #     travelling_battery_spaces,
     # )
     time_tag_arrival_gaps: ty.Dict[str, float] = {}
+
+    # Get travllling batt spaces first! (should that only have one location index?)
+
+    # battery space updates after
+    # first arrivals then departures
+
+    # We get all the arrival and departure impacts that we need
+    # to achieve for this time slot, as well as the pools we can draw
+    # from coming from prior time slots (the latter split into battery spaces
+    # and a total value)
+
+    # run_arrivals_impact_flat: pd.DataFrame = (
+    #     run_arrivals_impact.copy().reset_index()
+    # )
+    # this_time_slot_arrival_impacts: pd.DataFrame = (
+    #     run_arrivals_impact_flat.loc[
+    #         run_arrivals_impact_flat['Time Tag'] == time_tag
+    #     ]
+    #     .set_index(['From', 'To'])
+    #     .drop(columns=['Time Tag'])
+    #     .groupby(level='To')
+    #     .sum()
+    # )
+    # this_time_slot_arrival_impacts.index.name = 'Destination'
+
+    # print('HSK')
+    # arrivals_pool_from_previous_slots: pd.DataFrame = (
+    #     travelling_battery_spaces.groupby(level='Destination').sum()
+    # )
+
+    # total_arrivals_pool_from_previous_slots: pd.DataFrame = pd.DataFrame(
+    #     arrivals_pool_from_previous_slots.sum(axis=1),
+    #     columns=['Arrivals impact'],
+    # )
+
+    # # print(this_time_slot_arrival_impacts)
+    # print('zpzp')
+    # # print(total_arrivals_pool_from_previous_slots)
+
+    # this_time_tag_arrivals_gap: pd.DataFrame = (
+    #     this_time_slot_arrival_impacts
+    #     - total_arrivals_pool_from_previous_slots
+    # ).rename(columns={'Arrivals impact': 'Arrivals gap'})
+    # # print(this_time_slot_arrival_impacts)
+    # # print(this_time_slot_arrival_impacts.columns)
+    # # exit()
+    # # this_time_tag_arrivals_gap[this_time_tag_arrivals_gap < 0] = 0
+
+    # print(this_time_tag_arrivals_gap)
+
+    # this_time_slot_departures_impacts: pd.DataFrame = pd.DataFrame(
+    #     index=travel_index, columns=['Needed departures impact']
+    # )
+    # departures_pool_from_previous_slots: pd.DataFrame = pd.DataFrame(
+    #     index=travel_index
+    # )
+    # total_departures_pool_from_previous_slots: pd.DataFrame = pd.DataFrame(
+    #     index=travel_index
+    # )
+
+    # for location_to_compute in location_names:
+    #     for leg_origin in possible_origins[location_to_compute]:
+    #         this_time_slot_arrival_impacts.loc[
+    #             (leg_origin, location_to_compute), 'Needed arrivals impact'
+    #         ] = run_arrivals_impact.loc[
+    #             leg_origin, location_to_compute, time_tag
+    #         ]
+    #     for leg_destination in possible_destinations[location_to_compute]:
+    #         this_time_slot_departures_impacts.loc[
+    #             (location_to_compute, leg_destination),
+    #             'Needed departures impact',
+    #         ] = run_departures_impact.loc[
+    #             location_to_compute, leg_destination, time_tag
+    #         ]
+
+    # print(this_time_slot_arrival_impacts)
+    # print(arrivals_pool_from_previous_slots)
+    # print(total_arrivals_pool_from_previous_slots)
+    # print(time_tag)
+    # print(arrivals_pool_from_previous_slots)
+    # print(this_time_slot_arrival_impacts)
+    # print(travelling_battery_spaces)
+    # input()
     for location_to_compute in location_names:
 
         if time_tag_index > 0:
@@ -604,6 +693,8 @@ def travel_space_occupation(
             #     print(time_tag)
             #     print(run_arrivals_impact_gaps.loc['van_customer'])
             #     exit()
+    # for location_to_compute in location_names:
+    #     # Mango
 
         for end_location in possible_destinations[location_to_compute]:
             battery_space, travelling_battery_spaces, departures_gap = (
@@ -625,9 +716,20 @@ def travel_space_occupation(
             #     print(start_location, end_location)
             #     print(departures_gap)
             #     input()
+            # print(time_tag)
+            # print(run_departures_impact_gaps)
+            # exit()
             run_departures_impact_gaps.loc[
-                start_location, location_to_compute, time_tag
+                location_to_compute, end_location, time_tag
             ] += departures_gap
+            # Issue was here (wrong terms in loc)
+            # Test with more parameters
+            # clean code
+            # Boost mode  plus tests
+            # See if mango faster
+            # Make actualbase scenarios
+            # PLuis country versions
+            # and send around profiles
             # if departures_gap > 0:
             #     print('Departures gap')
             #     print(time_tag)
@@ -707,30 +809,28 @@ def travel_space_occupation(
     #     print(travelling_battery_spaces)
     #     input()
 
-    
     # if time_tag.hour == 8:
     #     print(time_tag)
     #     print(sum(battery_space['van_base'].iloc[time_tag_index]))
     #     print(sum(battery_space['van_customer'].iloc[time_tag_index]))
     #     input()
-        
-    
+
     #  battery space too low? at cust?
     #     exit()
     # location_names = ['van_customer', 'van_base']
     for location_to_compute in location_names:
-        print('Coco')
-        print((time_tag, location_to_compute))
-        input()
-        if time_tag.hour == 8:
-            print('GSHC')
-            print(location_names)
-            print(location_to_compute)
-            print(time_tag)
-            print(sum(battery_space['van_base'].iloc[time_tag_index]))
-            print(sum(battery_space['van_customer'].iloc[time_tag_index]))
-            print(travelling_battery_spaces)
-            input()
+        # print('Coco')
+        # print((time_tag, location_to_compute))
+        # input()
+        # if time_tag.hour == 8:
+        #     print('GSHC')
+        #     print(location_names)
+        #     print(location_to_compute)
+        #     print(time_tag)
+        #     print(sum(battery_space['van_base'].iloc[time_tag_index]))
+        #     print(sum(battery_space['van_customer'].iloc[time_tag_index]))
+        #     print(travelling_battery_spaces)
+        #     input()
 
         for start_location in possible_origins[location_to_compute]:
             # print(time_tag)
@@ -792,29 +892,38 @@ def travel_space_occupation(
                     zero_threshold,
                 )
             )
-        if time_tag.hour == 8:
-            print(1602)
-            print(time_tag)
-            print(location_to_compute)
-            print(sum(battery_space['van_base'].iloc[time_tag_index]))
-            print(sum(battery_space['van_customer'].iloc[time_tag_index]))
-            input()
-            # Looks liks arrivals gap customer does not play?
+        # if time_tag.hour == 8:
+        #     print(1602)
+        #     print(time_tag)
+        #     print(location_to_compute)
+        #     print(sum(battery_space['van_base'].iloc[time_tag_index]))
+        #     print(sum(battery_space['van_customer'].iloc[time_tag_index]))
+        #     input()
+        # Looks liks arrivals gap customer does not play?
+    # for location_to_compute in location_names:
+    #     # Mango
+
         for end_location in possible_destinations[location_to_compute]:
-            if (
-                run_departures_impact_gaps.loc[
-                    location_to_compute, end_location, time_tag
-                ]
-                > 0
-            ):
-                print('pppgfnjfbgjfgnbh')
-                print(time_tag)
-                print(departures_gap)
-                print(run_departures_impact_gaps.loc[
-                    location_to_compute, end_location, time_tag
-                ])
-                print(sum(battery_space[location_to_compute].iloc[time_tag_index]))
-                input()
+            # if (
+            #     run_departures_impact_gaps.loc[
+            #         location_to_compute, end_location, time_tag
+            #     ]
+            #     > 0
+            # ):
+            #     # print('pppgfnjfbgjfgnbh')
+            #     # print(time_tag)
+            #     # print(departures_gap)
+            #     # print(
+            #     #     run_departures_impact_gaps.loc[
+            #     #         location_to_compute, end_location, time_tag
+            #     #     ]
+            #     # )
+            #     # print(
+            #     #     sum(
+            #     #         battery_space[location_to_compute].iloc[time_tag_index]
+            #     #     )
+            #     # )
+            #     # input()
             battery_space, travelling_battery_spaces, departures_gap = (
                 impact_of_departures(
                     scenario,
@@ -828,14 +937,14 @@ def travel_space_occupation(
                     run_mobility_matrix,
                 )
             )
-            if (
-                run_departures_impact_gaps.loc[
-                    location_to_compute, end_location, time_tag
-                ]
-                > 0
-            ):
-                print(departures_gap)
-                # exit()
+            # if (
+            #     run_departures_impact_gaps.loc[
+            #         location_to_compute, end_location, time_tag
+            #     ]
+            #     > 0
+            # ):
+            #     print(departures_gap)
+            # exit()
             # print(arrivals_gap)
             # print(travelling_battery_spaces)
             # if arrivals_gap > 0:
@@ -850,17 +959,18 @@ def travel_space_occupation(
             # does thge gap occur for wrong loc (or travel go to wrong?)
             # input()
             # print('oooo', time_tag, arrivals_gap) <-- Still some gap!!!! Use amounts for travelling?
-    if time_tag.hour == 14:
-        print(battery_space['van_base'].iloc[0:6].sum(axis=1))
-        print(location_split['van_base'].iloc[0:6])
-        print(battery_space['van_customer'].iloc[0:6].sum(axis=1))
-        print(location_split['van_customer'].iloc[0:6])
-        # print(run_arrivals_impact_gaps.loc['van_base'].iloc[0:15])
-        # print(run_arrivals_impact_gaps.loc['van_customer'].iloc[0:15])
-        print('extra arrivals/missing departures at vase at 08.00????')
-        print(run_departures_impact_gaps[start_location].iloc[0:12])
-        print(run_departures_impact_gaps[location_to_compute].iloc[0:12])
-        exit()
+    # if time_tag.hour == 4:
+    #     print(battery_space['van_base'].iloc[0:24].sum(axis=1))
+    #     print(location_split['van_base'].iloc[0:24])
+    #     print(battery_space['van_customer'].iloc[0:24].sum(axis=1))
+    #     print(location_split['van_customer'].iloc[0:24])
+    #     exit()
+    #     # print(run_arrivals_impact_gaps.loc['van_base'].iloc[0:15])
+    #     # print(run_arrivals_impact_gaps.loc['van_customer'].iloc[0:15])
+    #     print('extra arrivals/missing departures at vase at 08.00????')
+    #     print(run_departures_impact_gaps[start_location].iloc[0:12])
+    #     print(run_departures_impact_gaps[location_to_compute].iloc[0:12])
+    #     exit()
 
     return battery_space
 
