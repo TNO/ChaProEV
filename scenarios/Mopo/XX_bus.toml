@@ -829,6 +829,7 @@ legs = [
     'bus_from_route_start_to_depot',
 ]
 time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -886,6 +887,7 @@ legs = [
     'bus_from_route_start_to_depot',
 ]
 time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
