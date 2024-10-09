@@ -95,9 +95,10 @@ def run_ChaProEV(case_name: str) -> None:
         general_parameters_file_name
     )
     cook.check_if_folder_exists(f'output/{case_name}')
-    use_variants = general_parameters['use_variants']
+    use_variants = general_parameters['variants']['use_variants']
     if use_variants:
-        make_variants.make_variants(case_name)
+        csv_version = general_parameters['variants']['csv_version']
+        make_variants.make_variants(case_name, csv_version)
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':

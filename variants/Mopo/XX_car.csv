@@ -1,0 +1,4 @@
+Variant name,legs.come_from_work.distance,trips.commute_to_work_and_leisure.time_between_legs
+Netherlands_urban_car,0.201624702,"[1,2,3]"
+Netherlands_semiurban_car,0.269056809,"[1,2,3]"
+Netherlands_rural_car,0.440458824,"[1,2.5,3]"

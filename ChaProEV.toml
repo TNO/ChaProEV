@@ -1,6 +1,7 @@
 
-
+[variants]
 use_variants = false
+csv_version = true
 
 
 # Parameters for plots (colors, sizes, etc.)
