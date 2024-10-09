@@ -125,8 +125,7 @@ def run_ChaProEV(case_name: str) -> None:
                 'Charge',
                 (datetime.datetime.now() - charge_start).total_seconds(),
             )
-            # print(charge_drawn_by_vehicles)
-            # print(charge_drawn_from_network)
+
             write_start: datetime.datetime = datetime.datetime.now()
 
     writing.extra_end_outputs(case_name, general_parameters)
@@ -139,70 +138,9 @@ def run_ChaProEV(case_name: str) -> None:
 
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
-    print('Match en required fo next and total')
-    print('Recap DF')
-    print('Sum over locations ofenergy for next?')
-    print('Other vehicles')
-    print('Trips to keep memory')
-    print('Bus percent of time in route at bus stops')
-    print('Other quantities')
-    # print('Label min and max for btt space and energy fro next leg')
-    # print('Aggregates: KMs and cons per trip, day type (?) and total')
-    # print(
-    #     'Aggregates: Stats (mean, min, max) of Charging power (kW),
-    # Driving%, Connected %, Batt space, batt charge level,
-    # Maximal delivered power (kW),
-    # Percentage of maximal delivered power used (%),
-    # Minimal delivered power (kW)'
-    # )
-    # print(
-    #     'Data for Tulipa/COMPETES Connected (%)	Charging Power (kW)
-    # Charging Profile	Energy_demand_for_next_leg (kWh)
-    # Energy_demand_for_next_leg (as percent of total demand)
-    # \Maximal delivered power (kW)
-    # Percentage of maximal power used(%)	Minimal deliverd power (kW) '
-    # )
-    # print(
-    #     'Full data too? Or per location, with one table per,
-    # and have sumtable 9or sum in Table?'
-    # )
-    print('Temperature effect')
-    print('PVs from PVlib')
-    print('Fast chargers')
-    print('Speedup per day type (option if using mob module)')
-    print('recap DF?')
-    print('Check connectivity')
-    print('Clarify charge and power! for drawn')
-    # print(
-    #     'Minimal state of charge = energy for next leg
-    # + lowest acceptabl;e level'
-    # )
-    # print(
-    #     'Charging Power and Charge Drawn as separate tables
-    # and the in percentage and such'
-    # )
-    # print(
-    #     'Split home an-home and home-street (or have it as
-    # separate runs with different powers?)'
-    # )
-    # print('Other vehicles')
-    print('Speed up by using day types only calc as option')
-    print('Chargin strategis (basic, adaptive, price (?))')
-    print('Every x days')
+
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
     case_name = 'Mopo'
 
     run_ChaProEV(case_name)
-    print('Iterate over cases? At least as a separate fucntion')
-    # writing.write_scenario_parameters(scenario)
-    # weather.setup_weather( scenario)
-    # legs, vehicles, legs, trips = define.declare_all_instances(
-    #     scenario)
-
-    # run_trip_probabilities = (
-    #     mobility.get_run_trip_probabilities(scenario)
-    # )
-    # Histograms!
-
-    # Spillover at vans too Or maybe the spillover is also for mobility

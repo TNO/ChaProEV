@@ -131,7 +131,6 @@ def get_energy_for_next_leg(
     next_leg_kilometers: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl',
     )
-
     next_leg_kilometers_cumulative: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{scenario_name}_'
         'next_leg_kilometers_cumulative.pkl',

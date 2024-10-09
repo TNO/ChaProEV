@@ -363,7 +363,6 @@ if __name__ == '__main__':
     time_stamped_dataframe: pd.DataFrame = get_time_stamped_dataframe(
         scenario, general_parameters
     )
-    # time_stamped_dataframe.to_csv('car_day_types.csv')
     print(run_range)
     print(run_hour_numbers)
     print(time_stamped_dataframe.iloc[68:77])

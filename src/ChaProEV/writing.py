@@ -74,11 +74,5 @@ if __name__ == '__main__':
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
-    # scenario_file_name: str = (
-    #     f'scenarios/{case_name}/{test_scenario_name}.toml'
-    # )
-    # scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    # scenario['scenario_name'] = test_scenario_name
+
     extra_end_outputs(case_name, general_parameters)
-    exit()
-    # write_scenario_parameters(scenario, case_name, general_parameters)

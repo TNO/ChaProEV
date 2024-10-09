@@ -33,65 +33,6 @@ except ModuleNotFoundError:
 # we are importing again
 
 
-# def sort_locations(
-#     location_names: ty.List[str],
-#     time_tag: datetime.datetime,
-#     run_arrivals_impact,  # Dataframe with multiindex, having issues with MyPy
-#     possible_origins: ty.Dict[str, ty.List[str]],
-#     travelling_battery_spaces: pd.DataFrame,
-# ) -> ty.List[str]:
-#     travel_reserve: pd.DataFrame = pd.DataFrame(
-#         index=location_names, columns=['Travel reserve']
-#     )
-#     for location_name in location_names:
-#         arrivals_impact: float = sum(
-#             run_arrivals_impact.loc[
-#                 possible_origins[location_name],
-#                 location_name,
-#                 time_tag,
-#             ].values
-#         )
-#         travelling_battery_spaces_before_current_time_tag: float = sum(
-#             travelling_battery_spaces.loc[
-#                 travelling_battery_spaces.index.get_level_values('Destination')
-#                 == location_name
-#             ]
-#             .sum(axis=1)
-#             .values
-#         )
-#         # travelling_battery_spaces_before_current_time_tag = 0
-#         this_location_travel_reserve: float = float(
-#             travelling_battery_spaces_before_current_time_tag - arrivals_impact
-#         )
-#         travel_reserve.loc[location_name, 'Travel reserve'] = (
-#             this_location_travel_reserve
-#         )
-#     travel_reserve = travel_reserve.sort_values(by=['Travel reserve'])
-#     # Do SAME with deps and combine?
-
-#     # FIND Sorting algorithm
-#     # See if it really needs to be doen by time tag
-
-#     sorted_locations: ty.List[str] = list(travel_reserve.index.values)
-#     # if time_tag.hour == 13:
-#     #     sorted_locations = ['bus_route_start', 'bus_route_end', 'bus_depot']
-#     # elif time_tag.hour == 14:
-#     #     sorted_locations = ['bus_route_start', 'bus_route_end', 'bus_depot']
-#     # elif time_tag.hour == 22:
-#     #     sorted_locations = ['bus_route_start', 'bus_route_end', 'bus_depot']
-#     # else:
-#     #     sorted_locations = location_names
-
-#     sorted_locations = ['bus_route_start', 'bus_route_end', 'bus_depot']
-#     sorted_locations = ['bus_route_start', 'bus_depot', 'bus_route_end']
-#     # sort by number of nodes?
-#     # if time_tag.hour == 14:
-#     #     print(travel_reserve)
-#     #     print(sorted_locations)
-#     #     exit()
-#     return sorted_locations
-
-
 def get_charging_framework(
     scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> ty.Tuple[
@@ -252,17 +193,6 @@ def impact_of_departures(
         - battery_spaces[start_location].sum(axis=1).loc[time_tag],
     )
 
-    # h=8 van Base
-    # do travles update?
-    # should get travelling from base to cust?
-
-    # if departures_gap > 0:
-    #     print('Departures gap')
-    #     print(time_tag)
-    #     print(start_location, end_location)
-    #     print(departures_gap)
-    #     input()
-
     if time_tag_departures_impact > zero_threshold:
 
         # We look at which battery spaces there are at this location
@@ -346,9 +276,7 @@ def impact_of_departures(
                 travelling_battery_space: float = (
                     departing_battery_space + this_leg_consumption
                 )
-                # this_battery_space_departures_impact_this_time = round(
-                #     this_battery_space_departures_impact_this_time, 5
-                # )
+
                 if (
                     this_battery_space_departures_impact_this_time
                     > zero_threshold
@@ -360,18 +288,7 @@ def impact_of_departures(
                         travelling_battery_spaces[
                             float(travelling_battery_space)
                         ] = float(0)
-                        # travelling_battery_spaces = (
-                        #     travelling_battery_spaces.reindex(
-                        #         sorted(travelling_battery_spaces.columns),
-                        #         axis=1,
-                        #     )
-                        # )
-                    # print('Bef')
-                    # if time_tag.hour == 8:
-                    #     print(start_location)
-                    #     input()
-                    # print(travelling_battery_spaces)
-                    # print(this_battery_space_departures_impact_this_time)
+
                     travelling_battery_spaces.loc[
                         (start_location, end_location),
                         travelling_battery_space,
@@ -381,12 +298,6 @@ def impact_of_departures(
                         ][travelling_battery_space]
                         + this_battery_space_departures_impact_this_time
                     )
-                    # print('Up')
-                    # print(travelling_battery_spaces)
-                    # input()
-    # if time_tag.hour == 8 and start_location == 'van_base':
-    #     print(666)
-    #     input()
 
     return battery_spaces, travelling_battery_spaces, departures_gap
 
@@ -409,46 +320,13 @@ def impact_of_arrivals(
     battery_spaces_arriving_to_this_location = travelling_battery_spaces.loc[
         (start_location, end_location)
     ]
-    # if time_tag.hour == 8:
-    #     print('Haha')
-    #     print(time_tag_arrivals_impact)
-    #     print(battery_spaces_arriving_to_this_location)
-    #     print(travelling_battery_spaces)
-    #     # update to TBS goes to the wrong place?
-    #     # Or removal is not at te right spot?>
-    #     # track travelling battery spaces!!!!
-    #     # Before/after each update (input after update)
-    #     # input()
-    #     print(start_location)
-    #     if start_location == 'van_base':
-    #         print('vee')
-    #         input()
-    # print(time_tag)
-    # print(time_tag_arrivals_impact)
-    # print(
-    #     sum(battery_spaces_arriving_to_this_location)
-    # )  # <--- Issue? Need deps in same hour too! Do deps first (or go negative?)
-    # print('Jiii')
-    # print(battery_spaces_arriving_to_this_location)
-    # exit()
+
     arrivals_gap: float = max(
         0,
         time_tag_arrivals_impact
         - sum(battery_spaces_arriving_to_this_location),
     )
-    # if time_tag.hour == 6:
-    #     if time_tag_arrivals_impact >0:
-    #         print(time_tag_arrivals_impact)
-    #         print(travelling_battery_spaces)
 
-    #         exit()
-
-    # if arrivals_gap > 0:
-    #     print('Arrivals gap')
-    #     print(time_tag)
-    #     print(start_location, end_location)
-    #     print(arrivals_gap)
-    #     input()
     if time_tag_arrivals_impact > zero_threshold:
 
         # We look at which battery spaces can arrive at the end
@@ -480,9 +358,6 @@ def impact_of_arrivals(
             # 0.19 vehicles with
             # space 1, and 0.3 vehicles with space 1.6
             if time_tag_arrivals_impact > zero_threshold:
-                # print(arriving_battery_space)
-                # print(battery_spaces_arriving_to_this_location)
-
                 # We do this until there are no departures left
                 # We look at how much impact the travelling spaces
                 # can have (it cannot be more than the arrivals impact from
@@ -493,7 +368,7 @@ def impact_of_arrivals(
                         arriving_battery_space
                     ],
                 )
-                # print('Sort index!')
+
                 # We update the arrivals:
                 time_tag_arrivals_impact -= (
                     this_battery_space_arrivals_impact_this_time
@@ -507,7 +382,6 @@ def impact_of_arrivals(
                         float(0)
                     )
 
-                # print(battery_space[end_location])
                 battery_spaces[end_location].loc[
                     time_tag, arriving_battery_space
                 ] = (
@@ -519,8 +393,6 @@ def impact_of_arrivals(
 
                 # We alo update the travelling battery spaces (as they have
                 # arrived)
-                # print('Befoooo')
-                # print(travelling_battery_spaces)
                 travelling_battery_spaces.loc[
                     (start_location, end_location), arriving_battery_space
                 ] = (
@@ -529,14 +401,7 @@ def impact_of_arrivals(
                     ][arriving_battery_space]
                     - this_battery_space_arrivals_impact_this_time
                 )
-                # print('Upiiii')
-                # print(travelling_battery_spaces)
-    #             Mazinger += this_battery_space_arrivals_impact_this_time
-    # print(Mazinger)
-    # input()
-    # if time_tag.hour == 8 and start_location == 'van_base':
-    #     print(666)
-    #     exit()
+
     return battery_spaces, travelling_battery_spaces, arrivals_gap
 
 
@@ -563,115 +428,6 @@ def travel_space_occupation(
     use_spillover: bool = False,
 ) -> ty.Dict[str, pd.DataFrame]:
 
-    # sorted_locations: ty.List[str] = sort_locations(
-    #     location_names,
-    #     time_tag,
-    #     run_arrivals_impact,
-    #     possible_origins,
-    #     travelling_battery_spaces,
-    # )
-    # time_tag_arrival_gaps: ty.Dict[str, float] = {}
-
-    # if time_tag_index == 24:
-    #     zazoo = pd.DataFrame()
-    #     for location_name in location_names:
-    #         print(location_name)
-    #         print(location_split[location_name].iloc[0:24])
-    #         print(battery_spaces[location_name].sum(axis=1).iloc[0:24])
-    #         zazoo[location_name] = (
-    #             location_split[location_name].iloc[0:24]
-    #             - battery_spaces[location_name].sum(axis=1).iloc[0:24]
-    #         )
-    #     zazoo[abs(zazoo) < zero_threshold] = 0
-    #     print(zazoo)
-    #     print(location_names)
-    #     exit()
-
-    # Get travllling batt spaces first! (should that only have one location index?)
-
-    # battery space updates after
-    # first arrivals then departures
-
-    # We get all the arrival and departure impacts that we need
-    # to achieve for this time slot, as well as the pools we can draw
-    # from coming from prior time slots (the latter split into battery spaces
-    # and a total value)
-
-    # run_arrivals_impact_flat: pd.DataFrame = (
-    #     run_arrivals_impact.copy().reset_index()
-    # )
-    # this_time_slot_arrival_impacts: pd.DataFrame = (
-    #     run_arrivals_impact_flat.loc[
-    #         run_arrivals_impact_flat['Time Tag'] == time_tag
-    #     ]
-    #     .set_index(['From', 'To'])
-    #     .drop(columns=['Time Tag'])
-    #     .groupby(level='To')
-    #     .sum()
-    # )
-    # this_time_slot_arrival_impacts.index.name = 'Destination'
-
-    # print('HSK')
-    # arrivals_pool_from_previous_slots: pd.DataFrame = (
-    #     travelling_battery_spaces.groupby(level='Destination').sum()
-    # )
-
-    # total_arrivals_pool_from_previous_slots: pd.DataFrame = pd.DataFrame(
-    #     arrivals_pool_from_previous_slots.sum(axis=1),
-    #     columns=['Arrivals impact'],
-    # )
-
-    # # print(this_time_slot_arrival_impacts)
-    # print('zpzp')
-    # # print(total_arrivals_pool_from_previous_slots)
-
-    # this_time_tag_arrivals_gap: pd.DataFrame = (
-    #     this_time_slot_arrival_impacts
-    #     - total_arrivals_pool_from_previous_slots
-    # ).rename(columns={'Arrivals impact': 'Arrivals gap'})
-    # # print(this_time_slot_arrival_impacts)
-    # # print(this_time_slot_arrival_impacts.columns)
-    # # exit()
-    # # this_time_tag_arrivals_gap[this_time_tag_arrivals_gap < 0] = 0
-
-    # print(this_time_tag_arrivals_gap)
-
-    # this_time_slot_departures_impacts: pd.DataFrame = pd.DataFrame(
-    #     index=travel_index, columns=['Needed departures impact']
-    # )
-    # departures_pool_from_previous_slots: pd.DataFrame = pd.DataFrame(
-    #     index=travel_index
-    # )
-    # total_departures_pool_from_previous_slots: pd.DataFrame = pd.DataFrame(
-    #     index=travel_index
-    # )
-
-    # for location_to_compute in location_names:
-    #     for leg_origin in possible_origins[location_to_compute]:
-    #         this_time_slot_arrival_impacts.loc[
-    #             (leg_origin, location_to_compute), 'Needed arrivals impact'
-    #         ] = run_arrivals_impact.loc[
-    #             leg_origin, location_to_compute, time_tag
-    #         ]
-    #     for leg_destination in possible_destinations[location_to_compute]:
-    #         this_time_slot_departures_impacts.loc[
-    #             (location_to_compute, leg_destination),
-    #             'Needed departures impact',
-    #         ] = run_departures_impact.loc[
-    #             location_to_compute, leg_destination, time_tag
-    #         ]
-
-    # print(this_time_slot_arrival_impacts)
-    # print(arrivals_pool_from_previous_slots)
-    # print(total_arrivals_pool_from_previous_slots)
-    # print(time_tag)
-    # print(arrivals_pool_from_previous_slots)
-    # print(this_time_slot_arrival_impacts)
-    # print(travelling_battery_spaces)
-    # input()
-    # if time_tag.hour == 13:
-    #     print(travelling_battery_spaces.sum(axis=1))
-    #     exit()
     for location_to_compute in location_names:
 
         if time_tag_index > 0:
@@ -693,34 +449,6 @@ def travel_space_occupation(
                 location_split.loc[time_tag][location_to_compute]
             )
 
-        # print(location_to_compute)
-        # print(time_tag)
-        # print(sum(battery_spaces[location_to_compute].iloc[time_tag_index]))
-        # total_arrivals_impact: float = sum(
-        #     run_arrivals_impact.loc[
-        #         possible_origins[location_to_compute],
-        #         location_to_compute,
-        #         time_tag,
-        #     ].values
-        # )
-        # travelling_from_previous_times: float = (
-        #     travelling_battery_spaces.loc[
-        #         travelling_battery_spaces.index.get_level_values('Destination')
-        #         == location_to_compute
-        #     ]
-        #     .sum(axis=1)
-
-        # )
-        # print(travelling_from_previous_times)
-        # exit()
-
-        # arrivals_gap: float = max(
-        #     0, total_arrivals_impact - travelling_from_previous_times
-        # )
-        # time_tag_arrival_gaps[location_to_compute] = arrivals_gap
-        # print('Too', time_tag, arrivals_gap)
-        # input()
-
         # We need to look at the impact of arrivals first
         # because if we look at departures first, we might go wrong,
         # as some departures will be deemd not happening because
@@ -738,17 +466,10 @@ def travel_space_occupation(
                     zero_threshold,
                 )
             )
-            # print(run_arrivals_impact_gaps)
 
             run_arrivals_impact_gaps.loc[
                 start_location, location_to_compute, time_tag
             ] += arrivals_gap
-            # if arrivals_gap > 0:
-            #     print(time_tag)
-            #     print(run_arrivals_impact_gaps.loc['van_customer'])
-            #     exit()
-        # for location_to_compute in location_names:
-        #     # Mango
 
         for end_location in possible_destinations[location_to_compute]:
             battery_spaces, travelling_battery_spaces, departures_gap = (
@@ -764,124 +485,10 @@ def travel_space_occupation(
                     run_mobility_matrix,
                 )
             )
-            # if departures_gap > 0:
-            #     print('Departures gap')
-            #     print(time_tag)
-            #     print(start_location, end_location)
-            #     print(departures_gap)
-            #     input()
-            # print(time_tag)
-            # print(run_departures_impact_gaps)
-            # exit()
+
             run_departures_impact_gaps.loc[
                 location_to_compute, end_location, time_tag
             ] += departures_gap
-            # Issue was here (wrong terms in loc)
-            # See if can switch departures/arrivals order (in both or just one?)
-            # Test with more parameters
-            # clean code
-            # No gap speed up?
-            # Extra speed up of charging
-            # Boost mode  plus tests
-            # See if mango faster
-            # Make actualbase scenarios
-            # PLuis country versions
-            # and send around profiles
-            # if departures_gap > 0:
-            #     print('Departures gap')
-            #     print(time_tag)
-            #     print(start_location, location_to_compute)
-            #     print(departures_gap)
-            #     print(run_departures_impact_gaps[start_location].iloc[0:12])
-            #     print(run_departures_impact_gaps[location_to_compute].iloc[0:12])
-
-            #     input()
-
-        # if location_to_compute == 'van_base':
-        #     if time_tag.hour == 7:
-        #         print(location_split.iloc[0:6])
-        #         print(battery_spaces['van_base'].sum(axis=1).iloc[0:6])
-        # exit()
-        # print(battery_spaces['van_customer'].iloc[0:6])
-        # exit()
-        # for start_location in possible_origins[location_to_compute]:
-        #     print(time_tag)
-        #     print(travelling_battery_spaces.loc[start_location, location_to_compute])
-        #     if time_tag.hour == 7 :
-        #         print(start_location)
-        #         # print(battery_spaces['van_customer'].iloc[0:12].sum(axis=1))
-        #         print(travelling_battery_spaces)
-        #         input()
-        #     # For some reason, the below does not update things
-        #     battery_spaces, travelling_battery_spaces, arrivals_gap = (
-        #         impact_of_arrivals(
-        #             time_tag,
-        #             battery_spaces,
-        #             start_location,
-        #             location_to_compute,
-        #             run_arrivals_impact_gaps,
-        #             travelling_battery_spaces,
-        #             zero_threshold,
-        #         )
-        # #     )
-        # if time_tag.hour == 7:
-        #     print(travelling_battery_spaces)
-        #     input()
-
-        #     print(start_location)
-        #     print(battery_spaces['van_customer'].iloc[0:12].sum(axis=1))
-        #     #     input()
-        # if location_to_compute == 'van_base':
-        #     if time_tag.hour == 7:
-        #         print(location_split.iloc[0:6])
-        #         print(battery_spaces['van_base'].sum(axis=1).iloc[0:6])
-        #         print(run_arrivals_impact_gaps.loc['van_customer'].iloc[0:6])
-        #         exit()
-        # if time_tag.hour == 14:
-        #     print(battery_spaces['van_base'].iloc[0:12].sum(axis=1))
-        #     print(location_split['van_base'].iloc[0:12])
-        #     print(battery_spaces['van_customer'].iloc[0:12].sum(axis=1))
-        #     print(location_split['van_customer'].iloc[0:12])
-        #     exit()
-        # if arrivals_gap > 0:
-        #     print(time_tag)
-        #     print('Gap', arrivals_gap)
-        #     print(location_to_compute)
-    #     #     input()
-    # print(travelling_battery_spaces)
-    # print('Fooooooooo')
-    # print(time_tag)
-    # print(run_arrivals_impact_gaps.loc['van_base'].iloc[0:12])
-    # print(run_arrivals_impact_gaps.loc['van_customer'].iloc[0:12])
-    # print(travelling_battery_spaces)
-    # print(battery_spaces['van_base'].sum(axis=1).iloc[0:12])
-    # print(battery_spaces['van_customer'].sum(axis=1).iloc[0:12])
-    # print(location_split.iloc[0:12])
-    # print(run_arrivals_impact_gaps.loc['van_base'].iloc[time_tag_index])
-    # print(run_arrivals_impact_gaps.loc['van_customer'].iloc[time_tag_index])
-    # print('Ooooooof')
-    # input()
-    # if time_tag.hour == 8:
-    #     print('Woo')
-    #     print(travelling_battery_spaces)
-    #     input()
-
-    # if time_tag.hour == 8:
-    #     print(time_tag)
-    #     print(sum(battery_spaces['van_base'].iloc[time_tag_index]))
-    #     print(sum(battery_spaces['van_customer'].iloc[time_tag_index]))
-    #     input()
-
-    #  battery space too low? at cust?
-    #     exit()
-    # location_names = ['van_customer', 'van_base']
-    # sorted_locations: ty.List[str] = sort_locations(
-    #     location_names,
-    #     time_tag,
-    #     run_arrivals_impact,
-    #     possible_origins,
-    #     travelling_battery_spaces,
-    # )
 
     for location_to_compute in location_names:
         this_time_tag_departures_gap: float = (
@@ -894,28 +501,7 @@ def travel_space_occupation(
             .sum()
             .loc[location_to_compute, time_tag]
         )
-        # if time_tag_index == 8:
-        #     if location_to_compute == 'bus_depot':
-        #         print(travelling_battery_spaces.sum(axis=1))
-        #         # exit()
-        #     print(location_to_compute)
-        #     print(this_time_tag_arrivals_gap)
-        #     print(this_time_tag_departures_gap)
-        #     print(run_arrivals_impact_gaps.loc['bus_route_end'].iloc[time_tag_index])
-        #     exit()
 
-        # if time_tag_index == 3:
-        #         print(location_to_compute)
-
-        #         print(location_to_compute)
-        #         # if location_to_compute == 'bus_depot':
-        #         print(this_time_tag_arrivals_gap)
-        #         print(this_time_tag_departures_gap)
-        #         input()
-
-        # if time_tag_index == 9:
-        #     print(battery_spaces['bus_depot'].sum(axis=1).iloc[8])
-        #     # exit()
         if (
             max(this_time_tag_arrivals_gap, this_time_tag_departures_gap)
             > zero_threshold
@@ -925,21 +511,7 @@ def travel_space_occupation(
             # extra arrivals (from within the same hour) first. Otherwise,
             # we start wit the extra departures.
 
-            # if this_time_tag_departures_gap < this_time_tag_arrivals_gap:
-            # print(time_tag)
-            # input()
             for start_location in possible_origins[location_to_compute]:
-                # if time_tag_index == 8:
-                #     print('ty')
-                #     print(start_location)
-                #     # not enough travelling should be 0.42 or so
-                #     print(
-                #         run_departures_impact_gaps.loc['bus_route_start'].iloc[
-                #             time_tag_index
-                #         ]
-                #     )
-                #     print(travelling_battery_spaces.sum(axis=1))
-                #     # exit()
 
                 battery_spaces, travelling_battery_spaces, arrivals_gap = (
                     impact_of_arrivals(
@@ -952,18 +524,7 @@ def travel_space_occupation(
                         zero_threshold,
                     )
                 )
-                # if time_tag_index == 8:
-                #     # if arrivals_gap >0:
-                #     #     print(arrivals_gap)
-                #     print(location_to_compute)
-                #     print(travelling_battery_spaces.sum(axis=1))
-                #     print(
-                #         run_arrivals_impact_gaps.loc[
-                #             'bus_route_start', 'bus_depot'
-                #         ].iloc[time_tag_index]
-                #     )
 
-                # exit()
             for end_location in possible_destinations[location_to_compute]:
 
                 battery_spaces, travelling_battery_spaces, departures_gap = (
@@ -980,201 +541,6 @@ def travel_space_occupation(
                     )
                 )
 
-            # else:
-            #     print(time_tag)
-            #     print('print')
-            #     input()
-            #     for end_location in possible_destinations[location_to_compute]:
-            #         (
-            #             battery_spaces,
-            #             travelling_battery_spaces,
-            #             departures_gap,
-            #         ) = impact_of_departures(
-            #             scenario,
-            #             time_tag,
-            #             battery_spaces,
-            #             location_to_compute,
-            #             end_location,
-            #             run_departures_impact_gaps,
-            #             travelling_battery_spaces,
-            #             zero_threshold,
-            #             run_mobility_matrix,
-            #         )
-            #     for start_location in possible_origins[location_to_compute]:
-            #         battery_spaces, travelling_battery_spaces, arrivals_gap = (
-            #             impact_of_arrivals(
-            #                 time_tag,
-            #                 battery_spaces,
-            #                 start_location,
-            #                 location_to_compute,
-            #                 run_arrivals_impact_gaps,
-            #                 travelling_battery_spaces,
-            #                 zero_threshold,
-            #             )
-            #         )
-
-        # if time_tag.hour == 12:
-
-        #     if location_to_compute == 'bus_route_start':
-        #         print(this_time_tag_departures_gap)
-        #         print(this_time_tag_arrivals_gap)
-
-        #         exit()
-        # this_time_tag_departures_gap: float = departures_gap
-        # print('Coco')
-        # print((time_tag, location_to_compute))
-        # input()
-        # if time_tag.hour == 8:
-        #     print('GSHC')
-        #     print(location_names)
-        #     print(location_to_compute)
-        #     print(time_tag)
-        #     print(sum(battery_spaces['van_base'].iloc[time_tag_index]))
-        #     print(sum(battery_spaces['van_customer'].iloc[time_tag_index]))
-        #     print(travelling_battery_spaces)
-        #     input()
-
-        # for end_location in possible_destinations[location_to_compute]:
-        # if (
-        #     run_departures_impact_gaps.loc[
-        #         location_to_compute, end_location, time_tag
-        #     ]
-        #     > 0
-        # ):
-        #     # print('pppgfnjfbgjfgnbh')
-        #     # print(time_tag)
-        #     # print(departures_gap)
-        #     # print(
-        #     #     run_departures_impact_gaps.loc[
-        #     #         location_to_compute, end_location, time_tag
-        #     #     ]
-        #     # )
-        #     # print(
-        #     #     sum(
-        #     #         battery_spaces[location_to_compute].iloc[time_tag_index]
-        #     #     )
-        #     #     # )
-        #     #     # input()
-        #     battery_spaces, travelling_battery_spaces, departures_gap = (
-        #         impact_of_departures(
-        #             scenario,
-        #             time_tag,
-        #             battery_spaces,
-        #             location_to_compute,
-        #             end_location,
-        #             run_departures_impact_gaps,
-        #             travelling_battery_spaces,
-        #             zero_threshold,
-        #             run_mobility_matrix,
-        #         )
-        #     )
-
-        # for start_location in possible_origins[location_to_compute]:
-        #     # print(time_tag)
-        # print(
-        #     travelling_battery_spaces.loc[
-        #         start_location, location_to_compute
-        #     ]
-        # )
-        # if time_tag.hour == 7:
-        #     print(start_location)
-        #     # print(battery_spaces['van_customer'].iloc[0:12].sum(axis=1))
-        #     print(travelling_battery_spaces)
-        #     input()
-        # # For some reason, the below does not update things
-        # print(time_tag)
-        # print('travel')
-        # print('Tavellig batt sp not updated???? Or gaps should be zero')
-
-        # departuesx gap compensated by departures ??? Should be in travl bat spaces
-        # # It actually is there
-        # print(
-        #     travelling_battery_spaces.sum(axis=1)
-        #     .loc[start_location]
-        #     .values[0]
-        # )
-        # print(
-        #     run_arrivals_impact_gaps.loc[
-        #         start_location, location_to_compute, time_tag
-        #     ]
-        # )
-        # print('run gaps first is used?')
-        # print(
-        #     run_arrivals_impact_gaps.loc[start_location].iloc[
-        #         time_tag_index
-        #     ]
-        # )
-        # print(
-        #     run_arrivals_impact_gaps.loc[location_to_compute].iloc[
-        #         time_tag_index
-        #     ]
-        # )
-        # # Location to compute?
-        # print('arrivals gap')
-        # print(start_location)
-        # print(arrivals_gap)
-        # print(travelling_battery_spaces)
-        # exit()
-        # input()
-        # time tag, start, end, gap in arr and in deps with input stop
-
-        #     battery_spaces, travelling_battery_spaces, arrivals_gap = (
-        #         impact_of_arrivals(
-        #             time_tag,
-        #             battery_spaces,
-        #             start_location,
-        #             location_to_compute,
-        #             run_arrivals_impact_gaps,
-        #             travelling_battery_spaces,
-        #             zero_threshold,
-        #         )
-        #     )
-        # # if time_tag.hour == 8:
-        #     print(1602)
-        #     print(time_tag)
-        #     print(location_to_compute)
-        #     print(sum(battery_spaces['van_base'].iloc[time_tag_index]))
-        #     print(sum(battery_spaces['van_customer'].iloc[time_tag_index]))
-        #     input()
-        # Looks liks arrivals gap customer does not play?
-    # for location_to_compute in location_names:
-    #     # Mango
-
-    # if (
-    #     run_departures_impact_gaps.loc[
-    #         location_to_compute, end_location, time_tag
-    #     ]
-    #     > 0
-    # ):
-    #     print(departures_gap)
-    # exit()
-    # print(arrivals_gap)
-    # print(travelling_battery_spaces)
-    # if arrivals_gap > 0:
-    #     print(time_tag)
-    #     print(start_location, location_to_compute)
-    #     print(
-    #         'Do the extra only if gap >0 (tough need to compute again?)'
-    #     )
-    # Run arrivals gap should be zero for VB to VC
-
-    # exit()
-    # does thge gap occur for wrong loc (or travel go to wrong?)
-    # input()
-    # print('oooo', time_tag, arrivals_gap) <-- Still some gap!!!! Use amounts for travelling?
-    # if time_tag.hour == 4:
-    #     print(battery_spaces['van_base'].iloc[0:24].sum(axis=1))
-    #     print(location_split['van_base'].iloc[0:24])
-    #     print(battery_spaces['van_customer'].iloc[0:24].sum(axis=1))
-    #     print(location_split['van_customer'].iloc[0:24])
-    #     exit()
-    #     # print(run_arrivals_impact_gaps.loc['van_base'].iloc[0:15])
-    #     # print(run_arrivals_impact_gaps.loc['van_customer'].iloc[0:15])
-    #     print('extra arrivals/missing departures at vase at 08.00????')
-    #     print(run_departures_impact_gaps[start_location].iloc[0:12])
-    #     print(run_departures_impact_gaps[location_to_compute].iloc[0:12])
-    #     exit()
-
     return battery_spaces
 
 
@@ -1189,16 +555,9 @@ def compute_charging_events(
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
 
     zero_threshold: float = general_parameters['numbers']['zero_threshold']
-    # vehicle_parameters: ty.Dict = scenario['vehicle']
-    # vehicle_name: str = vehicle_parameters['name']
     location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
         'locations'
     ]
-    # location_names: ty.List[str] = [
-    #     location_name
-    #     for location_name in location_parameters
-    #     if location_parameters[location_name]['vehicle'] == vehicle_name
-    # ]
 
     for charging_location in location_names:
         charging_location_parameters: ty.Dict[str, float] = (
@@ -1280,7 +639,6 @@ def compute_charging_events(
                             battery_spaces[charging_location][
                                 battery_space_after_charging
                             ] = float(0)
-                            # print(battery_space[charging_location])
 
                         battery_spaces[charging_location].loc[
                             time_tag, battery_space_after_charging
@@ -1457,30 +815,10 @@ def copy_day_type_profiles_to_whole_run(
         spillover_travelling_battery_spaces,
     ) = get_charging_framework(scenario, case_name, general_parameters)
 
-    # for location_name in location_names:
-    #     spillover_battery_spaces[location_name][
-    #         battery_spaces[location_name].columns
-    #     ] = float(0)
-    #     spillover_battery_spaces[location_name] = spillover_battery_spaces[
-    #         location_name
-    #     ].drop(columns=float(0))
-
     # We first get all the days (day end time tags) that end with a spillover
     # at each of the locations
-    day_ends_with_spillover_battery_spaces: ty.Dict[
-        str, ty.List[datetime.datetime]
-    ] = {}
+    day_ends_with_spillover_battery_spaces: ty.Dict = {}
     for location_name in location_names:
-
-        #     for spillover_location in location_names:
-        #         spillover_battery_spaces[spillover_location][
-        #             battery_spaces[spillover_location].columns
-        #         ] = float(0)
-        #         spillover_battery_spaces[spillover_location] = (
-        #             spillover_battery_spaces[spillover_location].drop(
-        #                 columns=float(0)
-        #             )
-        #         )
 
         day_end_battery_spaces: pd.DataFrame = battery_spaces[
             location_name
@@ -1494,10 +832,6 @@ def copy_day_type_profiles_to_whole_run(
             ].index.get_level_values('Time Tag')
         )
 
-    # print(battery_spaces['home'].iloc[117:130])
-    # print(run_mobility_matrix.loc['home','work'].iloc[117:130])
-    # exit()
-
     # We look at the battery spillover spaces
     for spillover_location in location_names:
         # The get charging framework created a spillover Dataframe
@@ -1507,7 +841,6 @@ def copy_day_type_profiles_to_whole_run(
             spillover_battery_spaces[spillover_location].drop(float(0), axis=1)
         )
 
-        # spillover_battery_spaces[spillover_location][0] = 0
         for day_end_time_tag in day_ends_with_spillover_battery_spaces[
             spillover_location
         ]:
@@ -1520,55 +853,14 @@ def copy_day_type_profiles_to_whole_run(
                 .drop(columns=float(0))
                 .loc[day_end_time_tag]
             )
-            # if day_end_time_tag.day==6:
-            #     print(spillover_amounts_per_battery_space.sum())
-            #     print(battery_spaces[spillover_location].loc[day_end_time_tag].sum())
-            #     exit()
+
             amount_in_spillover: float = (
                 spillover_amounts_per_battery_space.sum()
             )
-            # if spillover_time_tag_index == 1103 and spillover_location == 'holiday':
-            #     print(amount_in_spillover)
-            #     print(spillover_amounts_per_battery_space)
-            #     exit()
-
-            # charged_back_spillover: float = 0
-            # print(battery_spaces[spillover_location].loc[day_end_time_tag].sum())
-            # print(spillover_amounts_per_battery_space)
-            # print(amount_in_spillover)
-            # exit()
-            # if day_end_time_tag.day==6:
-            #     exit()
 
             while amount_in_spillover > zero_threshold:
                 spillover_time_tag_index += 1
 
-                print(
-                    battery_spaces[spillover_location].iloc[
-                        spillover_time_tag_index - 1
-                    ]
-                )
-
-                print(
-                    battery_spaces[spillover_location].iloc[
-                        spillover_time_tag_index
-                    ]
-                )
-                print(
-                    battery_spaces[spillover_location]
-                    .iloc[spillover_time_tag_index - 1]
-                    .sum()
-                )
-
-                print(
-                    battery_spaces[spillover_location]
-                    .iloc[spillover_time_tag_index]
-                    .sum()
-                )
-                # Too high batt soace
-                # 0.9007523148784722
-                # 0.9059606482118054
-                # input()
                 if spillover_time_tag_index >= len(run_range) - 1:
                     amount_in_spillover = 0
                     # Does not matter, as the run is then over
@@ -1597,9 +889,6 @@ def copy_day_type_profiles_to_whole_run(
                             test_battery_space
                         )
 
-                # print(occupied_spillover_battery_spaces)
-                # print(spillover_battery_spaces[spillover_location])
-                # # exit()
                 for (
                     occupied_spillover_battery_space
                 ) in occupied_spillover_battery_spaces:
@@ -1635,17 +924,7 @@ def copy_day_type_profiles_to_whole_run(
                             occupied_spillover_battery_space
                         ]
                     )
-                    # print(spillover_battery_spaces[spillover_location])
-                    # exit()
 
-                print(
-                    battery_spaces[spillover_location]
-                    .loc[spillover_time_tag]
-                    .sum()
-                )
-                print(spillover_amounts_per_battery_space.sum())
-                # if spillover_time_tag.hour == 5:
-                #     input()
                 fully_charged_vehicles: float = battery_spaces[
                     spillover_location
                 ].iloc[spillover_time_tag_index - 1][float(0)]
@@ -1655,41 +934,7 @@ def copy_day_type_profiles_to_whole_run(
                     possible_destinations[spillover_location],
                     spillover_time_tag,
                 ].sum()
-                # Impact of arrivals????
-                print(spillover_time_tag)
-                print(spillover_location)
-                print(
-                    battery_spaces[spillover_location].loc[spillover_time_tag]
-                )
-                ooo = (
-                    battery_spaces[spillover_location]
-                    .loc[spillover_time_tag]
-                    .sum()
-                )
-                print(
-                    spillover_battery_spaces[spillover_location].loc[
-                        spillover_time_tag
-                    ]
-                )
-                # if (
-                #     spillover_time_tag_index == 1104
-                #     and spillover_location == 'holiday'
-                # ):
-                #     print(
-                #         spillover_battery_spaces[spillover_location].loc[
-                #             spillover_time_tag
-                #         ]
-                #     )
-                #     exit()
 
-                aaa = (
-                    spillover_battery_spaces[spillover_location]
-                    .loc[spillover_time_tag]
-                    .sum()
-                )
-                print(ooo, aaa, ooo + aaa)
-
-                # input()
                 if (
                     time_tag_departures_impact - fully_charged_vehicles
                     > zero_threshold
@@ -1715,18 +960,6 @@ def copy_day_type_profiles_to_whole_run(
                     # affects spillover_battery_spaces_before_charging
                     # (but apparently only if there is only one value)
                 )
-                if (
-                    spillover_time_tag_index == 1104
-                    and spillover_location == 'holiday'
-                ):
-                    print(
-                        spillover_battery_spaces[spillover_location].loc[
-                            spillover_time_tag
-                        ]
-                    )
-                    print('Before is this')
-                    print(spillover_battery_spaces_before_charging)
-                    # exit()
 
                 (
                     spillover_battery_spaces,
@@ -1754,44 +987,12 @@ def copy_day_type_profiles_to_whole_run(
                     )
                 )
 
-                # spillover_battery_spaces_change: pd.Series = (
-                #     spillover_battery_spaces_after_charging
-                #         -spillover_battery_spaces_before_charging
-                #     )
-
-                print('Bef')
-                print(spillover_battery_spaces_before_charging)
-                print('aft')
-                print(spillover_battery_spaces_after_charging)
-                print('Diff')
-                print(spillover_battery_spaces_change)
-                # exit()
-                # if (
-                #     spillover_time_tag_index == 1104
-                #     and spillover_location == 'holiday'
-                # ):
-                #     exit()
-
                 # We put the fully charged spillover vehicles
                 # into the battery spaces and remove them from
                 # the spillover battery spaces
-                fully_charged_spillover_vehicles: float = (
-                    spillover_battery_spaces[spillover_location].loc[
-                        spillover_time_tag
-                    ][0]
-                )
-                print(
-                    battery_spaces[spillover_location].loc[
-                        spillover_time_tag, float(0)
-                    ]
-                )
 
                 if spillover_time_tag_index < len(run_range) - 1:
-                    # next_spillover_time_tag: datetime.datetime = run_range[
-                    #     spillover_time_tag_index + 1
-                    # ]
-                    # print(next_spillover_time_tag)
-                    # exit()
+
                     for (
                         modified_battery_space
                     ) in spillover_battery_spaces_change.index:
@@ -1805,40 +1006,11 @@ def copy_day_type_profiles_to_whole_run(
                                 modified_battery_space
                             ]
                         )
-                    print(amount_in_spillover)
-                    print(fully_charged_spillover_vehicles)
-                    print(
-                        fully_charged_spillover_vehicles / amount_in_spillover
-                    )
-                    print(
-                        battery_spaces[spillover_location].loc[
-                            spillover_time_tag
-                        ]
-                    )
-                    print(
-                        battery_spaces[spillover_location]
-                        .loc[spillover_time_tag]
-                        .sum()
-                    )
-                    # if spillover_time_tag_index == 96:
-                    #     # print(spillover_time_tag)
-                    #     # print(spillover_charge_drawn_by_vehicles)
-                    #     exit()
-                    # input()
-                # print(battery_spaces[spillover_location].loc[
-                #     spillover_time_tag, float(0)
-                # ])
-                # exit()
 
                 spillover_battery_spaces[spillover_location] = (
                     spillover_battery_spaces[spillover_location].drop(
                         float(0), axis=1
                     )
-                )
-                print(
-                    charge_drawn_by_vehicles.loc[spillover_time_tag][
-                        spillover_location
-                    ]
                 )
 
                 charge_drawn_by_vehicles.loc[
@@ -1863,410 +1035,11 @@ def copy_day_type_profiles_to_whole_run(
                     ][spillover_location]
                 )
 
-                print(
-                    charge_drawn_by_vehicles.loc[spillover_time_tag][
-                        spillover_location
-                    ]
-                )
-
                 spillover_amounts_per_battery_space = spillover_battery_spaces[
                     spillover_location
                 ].loc[spillover_time_tag]
 
                 amount_in_spillover = spillover_amounts_per_battery_space.sum()
-                #     spillover_battery_spaces[spillover_location]
-                #     .loc[spillover_time_tag]
-                #     .sum()
-                # )
-                print('hhh')
-                print(spillover_time_tag)
-                print(amount_in_spillover)
-                print('hhhh')
-                # exit()
-                # do departures procedure on  spillover_battery_spaces
-                # see if some leave
-                # if they do, add them to travelling
-                # then to arrs
-                # exit()
-                # print(spillover_amounts_per_battery_space)
-                # exit()
-                # print(fully_charged_vehicles)
-                # print(time_tag_departures_impact)
-
-                # exit()
-                # print(run_arrivals_impact)
-        #     print(amount_in_spillover)
-        #     print(day_end_time_tag)
-        # print(spillover_location)
-    # print(battery_spaces['home'].iloc[96])
-    # input()
-    #     # input()
-    # print(
-    #     spillover_battery_spaces[spillover_location].loc[[spillover_time_tag]]
-    # )
-    # # impact hour H is applied to H-1
-    # exit()
-
-    # print(spillover_battery_spaces[location_name])
-    # print(day_ends_with_leftover_battery_spaces)
-
-    # CHCK HOW DAY TYPES ARE COPIED
-    # weekend holiday returns, holiday overlap weekend
-    # then compensate only sat spillover
-    # weekend spillovers must do both
-    # small remainders are also on weekend holiday returns
-
-    # exit()
-    # print(len(day_ends_with_leftover_battery_spaces))
-
-    # exit()
-    # print('spillover works for first day?')
-    # print('but nort second, so maybe reset')
-    # print('Is spillover of some days a carryover from previous days spillover')
-    # print('Spillover occurs in twos but rermoving the first solves it?')
-    # print('23/2 08:00/09:00 swap?')
-    # charge_drawn_by_vehicles.to_csv('Mazinger.csv')
-    # exit()
-
-    # for day_end_time_tag in day_ends_with_leftover_battery_spaces:
-    # print(day_end_time_tag)
-    # print('Before spillover')
-    # print(charge_drawn_by_vehicles.iloc[119:122])
-    # for _ in [555]:
-    #     for _ in [1]:
-
-    #         for spillover_location in location_names:
-    #             spillover_battery_spaces[spillover_location] = pd.DataFrame(
-    #                 index=run_range
-    #             )
-    #             spillover_battery_spaces[spillover_location].index.name = (
-    #                 'Time Tag'
-    #             )
-
-    #             spillover_battery_spaces[spillover_location][
-    #                 battery_spaces[spillover_location].columns
-    #             ] = float(0)
-    #             spillover_battery_spaces[spillover_location] = (
-    #                 spillover_battery_spaces[spillover_location].drop(
-    #                     columns=float(0)
-    #                 )
-    #             )
-    #             # spillover_battery_spaces[spillover_location] = (
-    #             #     spillover_battery_spaces[spillover_location].drop(
-    #             #         columns=float(0)
-    #             #     )
-    #             # )
-    #             # print(spillover_battery_spaces[spillover_location] )
-    #             # exit()
-
-    #         print(day_end_time_tag)
-    #         print(
-    #             battery_spaces[location_name]
-    #             .drop(columns=float(0))
-    #             .loc[day_end_time_tag]
-    #             .values
-    #         )
-    #         print(
-    #             spillover_battery_spaces[location_name].loc[day_end_time_tag]
-    #         )
-    #         # if spillover_index not in [1, 13, 31, 53, 59, 75, ]:
-    #         spillover_battery_spaces[location_name].loc[day_end_time_tag] = (
-    #             battery_spaces[location_name]
-    #             .drop(columns=float(0))
-    #             .loc[day_end_time_tag]
-    #             .values
-    #         )
-    #         # print(spillover_battery_spaces[location_name].loc[day_end_time_tag])
-    #         # exit()
-    #         # spillover_battery_spaces[location_name] = spillo                                                      ver_battery_spaces[
-    #         #     location_name
-    #         # ].drop(columns=float(0))
-    #         spillover_time_tag_index: int = list(run_range).index(
-    #             day_end_time_tag
-    #         )
-
-    #         amount_in_spillover = (
-    #             spillover_battery_spaces[location_name]
-    #             # .drop(columns=float(0))
-    #             .loc[day_end_time_tag].sum()
-    #         )
-    #         print(location_name)
-    #         # print(spillover_battery_space[location_name].loc[day_end_time_tag])
-    #         print(amount_in_spillover)
-    #         # print(day_end_time_tag)
-    #         # exit()
-
-    #         # input()
-    #         # # print(spillover_battery_spaces)
-    #         # print('spillover amount')
-    #         # print(amount_in_spillover)
-    #         # exit()
-    #         # print(day_end_time_tag)
-    #         # print(amount_in_spillover)
-    #         # # input()
-
-    #         while amount_in_spillover > zero_threshold:
-    #             spillover_time_tag_index += 1
-    #             if spillover_time_tag_index >= len(run_range) - 1:
-    #                 amount_in_spillover = 0
-
-    #             spillover_time_tag: ty.Any = run_range[
-    #                 spillover_time_tag_index
-    #             ]
-
-    #             # print('Time')
-    #             # print(spillover_time_tag)
-    #             # print('In spill bef')
-    #             # print(amount_in_spillover)
-    #             # print(charge_drawn_by_vehicles.iloc[119:122])
-
-    #             # if day_end_time_tag.day == 6:
-    #             # exit()
-    #             # # input()
-    #             # print('Before move')
-    #             # print(spillover_time_tag)
-    #             # print(amount_in_spillover)
-    #             # used Any (and less hints above because MyPy seems
-    #             # to get wrong type matches)
-    #             (spillover_battery_spaces) = travel_space_occupation(
-    #                 scenario,
-    #                 spillover_battery_spaces,
-    #                 spillover_time_tag,
-    #                 spillover_time_tag_index,
-    #                 run_mobility_matrix,
-    #                 zero_threshold,
-    #                 location_names,
-    #                 possible_destinations,
-    #                 possible_origins,
-    #                 use_day_types_in_charge_computing,
-    #                 day_start_hour,
-    #                 location_split,
-    #                 run_arrivals_impact,
-    #                 run_arrivals_impact_gaps,
-    #                 run_departures_impact,
-    #                 run_departures_impact_gaps,
-    #                 run_range,
-    #                 travelling_battery_spaces,
-    #                 use_spillover=True,
-    #             )
-    #             # print('TBS')
-    #             # print(travelling_battery_spaces)
-    #             # for loo in location_names:
-    #             #     print(loo)
-    #             #     print(
-    #             #         spillover_battery_spaces[loo].loc[spillover_time_tag]
-    #             #     )
-    #             # exit()
-    #             # We should not have batt spaces travelling here.
-    #             # Maybe we need to cull spillover batt space earlier?
-    #             # for location_name in spillover_battery_spaces.keys():
-    #             #     print(spillover_battery_spaces[location_name].loc[day_end_time_tag])
-    #             # exit()
-    #             # print(charge_drawn_by_vehicles.iloc[119:122])
-
-    #             # if day_end_time_tag.day == 6:
-    #             #     exit()
-    #             # print('Before charge')
-    #             # # print(spillover_time_tag)
-    #             # print(amount_in_spillover)
-    #             # print('bee')
-    #             # print(
-    #             #     spillover_battery_spaces[location_name]
-    #             #     # .drop(columns=float(0))
-    #             #     .loc[spillover_time_tag].sum()
-    #             # )
-    #             # print(travelling_battery_spaces.drop(columns=float(0)).sum())
-    #             # exit()
-    #             # print(
-    #             #     spillover_charge_drawn_by_vehicles.loc[spillover_time_tag][
-    #             #         location_name
-    #             #     ]
-    #             # )
-    #             # # Why is it 0.15 on Monday?
-    #             # print(spillover_time_tag)
-    #             # print(day_end_time_tag)
-    #             # input()
-    #             # if day_end_time_tag.day == 6:
-    #             #     spillover_charge_drawn_by_vehicles.loc[spillover_time_tag][
-    #             #         location_name
-    #             #     ] = 0
-    #             # Resetting this actually kills the right
-    #             # value, so with this, we only get the phantom Value
-    #             # Looks like the first spillover itreation gives us the right
-    #             # result
-    #             # input()
-
-    #             (
-    #                 spillover_battery_spaces,
-    #                 spillover_charge_drawn_by_vehicles,
-    #                 spillover_charge_drawn_from_network,
-    #             ) = compute_charging_events(
-    #                 spillover_battery_spaces,
-    #                 spillover_charge_drawn_by_vehicles,
-    #                 spillover_charge_drawn_from_network,
-    #                 spillover_time_tag,
-    #                 scenario,
-    #                 general_parameters,
-    #                 location_names,
-    #             )
-    #             if float(0) in spillover_battery_spaces[location_name].columns:
-    #                 spillover_battery_spaces[location_name] = (
-    #                     spillover_battery_spaces[location_name].drop(
-    #                         columns=float(0)
-    #                     )
-    #                 )
-    #             # print(amount_in_spillover)
-    #             # print(travelling_battery_spaces)
-    #             # print(sum(travelling_battery_spaces))
-    #             for loo in location_names:
-    #                 print(loo)
-    #                 print(
-    #                     spillover_battery_spaces[loo]
-    #                     .loc[spillover_time_tag]
-    #                     .sum()
-    #                 )
-
-    #             # sum is wrong, but we also need spillover in other locations
-    #             # (leisure in this case)
-    #             # exit()
-    #             amount_in_spillover_per_location: ty.Dict[str, float] = {}
-    #             for spillover_location in location_names:
-    #                 amount_in_spillover_per_location[spillover_location] = (
-    #                     spillover_battery_spaces[spillover_location]
-    #                     .loc[spillover_time_tag]
-    #                     .sum()
-    #                 )
-    #                 # The amount in spillover is in battery spaces other than zero
-    #                 # We first update the zero battery spces
-    #                 battery_spaces[spillover_location].loc[
-    #                     spillover_time_tag, float(0)
-    #                 ] = (
-    #                     battery_spaces[spillover_location].loc[
-    #                         spillover_time_tag
-    #                     ][float(0)]
-    #                     - amount_in_spillover_per_location[spillover_location]
-    #                 )
-    #                 # We move what we removed (i.e. the remaining spillover)
-    #                 # from the zero battery space to
-    #                 # non-zero battery spaces
-    #                 non_zero_battery_spaces = battery_spaces[
-    #                     spillover_location
-    #                 ].columns[1:]
-    #                 battery_spaces[spillover_location].loc[
-    #                     spillover_time_tag, non_zero_battery_spaces
-    #                 ] = (
-    #                     battery_spaces[spillover_location].loc[
-    #                         spillover_time_tag
-    #                     ][non_zero_battery_spaces]
-    #                     + spillover_battery_spaces[spillover_location].loc[
-    #                         spillover_time_tag
-    #                     ][non_zero_battery_spaces]
-    #                 )
-    #                 charge_drawn_by_vehicles.loc[
-    #                     spillover_time_tag, spillover_location
-    #                 ] = spillover_charge_drawn_by_vehicles.loc[
-    #                     spillover_time_tag
-    #                 ][
-    #                     spillover_location
-    #                 ]
-
-    #                 charge_drawn_from_network.loc[
-    #                     spillover_time_tag, spillover_location
-    #                 ] = spillover_charge_drawn_from_network.loc[
-    #                     spillover_time_tag
-    #                 ][
-    #                     spillover_location
-    #                 ]
-
-    #             amount_in_spillover = sum(
-    #                 amount_in_spillover_per_location.values()
-    #                 # ) + (
-    #                 # +travelling_battery_spaces.drop(columns=float(0))
-    #                 # .sum()
-    #                 # .sum()
-    #             )
-    #             print(spillover_time_tag)
-    #             print(amount_in_spillover_per_location)
-    #             # exit()
-    #             # # do the battery spaceupdate for each location
-    #             # # but amount_in_spillover that controls is the sum
-    #             # amount_in_spillover = (
-    #             #     spillover_battery_spaces[location_name]
-    #             #     .loc[spillover_time_tag]
-    #             #     .sum()
-    #             #     + travelling_battery_spaces.drop(columns=float(0))
-    #             #     .sum()
-    #             #     .sum()
-    #             # )
-    #             print(amount_in_spillover)
-    #             # input()
-
-    #             # Check if travelling needed
-    #             # print(amount_in_spillover)
-    #             # exit()
-    #             # print(charge_drawn_by_vehicles.iloc[119:122])
-    #             # print('After charge')
-    #             # print(amount_in_spillover)
-    #             # print(
-    #             #     spillover_charge_drawn_by_vehicles.loc[spillover_time_tag][
-    #             #         location_name
-    #             #     ]
-    #             # )
-    #             # input()
-    #             # Why is this so large?
-    #             # print('Mazinger')
-
-    #             # if day_end_time_tag.day == 6:
-    #             #     exit()
-
-    #             # if float(0) in spillover_battery_spaces[location_name].columns:
-    #             #     spillover_battery_spaces[location_name] = (
-    #             #         spillover_battery_spaces[location_name].drop(
-    #             #             columns=float(0)
-    #             #         )
-    #             #     )
-
-    #             # amount_in_spillover = (
-    #             #     spillover_battery_spaces[location_name]
-    #             #     # .drop(columns=float(0))
-    #             #     .loc[spillover_time_tag].sum()
-    #             # )
-    #             # print('After charge')
-    #             # print(amount_in_spillover)
-    #             # input()
-    #             # print('In spill aft')
-    #             # spillover goes up, but it should not (cars stay at home)
-    #             # either have spillover stay put
-    #             # Actually, no, as in original they do travel!!!
-    #             # or check that it goes to the right location
-    #             # print(amount_in_spillover)
-    #             # input()
-
-    #             print(amount_in_spillover)
-    #             print(spillover_time_tag)
-    #             input()
-
-    #             # print(charge_drawn_by_vehicles.iloc[119:122])
-
-    #             if day_end_time_tag.day == 6:
-    #                 print(spillover_time_tag)
-    #                 print(charge_drawn_by_vehicles.iloc[119:122])
-    #                 exit()
-    # print('After spillover')
-    # print(charge_drawn_by_vehicles.iloc[119:122])
-
-    # if day_end_time_tag.day == 6:
-
-    #     exit()
-    # charge_drawn_by_vehicles.to_csv('TGMazinger.csv')
-    # exit()
-    # holiday--> home should not impact spillover
-    # departures should take place in order of growing space
-    # That is start with zero spaces
-    # o should not have travelling spaces at all in our example
-    # (Maybe re-add travel to spill_amount)
-    # so if use_spillover --> impact of deps is zero if not from spillover
-    # (i.e. if taken from 0 battery spaces, which we still should have)
 
 
 def write_output(
@@ -2437,8 +1210,6 @@ def write_output(
 
 
 def get_charging_profile(
-    # location_names: ty.List[str] = [
-    # location_names: ty.List[str] = [
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
@@ -2489,10 +1260,6 @@ def get_charging_profile(
         for time_tag in run_range
     ]
 
-    # if a-->b-->c within one hour, then directly a-->c?
-    #     Actually no, because isses would happen eralier
-    #     But maybe too many arrivals in procedure?
-
     zero_threshold: float = general_parameters['numbers']['zero_threshold']
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
@@ -2536,8 +1303,8 @@ def get_charging_profile(
     for time_tag_index, (time_tag, run_day_type) in enumerate(
         zip(run_range, run_day_types)
     ):
-        if time_tag.hour == 0:
-            print(time_tag.day, time_tag.month)
+        # if time_tag.hour == 0 and time_tag.day == 1:
+        #     print(time_tag.day, time_tag.month)
         if (
             use_day_types_in_charge_computing
             and (time_tag.hour == day_start_hour)
@@ -2574,11 +1341,7 @@ def get_charging_profile(
                 run_range,
                 travelling_battery_spaces,
             )
-            # if time_tag.hour == 13:
-            #     print(battery_spaces['bus_depot'].iloc[7:10].sum(axis=1))
-            #     print(run_arrivals_impact.loc['bus_route_start', 'bus_depot', time_tag])
-            #     print(run_arrivals_impact_gaps.loc['bus_route_start', 'bus_depot', time_tag])
-            #     exit()
+
             # We then look at which charging happens
             (
                 battery_spaces,
@@ -2602,20 +1365,8 @@ def get_charging_profile(
                     time_tags_of_day_type
                 )
 
-    # run_arrivals_impact_gaps.to_csv('arr_g.csv')
-    # run_departures_impact_gaps.to_csv('dep_g.csv')
-
-    # print(' Do ordered location names here too and remove it downstream')
-    # print(charge_drawn_by_vehicles.iloc[119:122])
-    # # exit()
-    # print(battery_spaces['home'].iloc[96])
-    # input()
-
     if use_day_types_in_charge_computing:
-        print(
-            'Redo charging framework at each spillovr to avoid fragmetation?'
-        )
-        # input()
+
         copy_day_type_profiles_to_whole_run(
             scenario,
             case_name,
@@ -2632,10 +1383,6 @@ def get_charging_profile(
             charge_drawn_by_vehicles,
             charge_drawn_from_network,
         )
-    # print(battery_spaces['home'].iloc[96])
-    # input()
-    # print(charge_drawn_by_vehicles.iloc[119:122])
-    # exit()
 
     write_output(
         battery_spaces,
@@ -2645,38 +1392,6 @@ def get_charging_profile(
         case_name,
         general_parameters,
     )
-
-    #     Issue in on Mondays after getting back from holidays
-    #     at home
-    #     And holiday loc after the cross weekend
-    #     For some reason, we get a jump from 04:00 to 05:00
-    #     Check if that also occurs if we don't do the spillover correction at all
-
-    #     Mondays that are copied are after holiday back
-    #     If spillover and different transition types, then need to do this separateely
-
-    #     How does weekend-spillover work?
-    #     Or do we need to set
-    #     Which date is the refrence weekday in work week?
-    #     TGMazinger = without spillover
-
-    #     Copied days are starting a zero
-
-    #     If Holy sun-->Mon was with same spillover as sat-->Sun,
-    #     The match would be perfect
-
-    #     Somehow, the spillover procedure adds phatom
-
-    #     Monitor 06/01 values and figue out where the spillover procedure adds these
-    #     phatom values!!!!!
-
-    #     Phantom values
-    # 0.404296875
-    # 0.369791667
-    # 0.334765625
-    # 0.267497417
-    # 0.148640083
-    # 0.045416667
 
     return battery_spaces, charge_drawn_by_vehicles, charge_drawn_from_network
 
@@ -2702,7 +1417,5 @@ if __name__ == '__main__':
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
     ) = get_charging_profile(scenario, case_name, general_parameters)
-    # print(battery_spaces['home'].iloc[96])
 
     print((datetime.datetime.now() - start_).total_seconds())
-    print('Add after care of turbo boost')
