@@ -1,3 +1,8 @@
+
+
+use_variants = false
+
+
 # Parameters for plots (colors, sizes, etc.)
 [plots]
 [plots.vehicle_temperature_efficiency]

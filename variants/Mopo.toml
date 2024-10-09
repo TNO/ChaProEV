@@ -1,0 +1,17 @@
+
+[reference_scenarios]
+
+[reference_scenarios.XX_car]
+variants = ['NL_urban_car', 'NL_rural_car']
+
+
+[reference_scenarios.XX_car.modified_parameters]
+
+[reference_scenarios.XX_car.modified_parameters.legs.come_from_work.distance]
+NL_urban_car = 16
+NL_rural_car = 36
+
+[reference_scenarios.XX_car.modified_parameters.mobility_module.day_start_hour]
+NL_urban_car = 7
+NL_rural_car = 8
+

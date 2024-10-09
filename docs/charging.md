@@ -12,8 +12,8 @@ site_name: CHaProEV
 
 ### **scenarios folder**
 This folder contains scenario configuration files. There is one per scenario,
-containing all necessary parameters to run the scenatio. To add a scenario,
-copy one of the existing files and add/remove/modify parasmeters paramters as
+containing all necessary parameters to run the scenario. To add a scenario,
+copy one of the existing files and add/remove/modify parameters as
 required, including the first parameter, which is the scenario name,
 which should be the same as the file name (it might work with another name,
 but this is not tested and there is no reason to have different names for the
@@ -28,7 +28,7 @@ as locations, vehicles, legs, trips, etc.
 - **weather:** Parameters related to the weather, such as elements to define
 what we want to download from various sources, where we store weather data,
 how we process it, 
-or how we want to label quantititis
+or how we want to label quantities
 - **plots:** Parameters for plots (colors, sizes, etc.)
 
 

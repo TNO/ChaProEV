@@ -74,6 +74,20 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+try:
+    import make_variants  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import make_variants  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
+
 def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
@@ -81,6 +95,9 @@ def run_ChaProEV(case_name: str) -> None:
         general_parameters_file_name
     )
     cook.check_if_folder_exists(f'output/{case_name}')
+    use_variants = general_parameters['use_variants']
+    if use_variants:
+        make_variants.make_variants(case_name)
     for scenario_file in os.listdir(f'scenarios/{case_name}'):
         # To avoid issues if some files are not configuration files
         if scenario_file.split('.')[1] == 'toml':
