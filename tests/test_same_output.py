@@ -21,12 +21,14 @@ def test_all_files() -> None:
 
         if f'{test_quantity}.pkl' in os.listdir(reference_folder):
             print(test_quantity)
+
             test_file: str = f'{folder_to_test}/{test_quantity}.pkl'
             reference_file: str = f'{reference_folder}/{test_quantity}.pkl'
             test_table: pd.DataFrame = pd.read_pickle(test_file)
             reference_table: pd.DataFrame = pd.read_pickle(reference_file)
             print(test_table)
             print(reference_table)
+
             pd.testing.assert_frame_equal(test_table, reference_table)
 
 

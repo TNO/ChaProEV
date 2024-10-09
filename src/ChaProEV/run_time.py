@@ -348,8 +348,8 @@ def from_day_to_run(
 
 
 if __name__ == '__main__':
-    case_name = 'local_impact_BEVs'
-    test_scenario_name: str = 'baseline'
+    case_name = 'Mopo'
+    test_scenario_name: str = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
@@ -363,6 +363,7 @@ if __name__ == '__main__':
     time_stamped_dataframe: pd.DataFrame = get_time_stamped_dataframe(
         scenario, general_parameters
     )
+    # time_stamped_dataframe.to_csv('car_day_types.csv')
     print(run_range)
     print(run_hour_numbers)
     print(time_stamped_dataframe.iloc[68:77])

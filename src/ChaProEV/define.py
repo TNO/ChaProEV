@@ -842,9 +842,12 @@ class Trip:
             scenario['legs'][leg_name]['locations']['end']
             for leg_name in trip.legs
         ]
-        trip.location_names: ty.List[str] = list(
-            set(trip.start_locations_of_legs + trip.end_locations_of_legs)
+        trip.location_names: ty.List[str] = sorted(
+            list(
+                set(trip.start_locations_of_legs + trip.end_locations_of_legs)
+            )
         )
+        # sorted so that the order is always the same
 
         trip.leg_distances: ty.List[float] = [
             scenario['legs'][leg_name]['distance'] for leg_name in trip.legs
@@ -2628,6 +2631,8 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_connectivity_per_location.pkl'
         )
+        # print(trip.connectivity_per_location)
+        # exit()
         trip.run_connectivity_per_location.to_pickle(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_connectivity_per_location.pkl'
