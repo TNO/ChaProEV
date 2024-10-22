@@ -2,7 +2,6 @@
 .gitignore
 ChaProEV.pptx
 ChaProEV.toml
-ETS_CookBook-1.0.30-py3-none-any.whl
 Gemfile
 LICENCE
 MOPO_logo_chaproev on wht.svg
@@ -79,7 +78,9 @@ src/ChaProEV.egg-info/SOURCES.txt
 src/ChaProEV.egg-info/dependency_links.txt
 src/ChaProEV.egg-info/requires-PC-28624-2.txt
 src/ChaProEV.egg-info/requires-PC-28624.txt
+src/ChaProEV.egg-info/requires.txt
 src/ChaProEV.egg-info/top_level.txt
 tests/test_battery_space.py
 tests/test_same_output.py
 variants/Mopo.toml
+variants/Mopo/XX_car.csv
