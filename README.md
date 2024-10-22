@@ -51,7 +51,8 @@ The docmentation can be found [here](https://tno.github.io/ChaProEV/)
 
 ### **Driver**
 The primary driver for the publication and development of ChaProEV in this
-repository is the participation in the Mopo project (funded from 
+repository is the participation in the 
+[Mopo](https://www.tools-for-energy-system-modelling.org/) project (funded from 
 European Climate, 
 Infrastructure and Environment Executive Agency under the European Union’s 
 HORIZON Research and Innovation Actions under grant agreement N°101095998).
