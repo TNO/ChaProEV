@@ -753,6 +753,9 @@ class Trip:
                 set(trip.start_locations_of_legs + trip.end_locations_of_legs)
             )
         )
+        if trip.name.startswith('stay_put_'):
+            stay_put_location: str = trip.name.split('stay_put_')[1]
+            trip.location_names = [stay_put_location]
         # sorted so that the order is always the same
 
         trip.leg_distances: ty.List[float] = [
@@ -944,7 +947,7 @@ class Trip:
         trip.location_split.index.name = 'Hour in day (from day start)'
 
         if trip.name.startswith('stay_put_'):
-            stay_put_location: str = trip.name.split('stay_put_')[1]
+            stay_put_location = trip.name.split('stay_put_')[1]
             trip.location_split[stay_put_location] = 1
         else:
             start_leg_name: str = trip.legs[0]
@@ -998,6 +1001,7 @@ class Trip:
             this_location_maximal_delivered_power: float = (
                 location_connectivity * charging_power / charger_efficiency
             )
+
             trip.connectivity_per_location[location_name] = (
                 trip.connectivity_per_location[location_name]
                 * location_connectivity
