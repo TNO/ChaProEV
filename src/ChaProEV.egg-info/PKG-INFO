@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: ChaProEV
-Version: 1.0.3
+Version: 1.0.4
 Summary: ChaProEV: Charging Profiles of Electric Vehicles
 Author-email: Omar Usmani <Omar.Usmani@TNO.nl>
 Project-URL: Homepage, https://github.com/TNO/ChaProEV
@@ -10,12 +10,12 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 License-File: LICENCE
-Requires-Dist: attrs==23.2.0
+Requires-Dist: attrs==24.2.0
 Requires-Dist: beautifulsoup4==4.12.3
 Requires-Dist: black==24.10.0
 Requires-Dist: build==1.2.1
-Requires-Dist: cads-api-client==1.1.0
-Requires-Dist: cdsapi==0.7.0
+Requires-Dist: cads-api-client==1.4.6
+Requires-Dist: cdsapi==0.7.3
 Requires-Dist: certifi==2024.6.2
 Requires-Dist: charset-normalizer==3.3.2
 Requires-Dist: click==8.1.7
@@ -25,11 +25,11 @@ Requires-Dist: cycler==0.12.1
 Requires-Dist: docutils==0.21.2
 Requires-Dist: docx==0.2.4
 Requires-Dist: et-xmlfile==1.1.0
-Requires-Dist: ETS_CookBook==1.0.31
+Requires-Dist: ETS_CookBook==1.0.32
 Requires-Dist: fonttools==4.53.0
 Requires-Dist: geopandas==1.0.1
 Requires-Dist: ghp-import==2.1.0
-Requires-Dist: idna==3.7
+Requires-Dist: idna==3.10
 Requires-Dist: importlib_metadata==8.0.0
 Requires-Dist: iniconfig==2.0.0
 Requires-Dist: jaraco.classes==3.4.0
@@ -48,7 +48,7 @@ Requires-Dist: mergedeep==1.3.4
 Requires-Dist: mkdocs==1.6.0
 Requires-Dist: mkdocs-get-deps==0.2.0
 Requires-Dist: more-itertools==10.3.0
-Requires-Dist: multiurl==0.3.1
+Requires-Dist: multiurl==0.3.2
 Requires-Dist: mypy==1.10.1
 Requires-Dist: mypy-extensions==1.0.0
 Requires-Dist: nh3==0.2.17
@@ -65,7 +65,7 @@ Requires-Dist: platformdirs==4.2.2
 Requires-Dist: plotly==5.22.0
 Requires-Dist: pluggy==1.5.0
 Requires-Dist: Pygments==2.18.0
-Requires-Dist: pyogrio==0.9.0
+Requires-Dist: pyogrio==0.10.0
 Requires-Dist: pyparsing==3.1.2
 Requires-Dist: pyproj==3.6.1
 Requires-Dist: pyproject_hooks==1.1.0
@@ -81,19 +81,18 @@ Requires-Dist: requests==2.32.3
 Requires-Dist: requests-toolbelt==1.0.0
 Requires-Dist: rfc3986==2.0.0
 Requires-Dist: rich==13.7.1
-Requires-Dist: setuptools==70.2.0
 Requires-Dist: shapely==2.0.4
 Requires-Dist: six==1.16.0
-Requires-Dist: soupsieve==2.5
+Requires-Dist: soupsieve==2.6
 Requires-Dist: tenacity==8.4.2
 Requires-Dist: toml==0.10.2
-Requires-Dist: tqdm==4.66.4
-Requires-Dist: types-beautifulsoup4==4.12.0.20240511
-Requires-Dist: types-html5lib==1.1.11.20240228
+Requires-Dist: tomli==2.0.1
+Requires-Dist: tqdm==4.66.5
+Requires-Dist: types-beautifulsoup4==4.12.0.20241020
+Requires-Dist: types-html5lib==1.1.11.20241018
 Requires-Dist: types-openpyxl==3.1.5.20240630
 Requires-Dist: types-pytz==2024.1.0.20240417
 Requires-Dist: types-requests==2.32.0.20240622
-Requires-Dist: types-toml==0.10.8.20240310
 Requires-Dist: typing_extensions==4.12.2
 Requires-Dist: tzdata==2024.1
 Requires-Dist: urllib3==2.2.2

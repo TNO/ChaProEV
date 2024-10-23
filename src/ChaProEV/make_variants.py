@@ -18,7 +18,7 @@ def make_csv_variants(case_name: str) -> None:
     '''
     This uses a csv, with commas as separators.
     If you want to put a list as a value, do it as such:
-    "[1, 2.5, 5]" 
+    "[1, 2.5, 5]"
     (with the quotes: note that this is not necessary in Excel, where you can
     just put the list with brackets without the quotes)
     '''
