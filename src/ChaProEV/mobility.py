@@ -1515,6 +1515,26 @@ def get_kilometers_for_next_leg(
         columns=location_names,
         index=run_trip_probabilities.index,
     )
+    run_next_leg_charge_to_vehicle: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_trip_probabilities.index), len(location_names))),
+        columns=location_names,
+        index=run_trip_probabilities.index,
+    )
+    run_next_leg_charge_from_network: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_trip_probabilities.index), len(location_names))),
+        columns=location_names,
+        index=run_trip_probabilities.index,
+    )
+    run_next_leg_charge_to_vehicle_cumulative: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_trip_probabilities.index), len(location_names))),
+        columns=location_names,
+        index=run_trip_probabilities.index,
+    )
+    run_next_leg_charge_from_network_cumulative: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_trip_probabilities.index), len(location_names))),
+        columns=location_names,
+        index=run_trip_probabilities.index,
+    )
 
     trip_parameters: ty.Dict = scenario['trips']
     trip_names: ty.List[str] = [
@@ -1533,24 +1553,87 @@ def get_kilometers_for_next_leg(
             f'run_next_leg_kilometers_cumulative.pkl',
         )
 
+        trip_run_next_leg_charge_to_vehicle: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip_name}_run_next_leg_charge_to_vehicle.pkl'
+        )
+        trip_run_next_leg_charge_from_network: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip_name}_run_next_leg_charge_from_network.pkl'
+        )
+        trip_run_next_leg_charge_to_vehicle_cumulative: pd.DataFrame = (
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip_name}_run_next_leg_charge_to_vehicle_cumulative.pkl'
+            )
+        )
+        trip_run_next_leg_charge_from_network_cumulative: pd.DataFrame = (
+            pd.read_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip_name}_run_next_leg_charge_from_network_cumulative.pkl'
+            )
+        )
+
         this_trip_probabilities: pd.Series[float] = pd.Series(
             run_trip_probabilities[trip_name]
         )
+        for location_name in trip_run_next_leg_kilometers.columns:
 
-        run_next_leg_kilometers += trip_run_next_leg_kilometers.mul(
-            this_trip_probabilities, axis=0
-        )
-        run_next_leg_kilometers_cumulative += (
-            trip_run_next_leg_kilometers_cumulative.mul(
+            run_next_leg_kilometers[
+                location_name
+            ] += trip_run_next_leg_kilometers[location_name].mul(
                 this_trip_probabilities, axis=0
             )
-        )
+            run_next_leg_kilometers_cumulative[
+                location_name
+            ] += trip_run_next_leg_kilometers_cumulative[location_name].mul(
+                this_trip_probabilities, axis=0
+            )
+            run_next_leg_charge_to_vehicle[
+                location_name
+            ] += trip_run_next_leg_charge_to_vehicle[location_name].mul(
+                this_trip_probabilities, axis=0
+            )
+
+            run_next_leg_charge_from_network[
+                location_name
+            ] += trip_run_next_leg_charge_from_network[location_name].mul(
+                this_trip_probabilities, axis=0
+            )
+            run_next_leg_charge_to_vehicle_cumulative[
+                location_name
+            ] += trip_run_next_leg_charge_to_vehicle_cumulative[
+                location_name
+            ].mul(
+                this_trip_probabilities, axis=0
+            )
+            run_next_leg_charge_from_network_cumulative[
+                location_name
+            ] += trip_run_next_leg_charge_from_network_cumulative[
+                location_name
+            ].mul(
+                this_trip_probabilities, axis=0
+            )
 
     run_next_leg_kilometers.to_pickle(
         f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl'
     )
     run_next_leg_kilometers_cumulative.to_pickle(
         f'{output_folder}/{scenario_name}_next_leg_kilometers_cumulative.pkl'
+    )
+    run_next_leg_charge_to_vehicle.to_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_charge_to_vehicle.pkl'
+    )
+    run_next_leg_charge_from_network.to_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_charge_from_network.pkl'
+    )
+    run_next_leg_charge_to_vehicle_cumulative.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_next_leg_charge_to_vehicle_cumulative.pkl'
+    )
+    run_next_leg_charge_from_network_cumulative.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_next_leg_charge_from_network_cumulative.pkl'
     )
 
 
@@ -1633,7 +1716,7 @@ def make_mobility_data(
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_bus'
+    test_scenario_name: str = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
