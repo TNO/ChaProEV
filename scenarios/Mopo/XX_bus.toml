@@ -58,6 +58,8 @@ charging_desirability = 1
 percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
+vehicle_discharge_power = 400 # kW
+proportion_of_discharge_going_to_network = 0.9
 [locations.bus_route_start]
 vehicle = 'bus'
 connectivity = 1
@@ -71,6 +73,8 @@ charging_desirability = 1
 percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
+vehicle_discharge_power = 0 # kW
+proportion_of_discharge_going_to_network = 0.9
 [locations.bus_route_end]
 vehicle = 'bus'
 connectivity = 1
@@ -84,6 +88,8 @@ charging_desirability = 1
 percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
+vehicle_discharge_power = 0 # kW
+proportion_of_discharge_going_to_network = 0.9
 
 [legs]
 # You can add legs here by copying existing legs,

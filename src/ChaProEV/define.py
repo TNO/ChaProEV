@@ -986,6 +986,15 @@ class Trip:
         )
         trip.maximal_delivered_power_per_location: pd.DataFrame = (
             trip.location_split.copy()
+        )  # How much the network can discharge
+        trip.maximal_received_power_per_location: pd.DataFrame = (
+            trip.location_split.copy()
+        )  # How much of tht the vehicles can receive
+        trip.vehicle_discharge_power_per_location: pd.DataFrame = (
+            trip.location_split.copy()
+        )
+        trip.discharge_power_to_network_per_location: pd.DataFrame = (
+            trip.location_split.copy()
         )
 
         for location_name in trip.location_names:
@@ -1001,6 +1010,21 @@ class Trip:
             this_location_maximal_delivered_power: float = (
                 location_connectivity * charging_power / charger_efficiency
             )
+            this_location_maximal_received_power: float = (
+                location_connectivity * charging_power
+            )
+            this_location_vehicle_discharge_power: float = scenario[
+                'locations'
+            ][location_name]['vehicle_discharge_power']
+            this_location_proportion_of_discharge_going_to_network: float = (
+                scenario['locations'][location_name][
+                    'proportion_of_discharge_going_to_network'
+                ]
+            )
+            this_location_discharge_power_to_network: float = (
+                this_location_vehicle_discharge_power
+                * this_location_proportion_of_discharge_going_to_network
+            )
 
             trip.connectivity_per_location[location_name] = (
                 trip.connectivity_per_location[location_name]
@@ -1010,11 +1034,33 @@ class Trip:
                 trip.maximal_delivered_power_per_location[location_name]
                 * this_location_maximal_delivered_power
             )
+            trip.maximal_received_power_per_location[location_name] = (
+                trip.maximal_received_power_per_location[location_name]
+                * this_location_maximal_received_power
+            )
+
+            trip.vehicle_discharge_power_per_location[location_name] = (
+                trip.vehicle_discharge_power_per_location[location_name]
+                * this_location_vehicle_discharge_power
+            )
+            trip.discharge_power_to_network_per_location[location_name] = (
+                trip.discharge_power_to_network_per_location[location_name]
+                * this_location_discharge_power_to_network
+            )
         trip.connectivity: pd.Series = trip.connectivity_per_location.sum(
             axis=1
         )
         trip.maximal_delivered_power: pd.Series = (
             trip.maximal_delivered_power_per_location.sum(axis=1)
+        )
+        trip.maximal_received_power: pd.Series = (
+            trip.maximal_received_power_per_location.sum(axis=1)
+        )
+        trip.vehicle_discharge_power: pd.Series = (
+            trip.vehicle_discharge_power_per_location.sum(axis=1)
+        )
+        trip.discharge_power_to_network: pd.Series = (
+            trip.discharge_power_to_network_per_location.sum(axis=1)
         )
 
         # We now can create a mobility matrix for the whole run
@@ -1168,6 +1214,35 @@ class Trip:
                 general_parameters,
             )
         )
+        trip.run_maximal_received_power_per_location: pd.DataFrame = (
+            run_time.from_day_to_run(
+                trip.maximal_received_power_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+
+        trip.run_vehicle_discharge_power_per_location: pd.DataFrame = (
+            run_time.from_day_to_run(
+                trip.vehicle_discharge_power_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
+
+        trip.run_discharge_power_to_network_per_location: pd.DataFrame = (
+            run_time.from_day_to_run(
+                trip.discharge_power_to_network_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
+        )
 
         trip.run_percentage_driving: pd.Series = (
             1 - trip.run_location_split.sum(axis=1)
@@ -1178,6 +1253,17 @@ class Trip:
         )
         trip.run_maximal_delivered_power: pd.Series = (
             trip.run_maximal_delivered_power_per_location.sum(axis=1)
+        )
+        trip.run_maximal_received_power: pd.Series = (
+            trip.run_maximal_received_power_per_location.sum(axis=1)
+        )
+
+        trip.run_vehicle_discharge_power: pd.Series = (
+            trip.run_vehicle_discharge_power_per_location.sum(axis=1)
+        )
+
+        trip.run_discharge_power_to_network: pd.Series = (
+            trip.run_discharge_power_to_network_per_location.sum(axis=1)
         )
 
         trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
@@ -1618,6 +1704,60 @@ def declare_all_instances(
         trip.run_maximal_delivered_power.to_pickle(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_maximal_delivered_power.pkl'
+        )
+
+        trip.maximal_received_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_maximal_received_power_per_location.pkl'
+        )
+        trip.run_maximal_received_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_maximal_received_power_per_location.pkl'
+        )
+
+        trip.maximal_received_power.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_maximal_received_power.pkl'
+        )
+        trip.run_maximal_received_power.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_maximal_received_power.pkl'
+        )
+
+        trip.vehicle_discharge_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_vehicle_discharge_power_per_location.pkl'
+        )
+        trip.run_vehicle_discharge_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_vehicle_discharge_power_per_location.pkl'
+        )
+
+        trip.vehicle_discharge_power.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_vehicle_discharge_power.pkl'
+        )
+        trip.run_vehicle_discharge_power.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_vehicle_discharge_power.pkl'
+        )
+
+        trip.discharge_power_to_network_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_discharge_power_to_network_per_location.pkl'
+        )
+        trip.run_discharge_power_to_network_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_discharge_power_to_network_per_location.pkl'
+        )
+
+        trip.discharge_power_to_network.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_discharge_power_to_network.pkl'
+        )
+        trip.run_discharge_power_to_network.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'{trip.name}_run_discharge_power_to_network.pkl'
         )
 
         trip.battery_space_shifts_departures.to_pickle(

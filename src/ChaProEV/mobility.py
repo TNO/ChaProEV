@@ -1316,6 +1316,21 @@ def get_location_split(
         columns=location_names,
         index=run_range,
     )
+    maximal_received_power_per_location: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), len(location_names))),
+        columns=location_names,
+        index=run_range,
+    )
+    vehicle_discharge_power_per_location: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), len(location_names))),
+        columns=location_names,
+        index=run_range,
+    )
+    discharge_power_to_network_per_location: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), len(location_names))),
+        columns=location_names,
+        index=run_range,
+    )
 
     percentage_driving: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), 1)),
@@ -1331,6 +1346,22 @@ def get_location_split(
     maximal_delivered_power: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_range), 1)),
         columns=['Maximal Delivered Power (kW)'],
+        index=run_range,
+    )
+    maximal_received_power: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), 1)),
+        columns=['Maximal Received Power (kW)'],
+        index=run_range,
+    )
+
+    vehicle_discharge_power: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), 1)),
+        columns=['Vehicle Discharge Power (kW)'],
+        index=run_range,
+    )
+    discharge_power_to_network: pd.DataFrame = pd.DataFrame(
+        np.zeros((len(run_range), 1)),
+        columns=['Discharge Power to Network (kW)'],
         index=run_range,
     )
 
@@ -1364,6 +1395,36 @@ def get_location_split(
             f'{output_folder}/{scenario_name}_{trip_name}'
             f'_run_maximal_delivered_power.pkl'
         )
+        trip_maximal_received_power_per_location: (
+            pd.api.extensions.ExtensionArray
+        ) = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_maximal_received_power_per_location.pkl'
+        )
+        trip_maximal_received_power: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_maximal_received_power.pkl'
+        )
+        trip_vehicle_discharge_power_per_location: (
+            pd.api.extensions.ExtensionArray
+        ) = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_vehicle_discharge_power_per_location.pkl'
+        )
+        trip_vehicle_discharge_power: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_vehicle_discharge_power.pkl'
+        )
+        trip_discharge_power_to_network_per_location: (
+            pd.api.extensions.ExtensionArray
+        ) = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_discharge_power_to_network_per_location.pkl'
+        )
+        trip_discharge_power_to_network: pd.DataFrame = pd.read_pickle(
+            f'{output_folder}/{scenario_name}_{trip_name}'
+            f'_run_discharge_power_to_network.pkl'
+        )
 
         percentage_driving['Driving percent'] = (
             percentage_driving['Driving percent'].values
@@ -1378,6 +1439,24 @@ def get_location_split(
         maximal_delivered_power['Maximal Delivered Power (kW)'] = (
             maximal_delivered_power['Maximal Delivered Power (kW)'].values
             + trip_maximal_delivered_power.values
+            * run_trip_probabilities[trip_name].values
+        )
+
+        maximal_received_power['Maximal Received Power (kW)'] = (
+            maximal_received_power['Maximal Received Power (kW)'].values
+            + trip_maximal_received_power.values
+            * run_trip_probabilities[trip_name].values
+        )
+        vehicle_discharge_power['Vehicle Discharge Power (kW)'] = (
+            vehicle_discharge_power['Vehicle Discharge Power (kW)'].values
+            + trip_vehicle_discharge_power.values
+            * run_trip_probabilities[trip_name].values
+        )
+        discharge_power_to_network['Discharge Power to Network (kW)'] = (
+            discharge_power_to_network[
+                'Discharge Power to Network (kW)'
+            ].values
+            + trip_discharge_power_to_network.values
             * run_trip_probabilities[trip_name].values
         )
 
@@ -1402,6 +1481,28 @@ def get_location_split(
                 trip_maximal_delivered_power_per_location[location_name].values
                 * run_trip_probabilities[trip_name].values
             )
+            maximal_received_power_per_location[
+                location_name
+            ] = maximal_received_power_per_location[location_name].values + (
+                trip_maximal_received_power_per_location[location_name].values
+                * run_trip_probabilities[trip_name].values
+            )
+            vehicle_discharge_power_per_location[
+                location_name
+            ] = vehicle_discharge_power_per_location[location_name].values + (
+                trip_vehicle_discharge_power_per_location[location_name].values
+                * run_trip_probabilities[trip_name].values
+            )
+            discharge_power_to_network_per_location[
+                location_name
+            ] = discharge_power_to_network_per_location[
+                location_name
+            ].values + (
+                trip_discharge_power_to_network_per_location[
+                    location_name
+                ].values
+                * run_trip_probabilities[trip_name].values
+            )
 
     loop_timer.append(datetime.datetime.now())
 
@@ -1421,6 +1522,27 @@ def get_location_split(
     )
     maximal_delivered_power.to_pickle(
         f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
+    )
+    maximal_received_power_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_maximal_received_power_per_location.pkl'
+    )
+    maximal_received_power.to_pickle(
+        f'{output_folder}/{scenario_name}_maximal_received_power.pkl'
+    )
+    vehicle_discharge_power_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_vehicle_discharge_power_per_location.pkl'
+    )
+    vehicle_discharge_power.to_pickle(
+        f'{output_folder}/{scenario_name}_vehicle_discharge_power.pkl'
+    )
+    discharge_power_to_network_per_location.to_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_discharge_power_to_network_per_location.pkl'
+    )
+    discharge_power_to_network.to_pickle(
+        f'{output_folder}/{scenario_name}_discharge_power_to_network.pkl'
     )
 
     loop_timer.append(datetime.datetime.now())
@@ -1716,7 +1838,7 @@ def make_mobility_data(
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_car'
+    test_scenario_name: str = 'XX_bus'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
