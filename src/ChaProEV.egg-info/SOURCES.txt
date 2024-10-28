@@ -81,6 +81,7 @@ src/ChaProEV.egg-info/requires-PC-28624.txt
 src/ChaProEV.egg-info/requires.txt
 src/ChaProEV.egg-info/top_level.txt
 tests/test_battery_space.py
+tests/test_empty_values.py
 tests/test_same_output.py
 variants/Mopo.toml
 variants/Mopo/XX_car.csv

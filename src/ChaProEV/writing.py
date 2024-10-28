@@ -7,6 +7,7 @@ It contains the following functions:
     in groupfiles.)
 '''
 
+import datetime
 import os
 import typing as ty
 from itertools import repeat
@@ -90,9 +91,11 @@ def write_scenario_parameters(
 if __name__ == '__main__':
     case_name = 'Mopo'
     # test_scenario_name: str = 'baseline'
+    start_time: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
 
     extra_end_outputs(case_name, general_parameters)
+    print((datetime.datetime.now() - start_time).total_seconds())
