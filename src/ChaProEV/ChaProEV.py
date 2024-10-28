@@ -93,26 +93,29 @@ except ModuleNotFoundError:
 def run_scenario(
     scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> None:
-    print(scenario['scenario_name'])
-    # print((datetime.datetime.now() - start_).total_seconds())
+    scenario_name: str = scenario['scenario_name']
+    print(scenario_name)
     decla_start: datetime.datetime = datetime.datetime.now()
     legs, locations, trips = define.declare_all_instances(
         scenario, case_name, general_parameters
     )
     print(
-        'Declare',
+        f'Declare {scenario_name}',
         (datetime.datetime.now() - decla_start).total_seconds(),
     )
 
     mob_start: datetime.datetime = datetime.datetime.now()
     mobility.make_mobility_data(scenario, case_name, general_parameters)
     print(
-        'Mobility',
+        f'Mobility {scenario_name}',
         (datetime.datetime.now() - mob_start).total_seconds(),
     )
     cons_start: datetime.datetime = datetime.datetime.now()
     consumption.get_consumption_data(scenario, case_name, general_parameters)
-    print('Cons', (datetime.datetime.now() - cons_start).total_seconds())
+    print(
+        f'Consumption {scenario_name}',
+        (datetime.datetime.now() - cons_start).total_seconds(),
+    )
     charge_start: datetime.datetime = datetime.datetime.now()
     (
         battery_space,
@@ -120,7 +123,7 @@ def run_scenario(
         charge_drawn_from_network,
     ) = charging.get_charging_profile(scenario, case_name, general_parameters)
     print(
-        'Charge',
+        f'Charge {scenario_name}',
         (datetime.datetime.now() - charge_start).total_seconds(),
     )
 
@@ -161,7 +164,7 @@ def run_ChaProEV(case_name: str) -> None:
 
     number_of_parallel_processes: int = general_parameters[
         'parallel_processing'
-    ]['number_of_parallel_processes']
+    ]['number_of_parallel_processes']['for_scenarios']
     with Pool(number_of_parallel_processes) as scenarios_pool:
         scenarios_pool.starmap(
             run_scenario,
@@ -174,7 +177,7 @@ def run_ChaProEV(case_name: str) -> None:
         'Writing other outputs',
         (datetime.datetime.now() - write_start).total_seconds(),
     )
-    print('Tot', (datetime.datetime.now() - start_).total_seconds())
+    print('Total time', (datetime.datetime.now() - start_).total_seconds())
 
 
 if __name__ == '__main__':

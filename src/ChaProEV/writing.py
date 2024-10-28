@@ -9,6 +9,8 @@ It contains the following functions:
 
 import os
 import typing as ty
+from itertools import repeat
+from multiprocessing import Pool
 
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
@@ -22,20 +24,38 @@ def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
     output_folder: str = f'{output_root}/{case_name}'
     groupfile_root: str = general_parameters['files']['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
-    for output_file in os.listdir(output_folder):
-        if output_file.split('.')[1] == 'pkl':
-            table_name: str = output_file.split('.')[0]
-            table_to_save = pd.DataFrame(
-                pd.read_pickle(f'{output_root}/{case_name}/{output_file}')
-            )
+    output_files: ty.List[str] = os.listdir(output_folder)
+    output_pickle_files: ty.List[str] = [
+        output_file
+        for output_file in output_files
+        if output_file.split('.')[1] == 'pkl'
+    ]
+    tables_to_save: ty.List[pd.DataFrame] = [
+        pd.DataFrame(  # Because some of these are Series
+            pd.read_pickle(f'{output_root}/{case_name}/{output_pickle_file}')
+        )
+        for output_pickle_file in output_pickle_files
+    ]
 
-            cook.save_dataframe(
-                table_to_save,
-                table_name,
-                groupfile_name,
-                output_folder,
-                general_parameters,
-            )
+    output_table_names: ty.List[str] = [
+        output_pickle_file.split('.')[0]
+        for output_pickle_file in output_pickle_files
+    ]
+
+    number_of_parallel_processes: int = general_parameters[
+        'parallel_processing'
+    ]['number_of_parallel_processes']['for_pickle_saves']
+    with Pool(number_of_parallel_processes) as saving_pool:
+        saving_pool.starmap(
+            cook.save_dataframe,
+            zip(
+                tables_to_save,
+                output_table_names,
+                repeat(groupfile_name),
+                repeat(output_folder),
+                repeat(general_parameters),
+            ),
+        )
 
 
 def write_scenario_parameters(

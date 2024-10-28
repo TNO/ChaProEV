@@ -1303,8 +1303,7 @@ def get_charging_profile(
     for time_tag_index, (time_tag, run_day_type) in enumerate(
         zip(run_range, run_day_types)
     ):
-        # if time_tag.hour == 0 and time_tag.day == 1:
-        #     print(time_tag.day, time_tag.month)
+
         if (
             use_day_types_in_charge_computing
             and (time_tag.hour == day_start_hour)

@@ -4,7 +4,9 @@ use_variants = false
 csv_version = true
 
 [parallel_processing]
-number_of_parallel_processes = 4
+[parallel_processing.number_of_parallel_processes]
+for_scenarios = 4
+for_pickle_saves = 4
 
 
 # Parameters for plots (colors, sizes, etc.)
