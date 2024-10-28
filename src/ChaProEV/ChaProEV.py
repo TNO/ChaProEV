@@ -6,6 +6,8 @@ This is where you run the model
 import datetime
 import os
 import typing as ty
+from itertools import repeat
+from multiprocessing import Pool
 
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -92,7 +94,7 @@ def run_scenario(
     scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> None:
     print(scenario['scenario_name'])
-    print((datetime.datetime.now() - start_).total_seconds())
+    # print((datetime.datetime.now() - start_).total_seconds())
     decla_start: datetime.datetime = datetime.datetime.now()
     legs, locations, trips = define.declare_all_instances(
         scenario, case_name, general_parameters
@@ -157,11 +159,16 @@ def run_ChaProEV(case_name: str) -> None:
 
     scenarios: ty.List[ty.Dict] = load_scenarios(case_name)
 
-    for scenario in scenarios:
-        run_scenario(scenario, case_name, general_parameters)
+    number_of_parallel_processes: int = general_parameters[
+        'parallel_processing'
+    ]['number_of_parallel_processes']
+    with Pool(number_of_parallel_processes) as scenarios_pool:
+        scenarios_pool.starmap(
+            run_scenario,
+            zip(scenarios, repeat(case_name), repeat(general_parameters)),
+        )
 
     write_start: datetime.datetime = datetime.datetime.now()
-
     writing.extra_end_outputs(case_name, general_parameters)
     print(
         'Writing other outputs',

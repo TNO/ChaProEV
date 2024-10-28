@@ -3,6 +3,9 @@
 use_variants = false
 csv_version = true
 
+[parallel_processing]
+number_of_parallel_processes = 4
+
 
 # Parameters for plots (colors, sizes, etc.)
 [plots]

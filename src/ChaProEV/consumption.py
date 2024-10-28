@@ -167,15 +167,15 @@ def get_consumption_data(
 
 
 if __name__ == '__main__':
-    case_name = 'local_impact_BEVs'
-    test_scenario_name: str = 'baseline'
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: ty.Dict = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
+    case_name = 'Mopo'
+    test_scenario_name: str = 'XX_car'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
-    )
     get_consumption_data(scenario, case_name, general_parameters)

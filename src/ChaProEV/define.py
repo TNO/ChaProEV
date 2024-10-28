@@ -1683,6 +1683,7 @@ def declare_all_instances(
         trip.connectivity.to_pickle(
             f'{output_folder}/{scenario_name}_' f'{trip.name}_connectivity.pkl'
         )
+
         trip.run_connectivity.to_pickle(
             f'{output_folder}/{scenario_name}_'
             f'{trip.name}_run_connectivity.pkl'
@@ -1866,7 +1867,7 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_car'
+    test_scenario_name: str = 'XX_bus'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
