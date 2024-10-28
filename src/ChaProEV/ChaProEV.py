@@ -88,6 +88,61 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+def run_scenario(
+    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+) -> None:
+    print(scenario['scenario_name'])
+    print((datetime.datetime.now() - start_).total_seconds())
+    decla_start: datetime.datetime = datetime.datetime.now()
+    legs, locations, trips = define.declare_all_instances(
+        scenario, case_name, general_parameters
+    )
+    print(
+        'Declare',
+        (datetime.datetime.now() - decla_start).total_seconds(),
+    )
+
+    mob_start: datetime.datetime = datetime.datetime.now()
+    mobility.make_mobility_data(scenario, case_name, general_parameters)
+    print(
+        'Mobility',
+        (datetime.datetime.now() - mob_start).total_seconds(),
+    )
+    cons_start: datetime.datetime = datetime.datetime.now()
+    consumption.get_consumption_data(scenario, case_name, general_parameters)
+    print('Cons', (datetime.datetime.now() - cons_start).total_seconds())
+    charge_start: datetime.datetime = datetime.datetime.now()
+    (
+        battery_space,
+        charge_drawn_by_vehicles,
+        charge_drawn_from_network,
+    ) = charging.get_charging_profile(scenario, case_name, general_parameters)
+    print(
+        'Charge',
+        (datetime.datetime.now() - charge_start).total_seconds(),
+    )
+
+
+def load_scenarios(case_name: str) -> ty.List[ty.Dict]:
+    scenario_folder_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
+    scenario_files: ty.List[str] = [
+        scenario_folder_file
+        for scenario_folder_file in scenario_folder_files
+        if scenario_folder_file.split('.')[1] == 'toml'
+    ]
+    scenario_file_paths: ty.List[str] = [
+        f'scenarios/{case_name}/{scenario_file}'
+        for scenario_file in scenario_files
+    ]
+    scenarios: ty.List[ty.Dict] = [
+        cook.parameters_from_TOML(scenario_file_path)
+        for scenario_file_path in scenario_file_paths
+    ]
+    for scenario, scenario_file in zip(scenarios, scenario_files):
+        scenario['scenario_name'] = scenario_file.split('.')[0]
+    return scenarios
+
+
 def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
@@ -99,52 +154,13 @@ def run_ChaProEV(case_name: str) -> None:
     if use_variants:
         csv_version = general_parameters['variants']['csv_version']
         make_variants.make_variants(case_name, csv_version)
-    for scenario_file in os.listdir(f'scenarios/{case_name}'):
-        # To avoid issues if some files are not configuration files
-        if scenario_file.split('.')[1] == 'toml':
-            scenario_file_name: str = f'scenarios/{case_name}/{scenario_file}'
-            scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-            scenario['scenario_name'] = scenario_file.split('.')[0]
-            print(scenario['scenario_name'])
-            print((datetime.datetime.now() - start_).total_seconds())
-            decla_start: datetime.datetime = datetime.datetime.now()
-            legs, locations, trips = define.declare_all_instances(
-                scenario, case_name, general_parameters
-            )
-            print(
-                'Declare',
-                (datetime.datetime.now() - decla_start).total_seconds(),
-            )
 
-            mob_start: datetime.datetime = datetime.datetime.now()
-            mobility.make_mobility_data(
-                scenario, case_name, general_parameters
-            )
-            print(
-                'Mobility',
-                (datetime.datetime.now() - mob_start).total_seconds(),
-            )
-            cons_start: datetime.datetime = datetime.datetime.now()
-            consumption.get_consumption_data(
-                scenario, case_name, general_parameters
-            )
-            print(
-                'Cons', (datetime.datetime.now() - cons_start).total_seconds()
-            )
-            charge_start: datetime.datetime = datetime.datetime.now()
-            (
-                battery_space,
-                charge_drawn_by_vehicles,
-                charge_drawn_from_network,
-            ) = charging.get_charging_profile(
-                scenario, case_name, general_parameters
-            )
-            print(
-                'Charge',
-                (datetime.datetime.now() - charge_start).total_seconds(),
-            )
+    scenarios: ty.List[ty.Dict] = load_scenarios(case_name)
 
-            write_start: datetime.datetime = datetime.datetime.now()
+    for scenario in scenarios:
+        run_scenario(scenario, case_name, general_parameters)
+
+    write_start: datetime.datetime = datetime.datetime.now()
 
     writing.extra_end_outputs(case_name, general_parameters)
     print(
