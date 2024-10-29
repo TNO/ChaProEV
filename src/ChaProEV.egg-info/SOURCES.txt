@@ -28,6 +28,7 @@ docs/define.md
 docs/index.md
 docs/make.bat
 docs/mobility.md
+docs/running_model,md
 docs/scenario.md
 docs/using.md
 docs/weather.md
