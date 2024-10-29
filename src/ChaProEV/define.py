@@ -1094,7 +1094,7 @@ class Trip:
                 scenario,
                 general_parameters,
             )
-        )
+        ).astype(float)
 
         trip.run_battery_space_shifts_departures: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
@@ -1529,7 +1529,9 @@ def declare_class_instances(
 
 def declare_all_instances(
     scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
-) -> ty.Tuple[ty.List[ty.Type], ...]:
+) -> ty.Tuple[
+    pd.DataFrame, ty.List[ty.Type], ty.List[ty.Type], ty.List[ty.Type]
+]:
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
@@ -1857,7 +1859,7 @@ def declare_all_instances(
             f'.pkl'
         )
 
-    return legs, locations, trips
+    return location_connections, legs, locations, trips
 
 
 if __name__ == '__main__':
@@ -1873,7 +1875,7 @@ if __name__ == '__main__':
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    legs, locations, trips = declare_all_instances(
+    location_connecions, legs, locations, trips = declare_all_instances(
         scenario, case_name, general_parameters
     )
 

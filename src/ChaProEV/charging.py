@@ -34,7 +34,11 @@ except ModuleNotFoundError:
 
 
 def get_charging_framework(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    location_split: pd.DataFrame,
+    run_mobility_matrix: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> ty.Tuple[
     ty.Dict[str, pd.DataFrame],
     pd.DatetimeIndex,
@@ -81,15 +85,6 @@ def get_charging_framework(
     )
     location_names = list(location_nodes.index.values)
 
-    scenario_name: str = scenario['scenario_name']
-
-    file_parameters: ty.Dict[str, str] = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    location_split_table_name: str = f'{scenario_name}_location_split'
-    location_split: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{location_split_table_name}.pkl'
-    )
-
     # We create a dictionary of various battery spaces that are available
     # at each charging location (i.e. percent of vehicles with
     # a given battery space per location) (locations are keys and
@@ -109,10 +104,6 @@ def get_charging_framework(
             location_split.loc[run_range[0]][location_name]
         )
 
-    # We read the run's mobility matrix as well as specific elements of it
-    run_mobility_matrix: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl',
-    ).astype(float)
     run_arrivals_impact: pd.Series = run_mobility_matrix[
         'Arrivals impact'
     ].copy()
@@ -673,6 +664,7 @@ def copy_day_type_profiles_to_whole_run(
     run_range: pd.DatetimeIndex,
     reference_day_type_time_tags: ty.Dict[str, ty.List[datetime.datetime]],
     location_split: pd.DataFrame,
+    run_mobility_matrix: pd.DataFrame,
     battery_spaces: ty.Dict[str, pd.DataFrame],
     day_end_hour: int,
     zero_threshold: float,
@@ -813,7 +805,13 @@ def copy_day_type_profiles_to_whole_run(
         run_departures_impact,
         run_departures_impact_gaps,
         spillover_travelling_battery_spaces,
-    ) = get_charging_framework(scenario, case_name, general_parameters)
+    ) = get_charging_framework(
+        location_split,
+        run_mobility_matrix,
+        scenario,
+        case_name,
+        general_parameters,
+    )
 
     # We first get all the days (day end time tags) that end with a spillover
     # at each of the locations
@@ -1048,6 +1046,8 @@ def write_output(
     charge_drawn_from_network: pd.DataFrame,
     scenario: ty.Dict,
     case_name: str,
+    maximal_delivered_power_per_location: pd.DataFrame,
+    maximal_delivered_power: pd.DataFrame,
     general_parameters: ty.Dict,
 ) -> None:
     '''
@@ -1115,11 +1115,6 @@ def write_output(
         f'{output_folder}/{scenario_name}_charge_drawn_from_network_total.pkl'
     )
 
-    maximal_delivered_power_per_location: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_maximal_delivered_power_per_location.pkl',
-    )
-
     for location_name in location_names:
         percentage_of_maximal_delivered_power_used_per_location[
             location_name
@@ -1140,10 +1135,6 @@ def write_output(
         f'percentage_of_maximal_delivered_power_used_per_location.pkl'
     )
 
-    maximal_delivered_power: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl',
-    ).astype(float)
-    # )
     percentage_of_maximal_delivered_power_used: pd.DataFrame = pd.DataFrame(
         index=percentage_of_maximal_delivered_power_used_per_location.index
     )
@@ -1210,6 +1201,10 @@ def write_output(
 
 
 def get_charging_profile(
+    location_split: pd.DataFrame,
+    run_mobility_matrix: pd.DataFrame,
+    maximal_delivered_power_per_location: pd.DataFrame,
+    maximal_delivered_power: pd.DataFrame,
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
@@ -1230,7 +1225,13 @@ def get_charging_profile(
         run_departures_impact,
         run_departures_impact_gaps,
         travelling_battery_spaces,
-    ) = get_charging_framework(scenario, case_name, general_parameters)
+    ) = get_charging_framework(
+        location_split,
+        run_mobility_matrix,
+        scenario,
+        case_name,
+        general_parameters,
+    )
 
     # We want to either compute charging for the whole run, or only
     # do it per day type (to compute faster by avoiding repeats)
@@ -1290,14 +1291,6 @@ def get_charging_profile(
 
     possible_destinations, possible_origins = (
         mobility.get_possible_destinations_and_origins(scenario)
-    )
-    scenario_name: str = scenario['scenario_name']
-
-    file_parameters: ty.Dict[str, str] = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    location_split_table_name: str = f'{scenario_name}_location_split'
-    location_split: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{location_split_table_name}.pkl'
     )
 
     for time_tag_index, (time_tag, run_day_type) in enumerate(
@@ -1372,6 +1365,7 @@ def get_charging_profile(
             run_range,
             reference_day_type_time_tags,
             location_split,
+            run_mobility_matrix,
             battery_spaces,
             day_end_hour,
             zero_threshold,
@@ -1389,6 +1383,8 @@ def get_charging_profile(
         charge_drawn_from_network,
         scenario,
         case_name,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
         general_parameters,
     )
 
@@ -1397,7 +1393,8 @@ def get_charging_profile(
 
 if __name__ == '__main__':
     case_name = 'local_impact_BEVs'
-    test_scenario_name: str = 'baseline'
+    scenario_name: str = 'baseline'
+
     case_name = 'Mopo'
     test_scenario_name = 'XX_car'
     scenario_file_name: str = (
@@ -1409,12 +1406,36 @@ if __name__ == '__main__':
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
+    file_parameters: ty.Dict = general_parameters['files']
+    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    location_split_table_name: str = f'{scenario_name}_location_split'
+    location_split: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{location_split_table_name}.pkl'
+    )
+    run_mobility_matrix: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl',
+    ).astype(float)
+    maximal_delivered_power_per_location: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{scenario_name}'
+        f'_maximal_delivered_power_per_location.pkl',
+    )
+    maximal_delivered_power: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl',
+    ).astype(float)
 
     start_: datetime.datetime = datetime.datetime.now()
     (
         battery_spaces,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = get_charging_profile(scenario, case_name, general_parameters)
+    ) = get_charging_profile(
+        location_split,
+        run_mobility_matrix,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+        scenario,
+        case_name,
+        general_parameters,
+    )
 
     print((datetime.datetime.now() - start_).total_seconds())

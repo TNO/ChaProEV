@@ -5,7 +5,7 @@ It contains the following functions:
 probabilities per day type.
 2. **get_run_trip_probabilities:** Gets a DataFrame containing the trip
 probabilities for the whole run.
-3. **matrix_trips_to_run:**Takes the matrices for different trips and adds
+3. **get_run_mobility_matrix:**Takes the matrices for different trips and adds
 them up (weighed on probability) to get a matrix for the whole run.
 4. **get_day_type_start_location:** Tells us the proportion of vehicles
 that start their day at a given location (per day type)
@@ -34,26 +34,33 @@ except ModuleNotFoundError:
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
 
+try:
+    import define  # type: ignore
 
-def matrix_trips_to_run(
-    matrix_type_to_compute: str,
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import define  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
+
+def get_run_mobility_matrix(
+    trips: ty.List[define.Trip],
+    location_connections: pd.DataFrame,
     matrix_columns: ty.List,
     run_trip_probabilities: pd.DataFrame,
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> None:
+) -> pd.DataFrame:
     '''
     Takes the matrices for different trips and adds them up (weighed on
     probability) to get a matrix for the whole run.
     '''
-    scenario_vehicle: str = scenario['vehicle']['name']
-    trip_parameters: ty.Dict = scenario['trips']
-    trip_names: ty.List[str] = [
-        trip_name
-        for trip_name in trip_parameters
-        if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
-    ]
 
     run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
@@ -75,26 +82,25 @@ def matrix_trips_to_run(
         run_index_tuples, names=mobility_index_names
     )
 
-    run_matrix: pd.DataFrame = pd.DataFrame(
+    run_mobility_matrix: pd.DataFrame = pd.DataFrame(
         np.zeros((len(run_index), len(matrix_columns))),
         columns=matrix_columns,
         index=run_index,
     )
-    run_matrix = run_matrix.sort_index()
+    run_mobility_matrix = run_mobility_matrix.sort_index()
 
     scenario_name: str = scenario['scenario_name']
     file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
-    for trip_name in trip_names:
+    for trip in trips:
+        unique_trip_legs: ty.List[str] = list(set(trip.legs))
 
-        trip_legs: ty.List[str] = scenario['trips'][trip_name]['legs']
-
-        if len(trip_legs) > 0:
+        if len(unique_trip_legs) > 0:
 
             trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
 
-            for trip_leg in trip_legs:
+            for trip_leg in unique_trip_legs:
                 leg_start: str = scenario['legs'][trip_leg]['locations'][
                     'start'
                 ]
@@ -105,19 +111,15 @@ def matrix_trips_to_run(
                     trip_location_tuples.append(leg_tuple)
 
             this_trip_run_probabilities: pd.DataFrame = pd.DataFrame(
-                run_trip_probabilities[trip_name]
+                run_trip_probabilities[trip.name]
             )
 
-            trip_matrix: pd.DataFrame = pd.read_pickle(
-                f'{output_folder}/{scenario_name}_{trip_name}'
-                f'_run_{matrix_type_to_compute}.pkl'
-            ).astype(float)
             location_connections_headers: ty.List[str] = scenario[
                 'mobility_module'
             ]['location_connections_headers']
 
             # We need a version for each start/end location combination
-            # that appears in our trip mobility matrix. This ia also the
+            # that appears in our trip mobility matrix. This is also the
             # amount of (unique) legs or the trip location tuples
             this_trip_run_probabilities_extended: pd.DataFrame = pd.DataFrame()
             for _ in range(len(trip_location_tuples)):
@@ -131,45 +133,46 @@ def matrix_trips_to_run(
                 )
 
             probability_values_to_use = this_trip_run_probabilities_extended[
-                trip_name
+                trip.name
             ].values
 
-            for quantity in run_matrix.columns:
+            for quantity in run_mobility_matrix.columns:
 
                 if quantity not in location_connections_headers:
                     weighted_mobility_quantity_to_use = (
-                        trip_matrix[quantity] * probability_values_to_use
+                        trip.run_mobility_matrix[quantity]
+                        * probability_values_to_use
                     )
 
                     # We need to place it at the right places in the run
 
                     for trip_location_tuple in trip_location_tuples:
 
-                        run_matrix.loc[
+                        run_mobility_matrix.loc[
                             (trip_location_tuple),
                             quantity,
                         ] = (
                             pd.Series(
-                                run_matrix.loc[trip_location_tuple, quantity]
+                                run_mobility_matrix.loc[
+                                    trip_location_tuple, quantity
+                                ]
                             ).values
                             + weighted_mobility_quantity_to_use.loc[
                                 trip_location_tuple
                             ].values
                         )
 
-        location_connections: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_location_connections.pkl'
-        ).astype(float)
         for location_tuple in location_tuples:
             these_locations_connections: pd.Series = pd.Series(
                 location_connections.loc[location_tuple]
             )
-            run_matrix.loc[(location_tuple), location_connections_headers] = (
-                these_locations_connections.values
-            )
-        run_matrix.to_pickle(
-            f'{output_folder}/{scenario_name}_run_{matrix_type_to_compute}.pkl'
+            run_mobility_matrix.loc[
+                (location_tuple), location_connections_headers
+            ] = these_locations_connections.values
+        run_mobility_matrix.to_pickle(
+            f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
         )
+    return run_mobility_matrix
 
 
 def get_possible_destinations_and_origins(
@@ -276,8 +279,8 @@ def get_trip_probabilities_per_day_type_other_vehicles(
         'trips_per_day_type'
     ][scenario_vehicle]
 
-    for day_type, trip in zip(day_types, trips_per_day_type):
-        trip_probabilities_per_day_type.loc[trip, day_type] = 1
+    for day_type, trip_name in zip(day_types, trips_per_day_type):
+        trip_probabilities_per_day_type.loc[trip_name, day_type] = 1
 
     trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
         float
@@ -1108,7 +1111,10 @@ def car_holiday_departures_returns_corrections(
 
 
 def get_run_trip_probabilities(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    trips: ty.List[define.Trip],
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> pd.DataFrame:
     '''
     Gets a DataFrame containing the trip probabilities for the whole run.
@@ -1270,11 +1276,12 @@ def get_day_type_start_location_split(
 
 
 def get_location_split(
+    trips: ty.List[define.Trip],
     run_trip_probabilities: pd.DataFrame,
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> None:
+) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     '''
     Produces the location split of the vehicles for the whole run
     '''
@@ -1286,12 +1293,6 @@ def get_location_split(
 
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
-
-    trip_list: ty.List[str] = [
-        trip_name
-        for trip_name in scenario['trips'].keys()
-        if scenario['trips'][trip_name]['vehicle'] == vehicle_name
-    ]
 
     location_names: ty.List[str] = [
         location_name
@@ -1365,143 +1366,90 @@ def get_location_split(
         index=run_range,
     )
 
-    for trip_name in trip_list:
-        # This is a DataFrame,. but MyPy hasd issues with MultiIndex
-        trip_location_split = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_location_split.pkl'
-        )
-        trip_connectivity_per_location: pd.api.extensions.ExtensionArray = (
-            pd.read_pickle(
-                f'{output_folder}/{scenario_name}_{trip_name}'
-                f'_run_connectivity_per_location.pkl'
-            )
-        )
-        trip_percentage_driving: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_percentage_driving.pkl'
-        )
-        trip_connectivity: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_connectivity.pkl'
-        )
-        trip_maximal_delivered_power_per_location: (
-            pd.api.extensions.ExtensionArray
-        ) = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_maximal_delivered_power_per_location.pkl'
-        )
-        trip_maximal_delivered_power: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_maximal_delivered_power.pkl'
-        )
-        trip_maximal_received_power_per_location: (
-            pd.api.extensions.ExtensionArray
-        ) = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_maximal_received_power_per_location.pkl'
-        )
-        trip_maximal_received_power: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_maximal_received_power.pkl'
-        )
-        trip_vehicle_discharge_power_per_location: (
-            pd.api.extensions.ExtensionArray
-        ) = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_vehicle_discharge_power_per_location.pkl'
-        )
-        trip_vehicle_discharge_power: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_vehicle_discharge_power.pkl'
-        )
-        trip_discharge_power_to_network_per_location: (
-            pd.api.extensions.ExtensionArray
-        ) = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_discharge_power_to_network_per_location.pkl'
-        )
-        trip_discharge_power_to_network: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}'
-            f'_run_discharge_power_to_network.pkl'
-        )
+    for trip in trips:
 
         percentage_driving['Driving percent'] = (
             percentage_driving['Driving percent'].values
-            + trip_percentage_driving.values
-            * run_trip_probabilities[trip_name].values
+            + trip.run_percentage_driving.values
+            * run_trip_probabilities[trip.name].values
         )
         connectivity['Connectivity'] = (
             connectivity['Connectivity'].values
-            + trip_connectivity.values
-            * run_trip_probabilities[trip_name].values
+            + trip.run_connectivity.values
+            * run_trip_probabilities[trip.name].values
         )
         maximal_delivered_power['Maximal Delivered Power (kW)'] = (
             maximal_delivered_power['Maximal Delivered Power (kW)'].values
-            + trip_maximal_delivered_power.values
-            * run_trip_probabilities[trip_name].values
+            + trip.run_maximal_delivered_power.values
+            * run_trip_probabilities[trip.name].values
         )
 
         maximal_received_power['Maximal Received Power (kW)'] = (
             maximal_received_power['Maximal Received Power (kW)'].values
-            + trip_maximal_received_power.values
-            * run_trip_probabilities[trip_name].values
+            + trip.run_maximal_received_power.values
+            * run_trip_probabilities[trip.name].values
         )
         vehicle_discharge_power['Vehicle Discharge Power (kW)'] = (
             vehicle_discharge_power['Vehicle Discharge Power (kW)'].values
-            + trip_vehicle_discharge_power.values
-            * run_trip_probabilities[trip_name].values
+            + trip.run_vehicle_discharge_power.values
+            * run_trip_probabilities[trip.name].values
         )
         discharge_power_to_network['Discharge Power to Network (kW)'] = (
             discharge_power_to_network[
                 'Discharge Power to Network (kW)'
             ].values
-            + trip_discharge_power_to_network.values
-            * run_trip_probabilities[trip_name].values
+            + trip.run_discharge_power_to_network.values
+            * run_trip_probabilities[trip.name].values
         )
 
-        for location_name in trip_location_split.columns:
+        for location_name in trip.run_location_split.columns:
             location_split[location_name] = location_split[
                 location_name
             ].values + (
-                trip_location_split[location_name].values
-                * run_trip_probabilities[trip_name].values
+                trip.run_location_split[location_name].values
+                * run_trip_probabilities[trip.name].values
             )
 
             connectivity_per_location[
                 location_name
             ] = connectivity_per_location[location_name].values + (
-                trip_connectivity_per_location[location_name].values
-                * run_trip_probabilities[trip_name].values
+                trip.run_connectivity_per_location[location_name].values
+                * run_trip_probabilities[trip.name].values
             )
 
             maximal_delivered_power_per_location[
                 location_name
             ] = maximal_delivered_power_per_location[location_name].values + (
-                trip_maximal_delivered_power_per_location[location_name].values
-                * run_trip_probabilities[trip_name].values
+                trip.run_maximal_delivered_power_per_location[
+                    location_name
+                ].values
+                * run_trip_probabilities[trip.name].values
             )
             maximal_received_power_per_location[
                 location_name
             ] = maximal_received_power_per_location[location_name].values + (
-                trip_maximal_received_power_per_location[location_name].values
-                * run_trip_probabilities[trip_name].values
+                trip.run_maximal_received_power_per_location[
+                    location_name
+                ].values
+                * run_trip_probabilities[trip.name].values
             )
             vehicle_discharge_power_per_location[
                 location_name
             ] = vehicle_discharge_power_per_location[location_name].values + (
-                trip_vehicle_discharge_power_per_location[location_name].values
-                * run_trip_probabilities[trip_name].values
+                trip.run_vehicle_discharge_power_per_location[
+                    location_name
+                ].values
+                * run_trip_probabilities[trip.name].values
             )
             discharge_power_to_network_per_location[
                 location_name
             ] = discharge_power_to_network_per_location[
                 location_name
             ].values + (
-                trip_discharge_power_to_network_per_location[
+                trip.run_discharge_power_to_network_per_location[
                     location_name
                 ].values
-                * run_trip_probabilities[trip_name].values
+                * run_trip_probabilities[trip.name].values
             )
 
     loop_timer.append(datetime.datetime.now())
@@ -1544,17 +1492,11 @@ def get_location_split(
     discharge_power_to_network.to_pickle(
         f'{output_folder}/{scenario_name}_discharge_power_to_network.pkl'
     )
-
-    # loop_timer.append(datetime.datetime.now())
-    # loop_times: ty.List[float] = []
-    # for timer_index, test_element in enumerate(loop_timer):
-    #     if timer_index > 0:
-    #         loop_times.append(
-    #             (test_element - loop_timer[timer_index - 1]).total_seconds()
-    #         )
-    # print('Loc split split')
-    # print(sum(loop_times))
-    # print(loop_times)
+    return (
+        location_split,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+    )
 
 
 def get_starting_location_split(
@@ -1607,14 +1549,14 @@ def get_starting_location_split(
 
 
 def get_kilometers_for_next_leg(
+    trips: ty.List[define.Trip],
     run_trip_probabilities: pd.DataFrame,
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> None:
+) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
 
     scenario_name: str = scenario['scenario_name']
-    scenario_vehicle: str = scenario['vehicle']['name']
 
     file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
@@ -1658,80 +1600,44 @@ def get_kilometers_for_next_leg(
         index=run_trip_probabilities.index,
     )
 
-    trip_parameters: ty.Dict = scenario['trips']
-    trip_names: ty.List[str] = [
-        trip_name
-        for trip_name in trip_parameters
-        if trip_parameters[trip_name]['vehicle'] == scenario_vehicle
-    ]
-    for trip_name in trip_names:
-        trip_run_next_leg_kilometers: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip_name}_run_next_leg_kilometers.pkl'
-        )
-
-        trip_run_next_leg_kilometers_cumulative: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_{trip_name}_'
-            f'run_next_leg_kilometers_cumulative.pkl',
-        )
-
-        trip_run_next_leg_charge_to_vehicle: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip_name}_run_next_leg_charge_to_vehicle.pkl'
-        )
-        trip_run_next_leg_charge_from_network: pd.DataFrame = pd.read_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip_name}_run_next_leg_charge_from_network.pkl'
-        )
-        trip_run_next_leg_charge_to_vehicle_cumulative: pd.DataFrame = (
-            pd.read_pickle(
-                f'{output_folder}/{scenario_name}_'
-                f'{trip_name}_run_next_leg_charge_to_vehicle_cumulative.pkl'
-            )
-        )
-        trip_run_next_leg_charge_from_network_cumulative: pd.DataFrame = (
-            pd.read_pickle(
-                f'{output_folder}/{scenario_name}_'
-                f'{trip_name}_run_next_leg_charge_from_network_cumulative.pkl'
-            )
-        )
+    for trip in trips:
 
         this_trip_probabilities: pd.Series[float] = pd.Series(
-            run_trip_probabilities[trip_name]
+            run_trip_probabilities[trip.name]
         )
-        for location_name in trip_run_next_leg_kilometers.columns:
+        for location_name in trip.run_next_leg_kilometers.columns:
 
             run_next_leg_kilometers[
                 location_name
-            ] += trip_run_next_leg_kilometers[location_name].mul(
+            ] += trip.run_next_leg_kilometers[location_name].mul(
                 this_trip_probabilities, axis=0
             )
             run_next_leg_kilometers_cumulative[
                 location_name
-            ] += trip_run_next_leg_kilometers_cumulative[location_name].mul(
+            ] += trip.run_next_leg_kilometers_cumulative[location_name].mul(
                 this_trip_probabilities, axis=0
             )
             run_next_leg_charge_to_vehicle[
                 location_name
-            ] += trip_run_next_leg_charge_to_vehicle[location_name].mul(
+            ] += trip.run_next_leg_charge_to_vehicle[location_name].mul(
                 this_trip_probabilities, axis=0
             )
 
             run_next_leg_charge_from_network[
                 location_name
-            ] += trip_run_next_leg_charge_from_network[location_name].mul(
+            ] += trip.run_next_leg_charge_from_network[location_name].mul(
                 this_trip_probabilities, axis=0
             )
             run_next_leg_charge_to_vehicle_cumulative[
                 location_name
-            ] += trip_run_next_leg_charge_to_vehicle_cumulative[
+            ] += trip.run_next_leg_charge_to_vehicle_cumulative[
                 location_name
             ].mul(
                 this_trip_probabilities, axis=0
             )
             run_next_leg_charge_from_network_cumulative[
                 location_name
-            ] += trip_run_next_leg_charge_from_network_cumulative[
+            ] += trip.run_next_leg_charge_from_network_cumulative[
                 location_name
             ].mul(
                 this_trip_probabilities, axis=0
@@ -1757,27 +1663,40 @@ def get_kilometers_for_next_leg(
         f'{output_folder}/{scenario_name}'
         f'_next_leg_charge_from_network_cumulative.pkl'
     )
+    return run_next_leg_kilometers, run_next_leg_kilometers_cumulative
 
 
 def make_mobility_data(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
-) -> None:
-    # timer: bool = True
-    # start_time: datetime.datetime = datetime.datetime.now()
+    location_connections: pd.DataFrame,
+    legs: define.Leg,
+    locations: define.Location,
+    trips: define.Trip,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
+) -> ty.Tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+]:
+
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
-        scenario, case_name, general_parameters
+        trips, scenario, case_name, general_parameters
     )
     get_trip_probabilities_per_day_type(
         scenario, case_name, general_parameters
     )
-    # per_day_type_time: datetime.datetime = datetime.datetime.now()
 
     mobility_quantities: ty.List = scenario['mobility_module'][
         'mobility_quantities'
     ]
 
-    matrix_trips_to_run(
-        'mobility_matrix',
+    run_mobility_matrix: pd.DataFrame = get_run_mobility_matrix(
+        trips,
+        location_connections,
         mobility_quantities,
         run_trip_probabilities,
         scenario,
@@ -1808,47 +1727,64 @@ def make_mobility_data(
             leg_weighted_consumptions.append(weighted_consumption)
     leg_weighted_consumptions = sorted(list(set(leg_weighted_consumptions)))
 
-    # mobility_matrix_time: datetime.datetime = datetime.datetime.now()
-    get_location_split(
-        run_trip_probabilities, scenario, case_name, general_parameters
+    (
+        location_split,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+    ) = get_location_split(
+        trips, run_trip_probabilities, scenario, case_name, general_parameters
     )
-    # location_split_time: datetime.datetime = datetime.datetime.now()
-    get_kilometers_for_next_leg(
-        run_trip_probabilities, scenario, case_name, general_parameters
+    run_next_leg_kilometers, run_next_leg_kilometers_cumulative = (
+        get_kilometers_for_next_leg(
+            trips,
+            run_trip_probabilities,
+            scenario,
+            case_name,
+            general_parameters,
+        )
     )
-    # next_leg_time: datetime.datetime = datetime.datetime.now()
-    # if timer:
-    #     print(
-    #         f'Per day time: '
-    #         f'{(per_day_type_time - start_time).total_seconds()}'
-    #     )
-    #     print(
-    #         f'Mobility matrix: '
-    #         f'{(mobility_matrix_time - per_day_type_time).total_seconds()}'
-    #     )
-    #     print(
-    #         f'Location split: '
-    #         f'{(location_split_time - mobility_matrix_time).total_seconds()}'
-    #     )
-    #     print(
-    #         f'Next leg: '
-    #         f'{(next_leg_time - location_split_time).total_seconds()}'
-    #     )
+    return (
+        run_mobility_matrix,
+        location_split,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+    )
 
 
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_bus'
-    scenario_file_name: str = (
-        f'scenarios/{case_name}/{test_scenario_name}.toml'
-    )
+    scenario_name: str = 'XX_bus'
+    scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
+    scenario['scenario_name'] = scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
 
-    make_mobility_data(scenario, case_name, general_parameters)
+    location_connections, legs, locations, trips = (
+        define.declare_all_instances(scenario, case_name, general_parameters)
+    )
+
+    (
+        run_mobility_matrix,
+        location_split,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+    ) = make_mobility_data(
+        location_connections,
+        legs,
+        locations,
+        trips,
+        scenario,
+        case_name,
+        general_parameters,
+    )
+    print(run_mobility_matrix)
+    print(location_split)
     print((datetime.datetime.now() - start_time).total_seconds())

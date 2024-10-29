@@ -10,7 +10,10 @@ from ETS_CookBook import ETS_CookBook as cook
 
 
 def create_consumption_tables(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    run_mobility_matrix: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
     '''
     Creates the consumption tables
@@ -32,11 +35,7 @@ def create_consumption_tables(
         kilometers_source_column = (
             f'{kilometers_column_for_consumption} kilometers'
         )
-    consumption_matrix: pd.DataFrame = pd.DataFrame(
-        pd.read_pickle(
-            f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl',
-        )
-    )
+    consumption_matrix: pd.DataFrame = run_mobility_matrix
 
     # We rearrange the matrix
     consumption_matrix = (
@@ -123,18 +122,15 @@ def create_consumption_tables(
 
 
 def get_energy_for_next_leg(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    next_leg_kilometers: pd.DataFrame,
+    next_leg_kilometers_cumulative: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
     file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     scenario_name: str = scenario['scenario_name']
-    next_leg_kilometers: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl',
-    )
-    next_leg_kilometers_cumulative: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}_'
-        'next_leg_kilometers_cumulative.pkl',
-    )
 
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_base_consumptions_kWh_per_km: float = vehicle_parameters[
@@ -160,10 +156,23 @@ def get_energy_for_next_leg(
 
 
 def get_consumption_data(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    run_mobility_matrix: pd.DataFrame,
+    next_leg_kilometers: pd.DataFrame,
+    next_leg_kilometers_cumulative: pd.DataFrame,
+    scenario: ty.Dict,
+    case_name: str,
+    general_parameters: ty.Dict,
 ) -> None:
-    create_consumption_tables(scenario, case_name, general_parameters)
-    get_energy_for_next_leg(scenario, case_name, general_parameters)
+    create_consumption_tables(
+        run_mobility_matrix, scenario, case_name, general_parameters
+    )
+    get_energy_for_next_leg(
+        next_leg_kilometers,
+        next_leg_kilometers_cumulative,
+        scenario,
+        case_name,
+        general_parameters,
+    )
 
 
 if __name__ == '__main__':
@@ -172,10 +181,32 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_car'
+    scenario_name: str = 'XX_car'
     scenario_file_name: str = (
-        f'scenarios/{case_name}/{test_scenario_name}.toml'
+        f'scenarios/{case_name}/{scenario_name}.toml'
     )
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
-    get_consumption_data(scenario, case_name, general_parameters)
+    scenario['scenario_name'] = scenario_name
+    output_folder: str = (
+        f'{general_parameters["files"]["output_root"]}/{case_name}'
+    )
+    run_mobility_matrix = pd.DataFrame(
+        pd.read_pickle(
+            f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl',
+        )
+    )
+    next_leg_kilometers: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl',
+    )
+    next_leg_kilometers_cumulative: pd.DataFrame = pd.read_pickle(
+        f'{output_folder}/{scenario_name}_'
+        'next_leg_kilometers_cumulative.pkl',
+    )
+    get_consumption_data(
+        run_mobility_matrix,
+        next_leg_kilometers,
+        next_leg_kilometers_cumulative,
+        scenario,
+        case_name,
+        general_parameters,
+    )

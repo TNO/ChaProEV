@@ -96,8 +96,8 @@ def run_scenario(
     scenario_name: str = scenario['scenario_name']
     print(scenario_name)
     decla_start: datetime.datetime = datetime.datetime.now()
-    legs, locations, trips = define.declare_all_instances(
-        scenario, case_name, general_parameters
+    location_connections, legs, locations, trips = (
+        define.declare_all_instances(scenario, case_name, general_parameters)
     )
     print(
         f'Declare {scenario_name}',
@@ -105,23 +105,53 @@ def run_scenario(
     )
 
     mob_start: datetime.datetime = datetime.datetime.now()
-    mobility.make_mobility_data(scenario, case_name, general_parameters)
+    (
+        run_mobility_matrix,
+        location_split,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+    ) = mobility.make_mobility_data(
+        location_connections,
+        legs,
+        locations,
+        trips,
+        scenario,
+        case_name,
+        general_parameters,
+    )
     print(
         f'Mobility {scenario_name}',
         (datetime.datetime.now() - mob_start).total_seconds(),
     )
     cons_start: datetime.datetime = datetime.datetime.now()
-    consumption.get_consumption_data(scenario, case_name, general_parameters)
+    consumption.get_consumption_data(
+        run_mobility_matrix,
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+        scenario,
+        case_name,
+        general_parameters,
+    )
     print(
         f'Consumption {scenario_name}',
         (datetime.datetime.now() - cons_start).total_seconds(),
     )
     charge_start: datetime.datetime = datetime.datetime.now()
     (
-        battery_space,
+        battery_spaces,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-    ) = charging.get_charging_profile(scenario, case_name, general_parameters)
+    ) = charging.get_charging_profile(
+        location_split,
+        run_mobility_matrix,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+        scenario,
+        case_name,
+        general_parameters,
+    )
     print(
         f'Charge {scenario_name}',
         (datetime.datetime.now() - charge_start).total_seconds(),
