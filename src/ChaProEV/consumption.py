@@ -100,25 +100,26 @@ def create_consumption_tables(
         [f'{time_tag.year}' for time_tag in yearly_consumption_table.index]
     )
     yearly_consumption_table.index.name = 'Year'
-
-    consumption_matrix.to_pickle(
-        f'{output_folder}/{scenario_name}_consumption_matrix.pkl'
-    )
-    consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_consumption_table.pkl'
-    )
-    daily_consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_daily_consumption_table.pkl'
-    )
-    weekly_consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_weekly_consumption_table.pkl'
-    )
-    monthly_consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_monthly_consumption_table.pkl'
-    )
-    yearly_consumption_table.to_pickle(
-        f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
-    )
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        consumption_matrix.to_pickle(
+            f'{output_folder}/{scenario_name}_consumption_matrix.pkl'
+        )
+        consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_consumption_table.pkl'
+        )
+        daily_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_daily_consumption_table.pkl'
+        )
+        weekly_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_weekly_consumption_table.pkl'
+        )
+        monthly_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_monthly_consumption_table.pkl'
+        )
+        yearly_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
+        )
 
 
 def get_energy_for_next_leg(
@@ -147,12 +148,15 @@ def get_energy_for_next_leg(
     energy_for_next_leg_cumulative: pd.DataFrame = (
         next_leg_kilometers_cumulative.mul(consumption, axis=0)
     )
-    energy_for_next_leg.to_pickle(
-        f'{output_folder}/{scenario_name}_energy_for_next_leg.pkl'
-    )
-    energy_for_next_leg_cumulative.to_pickle(
-        f'{output_folder}/{scenario_name}_energy_for_next_leg_cumulative.pkl'
-    )
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        energy_for_next_leg.to_pickle(
+            f'{output_folder}/{scenario_name}_energy_for_next_leg.pkl'
+        )
+        energy_for_next_leg_cumulative.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            '_energy_for_next_leg_cumulative.pkl'
+        )
 
 
 def get_consumption_data(
@@ -182,9 +186,7 @@ if __name__ == '__main__':
     )
     case_name = 'Mopo'
     scenario_name: str = 'XX_car'
-    scenario_file_name: str = (
-        f'scenarios/{case_name}/{scenario_name}.toml'
-    )
+    scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = scenario_name
     output_folder: str = (

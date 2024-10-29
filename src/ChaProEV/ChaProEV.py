@@ -9,6 +9,7 @@ import typing as ty
 from itertools import repeat
 from multiprocessing import Pool
 
+import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -90,6 +91,20 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+try:
+    import run_time  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import run_time  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
+
 def run_scenario(
     scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
 ) -> None:
@@ -110,8 +125,13 @@ def run_scenario(
         location_split,
         maximal_delivered_power_per_location,
         maximal_delivered_power,
+        connectivity_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
+        run_next_leg_charge_from_network,
     ) = mobility.make_mobility_data(
         location_connections,
         legs,
@@ -157,6 +177,31 @@ def run_scenario(
         (datetime.datetime.now() - charge_start).total_seconds(),
     )
 
+    dataframes_for_profile: ty.List[pd.DataFrame] = [
+        charge_drawn_from_network,
+        run_next_leg_charge_from_network,
+        connectivity_per_location,
+        maximal_delivered_power_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
+    ]
+    profile_dataframe_headers: ty.List[str] = general_parameters[
+        'profile_dataframe'
+    ]['headers']
+    profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
+        scenario, general_parameters, locations_as_columns=False
+    )
+    for dataframe_for_profile, dataframe_header in zip(
+        dataframes_for_profile, profile_dataframe_headers
+    ):
+
+        profile_dataframe[dataframe_header] = dataframe_for_profile.sum(axis=1)
+
+    output_root: str = general_parameters['files']['output_root']
+    output_folder: str = f'{output_root}/{case_name}'
+    profile_dataframe.to_pickle(f'{output_folder}/{scenario_name}_profile.pkl')
+
 
 def load_scenarios(case_name: str) -> ty.List[ty.Dict]:
     scenario_folder_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
@@ -184,7 +229,8 @@ def run_ChaProEV(case_name: str) -> None:
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
-    cook.check_if_folder_exists(f'output/{case_name}')
+    output_root: str = general_parameters['files']['output_root']
+    cook.check_if_folder_exists(f'{output_root}/{case_name}')
     use_variants = general_parameters['variants']['use_variants']
     if use_variants:
         csv_version = general_parameters['variants']['csv_version']

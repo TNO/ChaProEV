@@ -32,7 +32,8 @@ def test_all_files() -> None:
             print(reference_table)
 
             pd.testing.assert_frame_equal(
-                test_table, reference_table, 
+                test_table,
+                reference_table,
                 # check_dtype=False
             )
 

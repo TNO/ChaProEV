@@ -1579,285 +1579,289 @@ def declare_all_instances(
                 (leg.start_location, leg.end_location),
                 location_connection_header,
             ] = fill_value
-
-    location_connections.to_pickle(
-        f'{output_folder}/{scenario_name}_location_connections.pkl'
-    )
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        location_connections.to_pickle(
+            f'{output_folder}/{scenario_name}_location_connections.pkl'
+        )
 
     trips: ty.List[ty.Type] = declare_class_instances(
         Trip, scenario, general_parameters
     )
 
     # We want to save the moblity matrixes
-    for trip in trips:
+    if pickle_interim_files:
+        for trip in trips:
 
-        mobility_table_name: str = (
-            f'{scenario_name}_{trip.name}_mobility_matrix'
-        )
-        trip.mobility_matrix.to_pickle(
-            f'{output_folder}/{mobility_table_name}.pkl'
-        )
+            mobility_table_name: str = (
+                f'{scenario_name}_{trip.name}_mobility_matrix'
+            )
 
-        run_mobility_table_name: str = (
-            f'{scenario_name}_{trip.name}_run_mobility_matrix'
-        )
-        trip.run_mobility_matrix.to_pickle(
-            f'{output_folder}/{run_mobility_table_name}.pkl'
-        )
-        trip.next_leg_kilometers.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            'next_leg_kilometers.pkl'
-        )
-        trip.run_next_leg_kilometers.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_next_leg_kilometers.pkl'
-        )
-        trip.next_leg_kilometers_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}'
-            f'_next_leg_kilometers_cumulative.pkl'
-        )
-        trip.run_next_leg_kilometers_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
-        )
-        trip.next_leg_charge_to_vehicle.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_next_leg_charge_to_vehicle.pkl'
-        )
-        trip.next_leg_charge_from_network.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_next_leg_charge_from_network.pkl'
-        )
-        trip.run_next_leg_charge_to_vehicle.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_next_leg_charge_to_vehicle.pkl'
-        )
-        trip.run_next_leg_charge_from_network.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_next_leg_charge_from_network.pkl'
-        )
-        trip.next_leg_charge_to_vehicle_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_next_leg_charge_to_vehicle_cumulative.pkl'
-        )
-        trip.next_leg_charge_from_network_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}'
-            f'_next_leg_charge_from_network_cumulative.pkl'
-        )
-        trip.run_next_leg_charge_to_vehicle_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}'
-            f'_run_next_leg_charge_to_vehicle_cumulative.pkl'
-        )
-        trip.run_next_leg_charge_from_network_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}'
-            f'_run_next_leg_charge_from_network_cumulative.pkl'
-        )
-        trip.location_split.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_location_split.pkl'
-        )
-        trip.run_location_split.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_location_split.pkl'
-        )
-        trip.percentage_driving.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_percentage_driving.pkl'
-        )
-        trip.run_percentage_driving.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_percentage_driving.pkl'
-        )
+            trip.mobility_matrix.to_pickle(
+                f'{output_folder}/{mobility_table_name}.pkl'
+            )
 
-        trip.connectivity_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_connectivity_per_location.pkl'
-        )
+            run_mobility_table_name: str = (
+                f'{scenario_name}_{trip.name}_run_mobility_matrix'
+            )
+            trip.run_mobility_matrix.to_pickle(
+                f'{output_folder}/{run_mobility_table_name}.pkl'
+            )
+            trip.next_leg_kilometers.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                'next_leg_kilometers.pkl'
+            )
+            trip.run_next_leg_kilometers.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_next_leg_kilometers.pkl'
+            )
+            trip.next_leg_kilometers_cumulative.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}'
+                f'_next_leg_kilometers_cumulative.pkl'
+            )
+            trip.run_next_leg_kilometers_cumulative.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_next_leg_kilometers_cumulative.pkl'
+            )
+            trip.next_leg_charge_to_vehicle.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_next_leg_charge_to_vehicle.pkl'
+            )
+            trip.next_leg_charge_from_network.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_next_leg_charge_from_network.pkl'
+            )
+            trip.run_next_leg_charge_to_vehicle.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_next_leg_charge_to_vehicle.pkl'
+            )
+            trip.run_next_leg_charge_from_network.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_next_leg_charge_from_network.pkl'
+            )
+            trip.next_leg_charge_to_vehicle_cumulative.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_next_leg_charge_to_vehicle_cumulative.pkl'
+            )
+            trip.next_leg_charge_from_network_cumulative.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}'
+                f'_next_leg_charge_from_network_cumulative.pkl'
+            )
+            trip.run_next_leg_charge_to_vehicle_cumulative.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}'
+                f'_run_next_leg_charge_to_vehicle_cumulative.pkl'
+            )
+            trip.run_next_leg_charge_from_network_cumulative.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}'
+                f'_run_next_leg_charge_from_network_cumulative.pkl'
+            )
+            trip.location_split.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_location_split.pkl'
+            )
+            trip.run_location_split.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_location_split.pkl'
+            )
+            trip.percentage_driving.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_percentage_driving.pkl'
+            )
+            trip.run_percentage_driving.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_percentage_driving.pkl'
+            )
 
-        trip.run_connectivity_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_connectivity_per_location.pkl'
-        )
+            trip.connectivity_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_connectivity_per_location.pkl'
+            )
 
-        trip.connectivity.to_pickle(
-            f'{output_folder}/{scenario_name}_' f'{trip.name}_connectivity.pkl'
-        )
+            trip.run_connectivity_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_connectivity_per_location.pkl'
+            )
 
-        trip.run_connectivity.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_connectivity.pkl'
-        )
+            trip.connectivity.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_connectivity.pkl'
+            )
 
-        trip.maximal_delivered_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_maximal_delivered_power_per_location.pkl'
-        )
-        trip.run_maximal_delivered_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_maximal_delivered_power_per_location.pkl'
-        )
+            trip.run_connectivity.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_connectivity.pkl'
+            )
 
-        trip.maximal_delivered_power.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_maximal_delivered_power.pkl'
-        )
-        trip.run_maximal_delivered_power.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_maximal_delivered_power.pkl'
-        )
+            trip.maximal_delivered_power_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_maximal_delivered_power_per_location.pkl'
+            )
+            trip.run_maximal_delivered_power_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_maximal_delivered_power_per_location.pkl'
+            )
 
-        trip.maximal_received_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_maximal_received_power_per_location.pkl'
-        )
-        trip.run_maximal_received_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_maximal_received_power_per_location.pkl'
-        )
+            trip.maximal_delivered_power.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_maximal_delivered_power.pkl'
+            )
+            trip.run_maximal_delivered_power.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_maximal_delivered_power.pkl'
+            )
 
-        trip.maximal_received_power.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_maximal_received_power.pkl'
-        )
-        trip.run_maximal_received_power.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_maximal_received_power.pkl'
-        )
+            trip.maximal_received_power_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_maximal_received_power_per_location.pkl'
+            )
+            trip.run_maximal_received_power_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_maximal_received_power_per_location.pkl'
+            )
 
-        trip.vehicle_discharge_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_vehicle_discharge_power_per_location.pkl'
-        )
-        trip.run_vehicle_discharge_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_vehicle_discharge_power_per_location.pkl'
-        )
+            trip.maximal_received_power.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_maximal_received_power.pkl'
+            )
+            trip.run_maximal_received_power.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_maximal_received_power.pkl'
+            )
 
-        trip.vehicle_discharge_power.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_vehicle_discharge_power.pkl'
-        )
-        trip.run_vehicle_discharge_power.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_vehicle_discharge_power.pkl'
-        )
+            trip.vehicle_discharge_power_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_vehicle_discharge_power_per_location.pkl'
+            )
+            trip.run_vehicle_discharge_power_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_vehicle_discharge_power_per_location.pkl'
+            )
 
-        trip.discharge_power_to_network_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_discharge_power_to_network_per_location.pkl'
-        )
-        trip.run_discharge_power_to_network_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_discharge_power_to_network_per_location.pkl'
-        )
+            trip.vehicle_discharge_power.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_vehicle_discharge_power.pkl'
+            )
+            trip.run_vehicle_discharge_power.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_vehicle_discharge_power.pkl'
+            )
 
-        trip.discharge_power_to_network.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_discharge_power_to_network.pkl'
-        )
-        trip.run_discharge_power_to_network.to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{trip.name}_run_discharge_power_to_network.pkl'
-        )
+            trip.discharge_power_to_network_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_discharge_power_to_network_per_location.pkl'
+            )
+            trip.run_discharge_power_to_network_per_location.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_discharge_power_to_network_per_location.pkl'
+            )
 
-        trip.battery_space_shifts_departures.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_departures'
-            f'.pkl'
-        )
+            trip.discharge_power_to_network.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_discharge_power_to_network.pkl'
+            )
+            trip.run_discharge_power_to_network.to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{trip.name}_run_discharge_power_to_network.pkl'
+            )
 
-        trip.battery_space_shifts_departures_impact.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_departures_impact'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_departures.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_departures'
+                f'.pkl'
+            )
 
-        trip.battery_space_shifts_arrivals.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_arrivals'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_departures_impact.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_departures_impact'
+                f'.pkl'
+            )
 
-        trip.battery_space_shifts_arrivals_impact.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_arrivals_impact'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_arrivals.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_arrivals'
+                f'.pkl'
+            )
 
-        trip.battery_space_shifts_departures_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_departures_weighted'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_arrivals_impact.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_arrivals_impact'
+                f'.pkl'
+            )
 
-        trip.battery_space_shifts_departures_impact_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_departures_impact_weighted'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_departures_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_departures_weighted'
+                f'.pkl'
+            )
 
-        trip.battery_space_shifts_arrivals_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_arrivals_weighted'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_departures_impact_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_departures_impact_weighted'
+                f'.pkl'
+            )
 
-        trip.battery_space_shifts_arrivals_impact_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'battery_space_shifts_arrivals_impact_weighted'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_arrivals_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_arrivals_weighted'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_departures.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_departures'
-            f'.pkl'
-        )
+            trip.battery_space_shifts_arrivals_impact_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'battery_space_shifts_arrivals_impact_weighted'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_departures_impact.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_departures_impact'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_departures.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_departures'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_arrivals.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_arrivals'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_departures_impact.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_departures_impact'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_arrivals_impact.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_arrivals_impact'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_arrivals.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_arrivals'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_departures_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_departures_weighted'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_arrivals_impact.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_arrivals_impact'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_departures_impact_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_departures_impact_weighted'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_departures_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_departures_weighted'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_arrivals_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_arrivals_weighted'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_departures_impact_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_departures_impact_weighted'
+                f'.pkl'
+            )
 
-        trip.run_battery_space_shifts_arrivals_impact_weighted.to_pickle(
-            f'{output_folder}/{scenario_name}_{trip.name}_'
-            f'run_battery_space_shifts_arrivals_impact_weighted'
-            f'.pkl'
-        )
+            trip.run_battery_space_shifts_arrivals_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_arrivals_weighted'
+                f'.pkl'
+            )
+
+            trip.run_battery_space_shifts_arrivals_impact_weighted.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'run_battery_space_shifts_arrivals_impact_weighted'
+                f'.pkl'
+            )
 
     return location_connections, legs, locations, trips
 

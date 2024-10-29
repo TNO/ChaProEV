@@ -169,9 +169,13 @@ def get_run_mobility_matrix(
             run_mobility_matrix.loc[
                 (location_tuple), location_connections_headers
             ] = these_locations_connections.values
-        run_mobility_matrix.to_pickle(
-            f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
-        )
+        pickle_interim_files: bool = general_parameters['interim_files'][
+            'pickle'
+        ]
+        if pickle_interim_files:
+            run_mobility_matrix.to_pickle(
+                f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
+            )
     return run_mobility_matrix
 
 
@@ -926,9 +930,11 @@ def get_car_trip_probabilities_per_day_type(
     trip_probabilities_per_day_type = trip_probabilities_per_day_type.astype(
         'float'
     )
-    trip_probabilities_per_day_type.to_pickle(
-        f'{output_folder}/{table_name}.pkl'
-    )
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        trip_probabilities_per_day_type.to_pickle(
+            f'{output_folder}/{table_name}.pkl'
+        )
 
     return trip_probabilities_per_day_type
 
@@ -1168,7 +1174,9 @@ def get_run_trip_probabilities(
     # moo = datetime.datetime.now()
 
     table_name: str = f'{scenario_name}_run_trip_probabilities'
-    run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
     # print((datetime.datetime.now() - moo).total_seconds())
     # moo = datetime.datetime.now()
 
@@ -1281,7 +1289,15 @@ def get_location_split(
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> ty.Tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+]:
     '''
     Produces the location split of the vehicles for the whole run
     '''
@@ -1453,49 +1469,56 @@ def get_location_split(
             )
 
     loop_timer.append(datetime.datetime.now())
-
-    location_split.to_pickle(
-        f'{output_folder}/{scenario_name}_location_split.pkl'
-    )
-    percentage_driving.to_pickle(
-        f'{output_folder}/{scenario_name}_percentage_driving.pkl'
-    )
-    connectivity_per_location.to_pickle(
-        f'{output_folder}/{scenario_name}_connectivity_per_location.pkl'
-    )
-    connectivity.to_pickle(f'{output_folder}/{scenario_name}_connectivity.pkl')
-    maximal_delivered_power_per_location.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_maximal_delivered_power_per_location.pkl'
-    )
-    maximal_delivered_power.to_pickle(
-        f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
-    )
-    maximal_received_power_per_location.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_maximal_received_power_per_location.pkl'
-    )
-    maximal_received_power.to_pickle(
-        f'{output_folder}/{scenario_name}_maximal_received_power.pkl'
-    )
-    vehicle_discharge_power_per_location.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_vehicle_discharge_power_per_location.pkl'
-    )
-    vehicle_discharge_power.to_pickle(
-        f'{output_folder}/{scenario_name}_vehicle_discharge_power.pkl'
-    )
-    discharge_power_to_network_per_location.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_discharge_power_to_network_per_location.pkl'
-    )
-    discharge_power_to_network.to_pickle(
-        f'{output_folder}/{scenario_name}_discharge_power_to_network.pkl'
-    )
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        location_split.to_pickle(
+            f'{output_folder}/{scenario_name}_location_split.pkl'
+        )
+        percentage_driving.to_pickle(
+            f'{output_folder}/{scenario_name}_percentage_driving.pkl'
+        )
+        connectivity_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_connectivity_per_location.pkl'
+        )
+        connectivity.to_pickle(
+            f'{output_folder}/{scenario_name}_connectivity.pkl'
+        )
+        maximal_delivered_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_maximal_delivered_power_per_location.pkl'
+        )
+        maximal_delivered_power.to_pickle(
+            f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
+        )
+        maximal_received_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_maximal_received_power_per_location.pkl'
+        )
+        maximal_received_power.to_pickle(
+            f'{output_folder}/{scenario_name}_maximal_received_power.pkl'
+        )
+        vehicle_discharge_power_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_vehicle_discharge_power_per_location.pkl'
+        )
+        vehicle_discharge_power.to_pickle(
+            f'{output_folder}/{scenario_name}_vehicle_discharge_power.pkl'
+        )
+        discharge_power_to_network_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_discharge_power_to_network_per_location.pkl'
+        )
+        discharge_power_to_network.to_pickle(
+            f'{output_folder}/{scenario_name}_discharge_power_to_network.pkl'
+        )
     return (
         location_split,
         maximal_delivered_power_per_location,
         maximal_delivered_power,
+        connectivity_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
     )
 
 
@@ -1554,7 +1577,7 @@ def get_kilometers_for_next_leg(
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
+) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     scenario_name: str = scenario['scenario_name']
 
@@ -1642,28 +1665,34 @@ def get_kilometers_for_next_leg(
             ].mul(
                 this_trip_probabilities, axis=0
             )
-
-    run_next_leg_kilometers.to_pickle(
-        f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl'
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    if pickle_interim_files:
+        run_next_leg_kilometers.to_pickle(
+            f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl'
+        )
+        run_next_leg_kilometers_cumulative.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            '_next_leg_kilometers_cumulative.pkl'
+        )
+        run_next_leg_charge_to_vehicle.to_pickle(
+            f'{output_folder}/{scenario_name}_next_leg_charge_to_vehicle.pkl'
+        )
+        run_next_leg_charge_from_network.to_pickle(
+            f'{output_folder}/{scenario_name}_next_leg_charge_from_network.pkl'
+        )
+        run_next_leg_charge_to_vehicle_cumulative.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_next_leg_charge_to_vehicle_cumulative.pkl'
+        )
+        run_next_leg_charge_from_network_cumulative.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_next_leg_charge_from_network_cumulative.pkl'
+        )
+    return (
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+        run_next_leg_charge_from_network,
     )
-    run_next_leg_kilometers_cumulative.to_pickle(
-        f'{output_folder}/{scenario_name}_next_leg_kilometers_cumulative.pkl'
-    )
-    run_next_leg_charge_to_vehicle.to_pickle(
-        f'{output_folder}/{scenario_name}_next_leg_charge_to_vehicle.pkl'
-    )
-    run_next_leg_charge_from_network.to_pickle(
-        f'{output_folder}/{scenario_name}_next_leg_charge_from_network.pkl'
-    )
-    run_next_leg_charge_to_vehicle_cumulative.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_next_leg_charge_to_vehicle_cumulative.pkl'
-    )
-    run_next_leg_charge_from_network_cumulative.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_next_leg_charge_from_network_cumulative.pkl'
-    )
-    return run_next_leg_kilometers, run_next_leg_kilometers_cumulative
 
 
 def make_mobility_data(
@@ -1675,6 +1704,11 @@ def make_mobility_data(
     case_name: str,
     general_parameters: ty.Dict,
 ) -> ty.Tuple[
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
@@ -1731,25 +1765,36 @@ def make_mobility_data(
         location_split,
         maximal_delivered_power_per_location,
         maximal_delivered_power,
+        connectivity_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
     ) = get_location_split(
         trips, run_trip_probabilities, scenario, case_name, general_parameters
     )
-    run_next_leg_kilometers, run_next_leg_kilometers_cumulative = (
-        get_kilometers_for_next_leg(
-            trips,
-            run_trip_probabilities,
-            scenario,
-            case_name,
-            general_parameters,
-        )
+    (
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+        run_next_leg_charge_from_network,
+    ) = get_kilometers_for_next_leg(
+        trips,
+        run_trip_probabilities,
+        scenario,
+        case_name,
+        general_parameters,
     )
     return (
         run_mobility_matrix,
         location_split,
         maximal_delivered_power_per_location,
         maximal_delivered_power,
+        connectivity_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
+        run_next_leg_charge_from_network,
     )
 
 
@@ -1774,8 +1819,13 @@ if __name__ == '__main__':
         location_split,
         maximal_delivered_power_per_location,
         maximal_delivered_power,
+        connectivity_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
+        run_next_leg_charge_from_network,
     ) = make_mobility_data(
         location_connections,
         legs,

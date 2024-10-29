@@ -1057,7 +1057,7 @@ def write_output(
     run_range, run_hour_numbers = run_time.get_time_range(
         scenario, general_parameters
     )
-
+    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
     SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
@@ -1088,19 +1088,21 @@ def write_output(
         battery_spaces[location_name] = battery_spaces[
             location_name
         ].set_index(['Time Tag', 'Hour Number', 'SPINE_Hour_Number'])
-        battery_spaces[location_name].to_pickle(
-            f'{output_folder}/{scenario_name}_'
-            f'{location_name}_battery_spaces.pkl'
-        )
+        if pickle_interim_files:
+            battery_spaces[location_name].to_pickle(
+                f'{output_folder}/{scenario_name}_'
+                f'{location_name}_battery_spaces.pkl'
+            )
     charge_drawn_from_network = charge_drawn_from_network.reset_index()
     charge_drawn_from_network['Hour number'] = run_hour_numbers
     charge_drawn_from_network['SPINE hour number'] = SPINE_hour_numbers
     charge_drawn_from_network = charge_drawn_from_network.set_index(
         ['Time Tag', 'Hour number', 'SPINE hour number']
     )
-    charge_drawn_from_network.to_pickle(
-        f'{output_folder}/{scenario_name}_charge_drawn_from_network.pkl'
-    )
+    if pickle_interim_files:
+        charge_drawn_from_network.to_pickle(
+            f'{output_folder}/{scenario_name}_charge_drawn_from_network.pkl'
+        )
 
     charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_from_network.index
@@ -1111,9 +1113,11 @@ def write_output(
     percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
         pd.DataFrame(index=charge_drawn_from_network.index)
     )
-    charge_drawn_from_network_total.to_pickle(
-        f'{output_folder}/{scenario_name}_charge_drawn_from_network_total.pkl'
-    )
+    if pickle_interim_files:
+        charge_drawn_from_network_total.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            'charge_drawn_from_network_total.pkl'
+        )
 
     for location_name in location_names:
         percentage_of_maximal_delivered_power_used_per_location[
@@ -1129,11 +1133,11 @@ def write_output(
                 maximal_delivered_power_per_location[location_name].values,
             )
         ]
-
-    percentage_of_maximal_delivered_power_used_per_location.to_pickle(
-        f'{output_folder}/{scenario_name}_'
-        f'percentage_of_maximal_delivered_power_used_per_location.pkl'
-    )
+    if pickle_interim_files:
+        percentage_of_maximal_delivered_power_used_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            f'percentage_of_maximal_delivered_power_used_per_location.pkl'
+        )
 
     percentage_of_maximal_delivered_power_used: pd.DataFrame = pd.DataFrame(
         index=percentage_of_maximal_delivered_power_used_per_location.index
@@ -1152,11 +1156,11 @@ def write_output(
             maximal_delivered_power['Maximal Delivered Power (kW)'].values,
         )
     ]
-
-    percentage_of_maximal_delivered_power_used.to_pickle(
-        f'{output_folder}/{scenario_name}'
-        f'_percentage_of_maximal_delivered_power_used.pkl'
-    )
+    if pickle_interim_files:
+        percentage_of_maximal_delivered_power_used.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            f'_percentage_of_maximal_delivered_power_used.pkl'
+        )
 
     charge_drawn_by_vehicles = charge_drawn_by_vehicles.reset_index()
     charge_drawn_by_vehicles['Hour number'] = run_hour_numbers
@@ -1164,9 +1168,10 @@ def write_output(
     charge_drawn_by_vehicles = charge_drawn_by_vehicles.set_index(
         ['Time Tag', 'Hour number', 'SPINE hour number']
     )
-    charge_drawn_by_vehicles.to_pickle(
-        f'{output_folder}/{scenario_name}_charge_drawn_by_vehicles.pkl'
-    )
+    if pickle_interim_files:
+        charge_drawn_by_vehicles.to_pickle(
+            f'{output_folder}/{scenario_name}_charge_drawn_by_vehicles.pkl'
+        )
 
     charge_drawn_by_vehicles_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
@@ -1177,9 +1182,11 @@ def write_output(
     percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
-    charge_drawn_by_vehicles_total.to_pickle(
-        f'{output_folder}/{scenario_name}_charge_drawn_by_vehicles_total.pkl'
-    )
+    if pickle_interim_files:
+        charge_drawn_by_vehicles_total.to_pickle(
+            f'{output_folder}/{scenario_name}'
+            '_charge_drawn_by_vehicles_total.pkl'
+        )
 
     sum_of_battery_spaces: pd.DataFrame = pd.DataFrame(
         columns=location_names,
@@ -1194,10 +1201,10 @@ def write_output(
         sum_of_battery_spaces[location_name] = (
             sum_of_battery_spaces_this_location.values
         )
-
-    sum_of_battery_spaces.to_pickle(
-        f'{output_folder}/{scenario_name}_sum_of_battery_spaces.pkl'
-    )
+    if pickle_interim_files:
+        sum_of_battery_spaces.to_pickle(
+            f'{output_folder}/{scenario_name}_sum_of_battery_spaces.pkl'
+        )
 
 
 def get_charging_profile(
