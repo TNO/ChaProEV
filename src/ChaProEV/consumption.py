@@ -120,6 +120,36 @@ def create_consumption_tables(
         yearly_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
+        
+    consumption_tables_frequencies: ty.List[str] = general_parameters[
+        'interim_files'
+    ]['consumption_tables_frequencies']
+    save_consumption_table: ty.List[bool] = general_parameters[
+        'interim_files'
+    ]['save_consumption_table']
+    is_consumption_table_saved: ty.Dict[str, bool] = dict(
+        zip(consumption_tables_frequencies, save_consumption_table)
+    )
+    if is_consumption_table_saved['hourly']:
+        consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_consumption_table.pkl'
+        )
+    if is_consumption_table_saved['daily']:
+        daily_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_daily_consumption_table.pkl'
+        )
+    if is_consumption_table_saved['weekly']:
+        weekly_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_weekly_consumption_table.pkl'
+        )
+    if is_consumption_table_saved['monthly']:
+        monthly_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_monthly_consumption_table.pkl'
+        )
+    if is_consumption_table_saved['yearly']:
+        yearly_consumption_table.to_pickle(
+            f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
+        )
 
 
 def get_energy_for_next_leg(
