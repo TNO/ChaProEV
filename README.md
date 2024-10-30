@@ -35,13 +35,27 @@ Creative Commons BY-SA 4.0 license.
 (See requirements.txt file for versions (corresponding to Python 3.11.1, which
 is the version used for developing and testing the model))
 
+## Installation and use
 
-## Installing
+
 You can install ChaProEV with pip:
 ```
 pip install ChaProEV
 ```
-and then import ChaProEV in your code
+And the import ChaProEV in your code.
+You can of course use the various functions of ChaProEV, but the general
+use case is to run th model and focus on defining your case through the
+scenarios and their variants.
+In that case, the only piece of code you need is as follows (you just need
+to put the name of the folder where you put your case scenarios instead of the
+'Mopo'  example).
+```python
+from ChaProEV import ChaProEV
+
+if __name__ == '__main__':
+    case_name: str = 'Mopo'
+    ChaProEV.run_ChaProEV(case_name)
+```
 
 
 ## Documentation

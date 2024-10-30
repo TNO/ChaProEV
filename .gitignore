@@ -7,3 +7,4 @@ documentation/
 site/
 .venv/
 reference_run/
+*.pptx
