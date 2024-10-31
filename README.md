@@ -7,9 +7,7 @@
 <img src=MOPO_logo_chaproev.svg>
 </center>
 
-<center>
-<img src=ChaProEV_overview.svg>
-</center>
+
 
 This repository contains the ChaProEV (Charging Profiles of Electric Vehicles)
 model.
@@ -57,6 +55,13 @@ if __name__ == '__main__':
     ChaProEV.run_ChaProEV(case_name)
 ```
 
+## General apporach and structure
+- Split into scenarios, modules/computations, output profiles
+- USer can define a case (series of scenarios) without having to do anything
+with the code. They just need to edit/add scenarios and variants.
+<center>
+<img src=ChaProEV_workflow.png>
+</center>
 
 ## Documentation
 
