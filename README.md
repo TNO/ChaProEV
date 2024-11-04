@@ -55,7 +55,7 @@ if __name__ == '__main__':
     ChaProEV.run_ChaProEV(case_name)
 ```
 
-## General apporach and structure
+## General approach and structure
 - Split into scenarios, modules/computations, output profiles
 - USer can define a case (series of scenarios) without having to do anything
 with the code. They just need to edit/add scenarios and variants.
@@ -103,6 +103,14 @@ Results are in the [TRADE-RES scenario database](https://zenodo.org/records/1082
 
 
 #### **After/during Mopo**
+1. I.S. Jimenez, D. Ribó-Pérez, M. Cvetkovic, J. Kochems, C. Schimeczek,
+L. de Vries,[Can an energy only market enable resource ade-
+quacy in a decarbonized power system? a co-simulation with
+two agent-based-models](https://www.sciencedirect.com/science/article/pii/S0306261924000783)
+Applied Energy 360 (2024) 122695
+2. S. Johanndeiter, N. Helistö, J. Kiviluoma, V. Bertsch,  [Price formation
+and intersectoral distributional eects in a fully decarbonised european
+electricity market](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=48874423)
 
 
 #### **Future**
