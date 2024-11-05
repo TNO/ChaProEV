@@ -2,14 +2,18 @@
 .gitignore
 ChaProEV.pptx
 ChaProEV.toml
+ChaProEV_workflow.png
 Gemfile
 LICENCE
+Legs.png
+Locations.png
 MOPO_logo_chaproev on wht.svg
 MOPO_logo_chaproev.png
 MOPO_logo_chaproev.svg
 MOPO_logo_main.svg
 MOPO_logo_main_onwhite.svg
 README.md
+Trips.png
 eu-emblem-low-res.jpg
 mkdocs.yml
 pyproject.toml
@@ -18,8 +22,14 @@ todo.txt
 .vscode/ltex.dictionary.en-US.txt
 .vscode/settings.json
 comparisons/comparison_template.toml
+dist/ChaProEV-1.0.8-py3-none-any.whl
+dist/chaproev-1.0.8.tar.gz
+docs/ChaProEV_workflow.png
+docs/Legs.png
+docs/Locations.png
 docs/Makefile
 docs/README.md
+docs/Trips.png
 docs/Vehicle_Temperature_correction_factor.svg
 docs/_config.yml
 docs/charging.md
@@ -79,7 +89,6 @@ src/ChaProEV.egg-info/SOURCES.txt
 src/ChaProEV.egg-info/dependency_links.txt
 src/ChaProEV.egg-info/requires-PC-28624-2.txt
 src/ChaProEV.egg-info/requires-PC-28624.txt
-src/ChaProEV.egg-info/requires.txt
 src/ChaProEV.egg-info/top_level.txt
 tests/test_battery_space.py
 tests/test_empty_values.py

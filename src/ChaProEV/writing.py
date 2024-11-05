@@ -43,9 +43,16 @@ def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
         for output_pickle_file in output_pickle_files
     ]
 
-    number_of_parallel_processes: int = general_parameters[
-        'parallel_processing'
-    ]['number_of_parallel_processes']['for_pickle_saves']
+    set_amount_of_processes: bool = general_parameters['parallel_processing'][
+        'number_of_parallel_processes'
+    ]['set_amount_of_processes']
+    if set_amount_of_processes:
+        number_of_parallel_processes: int | None = None
+    else:
+        number_of_parallel_processes = general_parameters[
+            'parallel_processing'
+        ]['number_of_parallel_processes']['for_pickle_saves']
+
     with Pool(number_of_parallel_processes) as saving_pool:
         saving_pool.starmap(
             cook.save_dataframe,

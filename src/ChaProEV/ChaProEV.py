@@ -238,9 +238,16 @@ def run_ChaProEV(case_name: str) -> None:
 
     scenarios: ty.List[ty.Dict] = load_scenarios(case_name)
 
-    number_of_parallel_processes: int = general_parameters[
-        'parallel_processing'
-    ]['number_of_parallel_processes']['for_scenarios']
+    set_amount_of_processes: bool = general_parameters['parallel_processing'][
+        'number_of_parallel_processes'
+    ]['set_amount_of_processes']
+    if set_amount_of_processes:
+        number_of_parallel_processes: int | None = None
+    else:
+        number_of_parallel_processes = general_parameters[
+            'parallel_processing'
+        ]['number_of_parallel_processes']['for_scenarios']
+
     with Pool(number_of_parallel_processes) as scenarios_pool:
         scenarios_pool.starmap(
             run_scenario,
