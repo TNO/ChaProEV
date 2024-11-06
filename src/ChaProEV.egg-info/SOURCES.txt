@@ -22,8 +22,6 @@ todo.txt
 .vscode/ltex.dictionary.en-US.txt
 .vscode/settings.json
 comparisons/comparison_template.toml
-dist/ChaProEV-1.0.8-py3-none-any.whl
-dist/chaproev-1.0.8.tar.gz
 docs/ChaProEV_workflow.png
 docs/Legs.png
 docs/Locations.png
