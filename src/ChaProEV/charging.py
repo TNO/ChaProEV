@@ -50,6 +50,7 @@ def get_charging_framework(
     pd.Series,
     pd.Series,
     pd.DataFrame,
+    pd.DataFrame,
 ]:
     '''
     Produces the structures we want for the charging profiles
@@ -103,6 +104,10 @@ def get_charging_framework(
         battery_spaces[location_name].loc[run_range[0], 0] = (
             location_split.loc[run_range[0]][location_name]
         )
+    total_battery_space_per_location: pd.DataFrame = pd.DataFrame(
+        index=run_range, columns=location_names
+    )
+    total_battery_space_per_location.index.name = 'Time Tag'
 
     run_arrivals_impact: pd.Series = run_mobility_matrix[
         'Arrivals impact'
@@ -159,6 +164,7 @@ def get_charging_framework(
         run_departures_impact,
         run_departures_impact_gaps,
         travelling_battery_spaces,
+        total_battery_space_per_location,
     )
 
 
@@ -805,6 +811,7 @@ def copy_day_type_profiles_to_whole_run(
         run_departures_impact,
         run_departures_impact_gaps,
         spillover_travelling_battery_spaces,
+        total_battery_space_per_location,
     ) = get_charging_framework(
         location_split,
         run_mobility_matrix,
@@ -1042,6 +1049,7 @@ def copy_day_type_profiles_to_whole_run(
 
 def write_output(
     battery_spaces: ty.Dict[str, pd.DataFrame],
+    total_battery_space_per_location: pd.DataFrame,
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
     scenario: ty.Dict,
@@ -1117,6 +1125,12 @@ def write_output(
         charge_drawn_from_network_total.to_pickle(
             f'{output_folder}/{scenario_name}_'
             'charge_drawn_from_network_total.pkl'
+        )
+
+    if pickle_interim_files:
+        total_battery_space_per_location.to_pickle(
+            f'{output_folder}/{scenario_name}_'
+            'total_battery_space_per_location.pkl'
         )
 
     for location_name in location_names:
@@ -1215,7 +1229,9 @@ def get_charging_profile(
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+) -> ty.Tuple[
+    ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame, pd.DataFrame
+]:
     '''
     This is the main function of the charging module.
     It produces the charging profile
@@ -1232,6 +1248,7 @@ def get_charging_profile(
         run_departures_impact,
         run_departures_impact_gaps,
         travelling_battery_spaces,
+        total_battery_space_per_location,
     ) = get_charging_framework(
         location_split,
         run_mobility_matrix,
@@ -1384,8 +1401,24 @@ def get_charging_profile(
             charge_drawn_from_network,
         )
 
+    for location_name in location_names:
+        location_total_battery_space: pd.Series = pd.Series(
+            np.zeros(len(run_range)), index=run_range
+        )
+
+        for battery_space in battery_spaces[location_name].columns:
+
+            location_total_battery_space += (
+                pd.Series(battery_spaces[location_name][battery_space].values)
+                * float(battery_space)
+            ).values
+
+        total_battery_space_per_location[location_name] = (
+            location_total_battery_space
+        )
     write_output(
         battery_spaces,
+        total_battery_space_per_location,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
         scenario,
@@ -1395,7 +1428,12 @@ def get_charging_profile(
         general_parameters,
     )
 
-    return battery_spaces, charge_drawn_by_vehicles, charge_drawn_from_network
+    return (
+        battery_spaces,
+        total_battery_space_per_location,
+        charge_drawn_by_vehicles,
+        charge_drawn_from_network,
+    )
 
 
 if __name__ == '__main__':
@@ -1435,6 +1473,7 @@ if __name__ == '__main__':
         battery_spaces,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
+        total_battery_space_per_location,
     ) = get_charging_profile(
         location_split,
         run_mobility_matrix,

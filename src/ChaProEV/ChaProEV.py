@@ -9,6 +9,7 @@ import typing as ty
 from itertools import repeat
 from multiprocessing import Pool
 
+import numpy as np
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -161,6 +162,7 @@ def run_scenario(
     charge_start: datetime.datetime = datetime.datetime.now()
     (
         battery_spaces,
+        total_battery_space_per_location,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
     ) = charging.get_charging_profile(
@@ -177,8 +179,17 @@ def run_scenario(
         (datetime.datetime.now() - charge_start).total_seconds(),
     )
 
+    battery_capacity: float = scenario['vehicle']['battery_capacity']
+    battery_capacity_dataframe: pd.DataFrame = pd.DataFrame(
+        battery_capacity
+        * np.ones(len(total_battery_space_per_location.index)),
+        index=total_battery_space_per_location.index,
+    )
+
     dataframes_for_profile: ty.List[pd.DataFrame] = [
         charge_drawn_from_network,
+        total_battery_space_per_location,
+        battery_capacity_dataframe,
         run_next_leg_charge_from_network,
         connectivity_per_location,
         maximal_delivered_power_per_location,

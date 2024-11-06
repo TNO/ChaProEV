@@ -130,7 +130,7 @@ relevant and apprpriate within the context of these projects.
 <td valign="middle" width=100px>
 <img src=eu-emblem-low-res.jpg alt="EU emblem" width=100%></td>
 <img src=MOPO_logo_main.svg width = 25%>
-<td valign="middle">This project was partly develop under funding from 
+<td valign="middle">This project was partly develop under funding from the 
 European Climate, 
 Infrastructure and Environment Executive Agency under the European Union’s 
 HORIZON Research and Innovation Actions under grant agreement N°101095998.</td>

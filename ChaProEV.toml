@@ -17,6 +17,8 @@ save_consumption_table = [false, false, true, false, false]
 [profile_dataframe]
 headers = [
     'Reference charge drawn from network (kWh)',
+    'Battery space (kWh)',
+    'Battery capacity (kWh)',
     'Demand for next leg (kWh) (fom network)',
     'Connected vehicles (%)',
     'Connected Power from Network (kW)',
