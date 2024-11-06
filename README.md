@@ -40,9 +40,9 @@ You can install ChaProEV with pip:
 ```
 pip install ChaProEV
 ```
-And the import ChaProEV in your code.
+And then import ChaProEV in your code.
 You can of course use the various functions of ChaProEV, but the general
-use case is to run th model and focus on defining your case through the
+use case is to run the model and focus on defining your case through the
 scenarios and their variants.
 In that case, the only piece of code you need is as follows (you just need
 to put the name of the folder where you put your case scenarios instead of the
@@ -54,6 +54,8 @@ if __name__ == '__main__':
     case_name: str = 'Mopo'
     ChaProEV.run_ChaProEV(case_name)
 ```
+For examples of running ChaProEV,
+you can visit the [ChaProEV runs repository](https://github.com/TNO/ChaProEV_runs).
 
 ## General approach and structure
 - Split into scenarios, modules/computations, output profiles
