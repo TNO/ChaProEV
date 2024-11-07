@@ -304,10 +304,9 @@ def from_day_to_run(
         run_number_of_seconds / (SECONDS_PER_HOUR * HOURS_IN_A_DAY)
     )
     run_dataframe: pd.DataFrame = pd.DataFrame()
-    for _ in range(run_days):
-        run_dataframe = pd.concat(
-            (rolled_dataframe_to_clone, run_dataframe), ignore_index=True
-        )
+    run_dataframe = pd.concat(
+        [rolled_dataframe_to_clone] * run_days, ignore_index=True
+    )
 
     # We create an extended run range, which includes all hours in the days
     # of the range (i.e. hours before the run starts and after it ends)
