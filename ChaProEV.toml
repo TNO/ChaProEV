@@ -2,6 +2,7 @@
 [variants]
 use_variants = false
 csv_version = true
+use_years_in_profiles =  true
 
 [parallel_processing]
 [parallel_processing.number_of_parallel_processes]
@@ -28,6 +29,21 @@ headers = [
 
 ]
 
+fleet_headers = [
+    'Reference charge drawn from network (MWh)',
+    'Battery space (MWh)',
+    'Battery capacity (MWh)',
+    'Demand for next leg (MWh) (fom network)',
+    'Connected vehicles (thousands)',
+    'Connected Power from Network (MW)',
+    'Connected Power to Vehicles (MW)',
+    'Vehicle Discharge Power (MW)',
+    'Discharge Power to Network (MW)',
+
+]
+do_fleet_tables =  false
+fleet_file_name = 'fleets.csv'
+
 # Parameters for plots (colors, sizes, etc.)
 [plots]
 [plots.vehicle_temperature_efficiency]
@@ -44,7 +60,7 @@ title_size = 14
 # File-related parameters
 [files]
 # General parameters
-input_folder = 'input'
+input_root = 'input'
 output_root = 'output'
 # For files that group data (such as (sqlite) databases or Excel workbooks)
 groupfile_root = 'ChaProEV'
@@ -150,3 +166,21 @@ first_hour_number = 1
 zero_threshold = 1e-12
 # Float precision can mean that we have exteremly small values
 # that are actually zero
+
+
+[consumption]
+energy_carriers = ['electricity', 'gasoline', 'diesel', 'hydrogen']
+consumption_table_name = 'weekly_consumption_table'
+time_header = 'Week number'
+distance_header = 'Kilometers'
+fleet_distance_header = 'Thousand Kilometers'
+energy_carriers_consumption_names = ['electricity consumption kWh', 'gasoline consumption litres', 'diesel consumption litres', 'hydrogen consumption kg']
+fleet_energy_carriers_consumption_names = ['electricity consumption MWh', 'gasoline consumption thousand litres', 'diesel consumption thousand litres', 'hydrogen consumption tonnes']
+
+[home_type]
+do_car_home_type_split = false
+percentages_file = 'car_own_driveway_percentage.csv'
+index_name = 'Variant name'
+own_driveway_name = 'own_driveway'
+on_street_name = 'street_parking'
+profiles_index = ['Time Tag', 'Hour Number', 'SPINE_hour_number', 'Day Type', 'Hour index from day start']
