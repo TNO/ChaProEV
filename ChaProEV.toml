@@ -18,9 +18,11 @@ save_consumption_table = [false, false, true, false, false]
 [profile_dataframe]
 headers = [
     'Reference charge drawn from network (kWh)',
-    'Battery space (kWh)',
-    'Battery capacity (kWh)',
-    'Demand for next leg (kWh) (fom network)',
+    'Connected Battery space (kWh)',
+    'Connected State of charge (kWh)',
+    'Connected Battery capacity (kWh)',
+    'Demand for next leg (kWh) (from network)',
+    'Demand for next leg (kWh) (to vehicle)',
     'Connected vehicles (%)',
     'Connected Power from Network (kW)',
     'Connected Power to Vehicles (kW)',
@@ -31,9 +33,11 @@ headers = [
 
 fleet_headers = [
     'Reference charge drawn from network (MWh)',
-    'Battery space (MWh)',
-    'Battery capacity (MWh)',
-    'Demand for next leg (MWh) (fom network)',
+    'Connected Battery space (kWh)',
+    'Connected State of charge (kWh)',
+    'Connected Battery capacity (kWh)',
+    'Demand for next leg (MWh) (from network)',
+    'Demand for next leg (MWh) (to vehicle)',
     'Connected vehicles (thousands)',
     'Connected Power from Network (MW)',
     'Connected Power to Vehicles (MW)',

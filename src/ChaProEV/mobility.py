@@ -1577,7 +1577,7 @@ def get_kilometers_for_next_leg(
     scenario: ty.Dict,
     case_name: str,
     general_parameters: ty.Dict,
-) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     scenario_name: str = scenario['scenario_name']
 
@@ -1692,6 +1692,7 @@ def get_kilometers_for_next_leg(
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
     )
 
 
@@ -1704,6 +1705,7 @@ def make_mobility_data(
     case_name: str,
     general_parameters: ty.Dict,
 ) -> ty.Tuple[
+    pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
@@ -1776,6 +1778,7 @@ def make_mobility_data(
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
     ) = get_kilometers_for_next_leg(
         trips,
         run_trip_probabilities,
@@ -1795,6 +1798,7 @@ def make_mobility_data(
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
     )
 
 
@@ -1826,6 +1830,7 @@ if __name__ == '__main__':
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
     ) = make_mobility_data(
         location_connections,
         legs,

@@ -320,6 +320,7 @@ def run_scenario(
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
     ) = mobility.make_mobility_data(
         location_connections,
         legs,
@@ -367,17 +368,36 @@ def run_scenario(
     )
 
     battery_capacity: float = scenario['vehicle']['battery_capacity']
-    battery_capacity_dataframe: pd.DataFrame = pd.DataFrame(
-        battery_capacity
-        * np.ones(len(total_battery_space_per_location.index)),
-        index=total_battery_space_per_location.index,
+    battery_capacity_dataframe: pd.DataFrame = (
+        battery_capacity * location_split
+    )
+    state_of_charge_dataframe: pd.DataFrame = (
+        battery_capacity_dataframe - total_battery_space_per_location
+    )
+
+    connectivities: np.ndarray = np.array(
+        [
+            scenario['locations'][dataframe_location]['connectivity']
+            for dataframe_location in battery_capacity_dataframe.columns
+        ]
+    )
+    connected_total_battery_space_per_location: pd.DataFrame = (
+        total_battery_space_per_location * connectivities
+    )
+    connected_battery_capacity_dataframe: pd.DataFrame = (
+        battery_capacity_dataframe * connectivities
+    )
+    connected_state_of_charge_dataframe: pd.DataFrame = (
+        state_of_charge_dataframe * connectivities
     )
 
     dataframes_for_profile: ty.List[pd.DataFrame] = [
         charge_drawn_from_network,
-        total_battery_space_per_location,
-        battery_capacity_dataframe,
+        connected_total_battery_space_per_location,
+        connected_state_of_charge_dataframe,
+        connected_battery_capacity_dataframe,
         run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
         connectivity_per_location,
         maximal_delivered_power_per_location,
         maximal_received_power_per_location,

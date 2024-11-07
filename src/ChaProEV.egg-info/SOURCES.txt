@@ -2,18 +2,14 @@
 .gitignore
 ChaProEV.pptx
 ChaProEV.toml
-ChaProEV_workflow.png
 Gemfile
 LICENCE
-Legs.png
-Locations.png
 MOPO_logo_chaproev on wht.svg
 MOPO_logo_chaproev.png
 MOPO_logo_chaproev.svg
 MOPO_logo_main.svg
 MOPO_logo_main_onwhite.svg
 README.md
-Trips.png
 eu-emblem-low-res.jpg
 mkdocs.yml
 pyproject.toml
