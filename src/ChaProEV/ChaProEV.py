@@ -418,6 +418,11 @@ def run_scenario(
 
     output_root: str = general_parameters['files']['output_root']
     output_folder: str = f'{output_root}/{case_name}'
+    display_range: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[2]
+    profile_dataframe = profile_dataframe.loc[display_range]
+    profile_dataframe.index.name = 'Time Tag'
     profile_dataframe.to_pickle(f'{output_folder}/{scenario_name}_profile.pkl')
 
     do_fleet_tables: float = general_parameters['profile_dataframe'][

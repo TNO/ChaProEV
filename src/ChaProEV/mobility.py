@@ -955,9 +955,9 @@ def car_holiday_departures_returns_corrections(
     # This is only necessary for the one-way shifts. The ones with
     # both departures and returns are already fine
     '''
-    run_range, run_hour_numbers = run_time.get_time_range(
+    run_range = run_time.get_time_range(
         scenario, general_parameters
-    )
+    )[0]
     departures_filter: pd.Series[bool] = (
         run_trip_probabilities['Day Type'] == 'weekend_holiday_departures'
     )
@@ -1141,9 +1141,9 @@ def get_run_trip_probabilities(
     file_parameters: ty.Dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
 
-    run_range, run_hour_numbers = run_time.get_time_range(
+    run_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
-    )
+    )[0]
 
     # print((datetime.datetime.now() - moo).total_seconds())
     # moo = datetime.datetime.now()

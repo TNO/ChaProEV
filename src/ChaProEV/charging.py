@@ -56,9 +56,9 @@ def get_charging_framework(
     Produces the structures we want for the charging profiles
     '''
 
-    run_range, run_hour_numbers = run_time.get_time_range(
+    run_range = run_time.get_time_range(
         scenario, general_parameters
-    )
+    )[0]
 
     vehicle_parameters: ty.Dict = scenario['vehicle']
     vehicle_name: str = vehicle_parameters['name']
@@ -1062,7 +1062,7 @@ def write_output(
     Writes the outputs to files
     '''
 
-    run_range, run_hour_numbers = run_time.get_time_range(
+    run_range, run_hour_numbers, display_range = run_time.get_time_range(
         scenario, general_parameters
     )
     pickle_interim_files: bool = general_parameters['interim_files']['pickle']

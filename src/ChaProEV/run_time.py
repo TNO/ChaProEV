@@ -52,14 +52,14 @@ def get_run_duration(
 
 def get_time_range(
     scenario: ty.Dict, general_parameters: ty.Dict
-) -> ty.Tuple[pd.DatetimeIndex, ty.List[int]]:
+) -> ty.Tuple[pd.DatetimeIndex, ty.List[int], pd.DatetimeIndex]:
     '''
     This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
     scenario file.
     '''
-
-    run_start_parameters: ty.Dict[str, int] = scenario['run']['start']
+    run_parameters: ty.Dict[str, ty.Dict[str, ty.Any]] = scenario['run']
+    run_start_parameters: ty.Dict[str, int] = run_parameters['start']
     run_start_year: int = run_start_parameters['year']
     run_start_month: int = run_start_parameters['month']
     run_start_day: int = run_start_parameters['day']
@@ -73,6 +73,24 @@ def get_time_range(
         run_start_hour,
         run_start_minute,
     )
+
+    display_run_start_parameters: ty.Dict[str, int] = run_parameters[
+        'display_start'
+    ]
+    display_run_start_year: int = display_run_start_parameters['year']
+    display_run_start_month: int = display_run_start_parameters['month']
+    display_run_start_day: int = display_run_start_parameters['day']
+    display_run_start_hour: int = display_run_start_parameters['hour']
+    display_run_start_minute: int = display_run_start_parameters['minute']
+
+    display_run_start: datetime.datetime = datetime.datetime(
+        display_run_start_year,
+        display_run_start_month,
+        display_run_start_day,
+        display_run_start_hour,
+        display_run_start_minute,
+    )
+
     mobility_module_parameters: ty.Dict[str, ty.Any] = scenario[
         'mobility_module'
     ]
@@ -100,7 +118,7 @@ def get_time_range(
             run_start_minute,
         )
 
-    run_end_parameters: ty.Dict[str, int] = scenario['run']['end']
+    run_end_parameters: ty.Dict[str, int] = run_parameters['end']
     run_end_year: int = run_end_parameters['year']
     run_end_month: int = run_end_parameters['month']
     run_end_day: int = run_end_parameters['day']
@@ -111,7 +129,23 @@ def get_time_range(
         run_end_year, run_end_month, run_end_day, run_end_hour, run_end_minute
     )
 
-    run_parameters: ty.Dict[str, ty.Dict[str, ty.Any]] = scenario['run']
+    display_run_end_parameters: ty.Dict[str, int] = run_parameters[
+        'display_end'
+    ]
+    display_run_end_year: int = display_run_end_parameters['year']
+    display_run_end_month: int = display_run_end_parameters['month']
+    display_run_end_day: int = display_run_end_parameters['day']
+    display_run_end_hour: int = display_run_end_parameters['hour']
+    display_run_end_minute: int = display_run_end_parameters['minute']
+
+    display_run_end: datetime.datetime = datetime.datetime(
+        display_run_end_year,
+        display_run_end_month,
+        display_run_end_day,
+        display_run_end_hour,
+        display_run_end_minute,
+    )
+
     run_frequency_parameters: ty.Dict[str, ty.Any] = run_parameters[
         'frequency'
     ]
@@ -119,10 +153,28 @@ def get_time_range(
     run_frequency_type: str = run_frequency_parameters['type']
     run_frequency: str = f'{run_frequency_size}{run_frequency_type}'
 
+    display_run_frequency_parameters: ty.Dict[str, ty.Any] = run_parameters[
+        'display_frequency'
+    ]
+    display_run_frequency_size: int = display_run_frequency_parameters['size']
+    display_run_frequency_type: str = display_run_frequency_parameters['type']
+    display_run_frequency: str = (
+        f'{display_run_frequency_size}{display_run_frequency_type}'
+    )
+
     run_range: pd.DatetimeIndex = pd.date_range(
         start=run_start,
         end=run_end,
         freq=run_frequency,
+        inclusive='left',
+        # We want the start timestamp, but not the end one, so we need
+        # to say it is closed left
+    )
+
+    display_range: pd.DatetimeIndex = pd.date_range(
+        start=display_run_start,
+        end=display_run_end,
+        freq=display_run_frequency,
         inclusive='left',
         # We want the start timestamp, but not the end one, so we need
         # to say it is closed left
@@ -143,7 +195,7 @@ def get_time_range(
         for time_stamp in run_range
     ]
 
-    return run_range, run_hour_numbers
+    return run_range, run_hour_numbers, display_range
 
 
 def get_time_stamped_dataframe(
@@ -156,7 +208,9 @@ def get_time_stamped_dataframe(
     run as index (and hour numbers, SPINE hour numbers as a column).
     '''
 
-    run_range, run_hour_numbers = get_time_range(scenario, general_parameters)
+    run_range, run_hour_numbers, display_range = get_time_range(
+        scenario, general_parameters
+    )
     time_stamped_dataframe: pd.DataFrame = pd.DataFrame(
         run_hour_numbers, columns=['Hour Number'], index=run_range
     )
@@ -358,7 +412,9 @@ if __name__ == '__main__':
     general_parameters: ty.Dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
-    run_range, run_hour_numbers = get_time_range(scenario, general_parameters)
+    run_range, run_hour_numbers, display_range = get_time_range(
+        scenario, general_parameters
+    )
     time_stamped_dataframe: pd.DataFrame = get_time_stamped_dataframe(
         scenario, general_parameters
     )

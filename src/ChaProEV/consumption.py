@@ -8,6 +8,19 @@ import numpy as np
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
+try:
+    import run_time  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import run_time  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 
 def create_consumption_tables(
     run_mobility_matrix: pd.DataFrame,
@@ -66,6 +79,10 @@ def create_consumption_tables(
         ['Time Tag']
     ).sum()
 
+    display_range = run_time.get_time_range(scenario, general_parameters)[2]
+
+    consumption_table = consumption_table.loc[display_range]
+
     # We also create versions grouped by different time units
     daily_consumption_table: pd.DataFrame = consumption_table.resample(
         'D'
@@ -120,7 +137,7 @@ def create_consumption_tables(
         yearly_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
-        
+
     consumption_tables_frequencies: ty.List[str] = general_parameters[
         'interim_files'
     ]['consumption_tables_frequencies']

@@ -11,18 +11,36 @@
 [run]
 use_day_types_in_charge_computing = true
 [run.start]
-year = 2020
-month = 1
-day = 1
+year = 2017
+month = 12
+day = 31
 hour = 5
 minute = 0
 [run.end]  # This is is not included in the run time
-year = 2021
+year = 2019
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_start]
+year = 2018
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_end]  # This is is not included in the display time
+year = 2019
 month = 1
 day = 1
 hour = 0
 minute = 0
 [run.frequency]
+size = 1  # Put the size of the interval here
+type = 'h'  # 'min'
+# Put the interval type here, use 'H' for hours, 'min' for minutes,
+# 'S' for seconds, 'D' for days. For more info and other types, see here:
+# https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
+[run.display_frequency]
 size = 1  # Put the size of the interval here
 type = 'h'  # 'min'
 # Put the interval type here, use 'H' for hours, 'min' for minutes,
