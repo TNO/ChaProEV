@@ -188,7 +188,7 @@ def car_home_parking(case_name: str, general_parameters: ty.Dict) -> None:
             f'_{consumption_table_name}.pkl'
         )
         weekly_consumption_table.to_pickle(
-            f'{output_folder}/{variant_name}_{consumption_table_name}'
+            f'{output_folder}/{variant_name}_{consumption_table_name}.pkl'
         )
 
         do_fleet_tables: float = general_parameters['profile_dataframe'][
