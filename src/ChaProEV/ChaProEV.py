@@ -460,9 +460,9 @@ def run_ChaProEV(case_name: str) -> None:
     )
     output_root: str = general_parameters['files']['output_root']
     cook.check_if_folder_exists(f'{output_root}/{case_name}')
-    use_variants = general_parameters['variants']['use_variants']
+    use_variants: bool = general_parameters['variants']['use_variants']
     if use_variants:
-        csv_version = general_parameters['variants']['csv_version']
+        csv_version: bool = general_parameters['variants']['csv_version']
         make_variants.make_variants(case_name, csv_version)
 
     scenarios: ty.List[ty.Dict] = load_scenarios(case_name)
