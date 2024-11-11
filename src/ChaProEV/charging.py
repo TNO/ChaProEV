@@ -3,6 +3,7 @@ import typing as ty
 
 import numpy as np
 import pandas as pd
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -36,9 +37,9 @@ except ModuleNotFoundError:
 def get_charging_framework(
     location_split: pd.DataFrame,
     run_mobility_matrix: pd.DataFrame,
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
 ) -> ty.Tuple[
     ty.Dict[str, pd.DataFrame],
     pd.DatetimeIndex,
@@ -56,19 +57,15 @@ def get_charging_framework(
     Produces the structures we want for the charging profiles
     '''
 
-    run_range = run_time.get_time_range(
-        scenario, general_parameters
-    )[0]
+    run_range = run_time.get_time_range(scenario, general_parameters)[0]
 
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    vehicle_name: str = vehicle_parameters['name']
-    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-        'locations'
-    ]
+    vehicle_parameters: Box = scenario.vehicle
+    vehicle_name: str = vehicle_parameters.name
+    location_parameters: Box = scenario.locations
     location_names: ty.List[str] = [
         location_name
         for location_name in location_parameters
-        if location_parameters[location_name]['vehicle'] == vehicle_name
+        if location_parameters[location_name].vehicle == vehicle_name
     ]
     location_nodes: pd.DataFrame = pd.DataFrame(
         index=location_names, columns=['Connections']
@@ -169,7 +166,7 @@ def get_charging_framework(
 
 
 def impact_of_departures(
-    scenario: ty.Dict,
+    scenario: Box,
     time_tag: datetime.datetime,
     battery_spaces: ty.Dict[str, pd.DataFrame],
     start_location: str,
@@ -263,9 +260,9 @@ def impact_of_departures(
                 leg_distance: float = run_mobility_matrix.loc[
                     start_location, end_location, time_tag
                 ]['Distance (km)']
-                vehicle_electricity_consumption: float = scenario['vehicle'][
+                vehicle_electricity_consumption: float = scenario.vehicle[
                     'base_consumption_per_km'
-                ]['electricity_kWh']
+                ].electricity_kWh
 
                 this_leg_consumption: float = (
                     leg_distance * vehicle_electricity_consumption
@@ -403,7 +400,7 @@ def impact_of_arrivals(
 
 
 def travel_space_occupation(
-    scenario: ty.Dict,
+    scenario: Box,
     battery_spaces: ty.Dict[str, pd.DataFrame],
     time_tag: datetime.datetime,
     time_tag_index: int,
@@ -546,25 +543,25 @@ def compute_charging_events(
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
     time_tag: datetime.datetime,
-    scenario: ty.Dict,
-    general_parameters: ty.Dict,
+    scenario: Box,
+    general_parameters: Box,
     location_names: ty.List[str],
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
 
-    zero_threshold: float = general_parameters['numbers']['zero_threshold']
-    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-        'locations'
-    ]
+    zero_threshold: float = general_parameters.numbers.zero_threshold
+    location_parameters: Box = scenario.locations
 
     for charging_location in location_names:
-        charging_location_parameters: ty.Dict[str, float] = (
+        charging_location_parameters: Box = (
             location_parameters[charging_location]
         )
-        charger_efficiency: float = charging_location_parameters[
-            'charger_efficiency'
-        ]
-        percent_charging: float = charging_location_parameters['connectivity']
-        max_charge: float = charging_location_parameters['charging_power']
+
+        charger_efficiency: float = (
+            charging_location_parameters.charger_efficiency
+        )
+
+        percent_charging: float = charging_location_parameters.connectivity
+        max_charge: float = charging_location_parameters.charging_power
 
         # This variable is useful if new battery spaces
         # are added within this charging procedure
@@ -665,7 +662,7 @@ def compute_charging_events(
 
 
 def copy_day_type_profiles_to_whole_run(
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
     run_range: pd.DatetimeIndex,
     reference_day_type_time_tags: ty.Dict[str, ty.List[datetime.datetime]],
@@ -677,7 +674,7 @@ def copy_day_type_profiles_to_whole_run(
     possible_destinations: ty.Dict[str, ty.List[str]],
     possible_origins: ty.Dict[str, ty.List[str]],
     use_day_types_in_charge_computing: bool,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
 ) -> None:
@@ -685,8 +682,8 @@ def copy_day_type_profiles_to_whole_run(
     This copies the day type runs to whe whole run
     '''
 
-    day_start_hour: int = scenario['mobility_module']['day_start_hour']
-    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
+    day_start_hour: int = scenario.mobility_module.day_start_hour
+    HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
     run_hours_from_day_start: ty.List[int] = [
         (time_tag.hour - day_start_hour) % HOURS_IN_A_DAY
         for time_tag in run_range
@@ -701,16 +698,14 @@ def copy_day_type_profiles_to_whole_run(
         for time_tag in run_range
     ]
 
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    vehicle_name: str = vehicle_parameters['name']
+    vehicle_parameters: Box = scenario.vehicle
+    vehicle_name: str = vehicle_parameters.name
 
-    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-        'locations'
-    ]
+    location_parameters: Box = scenario.locations
     location_names: ty.List[str] = [
         location_name
         for location_name in location_parameters
-        if location_parameters[location_name]['vehicle'] == vehicle_name
+        if location_parameters[location_name].vehicle == vehicle_name
     ]
     location_nodes: pd.DataFrame = pd.DataFrame(
         index=location_names, columns=['Connections']
@@ -742,7 +737,7 @@ def copy_day_type_profiles_to_whole_run(
     filter_for_battery_spaces['Hours from day start'] = (
         run_hours_from_day_start
     )
-    day_types: ty.List[str] = scenario['mobility_module']['day_types']
+    day_types: ty.List[str] = scenario.mobility_module.day_types
 
     for day_type in day_types:
         for hour_index in range(HOURS_IN_A_DAY):
@@ -1052,11 +1047,11 @@ def write_output(
     total_battery_space_per_location: pd.DataFrame,
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
     maximal_delivered_power_per_location: pd.DataFrame,
     maximal_delivered_power: pd.DataFrame,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
 ) -> None:
     '''
     Writes the outputs to files
@@ -1065,24 +1060,22 @@ def write_output(
     run_range, run_hour_numbers, display_range = run_time.get_time_range(
         scenario, general_parameters
     )
-    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
     SPINE_hour_numbers: ty.List[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    vehicle_name: str = vehicle_parameters['name']
-    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-        'locations'
-    ]
+    vehicle_parameters: Box = scenario.vehicle
+    vehicle_name: str = vehicle_parameters.name
+    location_parameters: Box = scenario.locations
     location_names: ty.List[str] = [
         location_name
         for location_name in location_parameters
-        if location_parameters[location_name]['vehicle'] == vehicle_name
+        if location_parameters[location_name].vehicle == vehicle_name
     ]
-    scenario_name: str = scenario['scenario_name']
+    scenario_name: str = scenario.name
 
-    file_parameters: ty.Dict[str, str] = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    file_parameters: Box = general_parameters.files
+    output_folder: str = f'{file_parameters.output_root}/{case_name}'
 
     for location_name in location_names:
         battery_spaces[location_name].columns = battery_spaces[
@@ -1226,9 +1219,9 @@ def get_charging_profile(
     run_mobility_matrix: pd.DataFrame,
     maximal_delivered_power_per_location: pd.DataFrame,
     maximal_delivered_power: pd.DataFrame,
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
 ) -> ty.Tuple[
     ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame, pd.DataFrame
 ]:
@@ -1260,8 +1253,8 @@ def get_charging_profile(
     # We want to either compute charging for the whole run, or only
     # do it per day type (to compute faster by avoiding repeats)
     compute_charge: bool = True
-    day_types: ty.List[str] = scenario['mobility_module']['day_types']
-    use_day_types_in_charge_computing: bool = scenario['run'][
+    day_types: ty.List[str] = scenario.mobility_module.day_types
+    use_day_types_in_charge_computing: bool = scenario.run[
         'use_day_types_in_charge_computing'
     ]
 
@@ -1273,8 +1266,8 @@ def get_charging_profile(
         ] = {}
         time_tags_of_day_type: ty.List[datetime.datetime] = []
 
-    day_start_hour: int = scenario['mobility_module']['day_start_hour']
-    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
+    day_start_hour: int = scenario.mobility_module.day_start_hour
+    HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
     day_end_hour: int = (day_start_hour - 1) % HOURS_IN_A_DAY
     run_day_types: ty.List[str] = [
         run_time.get_day_type(
@@ -1285,17 +1278,15 @@ def get_charging_profile(
         for time_tag in run_range
     ]
 
-    zero_threshold: float = general_parameters['numbers']['zero_threshold']
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    vehicle_name: str = vehicle_parameters['name']
+    zero_threshold: float = general_parameters.numbers.zero_threshold
+    vehicle_parameters: Box = scenario.vehicle
+    vehicle_name: str = vehicle_parameters.name
 
-    location_parameters: ty.Dict[str, ty.Dict[str, float]] = scenario[
-        'locations'
-    ]
+    location_parameters: Box = scenario.locations
     location_names: ty.List[str] = [
         location_name
         for location_name in location_parameters
-        if location_parameters[location_name]['vehicle'] == vehicle_name
+        if location_parameters[location_name].vehicle == vehicle_name
     ]
     location_nodes: pd.DataFrame = pd.DataFrame(
         index=location_names, columns=['Connections']
@@ -1445,14 +1436,14 @@ if __name__ == '__main__':
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
+    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario.name = test_scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
+    general_parameters: Box = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
     )
-    file_parameters: ty.Dict = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    file_parameters: Box = general_parameters.files
+    output_folder: str = f'{file_parameters.output_root}/{case_name}'
     location_split_table_name: str = f'{scenario_name}_location_split'
     location_split: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{location_split_table_name}.pkl'

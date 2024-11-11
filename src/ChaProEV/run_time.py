@@ -21,11 +21,12 @@ import typing as ty
 
 import numpy as np
 import pandas as pd
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 
 def get_run_duration(
-    scenario: ty.Dict, general_parameters: ty.Dict
+    scenario: Box, general_parameters: Box
 ) -> ty.Tuple[float, float]:
     '''
     Gets the run duration (in seconds and years)
@@ -38,10 +39,10 @@ def get_run_duration(
         run_range[-1] - run_range[0]
     ).total_seconds()
 
-    time_parameters: ty.Dict = general_parameters['time']
-    SECONDS_PER_HOUR: int = time_parameters['SECONDS_PER_HOUR']
-    HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
-    DAYS_IN_A_YEAR: float = time_parameters['DAYS_IN_A_YEAR']
+    time_parameters: Box = general_parameters.time
+    SECONDS_PER_HOUR: int = time_parameters.SECONDS_PER_HOUR
+    HOURS_IN_A_DAY: int = time_parameters.HOURS_IN_A_DAY
+    DAYS_IN_A_YEAR: float = time_parameters.DAYS_IN_A_YEAR
     SECONDS_PER_YEAR: float = (
         SECONDS_PER_HOUR * HOURS_IN_A_DAY * DAYS_IN_A_YEAR
     )
@@ -51,20 +52,20 @@ def get_run_duration(
 
 
 def get_time_range(
-    scenario: ty.Dict, general_parameters: ty.Dict
+    scenario: Box, general_parameters: Box
 ) -> ty.Tuple[pd.DatetimeIndex, ty.List[int], pd.DatetimeIndex]:
     '''
     This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
     scenario file.
     '''
-    run_parameters: ty.Dict[str, ty.Dict[str, ty.Any]] = scenario['run']
-    run_start_parameters: ty.Dict[str, int] = run_parameters['start']
-    run_start_year: int = run_start_parameters['year']
-    run_start_month: int = run_start_parameters['month']
-    run_start_day: int = run_start_parameters['day']
-    run_start_hour: int = run_start_parameters['hour']
-    run_start_minute: int = run_start_parameters['minute']
+    run_parameters: Box = scenario.run
+    run_start_parameters: Box = run_parameters.start
+    run_start_year: int = run_start_parameters.year
+    run_start_month: int = run_start_parameters.month
+    run_start_day: int = run_start_parameters.day
+    run_start_hour: int = run_start_parameters.hour
+    run_start_minute: int = run_start_parameters.minute
 
     run_start: datetime.datetime = datetime.datetime(
         run_start_year,
@@ -74,14 +75,12 @@ def get_time_range(
         run_start_minute,
     )
 
-    display_run_start_parameters: ty.Dict[str, int] = run_parameters[
-        'display_start'
-    ]
-    display_run_start_year: int = display_run_start_parameters['year']
-    display_run_start_month: int = display_run_start_parameters['month']
-    display_run_start_day: int = display_run_start_parameters['day']
-    display_run_start_hour: int = display_run_start_parameters['hour']
-    display_run_start_minute: int = display_run_start_parameters['minute']
+    display_run_start_parameters: Box = run_parameters.display_start
+    display_run_start_year: int = display_run_start_parameters.year
+    display_run_start_month: int = display_run_start_parameters.month
+    display_run_start_day: int = display_run_start_parameters.day
+    display_run_start_hour: int = display_run_start_parameters.hour
+    display_run_start_minute: int = display_run_start_parameters.minute
 
     display_run_start: datetime.datetime = datetime.datetime(
         display_run_start_year,
@@ -91,13 +90,13 @@ def get_time_range(
         display_run_start_minute,
     )
 
-    mobility_module_parameters: ty.Dict[str, ty.Any] = scenario[
-        'mobility_module'
-    ]
-    day_start_hour: int = mobility_module_parameters['day_start_hour']
-    compute_start_location_split: bool = mobility_module_parameters[
-        'compute_start_location_split'
-    ]
+    mobility_module_parameters: Box = scenario.mobility_module
+
+    day_start_hour: int = mobility_module_parameters.day_start_hour
+    compute_start_location_split: bool = (
+        mobility_module_parameters.compute_start_location_split
+    )
+
     # If we want the model to compute the starting values, we
     # expand the run to the prior day start so that we can use the
     # location split at day start per day type
@@ -118,25 +117,23 @@ def get_time_range(
             run_start_minute,
         )
 
-    run_end_parameters: ty.Dict[str, int] = run_parameters['end']
-    run_end_year: int = run_end_parameters['year']
-    run_end_month: int = run_end_parameters['month']
-    run_end_day: int = run_end_parameters['day']
-    run_end_hour: int = run_end_parameters['hour']
-    run_end_minute: int = run_end_parameters['minute']
+    run_end_parameters: Box = run_parameters.end
+    run_end_year: int = run_end_parameters.year
+    run_end_month: int = run_end_parameters.month
+    run_end_day: int = run_end_parameters.day
+    run_end_hour: int = run_end_parameters.hour
+    run_end_minute: int = run_end_parameters.minute
 
     run_end: datetime.datetime = datetime.datetime(
         run_end_year, run_end_month, run_end_day, run_end_hour, run_end_minute
     )
 
-    display_run_end_parameters: ty.Dict[str, int] = run_parameters[
-        'display_end'
-    ]
-    display_run_end_year: int = display_run_end_parameters['year']
-    display_run_end_month: int = display_run_end_parameters['month']
-    display_run_end_day: int = display_run_end_parameters['day']
-    display_run_end_hour: int = display_run_end_parameters['hour']
-    display_run_end_minute: int = display_run_end_parameters['minute']
+    display_run_end_parameters: Box = run_parameters.display_end
+    display_run_end_year: int = display_run_end_parameters.year
+    display_run_end_month: int = display_run_end_parameters.month
+    display_run_end_day: int = display_run_end_parameters.day
+    display_run_end_hour: int = display_run_end_parameters.hour
+    display_run_end_minute: int = display_run_end_parameters.minute
 
     display_run_end: datetime.datetime = datetime.datetime(
         display_run_end_year,
@@ -146,18 +143,14 @@ def get_time_range(
         display_run_end_minute,
     )
 
-    run_frequency_parameters: ty.Dict[str, ty.Any] = run_parameters[
-        'frequency'
-    ]
-    run_frequency_size: int = run_frequency_parameters['size']
-    run_frequency_type: str = run_frequency_parameters['type']
+    run_frequency_parameters: Box = run_parameters.frequency
+    run_frequency_size: int = run_frequency_parameters.size
+    run_frequency_type: str = run_frequency_parameters.type
     run_frequency: str = f'{run_frequency_size}{run_frequency_type}'
 
-    display_run_frequency_parameters: ty.Dict[str, ty.Any] = run_parameters[
-        'display_frequency'
-    ]
-    display_run_frequency_size: int = display_run_frequency_parameters['size']
-    display_run_frequency_type: str = display_run_frequency_parameters['type']
+    display_run_frequency_parameters: Box = run_parameters.display_frequency
+    display_run_frequency_size: int = display_run_frequency_parameters.size
+    display_run_frequency_type: str = display_run_frequency_parameters.type
     display_run_frequency: str = (
         f'{display_run_frequency_size}{display_run_frequency_type}'
     )
@@ -180,9 +173,9 @@ def get_time_range(
         # to say it is closed left
     )
 
-    time_parameters: ty.Dict[str, ty.Any] = general_parameters['time']
-    SECONDS_PER_HOUR: int = time_parameters['SECONDS_PER_HOUR']
-    first_hour_number: int = time_parameters['first_hour_number']
+    time_parameters: Box = general_parameters.time
+    SECONDS_PER_HOUR: int = time_parameters.SECONDS_PER_HOUR
+    first_hour_number: int = time_parameters.first_hour_number
 
     run_hour_numbers: ty.List[int] = [
         first_hour_number
@@ -199,8 +192,8 @@ def get_time_range(
 
 
 def get_time_stamped_dataframe(
-    scenario: ty.Dict,
-    general_parameters: ty.Dict,
+    scenario: Box,
+    general_parameters: Box,
     locations_as_columns: bool = True,
 ) -> pd.DataFrame:
     '''
@@ -223,8 +216,8 @@ def get_time_stamped_dataframe(
         time_stamped_dataframe, scenario, general_parameters
     )
 
-    day_start_hour: int = scenario['mobility_module']['day_start_hour']
-    HOURS_IN_A_DAY = general_parameters['time']['HOURS_IN_A_DAY']
+    day_start_hour: int = scenario.mobility_module.day_start_hour
+    HOURS_IN_A_DAY = general_parameters.time.HOURS_IN_A_DAY
     hour_in_day: ty.List[int] = [
         (
             timestamp.hour - day_start_hour
@@ -237,12 +230,12 @@ def get_time_stamped_dataframe(
     time_stamped_dataframe['Hour index from day start'] = hour_in_day
 
     if locations_as_columns:
-        vehicle: str = scenario['vehicle']['name']
-        location_parameters: ty.Dict = scenario['locations']
+        vehicle: str = scenario.vehicle.name
+        location_parameters: Box = scenario.locations
         locations: ty.List[str] = [
             location_name
             for location_name in location_parameters.keys()
-            if location_parameters[location_name]['vehicle'] == vehicle
+            if location_parameters[location_name].vehicle == vehicle
         ]
         time_stamped_dataframe[locations] = np.empty(
             (len(run_range), len(locations))
@@ -253,16 +246,16 @@ def get_time_stamped_dataframe(
 
 
 def get_day_type(
-    time_tag: datetime.datetime, scenario: ty.Dict, general_parameters: ty.Dict
+    time_tag: datetime.datetime, scenario: Box, general_parameters: Box
 ) -> str:
     '''
     Tells us the date type of a given time_tag.
     '''
 
-    weekend_day_numbers: ty.List[int] = general_parameters['time'][
+    weekend_day_numbers: ty.List[int] = general_parameters.time[
         'weekend_day_numbers'
     ]
-    holiday_weeks: ty.List[int] = scenario['mobility_module']['holiday_weeks']
+    holiday_weeks: ty.List[int] = scenario.mobility_module.holiday_weeks
     if time_tag.isoweekday() in weekend_day_numbers:
         day_type: str = 'weekend'
     else:
@@ -275,12 +268,12 @@ def get_day_type(
 
     day_name: str = f'{day_type}_in_{week_type}_week'
 
-    holiday_departures_in_weekend_week_numbers: ty.List[int] = scenario[
-        'mobility_module'
-    ]['holiday_departures_in_weekend_week_numbers']
-    holiday_returns_in_weekend_week_numbers: ty.List[int] = scenario[
-        'mobility_module'
-    ]['holiday_returns_in_weekend_week_numbers']
+    holiday_departures_in_weekend_week_numbers: ty.List[int] = (
+        scenario.mobility_module.holiday_departures_in_weekend_week_numbers
+    )
+    holiday_returns_in_weekend_week_numbers: ty.List[int] = (
+        scenario.mobility_module.holiday_returns_in_weekend_week_numbers
+    )
     holiday_overlap_weekend_week_numbers: ty.List[int] = list(
         set(holiday_departures_in_weekend_week_numbers).intersection(
             holiday_returns_in_weekend_week_numbers
@@ -305,13 +298,13 @@ def get_day_type(
 
 
 def add_day_type_to_time_stamped_dataframe(
-    dataframe: pd.DataFrame, scenario: ty.Dict, general_parameters: ty.Dict
+    dataframe: pd.DataFrame, scenario: Box, general_parameters: Box
 ) -> pd.DataFrame:
     '''
     Adds a column with the date type
     to a time-stamped_dataframe
     '''
-    day_start_hour: int = scenario['mobility_module']['day_start_hour']
+    day_start_hour: int = scenario.mobility_module.day_start_hour
     day_types: ty.List[str] = [
         get_day_type(
             time_tag - datetime.timedelta(hours=day_start_hour),
@@ -329,8 +322,8 @@ def from_day_to_run(
     dataframe_to_clone: pd.DataFrame,
     run_range: pd.DatetimeIndex,
     day_start_hour: int,
-    scenario: ty.Dict,
-    general_parameters: ty.Dict,
+    scenario: Box,
+    general_parameters: Box,
 ) -> pd.DataFrame:
     '''
     Clones dataframe for a day (with zero at day start) for
@@ -349,8 +342,8 @@ def from_day_to_run(
     ):
         rolled_dataframe_to_clone[column] = column_values
 
-    SECONDS_PER_HOUR: int = general_parameters['time']['SECONDS_PER_HOUR']
-    HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
+    SECONDS_PER_HOUR: int = general_parameters.time.SECONDS_PER_HOUR
+    HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
     run_number_of_seconds: float = (
         run_range[-1] - run_range[0]
     ).total_seconds()
@@ -379,10 +372,10 @@ def from_day_to_run(
         day=day_after_end_run.day,
         hour=0,
     )
-    run_parameters: ty.Dict = scenario['run']
-    run_frequency_parameters: ty.Dict = run_parameters['frequency']
-    run_frequency_size: int = run_frequency_parameters['size']
-    run_frequency_type: str = run_frequency_parameters['type']
+    run_parameters: Box = scenario.run
+    run_frequency_parameters: Box = run_parameters.frequency
+    run_frequency_size: int = run_frequency_parameters.size
+    run_frequency_type: str = run_frequency_parameters.type
     run_frequency: str = f'{run_frequency_size}{run_frequency_type}'
     extended_run_range: pd.DatetimeIndex = pd.date_range(
         start=extended_run_start,
@@ -406,11 +399,11 @@ if __name__ == '__main__':
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
+    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario.name = test_scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
+    general_parameters: Box = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
     )
     run_range, run_hour_numbers, display_range = get_time_range(
         scenario, general_parameters

@@ -6,6 +6,7 @@ import typing as ty
 
 import numpy as np
 import pandas as pd
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -24,22 +25,21 @@ except ModuleNotFoundError:
 
 def create_consumption_tables(
     run_mobility_matrix: pd.DataFrame,
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
 ) -> None:
     '''
     Creates the consumption tables
     '''
-    scenario_name: str = scenario['scenario_name']
-    output_folder: str = (
-        f'{general_parameters["files"]["output_root"]}/{case_name}'
+    scenario_name: str = scenario.name
+    output_folder: str = f'{general_parameters.files.output_root}/{case_name}'
+    vehicle_parameters: Box = scenario.vehicle
+    kilometers_column_for_consumption: str = (
+        vehicle_parameters.kilometers_column_for_consumption
     )
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    kilometers_column_for_consumption: str = vehicle_parameters[
-        'kilometers_column_for_consumption'
-    ]
-    use_weighted: bool = vehicle_parameters['use_weighted']
+
+    use_weighted: bool = vehicle_parameters.use_weighted
     if use_weighted:
         kilometers_source_column: str = (
             f'{kilometers_column_for_consumption} weighted kilometers'
@@ -57,9 +57,10 @@ def create_consumption_tables(
         .astype(float)
     )
 
-    vehicle_base_consumptions_per_km: ty.Dict[str, float] = vehicle_parameters[
-        'base_consumption_per_km'
-    ]
+    vehicle_base_consumptions_per_km: Box = (
+        vehicle_parameters.base_consumption_per_km
+    )
+
     kilometers: np.ndarray = np.array(
         pd.Series(consumption_matrix['Kilometers']).values
     )
@@ -117,7 +118,7 @@ def create_consumption_tables(
         [f'{time_tag.year}' for time_tag in yearly_consumption_table.index]
     )
     yearly_consumption_table.index.name = 'Year'
-    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         consumption_matrix.to_pickle(
             f'{output_folder}/{scenario_name}_consumption_matrix.pkl'
@@ -138,32 +139,32 @@ def create_consumption_tables(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
 
-    consumption_tables_frequencies: ty.List[str] = general_parameters[
-        'interim_files'
-    ]['consumption_tables_frequencies']
-    save_consumption_table: ty.List[bool] = general_parameters[
-        'interim_files'
-    ]['save_consumption_table']
-    is_consumption_table_saved: ty.Dict[str, bool] = dict(
-        zip(consumption_tables_frequencies, save_consumption_table)
+    consumption_tables_frequencies: ty.List[str] = (
+        general_parameters.interim_files.consumption_tables_frequencies
     )
-    if is_consumption_table_saved['hourly']:
+    save_consumption_table: ty.List[bool] = (
+        general_parameters.interim_files.save_consumption_table
+    )
+    is_consumption_table_saved: Box = Box(
+        dict(zip(consumption_tables_frequencies, save_consumption_table))
+    )
+    if is_consumption_table_saved.hourly:
         consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_consumption_table.pkl'
         )
-    if is_consumption_table_saved['daily']:
+    if is_consumption_table_saved.daily:
         daily_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_daily_consumption_table.pkl'
         )
-    if is_consumption_table_saved['weekly']:
+    if is_consumption_table_saved.weekly:
         weekly_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_weekly_consumption_table.pkl'
         )
-    if is_consumption_table_saved['monthly']:
+    if is_consumption_table_saved.monthly:
         monthly_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_monthly_consumption_table.pkl'
         )
-    if is_consumption_table_saved['yearly']:
+    if is_consumption_table_saved.yearly:
         yearly_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
@@ -172,18 +173,18 @@ def create_consumption_tables(
 def get_energy_for_next_leg(
     next_leg_kilometers: pd.DataFrame,
     next_leg_kilometers_cumulative: pd.DataFrame,
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
 ) -> None:
-    file_parameters: ty.Dict = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    scenario_name: str = scenario['scenario_name']
+    file_parameters: Box = general_parameters.files
+    output_folder: str = f'{file_parameters.output_root}/{case_name}'
+    scenario_name: str = scenario.name
 
-    vehicle_parameters: ty.Dict = scenario['vehicle']
-    vehicle_base_consumptions_kWh_per_km: float = vehicle_parameters[
-        'base_consumption_per_km'
-    ]['electricity_kWh']
+    vehicle_parameters: Box = scenario.vehicle
+    vehicle_base_consumptions_kWh_per_km: float = (
+        vehicle_parameters.base_consumption_per_km.electricity_kWh
+    )
     consumption: pd.Series[float] = pd.Series(
         [vehicle_base_consumptions_kWh_per_km]
         * len(next_leg_kilometers.index),
@@ -195,7 +196,7 @@ def get_energy_for_next_leg(
     energy_for_next_leg_cumulative: pd.DataFrame = (
         next_leg_kilometers_cumulative.mul(consumption, axis=0)
     )
-    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         energy_for_next_leg.to_pickle(
             f'{output_folder}/{scenario_name}_energy_for_next_leg.pkl'
@@ -210,9 +211,9 @@ def get_consumption_data(
     run_mobility_matrix: pd.DataFrame,
     next_leg_kilometers: pd.DataFrame,
     next_leg_kilometers_cumulative: pd.DataFrame,
-    scenario: ty.Dict,
+    scenario: Box,
     case_name: str,
-    general_parameters: ty.Dict,
+    general_parameters: Box,
 ) -> None:
     create_consumption_tables(
         run_mobility_matrix, scenario, case_name, general_parameters
@@ -228,17 +229,15 @@ def get_consumption_data(
 
 if __name__ == '__main__':
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
+    general_parameters: Box = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
     )
     case_name = 'Mopo'
     scenario_name: str = 'XX_car'
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = scenario_name
-    output_folder: str = (
-        f'{general_parameters["files"]["output_root"]}/{case_name}'
-    )
+    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario.name = scenario_name
+    output_folder: str = f'{general_parameters.files.output_root}/{case_name}'
     run_mobility_matrix = pd.DataFrame(
         pd.read_pickle(
             f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl',

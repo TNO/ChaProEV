@@ -29,6 +29,9 @@ def make_csv_variants(case_name: str) -> None:
 
         reference_scenario_name: str = variant_file.split('.')[0]
 
+        # Here we use a dict for the reference scenario
+        # instead of a Box because we want to use functions
+        # that use dicts to write a new scenario
         reference_scenario: ty.Dict = cook.parameters_from_TOML(
             f'scenarios/{case_name}/{reference_scenario_name}.toml'
         )
@@ -78,6 +81,9 @@ def make_toml_variants(case_name: str) -> None:
     for reference_scenario_name in variant_configuration[
         'reference_scenarios'
     ]:
+        # Here we use a dict for the reference scenario
+        # instead of a Box because we want to use functions
+        # that use dicts to write a new scenario
         reference_scenario: ty.Dict = cook.parameters_from_TOML(
             f'scenarios/{case_name}/{reference_scenario_name}.toml'
         )

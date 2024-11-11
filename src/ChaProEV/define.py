@@ -23,6 +23,7 @@ import typing as ty
 
 import numpy as np
 import pandas as pd
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -46,8 +47,8 @@ def mobility_matrix_to_run_mobility_matrix(
     run_index: pd.MultiIndex,
     run_time_tags: pd.DatetimeIndex,
     start_hour: int,
-    scenario: ty.Dict,
-    general_parameters: ty.Dict,
+    scenario: Box,
+    general_parameters: Box,
 ) -> pd.DataFrame:
     run_matrix: pd.DataFrame = pd.DataFrame(
         columns=matrix_to_expand.columns, index=run_index
@@ -561,24 +562,22 @@ class Leg:
     class_name: str = 'legs'
 
     def __init__(
-        leg, name: str, scenario: ty.Dict, general_parameters: ty.Dict
+        leg, name: str, scenario: Box, general_parameters: Box
     ) -> None:
         leg.name: str = name
 
-        leg_parameters: ty.Dict = scenario['legs'][name]
-        leg.vehicle: str = leg_parameters['vehicle']
-        leg.distance: float = leg_parameters['distance']
-        leg.duration: float = leg_parameters['duration']
-        leg.hour_in_day_factors: ty.List[float] = leg_parameters[
-            'hour_in_day_factors'
-        ]
-        locations: ty.Dict[str, str] = leg_parameters['locations']
-        leg.start_location: str = locations['start']
-        leg.end_location: str = locations['end']
-        road_type_parameters: ty.Dict[str, ty.List[float]] = leg_parameters[
-            'road_type_mix'
-        ]
-        leg.road_type_mix: ty.List[float] = road_type_parameters['mix']
+        leg_parameters: Box = scenario.legs[name]
+        leg.vehicle: str = leg_parameters.vehicle
+        leg.distance: float = leg_parameters.distance
+        leg.duration: float = leg_parameters.duration
+        leg.hour_in_day_factors: ty.List[float] = (
+            leg_parameters.hour_in_day_factors
+        )
+        locations: Box = leg_parameters.locations
+        leg.start_location: str = locations.start
+        leg.end_location: str = locations.end
+        road_type_parameters: Box = leg_parameters.road_type_mix
+        leg.road_type_mix: ty.List[float] = road_type_parameters.mix
 
 
 class Location:
@@ -591,22 +590,24 @@ class Location:
     class_name: str = 'locations'
 
     def __init__(
-        location, name: str, scenario: ty.Dict, general_parameters: ty.Dict
+        location, name: str, scenario: Box, general_parameters: Box
     ) -> None:
         location.name: str = name
 
-        location_parameters: ty.Dict = scenario['locations'][name]
-        location.vehicle: str = location_parameters['vehicle']
-        location.connectivity: float = location_parameters['connectivity']
-        location.charging_power: float = location_parameters['charging_power']
-        location.latitude: float = location_parameters['latitude']
-        location.longitude: float = location_parameters['longitude']
-        location.base_charging_price: float = location_parameters[
-            'base_charging_price'
-        ]
-        location.charging_desirability: float = location_parameters[
-            'charging_desirability'
-        ]
+        this_location_parameters: Box = scenario.locations[name]
+        location.vehicle: str = this_location_parameters.vehicle
+        location.connectivity: float = this_location_parameters.connectivity
+        location.charging_power: float = (
+            this_location_parameters.charging_power
+        )
+        location.latitude: float = this_location_parameters.latitude
+        location.longitude: float = this_location_parameters.longitude
+        location.base_charging_price: float = (
+            this_location_parameters.base_charging_price
+        )
+        location.charging_desirability: float = (
+            this_location_parameters.charging_desirability
+        )
 
 
 class Trip:
@@ -626,37 +627,35 @@ class Trip:
     class_name: str = 'trips'
 
     def __init__(
-        trip, name: str, scenario: ty.Dict, general_parameters: ty.Dict
+        trip, name: str, scenario: Box, general_parameters: Box
     ) -> None:
         trip.name: str = name
 
-        trip_parameters: ty.Dict = scenario['trips'][name]
-        trip.legs: ty.List[str] = trip_parameters['legs']
-        trip.time_between_legs: ty.List[float] = trip_parameters[
-            'time_between_legs'
-        ]
-        trip.percentage_station_users: float = trip_parameters[
-            'percentage_station_users'
-        ]
+        trip_parameters: Box = scenario.trips[name]
+        trip.legs: ty.List[str] = trip_parameters.legs
+        trip.time_between_legs: ty.List[float] = (
+            trip_parameters.time_between_legs
+        )
+        trip.percentage_station_users: float = (
+            trip_parameters.percentage_station_users
+        )
 
-        trip.start_probabilities: ty.List[float] = trip_parameters[
-            'start_probabilities'
-        ]
-        trip.repeated_sequence: ty.List[str] = trip_parameters[
-            'repeated_sequence'
-        ]
-        trip.repetition_amounts: ty.List[int] = trip_parameters[
-            'repetition_amounts'
-        ]
-        trip.time_between_repetitions: ty.List[float] = trip_parameters[
-            'time_between_repetitions'
-        ]
+        trip.start_probabilities: ty.List[float] = (
+            trip_parameters.start_probabilities
+        )
+        trip.repeated_sequence: ty.List[str] = (
+            trip_parameters.repeated_sequence
+        )
+        trip.repetition_amounts: ty.List[int] = (
+            trip_parameters.repetition_amounts
+        )
+        trip.time_between_repetitions: ty.List[float] = (
+            trip_parameters.time_between_repetitions
+        )
 
-        trip.day_start_hour: int = scenario['mobility_module'][
-            'day_start_hour'
-        ]
+        trip.day_start_hour: int = scenario.mobility_module.day_start_hour
         trip.leg_driving_times: ty.List[float] = [
-            scenario['legs'][leg_name]['duration'] for leg_name in trip.legs
+            scenario.legs[leg_name].duration for leg_name in trip.legs
         ]
 
         trip_legs_store: ty.List[str] = trip.legs.copy()
@@ -741,12 +740,10 @@ class Trip:
                     repetition_iteration_index += 1
 
         trip.start_locations_of_legs: ty.List[str] = [
-            scenario['legs'][leg_name]['locations']['start']
-            for leg_name in trip.legs
+            scenario.legs[leg_name].locations.start for leg_name in trip.legs
         ]
         trip.end_locations_of_legs: ty.List[str] = [
-            scenario['legs'][leg_name]['locations']['end']
-            for leg_name in trip.legs
+            scenario.legs[leg_name].locations.end for leg_name in trip.legs
         ]
         trip.location_names: ty.List[str] = sorted(
             list(
@@ -759,21 +756,21 @@ class Trip:
         # sorted so that the order is always the same
 
         trip.leg_distances: ty.List[float] = [
-            scenario['legs'][leg_name]['distance'] for leg_name in trip.legs
+            scenario.legs[leg_name].distance for leg_name in trip.legs
         ]
 
         trip.weighted_leg_distances: ty.List[float] = []
         for leg_name in trip.legs:
             road_type_mix: np.ndarray = np.array(
-                scenario['legs'][leg_name]['road_type_mix']['mix']
+                scenario.legs[leg_name].road_type_mix.mix
             )
             road_type_weights: np.ndarray = np.array(
-                scenario['transport_factors']['weights']
+                scenario.transport_factors.weights
             )
             road_type_factor: float = float(
                 sum(road_type_mix * road_type_weights)
             )
-            leg_distance: float = scenario['legs'][leg_name]['distance']
+            leg_distance: float = scenario.legs[leg_name].distance
             leg_weighted_distance: float = leg_distance * road_type_factor
             trip.weighted_leg_distances.append(leg_weighted_distance)
 
@@ -783,9 +780,9 @@ class Trip:
         trip.unique_weighted_leg_distances: ty.List[float] = list(
             set(trip.weighted_leg_distances)
         )
-        vehicle_electricity_consumption: float = scenario['vehicle'][
-            'base_consumption_per_km'
-        ]['electricity_kWh']
+        vehicle_electricity_consumption: float = (
+            scenario.vehicle.base_consumption_per_km.electricity_kWh
+        )
 
         trip.unique_leg_consumptions: ty.List[float] = [
             unique_distance * vehicle_electricity_consumption
@@ -801,8 +798,8 @@ class Trip:
         # have start and end locations (plus hour in day, starting
         # at day start) as an index, and departures, arrivals as columns (
         # each with amounts, distances, weighted distances)
-        HOURS_IN_A_DAY: int = general_parameters['time']['HOURS_IN_A_DAY']
-        parameters_of_legs: ty.Dict = scenario['legs']
+        HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
+        parameters_of_legs: Box = scenario.legs
         unique_legs: ty.List[str] = []
         for trip_leg in trip.legs:
             if trip_leg not in unique_legs:
@@ -810,8 +807,8 @@ class Trip:
 
         leg_tuples: ty.List[ty.Tuple[str, str]] = [
             (
-                parameters_of_legs[trip_leg]['locations']['start'],
-                parameters_of_legs[trip_leg]['locations']['end'],
+                parameters_of_legs[trip_leg].locations.start,
+                parameters_of_legs[trip_leg].locations.end,
             )
             for trip_leg in unique_legs
         ]
@@ -827,9 +824,9 @@ class Trip:
             mobility_index_tuples,
             names=['From', 'To', 'Hour number (from day start)'],
         )
-        mobility_quantities: ty.List[str] = scenario['mobility_module'][
-            'mobility_quantities'
-        ]
+        mobility_quantities: ty.List[str] = (
+            scenario.mobility_module.mobility_quantities
+        )
 
         trip.mobility_matrix: pd.DataFrame = pd.DataFrame(
             np.zeros((len(mobility_index), len(mobility_quantities))),
@@ -950,10 +947,8 @@ class Trip:
             stay_put_location = trip.name.split('stay_put_')[1]
             trip.location_split[stay_put_location] = 1
         else:
-            start_leg_name: str = trip.legs[0]
-            initial_location: str = scenario['legs'][start_leg_name][
-                'locations'
-            ]['start']
+            first_leg: str = trip.legs[0]
+            initial_location: str = scenario.legs[first_leg].locations.start
             trip.location_split[initial_location] = 1
 
         trip.location_split, trip.mobility_matrix = (
@@ -998,32 +993,29 @@ class Trip:
         )
 
         for location_name in trip.location_names:
-            location_connectivity: float = scenario['locations'][
-                location_name
-            ]['connectivity']
-            charging_power: float = scenario['locations'][location_name][
-                'charging_power'
-            ]
-            charger_efficiency: float = scenario['locations'][location_name][
-                'charger_efficiency'
-            ]
+            this_location_parameters: Box = scenario.locations[location_name]
+            location_connectivity: float = (
+                this_location_parameters.connectivity
+            )
+            charging_power: float = this_location_parameters.charging_power
+            charger_efficiency: float = (
+                this_location_parameters.charger_efficiency
+            )
             this_location_maximal_delivered_power: float = (
                 location_connectivity * charging_power / charger_efficiency
             )
             this_location_maximal_received_power: float = (
                 location_connectivity * charging_power
             )
-            this_location_vehicle_discharge_power: float = scenario[
-                'locations'
-            ][location_name]['vehicle_discharge_power']
-            this_location_proportion_of_discharge_going_to_network: float = (
-                scenario['locations'][location_name][
-                    'proportion_of_discharge_going_to_network'
-                ]
+            this_location_vehicle_discharge_power: float = (
+                this_location_parameters.vehicle_discharge_power
+            )
+            this_location_proportion_of_discharge_to_network: float = (
+                this_location_parameters.proportion_of_discharge_to_network
             )
             this_location_discharge_power_to_network: float = (
                 this_location_vehicle_discharge_power
-                * this_location_proportion_of_discharge_going_to_network
+                * this_location_proportion_of_discharge_to_network
             )
 
             trip.connectivity_per_location[location_name] = (
@@ -1077,9 +1069,9 @@ class Trip:
             for time_tag in run_time_tags
         ]
 
-        mobility_index_names: ty.List[str] = scenario['mobility_module'][
-            'mobility_index_names'
-        ]
+        mobility_index_names: ty.List[str] = (
+            scenario.mobility_module.mobility_index_names
+        )
         run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
             run_mobility_index_tuples, names=mobility_index_names
         )
@@ -1187,7 +1179,7 @@ class Trip:
         )
 
         # We also do this for some other quantities
-        day_start_hour: int = scenario['mobility_module']['day_start_hour']
+        day_start_hour: int = scenario.mobility_module.day_start_hour
         trip.run_location_split: pd.DataFrame = run_time.from_day_to_run(
             trip.location_split,
             run_time_tags,
@@ -1282,9 +1274,9 @@ class Trip:
 
         for leg_index, leg_name in enumerate(trip.legs):
 
-            leg_parameters = scenario['legs'][leg_name]
-            start_location = leg_parameters['locations']['start']
-            end_location = leg_parameters['locations']['end']
+            leg_parameters = scenario.legs[leg_name]
+            start_location = leg_parameters.locations.start
+            end_location = leg_parameters.locations.end
 
             if leg_index == 0:
                 previous_leg_arrivals_amount: ty.List[float] = []
@@ -1405,12 +1397,13 @@ class Trip:
         )
 
         for location_name in trip.location_names:
-            vehicle_consumption_per_km: float = scenario['vehicle'][
-                'base_consumption_per_km'
-            ]['electricity_kWh']
-            charger_efficiency = scenario['locations'][location_name][
-                'charger_efficiency'
-            ]
+            vehicle_consumption_per_km: float = (
+                scenario.vehicle.base_consumption_per_km.electricity_kWh
+            )
+            charger_efficiency = (
+                scenario.locations[location_name].charger_efficiency
+            )
+
             draw_from_network_per_km: float = (
                 vehicle_consumption_per_km / charger_efficiency
             )
@@ -1488,14 +1481,14 @@ class Trip:
 
 
 def declare_class_instances(
-    Chosen_class: ty.Type, scenario: ty.Dict, general_parameters: ty.Dict
+    Chosen_class: ty.Type, scenario: Box, general_parameters: Box
 ) -> ty.List[ty.Type]:
     '''
     This function creates the instances of a class (Chosen_class),
     based on a scenario file name where the instances and their properties
     are given.
     '''
-    scenario_vehicle: str = scenario['vehicle']['name']
+    scenario_vehicle: str = scenario.vehicle.name
     class_name: str = Chosen_class.class_name
 
     class_instances: ty.List[str] = scenario[class_name]
@@ -1505,17 +1498,15 @@ def declare_class_instances(
     for class_instance in class_instances:
         append_instance: bool = True
         if class_name == 'trips':
-            trip_vehicle: str = scenario['trips'][class_instance]['vehicle']
+            trip_vehicle: str = scenario.trips[class_instance].vehicle
             if trip_vehicle != scenario_vehicle:
                 append_instance = False
         elif class_name == 'locations':
-            location_vehicle: str = scenario['locations'][class_instance][
-                'vehicle'
-            ]
+            location_vehicle: str = scenario.locations[class_instance].vehicle
             if location_vehicle != scenario_vehicle:
                 append_instance = False
         elif class_name == 'legs':
-            leg_vehicle: str = scenario['legs'][class_instance]['vehicle']
+            leg_vehicle: str = scenario.legs[class_instance].vehicle
             if leg_vehicle != scenario_vehicle:
                 append_instance = False
 
@@ -1528,7 +1519,7 @@ def declare_class_instances(
 
 
 def declare_all_instances(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    scenario: Box, case_name: str, general_parameters: Box
 ) -> ty.Tuple[
     pd.DataFrame, ty.List[ty.Type], ty.List[ty.Type], ty.List[ty.Type]
 ]:
@@ -1536,9 +1527,9 @@ def declare_all_instances(
     This declares all instances of the various objects
     (legs, locations,  trips).
     '''
-    scenario_name: str = scenario['scenario_name']
-    file_parameters: ty.Dict = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
+    scenario_name: str = scenario.name
+    file_parameters: Box = general_parameters.files
+    output_folder: str = f'{file_parameters.output_root}/{case_name}'
     locations: ty.List[ty.Type] = declare_class_instances(
         Location, scenario, general_parameters
     )
@@ -1548,9 +1539,9 @@ def declare_all_instances(
     )
 
     # We want to get the location connections
-    location_connections_headers: ty.List[str] = scenario['mobility_module'][
-        'location_connections_headers'
-    ]
+    location_connections_headers: ty.List[str] = (
+        scenario.mobility_module.location_connections_headers
+    )
     location_connections_index_tuples: ty.List[ty.Tuple[str, str]] = [
         (start_location.name, end_location.name)
         for start_location in locations
@@ -1563,7 +1554,7 @@ def declare_all_instances(
         columns=location_connections_headers, index=location_connections_index
     )
     road_type_weights: np.ndarray = np.array(
-        scenario['transport_factors']['weights']
+        scenario.transport_factors.weights
     )
     for leg in legs:
         road_type_factor: float = sum(leg.road_type_mix * road_type_weights)
@@ -1579,7 +1570,7 @@ def declare_all_instances(
                 (leg.start_location, leg.end_location),
                 location_connection_header,
             ] = fill_value
-    pickle_interim_files: bool = general_parameters['interim_files']['pickle']
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         location_connections.to_pickle(
             f'{output_folder}/{scenario_name}_location_connections.pkl'
@@ -1869,16 +1860,16 @@ def declare_all_instances(
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
+    general_parameters: Box = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
     )
     case_name = 'Mopo'
     test_scenario_name: str = 'XX_bus'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
-    scenario['scenario_name'] = test_scenario_name
+    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario.name = test_scenario_name
     location_connecions, legs, locations, trips = declare_all_instances(
         scenario, case_name, general_parameters
     )

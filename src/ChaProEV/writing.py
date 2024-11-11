@@ -14,16 +14,17 @@ from itertools import repeat
 from multiprocessing import Pool
 
 import pandas as pd
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 
-def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
+def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
     '''
     Saves the pickle files to other formats
     '''
-    output_root: str = general_parameters['files']['output_root']
+    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
-    groupfile_root: str = general_parameters['files']['groupfile_root']
+    groupfile_root: str = general_parameters.files.groupfile_root
     groupfile_name: str = f'{groupfile_root}_{case_name}'
     output_files: ty.List[str] = os.listdir(output_folder)
     output_pickle_files: ty.List[str] = [
@@ -43,15 +44,15 @@ def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
         for output_pickle_file in output_pickle_files
     ]
 
-    set_amount_of_processes: bool = general_parameters['parallel_processing'][
-        'number_of_parallel_processes'
-    ]['set_amount_of_processes']
+    set_amount_of_processes: bool = (
+        general_parameters.parallel_processing.set_amount_of_processes
+    )
     if set_amount_of_processes:
         number_of_parallel_processes: int | None = None
     else:
-        number_of_parallel_processes = general_parameters[
-            'parallel_processing'
-        ]['number_of_parallel_processes']['for_pickle_saves']
+        number_of_parallel_processes = (
+            general_parameters.parallel_processing.amount_for_pickle_saves
+        )
 
     with Pool(number_of_parallel_processes) as saving_pool:
         saving_pool.starmap(
@@ -67,19 +68,20 @@ def extra_end_outputs(case_name: str, general_parameters: ty.Dict) -> None:
 
 
 def write_scenario_parameters(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    scenario: Box, case_name: str, general_parameters: Box
 ) -> None:
     '''
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
     '''
-    scenario_parameter_categories: ty.List[str] = scenario[
-        'scenario_parameter_categories'
-    ]
-    scenario_name: str = scenario['scenario_name']
+    scenario_parameter_categories: ty.List[str] = (
+        scenario.scenario_parameter_categories
+    )
+
+    scenario_name: str = scenario.name
     # groupfile_root: str = scenario['files']['groupfile_root']
     # groupfile_name: str = f'{groupfile_root}_{case_name}'
-    output_root: str = general_parameters['files']['output_root']
+    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
 
     for parameter_category in scenario_parameter_categories:
@@ -100,8 +102,8 @@ if __name__ == '__main__':
     # test_scenario_name: str = 'baseline'
     start_time: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
+    general_parameters: Box = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
     )
 
     extra_end_outputs(case_name, general_parameters)

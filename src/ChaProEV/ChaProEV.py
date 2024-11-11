@@ -11,6 +11,7 @@ from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 try:
@@ -106,29 +107,27 @@ except ModuleNotFoundError:
 # we are importing again
 
 
-def car_home_parking(case_name: str, general_parameters: ty.Dict) -> None:
-    home_type_parameters: ty.Dict = general_parameters['home_type']
-    input_root: str = general_parameters['files']['input_root']
+def car_home_parking(case_name: str, general_parameters: Box) -> None:
+    home_type_parameters: Box = general_parameters.home_type
+    input_root: str = general_parameters.files.input_root
     input_folder: str = f'{input_root}/{case_name}'
-    percentages_file_name: str = home_type_parameters['percentages_file']
+    percentages_file_name: str = home_type_parameters.percentages_file
     car_drivewway_percentages: pd.DataFrame = pd.read_csv(
         f'{input_folder}/{percentages_file_name}'
-    ).set_index(home_type_parameters['index_name'])
+    ).set_index(home_type_parameters.index_name)
 
-    profiles_index: ty.List[str] = home_type_parameters['profiles_index']
-    own_driveway_name: str = home_type_parameters['own_driveway_name']
-    on_street_name: str = home_type_parameters['on_street_name']
+    profiles_index: ty.List[str] = home_type_parameters.profiles_index
+    own_driveway_name: str = home_type_parameters.own_driveway_name
+    on_street_name: str = home_type_parameters.on_street_name
 
-    output_root: ty.Dict = general_parameters['files']['output_root']
+    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
 
-    consumption_parameters: ty.Dict = general_parameters['consumption']
-    consumption_table_name: str = consumption_parameters[
-        'consumption_table_name'
-    ]
-    use_years_in_profiles: bool = general_parameters['variants'][
-        'use_years_in_profiles'
-    ]
+    consumption_parameters: Box = general_parameters.consumption
+    consumption_table_name: str = consumption_parameters.consumption_table_name
+    use_years_in_profiles: bool = (
+        general_parameters.variants.use_years_in_profiles
+    )
 
     variant_names: ty.List[str] = list(car_drivewway_percentages.index)
     for variant_name in variant_names:
@@ -191,47 +190,40 @@ def car_home_parking(case_name: str, general_parameters: ty.Dict) -> None:
             f'{output_folder}/{variant_name}_{consumption_table_name}.pkl'
         )
 
-        do_fleet_tables: float = general_parameters['profile_dataframe'][
-            'do_fleet_tables'
-        ]
+        do_fleet_tables: float = (
+            general_parameters.profile_dataframe.do_fleet_tables
+        )
         if do_fleet_tables:
             fleet_profiles(case_name, variant_name, general_parameters)
 
 
 def fleet_profiles(
-    case_name: str, scenario_name: str, general_parameters: ty.Dict
+    case_name: str, scenario_name: str, general_parameters: Box
 ) -> None:
-    home_type_parameters: ty.Dict = general_parameters['home_type']
-    consumption_parameters: ty.Dict = general_parameters['consumption']
-    consumption_table_name: str = consumption_parameters[
-        'consumption_table_name'
-    ]
+    home_type_parameters: Box = general_parameters.home_type
+    consumption_parameters: Box = general_parameters.consumption
+    consumption_table_name: str = consumption_parameters.consumption_table_name
 
-    distance_header: str = consumption_parameters['distance_header']
-    fleet_distance_header: str = consumption_parameters[
-        'fleet_distance_header'
-    ]
-    energy_carriers_consumption_names: ty.List[str] = consumption_parameters[
-        'energy_carriers_consumption_names'
-    ]
-    fleet_energy_carriers_consumption_names: ty.List[str] = (
-        consumption_parameters['fleet_energy_carriers_consumption_names']
+    distance_header: str = consumption_parameters.distance_header
+    fleet_distance_header: str = consumption_parameters.fleet_distance_header
+
+    energy_carriers_consumption_names: ty.List[str] = (
+        consumption_parameters.energy_carriers_consumption_names
     )
-    energy_carriers: ty.List[str] = consumption_parameters['energy_carriers']
-    output_root: ty.Dict = general_parameters['files']['output_root']
+
+    fleet_energy_carriers_consumption_names: ty.List[str] = (
+        consumption_parameters.fleet_energy_carriers_consumption_names
+    )
+    energy_carriers: ty.List[str] = consumption_parameters.energy_carriers
+    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
-    profiles_index: ty.List[str] = home_type_parameters['profiles_index']
-    profile_headers: ty.List = general_parameters['profile_dataframe'][
-        'headers'
-    ]
-    fleet_headers: ty.List = general_parameters['profile_dataframe'][
-        'fleet_headers'
-    ]
-    input_root: str = general_parameters['files']['input_root']
+    profiles_index: ty.List[str] = home_type_parameters.profiles_index
+    profile_headers: ty.List = general_parameters.profile_dataframe.headers
+    fleet_headers: ty.List = general_parameters.profile_dataframe.fleet_headers
+
+    input_root: str = general_parameters.files.input_root
     input_folder: str = f'{input_root}/{case_name}'
-    fleet_file_name: str = general_parameters['profile_dataframe'][
-        'fleet_file_name'
-    ]
+    fleet_file_name: str = general_parameters.profile_dataframe.fleet_file_name
 
     fleet_split: pd.DataFrame = pd.read_csv(
         f'{input_folder}/{fleet_file_name}'
@@ -241,7 +233,7 @@ def fleet_profiles(
         fleet_split.loc[scenario_name]['Total Fleet (thousands)']
     )
     consumption_table: pd.DataFrame = pd.read_pickle(
-        f'{output_folder}/{scenario_name}_' f'{consumption_table_name}.pkl'
+        f'{output_folder}/{scenario_name}_{consumption_table_name}.pkl'
     )
     fleet_consumption_table: pd.DataFrame = pd.DataFrame(
         index=consumption_table.index
@@ -294,9 +286,9 @@ def fleet_profiles(
 
 
 def run_scenario(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    scenario: Box, case_name: str, general_parameters: Box
 ) -> None:
-    scenario_name: str = scenario['scenario_name']
+    scenario_name: str = scenario.name
     print(scenario_name)
     decla_start: datetime.datetime = datetime.datetime.now()
     location_connections, legs, locations, trips = (
@@ -367,7 +359,7 @@ def run_scenario(
         (datetime.datetime.now() - charge_start).total_seconds(),
     )
 
-    battery_capacity: float = scenario['vehicle']['battery_capacity']
+    battery_capacity: float = scenario.vehicle.battery_capacity
     battery_capacity_dataframe: pd.DataFrame = (
         battery_capacity * location_split
     )
@@ -377,7 +369,7 @@ def run_scenario(
 
     connectivities: np.ndarray = np.array(
         [
-            scenario['locations'][dataframe_location]['connectivity']
+            scenario.locations[dataframe_location].connectivity
             for dataframe_location in battery_capacity_dataframe.columns
         ]
     )
@@ -404,9 +396,9 @@ def run_scenario(
         vehicle_discharge_power_per_location,
         discharge_power_to_network_per_location,
     ]
-    profile_dataframe_headers: ty.List[str] = general_parameters[
-        'profile_dataframe'
-    ]['headers']
+    profile_dataframe_headers: ty.List[str] = (
+        general_parameters.profile_dataframe.headers
+    )
     profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
         scenario, general_parameters, locations_as_columns=False
     )
@@ -416,7 +408,7 @@ def run_scenario(
 
         profile_dataframe[dataframe_header] = dataframe_for_profile.sum(axis=1)
 
-    output_root: str = general_parameters['files']['output_root']
+    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
     display_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
@@ -425,14 +417,15 @@ def run_scenario(
     profile_dataframe.index.name = 'Time Tag'
     profile_dataframe.to_pickle(f'{output_folder}/{scenario_name}_profile.pkl')
 
-    do_fleet_tables: float = general_parameters['profile_dataframe'][
-        'do_fleet_tables'
-    ]
+    do_fleet_tables: float = (
+        general_parameters.profile_dataframe.do_fleet_tables
+    )
+
     if do_fleet_tables:
         fleet_profiles(case_name, scenario_name, general_parameters)
 
 
-def load_scenarios(case_name: str) -> ty.List[ty.Dict]:
+def load_scenarios(case_name: str) -> ty.List[Box]:
     scenario_folder_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
     scenario_files: ty.List[str] = [
         scenario_folder_file
@@ -443,49 +436,51 @@ def load_scenarios(case_name: str) -> ty.List[ty.Dict]:
         f'scenarios/{case_name}/{scenario_file}'
         for scenario_file in scenario_files
     ]
-    scenarios: ty.List[ty.Dict] = [
-        cook.parameters_from_TOML(scenario_file_path)
+    scenarios: ty.List[Box] = [
+        Box(cook.parameters_from_TOML(scenario_file_path))
         for scenario_file_path in scenario_file_paths
     ]
     for scenario, scenario_file in zip(scenarios, scenario_files):
-        scenario['scenario_name'] = scenario_file.split('.')[0]
+        scenario.name = scenario_file.split('.')[0]
     return scenarios
 
 
 def run_ChaProEV(case_name: str) -> None:
     start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
-        general_parameters_file_name
+    general_parameters: Box = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
     )
-    output_root: str = general_parameters['files']['output_root']
+    output_root: str = general_parameters.files.output_root
     cook.check_if_folder_exists(f'{output_root}/{case_name}')
-    use_variants: bool = general_parameters['variants']['use_variants']
+    variant_parameters: Box = general_parameters.variants
+    use_variants: bool = variant_parameters.use_variants
     if use_variants:
-        csv_version: bool = general_parameters['variants']['csv_version']
+        csv_version: bool = variant_parameters.csv_version
         make_variants.make_variants(case_name, csv_version)
 
-    scenarios: ty.List[ty.Dict] = load_scenarios(case_name)
+    scenarios: ty.List[Box] = load_scenarios(case_name)
 
-    set_amount_of_processes: bool = general_parameters['parallel_processing'][
-        'number_of_parallel_processes'
-    ]['set_amount_of_processes']
+    set_amount_of_processes: bool = (
+        general_parameters.parallel_processing.set_amount_of_processes
+    )
     if set_amount_of_processes:
-        number_of_parallel_processes: int | None = None
+        amount_of_parallel_processes: int | None = None
     else:
-        number_of_parallel_processes = general_parameters[
-            'parallel_processing'
-        ]['number_of_parallel_processes']['for_scenarios']
+        amount_of_parallel_processes = (
+            general_parameters.parallel_processing.amount_for_scenarios
+        )
 
-    with Pool(number_of_parallel_processes) as scenarios_pool:
+    with Pool(amount_of_parallel_processes) as scenarios_pool:
         scenarios_pool.starmap(
             run_scenario,
             zip(scenarios, repeat(case_name), repeat(general_parameters)),
         )
 
-    do_car_home_type_split: bool = general_parameters['home_type'][
-        'do_car_home_type_split'
-    ]
+    do_car_home_type_split: bool = (
+        general_parameters.home_type.do_car_home_type_split
+    )
+
     if do_car_home_type_split:
         car_home_parking(case_name, general_parameters)
 

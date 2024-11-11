@@ -77,7 +77,7 @@ percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 4.2 # kW
-proportion_of_discharge_going_to_network = 0.9
+proportion_of_discharge_to_network = 0.9
 [locations.work]
 vehicle = 'car'
 connectivity = 0.25
@@ -92,7 +92,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 6.6 # kW
-proportion_of_discharge_going_to_network = 0.9
+proportion_of_discharge_to_network = 0.9
 [locations.leisure]
 vehicle = 'car'
 connectivity = 0.25
@@ -107,7 +107,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 0 # kW
-proportion_of_discharge_going_to_network = 0.9
+proportion_of_discharge_to_network = 0.9
 [locations.weekend]
 vehicle = 'car'
 connectivity = 0.1
@@ -122,7 +122,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 0 # kW
-proportion_of_discharge_going_to_network = 0.9
+proportion_of_discharge_to_network = 0.9
 [locations.holiday]
 vehicle = 'car'
 connectivity = 1
@@ -137,7 +137,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 11 # kW
-proportion_of_discharge_going_to_network = 0.9
+proportion_of_discharge_to_network = 0.9
 
 [legs]
 # You can add legs here by copying existing legs,
