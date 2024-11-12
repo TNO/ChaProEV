@@ -40,6 +40,125 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+def get_trip_charging_sessions(
+    end_locations_of_legs: ty.List[str],
+    start_probabilities: ty.List[float],
+    time_between_legs_used: ty.List[float],
+    leg_driving_times: ty.List[float],
+    leg_distances: ty.List[float],
+    weighted_leg_distances: ty.List[float],
+    scenario: Box,
+    general_parameters: Box,
+) -> ty.List:
+    trip_charging_sessions: ty.List[TripChargingSession] = []
+    charging_session_resolution: int = scenario.charging_sessions.resolution
+    vehicle_electricity_consumption: float = (
+        scenario.vehicle.base_consumption_per_km.electricity_kWh
+    )
+
+    for travelling_group_start_slot, travelling_group_size in enumerate(
+        start_probabilities
+    ):
+        if travelling_group_size > 0:
+            number_of_legs: int = len(leg_driving_times)
+            if number_of_legs > 0:
+                session_first_start: float = travelling_group_start_slot
+                for leg_index, (
+                    leg_destination,
+                    time_after_leg,
+                    time_driving,
+                    distance,
+                    weighted_distance,
+                ) in enumerate(
+                    zip(
+                        end_locations_of_legs,
+                        time_between_legs_used,
+                        leg_driving_times,
+                        leg_distances,
+                        weighted_leg_distances,
+                    )
+                ):
+
+                    session_first_start += time_driving
+                    session_location: str = leg_destination
+                    session_size: float = (
+                        travelling_group_size / charging_session_resolution
+                    )
+                    incoming_consumption: float = (
+                        distance * vehicle_electricity_consumption
+                    )
+                    if leg_index == number_of_legs - 1:
+                        next_leg_consumption: float = 0
+                        session_duration: float = (
+                            general_parameters.time.HOURS_IN_A_DAY
+                        ) - session_first_start
+                    else:
+                        next_leg_consumption = (
+                            leg_distances[leg_index + 1]
+                            * vehicle_electricity_consumption
+                        )
+                        session_duration = time_after_leg
+
+                    location_connectivity: float = scenario.locations[
+                        session_location
+                    ].connectivity
+                    location_charging_power_to_vehicle: float = (
+                        scenario.locations[session_location].charging_power
+                        * location_connectivity
+                    )
+                    location_charging_power_from_network: float = (
+                        scenario.locations[session_location].charging_power
+                        * location_connectivity
+                        / scenario.locations[
+                            session_location
+                        ].charger_efficiency
+                    )
+                    location_discharge_power_from_vehicle: float = (
+                        scenario.locations[
+                            session_location
+                        ].vehicle_discharge_power
+                        * location_connectivity
+                    )
+                    location_discharge_power_to_network: float = (
+                        scenario.locations[
+                            session_location
+                        ].vehicle_discharge_power
+                        * location_connectivity
+                        * scenario.locations[
+                            session_location
+                        ].proportion_of_discharge_to_network
+                    )
+
+                    for sessions_substep_index in range(
+                        charging_session_resolution
+                    ):
+                        substep_shift: float = 1 - 1 / (
+                            sessions_substep_index + 1
+                        )
+                        session_start: float = (
+                            session_first_start + substep_shift
+                        )
+                        session_end: float = session_start + session_duration
+                        substep_charging_session: TripChargingSession = (
+                            TripChargingSession(
+                                session_location,
+                                session_size,
+                                session_start,
+                                session_end,
+                                incoming_consumption,
+                                next_leg_consumption,
+                                location_connectivity,
+                                location_charging_power_to_vehicle,
+                                location_charging_power_from_network,
+                                location_discharge_power_from_vehicle,
+                                location_discharge_power_to_network,
+                            )
+                        )
+                        trip_charging_sessions.append(substep_charging_session)
+
+    return trip_charging_sessions
+
+
 def mobility_matrix_to_run_mobility_matrix(
     matrix_to_expand,  # It is a DataFRame, but MyPy seems to have issues
     # with DataFrmes with a MultiIndex
@@ -1054,6 +1173,25 @@ class Trip:
         trip.discharge_power_to_network: pd.Series = (
             trip.discharge_power_to_network_per_location.sum(axis=1)
         )
+        dummy_time_between_legs: float = 0
+        # This dummy value is added so that we can iterate through a
+        # zip of driving times and times between legs that have the
+        # same length as the amount of legs
+        time_between_legs_used: ty.List[float] = trip.time_between_legs.copy()
+        time_between_legs_used.append(dummy_time_between_legs)
+
+        trip.charging_sessions: ty.List[TripChargingSession] = (
+            get_trip_charging_sessions(
+                trip.end_locations_of_legs,
+                trip.start_probabilities,
+                time_between_legs_used,
+                trip.leg_driving_times,
+                trip.leg_distances,
+                trip.weighted_leg_distances,
+                scenario,
+                general_parameters,
+            )
+        )
 
         # We now can create a mobility matrix for the whole run
         run_time_tags: pd.DatetimeIndex = run_time.get_time_range(
@@ -1327,7 +1465,7 @@ class Trip:
                 for hour_index in range(HOURS_IN_A_DAY - 1):
                     # We skip the last time slot, as this should wrap the trip
                     # and we are not looking into the next day
-                    # with this apporach
+                    # with this approach
 
                     # We do the same as for the first leg, but we need
                     # to limit that to the vehicles that already have
@@ -1400,9 +1538,9 @@ class Trip:
             vehicle_consumption_per_km: float = (
                 scenario.vehicle.base_consumption_per_km.electricity_kWh
             )
-            charger_efficiency = (
-                scenario.locations[location_name].charger_efficiency
-            )
+            charger_efficiency = scenario.locations[
+                location_name
+            ].charger_efficiency
 
             draw_from_network_per_km: float = (
                 vehicle_consumption_per_km / charger_efficiency
@@ -1480,16 +1618,60 @@ class Trip:
         )
 
 
+class TripChargingSession:
+    '''
+    This class defines the charging session of an incoming group in a Trip
+    '''
+
+    class_name: str = 'trip_charging_session'
+
+    def __init__(
+        charging_session,
+        location_name: str,
+        session_size: float,
+        session_start: float,
+        session_end: float,
+        incoming_consumption: float,
+        outgoing_consumption: float,
+        location_connectivity: float,
+        location_charging_power_to_vehicle: float,
+        location_charging_power_from_network: float,
+        location_discharge_power_from_vehicle: float,
+        location_discharge_power_to_network: float,
+    ) -> None:
+        charging_session.size: float = session_size
+        charging_session.start_time: float = session_start
+        charging_session.end_time: float = session_end
+        charging_session.location: str = location_name
+        charging_session.previous_leg_consumption: float = incoming_consumption
+        charging_session.next_leg_consumption: float = outgoing_consumption
+        charging_session.connectivity: float = (
+            session_size * location_connectivity
+        )
+        charging_session.power_to_vehicle: float = (
+            session_size * location_charging_power_to_vehicle
+        )
+        charging_session.power_from_network: float = (
+            session_size * location_charging_power_from_network
+        )
+        charging_session.power_from_vehicle: float = (
+            session_size * location_discharge_power_from_vehicle
+        )
+        charging_session.power_to_network: float = (
+            session_size * location_discharge_power_to_network
+        )
+
+
 def declare_class_instances(
-    Chosen_class: ty.Type, scenario: Box, general_parameters: Box
+    ChosenClass: ty.Type, scenario: Box, general_parameters: Box
 ) -> ty.List[ty.Type]:
     '''
-    This function creates the instances of a class (Chosen_class),
+    This function creates the instances of a class (ChosenClass),
     based on a scenario file name where the instances and their properties
     are given.
     '''
     scenario_vehicle: str = scenario.vehicle.name
-    class_name: str = Chosen_class.class_name
+    class_name: str = ChosenClass.class_name
 
     class_instances: ty.List[str] = scenario[class_name]
 
@@ -1512,7 +1694,7 @@ def declare_class_instances(
 
         if append_instance:
             instances.append(
-                Chosen_class(class_instance, scenario, general_parameters)
+                ChosenClass(class_instance, scenario, general_parameters)
             )
 
     return instances
@@ -1851,6 +2033,31 @@ def declare_all_instances(
             trip.run_battery_space_shifts_arrivals_impact_weighted.to_pickle(
                 f'{output_folder}/{scenario_name}_{trip.name}_'
                 f'run_battery_space_shifts_arrivals_impact_weighted'
+                f'.pkl'
+            )
+
+            charging_sessions_dataframe: pd.DataFrame = pd.DataFrame(
+                index=range(len(trip.charging_sessions))
+            )
+
+            charging_sessions_headers: ty.List[str] = (
+                scenario.charging_sessions.dataframe_headers
+            )
+            charging_sessions_properties: ty.List[str] = (
+                scenario.charging_sessions.properties
+            )
+            for session_index, session in enumerate(trip.charging_sessions):
+                for charging_session_header, charging_session_property in zip(
+                    charging_sessions_headers, charging_sessions_properties
+                ):
+
+                    charging_sessions_dataframe.loc[
+                        session_index, charging_session_header
+                    ] = getattr(session, charging_session_property)
+
+            charging_sessions_dataframe.to_pickle(
+                f'{output_folder}/{scenario_name}_{trip.name}_'
+                f'charging_sessions'
                 f'.pkl'
             )
 
