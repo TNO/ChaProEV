@@ -1620,7 +1620,9 @@ class Trip:
 
 class TripChargingSession:
     '''
-    This class defines the charging session of an incoming group in a Trip
+    This class defines the charging sessions of an incoming group in a Trip.
+    The quantities other than start time, end time, and location
+    are proprtional to the size of the session (the group travelling).
     '''
 
     class_name: str = 'trip_charging_session'
@@ -1639,26 +1641,30 @@ class TripChargingSession:
         location_discharge_power_from_vehicle: float,
         location_discharge_power_to_network: float,
     ) -> None:
-        charging_session.size: float = session_size
+
         charging_session.start_time: float = session_start
         charging_session.end_time: float = session_end
         charging_session.location: str = location_name
-        charging_session.previous_leg_consumption: float = incoming_consumption
-        charging_session.next_leg_consumption: float = outgoing_consumption
+        charging_session.previous_leg_consumption: float = (
+            incoming_consumption * session_size
+        )
+        charging_session.next_leg_consumption: float = (
+            outgoing_consumption * session_size
+        )
         charging_session.connectivity: float = (
-            session_size * location_connectivity
+            location_connectivity * session_size
         )
         charging_session.power_to_vehicle: float = (
-            session_size * location_charging_power_to_vehicle
+            location_charging_power_to_vehicle * session_size
         )
         charging_session.power_from_network: float = (
-            session_size * location_charging_power_from_network
+            location_charging_power_from_network * session_size
         )
         charging_session.power_from_vehicle: float = (
-            session_size * location_discharge_power_from_vehicle
+            location_discharge_power_from_vehicle * session_size
         )
         charging_session.power_to_network: float = (
-            session_size * location_discharge_power_to_network
+            location_discharge_power_to_network * session_size
         )
 
 
@@ -2036,24 +2042,11 @@ def declare_all_instances(
                 f'.pkl'
             )
 
-            charging_sessions_dataframe: pd.DataFrame = pd.DataFrame(
-                index=range(len(trip.charging_sessions))
+            charging_sessions_dataframe: pd.DataFrame = (
+                get_charging_sessions_dataframe(
+                    trip.charging_sessions, scenario
+                )
             )
-
-            charging_sessions_headers: ty.List[str] = (
-                scenario.charging_sessions.dataframe_headers
-            )
-            charging_sessions_properties: ty.List[str] = (
-                scenario.charging_sessions.properties
-            )
-            for session_index, session in enumerate(trip.charging_sessions):
-                for charging_session_header, charging_session_property in zip(
-                    charging_sessions_headers, charging_sessions_properties
-                ):
-
-                    charging_sessions_dataframe.loc[
-                        session_index, charging_session_header
-                    ] = getattr(session, charging_session_property)
 
             charging_sessions_dataframe.to_pickle(
                 f'{output_folder}/{scenario_name}_{trip.name}_'
@@ -2062,6 +2055,32 @@ def declare_all_instances(
             )
 
     return location_connections, legs, locations, trips
+
+
+def get_charging_sessions_dataframe(
+    charging_sessions: ty.List,
+    scenario: Box,
+) -> pd.DataFrame:
+    charging_sessions_dataframe: pd.DataFrame = pd.DataFrame(
+        index=range(len(charging_sessions))
+    )
+
+    charging_sessions_headers: ty.List[str] = (
+        scenario.charging_sessions.dataframe_headers
+    )
+    charging_sessions_properties: ty.List[str] = (
+        scenario.charging_sessions.properties
+    )
+    for session_index, session in enumerate(charging_sessions):
+        for charging_session_header, charging_session_property in zip(
+            charging_sessions_headers, charging_sessions_properties
+        ):
+
+            charging_sessions_dataframe.loc[
+                session_index, charging_session_header
+            ] = getattr(session, charging_session_property)
+
+    return charging_sessions_dataframe
 
 
 if __name__ == '__main__':

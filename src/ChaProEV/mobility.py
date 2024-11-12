@@ -49,6 +49,88 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+class ChargingSession:
+    '''
+    This class defines the charging sessions for a whole run.
+    The quantities other than start time, end time, and location
+    are proprtional to the size of the session (the group travelling).
+    We scale the travelling group soze (and associated quantities)
+    according to the trip probability.
+    '''
+
+    class_name: str = 'charging_session'
+
+    def __init__(
+        charging_session,
+        trip_charging_session: define.TripChargingSession,
+        day_start_time_tag: datetime.datetime,
+        trip_probability: float,
+    ) -> None:
+
+        charging_session.start_time: datetime.datetime = (
+            day_start_time_tag
+            + datetime.timedelta(hours=trip_charging_session.start_time)
+        )
+        charging_session.end_time: datetime.datetime = (
+            day_start_time_tag
+            + datetime.timedelta(hours=trip_charging_session.end_time)
+        )
+
+        charging_session.location: str = trip_charging_session.location
+        charging_session.previous_leg_consumption: float = (
+            trip_charging_session.previous_leg_consumption * trip_probability
+        )
+        charging_session.next_leg_consumption: float = (
+            trip_charging_session.next_leg_consumption * trip_probability
+        )
+        charging_session.connectivity: float = (
+            trip_charging_session.connectivity * trip_probability
+        )
+        charging_session.power_to_vehicle: float = (
+            trip_charging_session.power_to_vehicle * trip_probability
+        )
+        charging_session.power_from_network: float = (
+            trip_charging_session.power_from_network * trip_probability
+        )
+        charging_session.power_from_vehicle: float = (
+            trip_charging_session.power_from_vehicle * trip_probability
+        )
+        charging_session.power_to_network: float = (
+            trip_charging_session.power_to_network * trip_probability
+        )
+
+
+def get_run_charging_sessions(
+    trips: ty.List[define.Trip],
+    trip_probabilities_per_day_type: pd.DataFrame,
+    scenario: Box,
+    general_parameters,
+) -> ty.List[ChargingSession]:
+    charging_sessions: ty.List[ChargingSession] = []
+    time_tags_and_types: ty.List[ty.Tuple[datetime.datetime, str]] = (
+        run_time.get_day_start_time_tags_and_types(
+            scenario, general_parameters
+        )
+    )
+    for day_start_time_tag, day_type in time_tags_and_types:
+        for trip in trips:
+            trip_probability: float = trip_probabilities_per_day_type.loc[
+                trip.name
+            ][day_type]
+            if trip_probability > 0:
+                for trip_charging_session in trip.charging_sessions:
+
+                    charging_sessions.append(
+                        ChargingSession(
+                            trip_charging_session,
+                            day_start_time_tag,
+                            trip_probability,
+                        )
+                    )
+
+    return charging_sessions
+
+
 def get_run_mobility_matrix(
     trips: ty.List[define.Trip],
     location_connections: pd.DataFrame,
@@ -90,7 +172,7 @@ def get_run_mobility_matrix(
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
 
-    scenario_name: str = scenario.name
+    scenario.name: str = scenario.name
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
 
@@ -171,7 +253,7 @@ def get_run_mobility_matrix(
         pickle_interim_files: bool = general_parameters.interim_files['pickle']
         if pickle_interim_files:
             run_mobility_matrix.to_pickle(
-                f'{output_folder}/{scenario_name}_run_mobility_matrix.pkl'
+                f'{output_folder}/{scenario.name}_run_mobility_matrix.pkl'
             )
     return run_mobility_matrix
 
@@ -305,7 +387,7 @@ def get_car_trip_probabilities_per_day_type(
         if trip_vehicle == scenario_vehicle:
             trip_list.append(trip_to_add)
 
-    scenario_name: str = scenario.name
+    scenario.name: str = scenario.name
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -360,8 +442,7 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
-        mobility_module_parameters
-        .maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays
     )
 
     # Some useful quantities telling us how many of which day type there are
@@ -923,7 +1004,7 @@ def get_car_trip_probabilities_per_day_type(
         stay_put_probabilities
     )
 
-    table_name: str = f'{scenario_name}_trip_probabilities_per_day_type'
+    table_name: str = f'{scenario.name}_trip_probabilities_per_day_type'
 
     # For some file formats (stata, for example), we need to ensure that
     # the values are floats (or something else, but object does seem to be a
@@ -1133,7 +1214,7 @@ def get_run_trip_probabilities(
         trip_vehicle = scenario.trips[trip_to_add].vehicle
         if trip_vehicle == scenario_vehicle:
             trip_list.append(trip_to_add)
-    scenario_name: str = scenario.name
+    scenario.name: str = scenario.name
     # print((datetime.datetime.now() - moo).total_seconds())
     # moo = datetime.datetime.now()
 
@@ -1172,7 +1253,7 @@ def get_run_trip_probabilities(
     # print((datetime.datetime.now() - moo).total_seconds())
     # moo = datetime.datetime.now()
 
-    table_name: str = f'{scenario_name}_run_trip_probabilities'
+    table_name: str = f'{scenario.name}_run_trip_probabilities'
     pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
@@ -1298,7 +1379,7 @@ def get_location_split(
     Produces the location split of the vehicles for the whole run
     '''
     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
-    scenario_name: str = scenario.name
+    scenario.name: str = scenario.name
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1468,44 +1549,44 @@ def get_location_split(
     pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         location_split.to_pickle(
-            f'{output_folder}/{scenario_name}_location_split.pkl'
+            f'{output_folder}/{scenario.name}_location_split.pkl'
         )
         percentage_driving.to_pickle(
-            f'{output_folder}/{scenario_name}_percentage_driving.pkl'
+            f'{output_folder}/{scenario.name}_percentage_driving.pkl'
         )
         connectivity_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_connectivity_per_location.pkl'
+            f'{output_folder}/{scenario.name}_connectivity_per_location.pkl'
         )
         connectivity.to_pickle(
-            f'{output_folder}/{scenario_name}_connectivity.pkl'
+            f'{output_folder}/{scenario.name}_connectivity.pkl'
         )
         maximal_delivered_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_maximal_delivered_power_per_location.pkl'
         )
         maximal_delivered_power.to_pickle(
-            f'{output_folder}/{scenario_name}_maximal_delivered_power.pkl'
+            f'{output_folder}/{scenario.name}_maximal_delivered_power.pkl'
         )
         maximal_received_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_maximal_received_power_per_location.pkl'
         )
         maximal_received_power.to_pickle(
-            f'{output_folder}/{scenario_name}_maximal_received_power.pkl'
+            f'{output_folder}/{scenario.name}_maximal_received_power.pkl'
         )
         vehicle_discharge_power_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_vehicle_discharge_power_per_location.pkl'
         )
         vehicle_discharge_power.to_pickle(
-            f'{output_folder}/{scenario_name}_vehicle_discharge_power.pkl'
+            f'{output_folder}/{scenario.name}_vehicle_discharge_power.pkl'
         )
         discharge_power_to_network_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_discharge_power_to_network_per_location.pkl'
         )
         discharge_power_to_network.to_pickle(
-            f'{output_folder}/{scenario_name}_discharge_power_to_network.pkl'
+            f'{output_folder}/{scenario.name}_discharge_power_to_network.pkl'
         )
     return (
         location_split,
@@ -1576,7 +1657,7 @@ def get_kilometers_for_next_leg(
     general_parameters: Box,
 ) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
-    scenario_name: str = scenario.name
+    scenario.name: str = scenario.name
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1665,24 +1746,24 @@ def get_kilometers_for_next_leg(
     pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         run_next_leg_kilometers.to_pickle(
-            f'{output_folder}/{scenario_name}_next_leg_kilometers.pkl'
+            f'{output_folder}/{scenario.name}_next_leg_kilometers.pkl'
         )
         run_next_leg_kilometers_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             '_next_leg_kilometers_cumulative.pkl'
         )
         run_next_leg_charge_to_vehicle.to_pickle(
-            f'{output_folder}/{scenario_name}_next_leg_charge_to_vehicle.pkl'
+            f'{output_folder}/{scenario.name}_next_leg_charge_to_vehicle.pkl'
         )
         run_next_leg_charge_from_network.to_pickle(
-            f'{output_folder}/{scenario_name}_next_leg_charge_from_network.pkl'
+            f'{output_folder}/{scenario.name}_next_leg_charge_from_network.pkl'
         )
         run_next_leg_charge_to_vehicle_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_next_leg_charge_to_vehicle_cumulative.pkl'
         )
         run_next_leg_charge_from_network_cumulative.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_next_leg_charge_from_network_cumulative.pkl'
         )
     return (
@@ -1714,13 +1795,16 @@ def make_mobility_data(
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
+    ty.List[ChargingSession],
 ]:
 
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
         trips, scenario, case_name, general_parameters
     )
-    get_trip_probabilities_per_day_type(
-        scenario, case_name, general_parameters
+    trip_probabilities_per_day_type: pd.DataFrame = (
+        get_trip_probabilities_per_day_type(
+            scenario, case_name, general_parameters
+        )
     )
 
     mobility_quantities: ty.List = scenario.mobility_module[
@@ -1781,6 +1865,28 @@ def make_mobility_data(
         case_name,
         general_parameters,
     )
+    run_charging_sessions: ty.List[ChargingSession] = (
+        get_run_charging_sessions(
+            trips,
+            trip_probabilities_per_day_type, scenario, general_parameters
+        )
+    )
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
+    if pickle_interim_files:
+        output_root: str = general_parameters.files.output_root
+        output_folder: str = f'{output_root}/{case_name}'
+        run_charging_sessions_dataframe: pd.DataFrame = (
+            define.get_charging_sessions_dataframe(
+                run_charging_sessions, scenario
+            )
+        )
+
+        run_charging_sessions_dataframe.to_pickle(
+            f'{output_folder}/{scenario.name}_'
+            f'run_charging_sessions'
+            f'.pkl'
+        )
+
     return (
         run_mobility_matrix,
         location_split,
@@ -1794,16 +1900,17 @@ def make_mobility_data(
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
+        run_charging_sessions,
     )
 
 
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    scenario_name: str = 'XX_bus'
-    scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
+    scenario.name: str = 'XX_bus'
+    scenario_file_name: str = f'scenarios/{case_name}/{scenario.name}.toml'
     scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
-    scenario.name = scenario_name
+    scenario.name = scenario.name
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: Box = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
@@ -1826,6 +1933,7 @@ if __name__ == '__main__':
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
+        run_charging_sessions,
     ) = make_mobility_data(
         location_connections,
         legs,

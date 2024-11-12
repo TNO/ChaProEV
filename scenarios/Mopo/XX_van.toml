@@ -432,20 +432,19 @@ fitting_polynomial_order = 6
 
 
 
-
 [charging]
 
 [charging_sessions]
 resolution = 1 # subdivisions from main unit of time
 properties = [
-    'location', 'size', 'start_time', 'end_time',
+    'location', 'start_time', 'end_time',
     'previous_leg_consumption', 'next_leg_consumption',
     'connectivity',
     'power_to_vehicle','power_from_network', 
     'power_from_vehicle', 'power_to_network'
 ]
 dataframe_headers = [
-    'Location', 'Size', 'Start time from day start (hours)', 'End time from day start (hours)',
+    'Location', 'Start time from day start (hours)', 'End time from day start (hours)',
     'Previous leg consumption (kWh)', 'Next leg consumption (kWh)',
     'Connectivity (%)',
     'Cherging power to vehicle (kW)', 'Charging power from network (kW)',

@@ -318,6 +318,42 @@ def add_day_type_to_time_stamped_dataframe(
     return dataframe
 
 
+def get_day_start_time_tags_and_types(
+    scenario: Box, general_parameters: Box
+) -> ty.List[ty.Tuple[datetime.datetime, str]]:
+    time_tags_and_types: ty.List[ty.Tuple[datetime.datetime, str]] = []
+
+    run_start_year: int = scenario.run.start.year
+    run_start_month: int = scenario.run.start.month
+    run_start_day: int = scenario.run.start.day
+    run_end_year: int = scenario.run.end.year
+    run_end_month: int = scenario.run.end.month
+    run_end_day: int = scenario.run.end.day
+    day_start_hour: int = scenario.mobility_module.day_start_hour
+    tags_start: datetime.datetime = datetime.datetime(
+        year=run_start_year,
+        month=run_start_month,
+        day=run_start_day,
+        hour=day_start_hour,
+    )
+    tags_end: datetime.datetime = datetime.datetime(
+        year=run_end_year,
+        month=run_end_month,
+        day=run_end_day,
+        hour=day_start_hour,
+    )
+
+    tags_range: pd.DatetimeIndex = pd.date_range(
+        start=tags_start, end=tags_end, freq='D', inclusive='both'
+    )
+    for time_tag in tags_range:
+        time_tags_and_types.append(
+            (time_tag, get_day_type(time_tag, scenario, general_parameters))
+        )
+
+    return time_tags_and_types
+
+
 def from_day_to_run(
     dataframe_to_clone: pd.DataFrame,
     run_range: pd.DatetimeIndex,

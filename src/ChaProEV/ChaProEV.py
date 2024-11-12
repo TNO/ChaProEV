@@ -313,6 +313,7 @@ def run_scenario(
         run_next_leg_kilometers_cumulative,
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
+        run_charging_sessions,
     ) = mobility.make_mobility_data(
         location_connections,
         legs,
