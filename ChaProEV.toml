@@ -44,8 +44,18 @@ fleet_headers = [
     'Discharge Power to Network (MW)',
 
 ]
-do_fleet_tables =  false
+do_fleet_tables =  true
 fleet_file_name = 'fleets.csv'
+
+[sessions_dataframe]
+fleet_display_dataframe_headers = [
+    'Previous leg consumption (MWh)', 'Next leg consumption (MWh)',
+    'Connectivity (thousands)',
+    'Charging power to vehicle (MW)', 'Charging power from network (MW)',
+    'Discharge power from vehicle (MW)', 'Discharge power to Network (MW)',
+    'Maximal Possible Charge to Vehicle (MWh)',
+    'Charge to vehicle (MWh)', 'Charge from network (MWh)'
+]
 
 # Parameters for plots (colors, sizes, etc.)
 [plots]

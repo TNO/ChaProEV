@@ -552,9 +552,9 @@ def compute_charging_events(
     location_parameters: Box = scenario.locations
 
     for charging_location in location_names:
-        charging_location_parameters: Box = (
-            location_parameters[charging_location]
-        )
+        charging_location_parameters: Box = location_parameters[
+            charging_location
+        ]
 
         charger_efficiency: float = (
             charging_location_parameters.charger_efficiency
@@ -948,7 +948,7 @@ def copy_day_type_profiles_to_whole_run(
                     )
                     print(time_tag_departures_impact)
                     print(fully_charged_vehicles)
-                    print('Do a proecedure for this')
+                    print('Do a procedure for this')
                     exit()
 
                 spillover_battery_spaces_before_charging: pd.Series = (
@@ -1427,24 +1427,196 @@ def get_charging_profile(
     )
 
 
-if __name__ == '__main__':
-    case_name = 'local_impact_BEVs'
-    scenario_name: str = 'baseline'
+def session_modulation(
+    run_charging_sessions_dataframe: pd.DataFrame,
+) -> pd.Series:
 
+    modulation_factor: pd.Series = pd.Series(
+        np.ones(len(run_charging_sessions_dataframe.index))
+    )
+    return modulation_factor
+
+
+def charging_amounts_in_charging_sessions(
+    run_charging_sessions_dataframe: pd.DataFrame,
+    scenario: Box,
+    general_parameters: Box,
+) -> pd.DataFrame:
+    charging_sessions_with_charged_amounts: pd.DataFrame = (
+        run_charging_sessions_dataframe.copy()
+    )
+    charging_sessions_with_charged_amounts['Duration (hours)'] = (
+        charging_sessions_with_charged_amounts['End time']
+        - charging_sessions_with_charged_amounts['Start time']
+    ).astype('timedelta64[s]').astype(
+        int
+    ) / general_parameters.time.SECONDS_PER_HOUR
+
+    charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
+        charging_sessions_with_charged_amounts[
+            'Previous leg consumption (kWh)'
+        ]
+    )
+    charging_sessions_with_charged_amounts[
+        'Maximal Possible Charge to Vehicle (kWh)'
+    ] = (
+        charging_sessions_with_charged_amounts['Duration (hours)']
+        * charging_sessions_with_charged_amounts[
+            'Charging power to vehicle (kW)'
+        ]
+    )
+    charging_sessions_with_charged_amounts['Modulation factor'] = (
+        session_modulation(charging_sessions_with_charged_amounts).values
+    )
+    charging_sessions_with_charged_amounts[
+        'Available Charge to Vehicle (kWh)'
+    ] = charging_sessions_with_charged_amounts['Modulation factor'].multiply(
+        charging_sessions_with_charged_amounts[
+            'Maximal Possible Charge to Vehicle (kWh)'
+        ]
+    )
+    charging_sessions_with_charged_amounts['Charge to vehicle (kWh)'] = (
+        charging_sessions_with_charged_amounts[
+            [
+                'Available Charge to Vehicle (kWh)',
+                'Target charge (kWh)',
+            ]
+        ].min(axis=1)
+    )
+    charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
+        charging_sessions_with_charged_amounts['Target charge (kWh)']
+        - charging_sessions_with_charged_amounts[
+            'Available Charge to Vehicle (kWh)'
+        ]
+    )
+    charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = [
+        0 if deficit < 0 else deficit
+        for deficit in charging_sessions_with_charged_amounts[
+            'Charge deficit (kWh)'
+        ].values
+    ]
+    total_charge_deficit: float = charging_sessions_with_charged_amounts[
+        'Charge deficit (kWh)'
+    ].sum()
+
+    while total_charge_deficit > 0:
+        rolled_deficit: np.ndarray = np.roll(
+            charging_sessions_with_charged_amounts['Charge deficit (kWh)'], 1
+        )
+        # print(charging_sessions_with_charged_amounts.iloc[18502])
+        # print(charging_sessions_with_charged_amounts.iloc[18503])
+        charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
+            charging_sessions_with_charged_amounts['Target charge (kWh)']
+            - charging_sessions_with_charged_amounts['Charge deficit (kWh)']
+        )
+        charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
+            charging_sessions_with_charged_amounts[
+                'Target charge (kWh)'
+            ].values
+            + rolled_deficit
+        )
+
+        charging_sessions_with_charged_amounts['Charge to vehicle (kWh)'] = (
+            charging_sessions_with_charged_amounts[
+                [
+                    'Available Charge to Vehicle (kWh)',
+                    'Target charge (kWh)',
+                ]
+            ].min(axis=1)
+        )
+        charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
+            charging_sessions_with_charged_amounts['Target charge (kWh)']
+            - charging_sessions_with_charged_amounts[
+                'Available Charge to Vehicle (kWh)'
+            ]
+        )
+        charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = [
+            0 if deficit < 0 else deficit
+            for deficit in charging_sessions_with_charged_amounts[
+                'Charge deficit (kWh)'
+            ].values
+        ]
+        total_charge_deficit = charging_sessions_with_charged_amounts[
+            'Charge deficit (kWh)'
+        ].sum()
+        # print(total_charge_deficit)
+    charging_sessions_locations: ty.List[str] = list(
+        set(charging_sessions_with_charged_amounts['Location'])
+    )
+    location_charger_loss_factors: ty.List[float] = [
+        1 / scenario.locations[session_location].charger_efficiency
+        for session_location in charging_sessions_locations
+    ]
+    location_loss_factors_dict: ty.Dict[str, float] = dict(
+        zip(charging_sessions_locations, location_charger_loss_factors)
+    )
+    # print(location_loss_factors_dict)
+    charging_sessions_with_charged_amounts[
+        'Charge from network (kWh)'
+    ] = charging_sessions_with_charged_amounts[
+        'Charge to vehicle (kWh)'
+    ] * charging_sessions_with_charged_amounts[
+        'Location'
+    ].map(
+        location_loss_factors_dict
+    )
+
+    return charging_sessions_with_charged_amounts
+
+
+# def shift_excess_demand_to_next_session
+
+# def shift to next session (do this wile not setisfied?)
+if __name__ == '__main__':
     case_name = 'Mopo'
     test_scenario_name = 'XX_car'
+    general_parameters_file_name = 'ChaProEV.toml'
+    general_parameters = Box(
+        cook.parameters_from_TOML(general_parameters_file_name)
+    )
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario = Box(cook.parameters_from_TOML(scenario_file_name))
+    run_charging_sessions_dataframe: pd.DataFrame = pd.read_pickle(
+        'output/Mopo/XX_car_run_charging_sessions.pkl'
+    )
+    # print(pd.Series(np.ones(len(run_charging_sessions_dataframe.index))))
+    charging_sessions_with_charged_amounts = (
+        charging_amounts_in_charging_sessions(
+            run_charging_sessions_dataframe, scenario, general_parameters
+        )
+    )
+
+    # print(charging_sessions_with_charged_amounts)
+    # print(charging_sessions_with_charged_amounts.info())
+    # exit()
+    charging_sessions_with_charged_amounts['Start time'] = (
+        charging_sessions_with_charged_amounts['Start time'].astype(
+            'datetime64[ns]'
+        )
+    )
+    sessions_2018 = charging_sessions_with_charged_amounts.loc[
+        charging_sessions_with_charged_amounts['Start time'].dt.year == 2018
+    ]
+    print(sessions_2018['Charge to vehicle (kWh)'].sum())
+    print(sessions_2018['Charge from network (kWh)'].sum())
+    print(sessions_2018)
+    exit()
+    case_name = 'Mopo'
+    scenario_name = 'XX_car'
+    # scenario_file_name: str = (
+    #     f'scenarios/{case_name}/{test_scenario_name}.toml'
+    # )
+    # scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
     scenario.name = test_scenario_name
-    general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = Box(
+    general_parameters_file_name = 'ChaProEV.toml'
+    general_parameters = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
     )
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
-    location_split_table_name: str = f'{scenario_name}_location_split'
+    location_split_table_name: str = f'{test_scenario_name}_location_split'
     location_split: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{location_split_table_name}.pkl'
     )

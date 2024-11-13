@@ -447,8 +447,28 @@ dataframe_headers = [
     'Location', 'Start time from day start (hours)', 'End time from day start (hours)',
     'Previous leg consumption (kWh)', 'Next leg consumption (kWh)',
     'Connectivity (%)',
-    'Cherging power to vehicle (kW)', 'Charging power from network (kW)',
+    'Charging power to vehicle (kW)', 'Charging power from network (kW)',
     'Discharge power from vehicle (kW)', 'Discharge power to Network (kW)'
 ]
 
+run_dataframe_headers = [
+    'Location', 'Start time', 'End time',
+    'Previous leg consumption (kWh)', 'Next leg consumption (kWh)',
+    'Connectivity (%)',
+    'Charging power to vehicle (kW)', 'Charging power from network (kW)',
+    'Discharge power from vehicle (kW)', 'Discharge power to Network (kW)'
+]
+display_dataframe_headers = [
+    'Location', 'Start time', 'End time',
+    'Previous leg consumption (kWh)', 'Next leg consumption (kWh)',
+    'Connectivity (%)',
+    'Charging power to vehicle (kW)', 'Charging power from network (kW)',
+    'Discharge power from vehicle (kW)', 'Discharge power to Network (kW)',
+    'Maximal Possible Charge to Vehicle (kWh)',
+    'Charge to vehicle (kWh)', 'Charge from network (kWh)'
+]
+
+display_dataframe_index = [
+    'Location', 'Start time', 'End time'
+]
 

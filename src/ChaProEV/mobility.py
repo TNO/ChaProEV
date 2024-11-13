@@ -100,24 +100,87 @@ class ChargingSession:
         )
 
 
+class NextDayStartChargingSession:
+    '''
+    This class defines the charging sessions fon the next day after a trip.
+    These represent the sessions before the first leg of the next day.
+    '''
+
+    class_name: str = 'charging_session'
+
+    def __init__(
+        next_day_start_charging_session,
+        day_start_location: str,
+        next_day_start_session_start: datetime.datetime,
+        next_day_start_session_end: datetime.datetime,
+        previous_leg_consumption: float,
+        next_leg_consumption: float,
+        group_size: float,
+        location_connectivity: float,
+        location_power_to_vehicle: float,
+        location_power_from_network: float,
+        location_power_from_vehicle: float,
+        location_power_to_network: float,
+    ) -> None:
+
+        next_day_start_charging_session.start_time: datetime.datetime = (
+            next_day_start_session_start
+        )
+        next_day_start_charging_session.end_time: datetime.datetime = (
+            next_day_start_session_end
+        )
+        next_day_start_charging_session.location: str = day_start_location
+
+        next_day_start_charging_session.previous_leg_consumption: float = (
+            previous_leg_consumption * group_size
+        )
+        next_day_start_charging_session.next_leg_consumption: float = (
+            next_leg_consumption * group_size
+        )
+        next_day_start_charging_session.connectivity: float = (
+            location_connectivity * group_size
+        )
+        next_day_start_charging_session.power_to_vehicle: float = (
+            location_power_to_vehicle * group_size
+        )
+        next_day_start_charging_session.power_from_network: float = (
+            location_power_from_network * group_size
+        )
+        next_day_start_charging_session.power_from_vehicle: float = (
+            location_power_from_vehicle * group_size
+        )
+        next_day_start_charging_session.power_to_network: float = (
+            location_power_to_network * group_size
+        )
+
+
 def get_run_charging_sessions(
     trips: ty.List[define.Trip],
     trip_probabilities_per_day_type: pd.DataFrame,
     scenario: Box,
-    general_parameters,
+    general_parameters: Box,
 ) -> ty.List[ChargingSession]:
-    charging_sessions: ty.List[ChargingSession] = []
+    day_start_location_split: pd.DataFrame = get_day_type_start_location_split(
+        scenario, general_parameters
+    )
+    vehicle_consumption: float = (
+        scenario.vehicle.base_consumption_per_km.electricity_kWh
+    )
+    charging_sessions: ty.List = []
     time_tags_and_types: ty.List[ty.Tuple[datetime.datetime, str]] = (
         run_time.get_day_start_time_tags_and_types(
             scenario, general_parameters
         )
     )
-    for day_start_time_tag, day_type in time_tags_and_types:
+    for day_tag_index, (day_start_time_tag, day_type) in enumerate(
+        time_tags_and_types
+    ):
         for trip in trips:
             trip_probability: float = trip_probabilities_per_day_type.loc[
                 trip.name
             ][day_type]
             if trip_probability > 0:
+
                 for trip_charging_session in trip.charging_sessions:
 
                     charging_sessions.append(
@@ -127,6 +190,149 @@ def get_run_charging_sessions(
                             trip_probability,
                         )
                     )
+
+                # # We now look at the next day's start charging sessions
+                # # There are none after the last day of the run
+                # previous_leg_consumption: float = 0
+                # # We set it top zero, as the last leg consumption
+                # # goes to the last session of the original day
+                # # (but this can change later, as the last session might
+                # # spillover into the next day, which will be managed
+                # # in the charging module)
+                # next_day_start_sessions: ty.List[
+                #     NextDayStartChargingSession
+                # ] = []
+                # if len(trip.end_locations_of_legs) > 0:
+                #     end_location: str = trip.end_locations_of_legs[-1]
+                # else:
+                #     end_location = trip.location_names[0]
+
+                # loc_connectivity: float = scenario.locations[
+                #     end_location
+                # ].connectivity
+                # loc_power_to_vehicle: float = scenario.locations[
+                #     end_location
+                # ].charging_power
+                # loc_power_from_network: float = (
+                #     loc_power_to_vehicle
+                #     / scenario.locations[end_location].charger_efficiency
+                # )
+                # loc_power_from_vehicle: float = scenario.locations[
+                #     end_location
+                # ].vehicle_discharge_power
+                # loc_power_to_network: float = (
+                #     loc_power_from_vehicle
+                #     * scenario.locations[
+                #         end_location
+                #     ].proportion_of_discharge_to_network
+                # )
+                # if day_tag_index < len(time_tags_and_types) - 1:
+                #     next_day_session_start, next_day_type = (
+                #         time_tags_and_types[day_tag_index + 1]
+                #     )
+                #     next_day_all_start_sessions_amount: float = float(
+                #         day_start_location_split.loc[end_location][
+                #             next_day_type
+                #         ]
+                #     )
+
+                #     for next_day_trip in trips:
+                #         amount_for_that_trip: float = (
+                #             next_day_all_start_sessions_amount
+                #             * trip_probabilities_per_day_type.loc[
+                #                 next_day_trip.name
+                #             ][next_day_type]
+                #         )
+                #         if amount_for_that_trip > 0:
+
+                #             if sum(next_day_trip.start_probabilities) == 0:
+                #                 if (
+                #                     next_day_trip.location_names[0]
+                #                     == end_location
+                #                 ):
+                #                     next_day_session_end: datetime.datetime = (
+                #                         next_day_session_start
+                #                         + datetime.timedelta(days=1)
+                #                     )
+                #                     group_size: float = amount_for_that_trip
+                #                     next_leg_distance: float = 0
+                #                     next_leg_consumption: float = (
+                #                         vehicle_consumption * next_leg_distance
+                #                     )
+                #                     next_day_start_sessions.append(
+                #                         NextDayStartChargingSession(
+                #                             end_location,
+                #                             next_day_session_start,
+                #                             next_day_session_end,
+                #                             previous_leg_consumption,
+                #                             next_leg_consumption,
+                #                             group_size,
+                #                             loc_connectivity,
+                #                             loc_power_to_vehicle,
+                #                             loc_power_from_network,
+                #                             loc_power_from_vehicle,
+                #                             loc_power_to_network,
+                #                         )
+                #                     )
+
+                #             else:
+                #                 if (
+                #                     next_day_trip.start_locations_of_legs[0]
+                #                     == end_location
+                #                 ):
+                #                     for (
+                #                         departure_slot,
+                #                         departure_probability,
+                #                     ) in enumerate(
+                #                         next_day_trip.start_probabilities
+                #                     ):
+                #                         if departure_probability > 0:
+                #                             next_day_session_end = (
+                #                                 next_day_session_start
+                #                                 + datetime.timedelta(
+                #                                     hours=departure_slot
+                #                                 )
+                #                             )
+                #                             group_size = (
+                #                                 amount_for_that_trip
+                #                                 * departure_probability
+                #                             )
+
+                #                             next_leg_distance = (
+                #                                 next_day_trip.leg_distances[0]
+                #                             )
+                #                             next_leg_consumption = (
+                #                                 vehicle_consumption
+                #                                 * next_leg_distance
+                #                             )
+
+                #                             next_day_start_sessions.append(
+                #                                 NextDayStartChargingSession(
+                #                                     end_location,
+                #                                     next_day_session_start,
+                #                                     next_day_session_end,
+                #                                     previous_leg_consumption,
+                #                                     next_leg_consumption,
+                #                                     group_size,
+                #                                     loc_connectivity,
+                #                                     loc_power_to_vehicle,
+                #                                     loc_power_from_network,
+                #                                     loc_power_from_vehicle,
+                #                                     loc_power_to_network,
+                #                                 )
+                #                             )
+
+                # # We sort these extra session by putting the longer ones
+                # # first (so that these get the spillover first)
+                # next_day_start_sessions = sorted(
+                #     next_day_start_sessions,
+                #     key=lambda session: (
+                #         session.end_time - session.start_time
+                #     ).total_seconds(),
+                #     reverse=True,
+                # )
+                # for next_day_start_session in next_day_start_sessions:
+                #     charging_sessions.append(next_day_start_session)
 
     return charging_sessions
 
@@ -172,7 +378,6 @@ def get_run_mobility_matrix(
     )
     run_mobility_matrix = run_mobility_matrix.sort_index()
 
-    scenario.name: str = scenario.name
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
 
@@ -387,8 +592,6 @@ def get_car_trip_probabilities_per_day_type(
         if trip_vehicle == scenario_vehicle:
             trip_list.append(trip_to_add)
 
-    scenario.name: str = scenario.name
-
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
 
@@ -442,7 +645,8 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
-        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+        mobility_module_parameters
+        .maximal_fill_percentage_leisure_trips_on_non_work_weekdays
     )
 
     # Some useful quantities telling us how many of which day type there are
@@ -1214,9 +1418,6 @@ def get_run_trip_probabilities(
         trip_vehicle = scenario.trips[trip_to_add].vehicle
         if trip_vehicle == scenario_vehicle:
             trip_list.append(trip_to_add)
-    scenario.name: str = scenario.name
-    # print((datetime.datetime.now() - moo).total_seconds())
-    # moo = datetime.datetime.now()
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1379,7 +1580,6 @@ def get_location_split(
     Produces the location split of the vehicles for the whole run
     '''
     loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
-    scenario.name: str = scenario.name
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1657,8 +1857,6 @@ def get_kilometers_for_next_leg(
     general_parameters: Box,
 ) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
-    scenario.name: str = scenario.name
-
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
     vehicle_parameters: Box = scenario.vehicle
@@ -1796,6 +1994,7 @@ def make_mobility_data(
     pd.DataFrame,
     pd.DataFrame,
     ty.List[ChargingSession],
+    pd.DataFrame,
 ]:
 
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
@@ -1868,18 +2067,25 @@ def make_mobility_data(
     run_charging_sessions: ty.List[ChargingSession] = (
         get_run_charging_sessions(
             trips,
-            trip_probabilities_per_day_type, scenario, general_parameters
+            trip_probabilities_per_day_type,
+            scenario,
+            general_parameters,
         )
     )
     pickle_interim_files: bool = general_parameters.interim_files.pickle
+
+    charging_sessions_headers: ty.List[str] = (
+        scenario.charging_sessions.run_dataframe_headers
+    )
+
+    run_charging_sessions_dataframe: pd.DataFrame = (
+        define.get_charging_sessions_dataframe(
+            run_charging_sessions, scenario, charging_sessions_headers
+        )
+    )
     if pickle_interim_files:
         output_root: str = general_parameters.files.output_root
         output_folder: str = f'{output_root}/{case_name}'
-        run_charging_sessions_dataframe: pd.DataFrame = (
-            define.get_charging_sessions_dataframe(
-                run_charging_sessions, scenario
-            )
-        )
 
         run_charging_sessions_dataframe.to_pickle(
             f'{output_folder}/{scenario.name}_'
@@ -1901,16 +2107,17 @@ def make_mobility_data(
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
         run_charging_sessions,
+        run_charging_sessions_dataframe,
     )
 
 
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
     case_name = 'Mopo'
-    scenario.name: str = 'XX_bus'
-    scenario_file_name: str = f'scenarios/{case_name}/{scenario.name}.toml'
+    scenario_name: str = 'XX_car'
+    scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
-    scenario.name = scenario.name
+    scenario.name = scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: Box = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
@@ -1934,6 +2141,7 @@ if __name__ == '__main__':
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
         run_charging_sessions,
+        run_charging_sessions_dataframe,
     ) = make_mobility_data(
         location_connections,
         legs,
@@ -1945,4 +2153,5 @@ if __name__ == '__main__':
     )
     print(run_mobility_matrix)
     print(location_split)
+    print(run_charging_sessions_dataframe)
     print((datetime.datetime.now() - start_time).total_seconds())

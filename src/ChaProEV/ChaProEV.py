@@ -190,7 +190,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             f'{output_folder}/{variant_name}_{consumption_table_name}.pkl'
         )
 
-        do_fleet_tables: float = (
+        do_fleet_tables: bool = (
             general_parameters.profile_dataframe.do_fleet_tables
         )
         if do_fleet_tables:
@@ -279,9 +279,32 @@ def fleet_profiles(
             fleet_profile.to_pickle(
                 f'{output_folder}/{scenario_name}_profile_fleet.pkl'
             )
+            reference_sessions: pd.DataFrame = pd.read_pickle(
+                f'{output_folder}/{scenario_name}_charging_sessions.pkl'
+            )
+            sessions_dataframe_parameters: Box = (
+                general_parameters.sessions_dataframe
+            )
+            fleet_display_dataframe_headers: ty.List[str] = (
+                sessions_dataframe_parameters.fleet_display_dataframe_headers
+            )
+            fleet_sessions: pd.DataFrame = pd.DataFrame(
+                columns=fleet_display_dataframe_headers,
+                index=reference_sessions.index,
+            )
+            for profile_header, fleet_header in zip(
+                reference_sessions.columns, fleet_display_dataframe_headers
+            ):
+                fleet_sessions[fleet_header] = (
+                    carrier_fleet_thousands
+                    * reference_sessions[profile_header]
+                )
 
     fleet_consumption_table.to_pickle(
         f'{output_folder}/{scenario_name}_{consumption_table_name}_fleet.pkl'
+    )
+    fleet_sessions.to_pickle(
+        f'{output_folder}/{scenario_name}_charging_sessions_fleet.pkl'
     )
 
 
@@ -314,6 +337,7 @@ def run_scenario(
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
         run_charging_sessions,
+        run_charging_sessions_dataframe,
     ) = mobility.make_mobility_data(
         location_connections,
         legs,
@@ -341,6 +365,12 @@ def run_scenario(
         (datetime.datetime.now() - cons_start).total_seconds(),
     )
     charge_start: datetime.datetime = datetime.datetime.now()
+    charging_sessions_with_charged_amounts = (
+        charging.charging_amounts_in_charging_sessions(
+            run_charging_sessions_dataframe, scenario, general_parameters
+        )
+    )
+
     (
         battery_spaces,
         total_battery_space_per_location,
@@ -418,7 +448,30 @@ def run_scenario(
     profile_dataframe.index.name = 'Time Tag'
     profile_dataframe.to_pickle(f'{output_folder}/{scenario_name}_profile.pkl')
 
-    do_fleet_tables: float = (
+    # print(charging_sessions_with_charged_amounts.info())
+    charging_sessions_with_charged_amounts = (
+        charging_sessions_with_charged_amounts.loc[
+            charging_sessions_with_charged_amounts['Start time']
+            .apply(pd.to_datetime)
+            .between(display_range[0], display_range[-1])
+        ]
+    )
+    display_session_headers: ty.List[str] = (
+        scenario.charging_sessions.display_dataframe_headers
+    )
+    display_session_index: ty.List[str] = (
+        scenario.charging_sessions.display_dataframe_index
+    )
+    display_charging_sessions: pd.DataFrame = (
+        charging_sessions_with_charged_amounts[
+            display_session_headers
+        ].set_index(display_session_index)
+    )
+
+    display_charging_sessions.to_pickle(
+        f'{output_folder}/{scenario_name}_charging_sessions.pkl'
+    )
+    do_fleet_tables: bool = (
         general_parameters.profile_dataframe.do_fleet_tables
     )
 
@@ -502,3 +555,12 @@ if __name__ == '__main__':
     case_name = 'Mopo'
 
     run_ChaProEV(case_name)
+    print('Add sessions into next day')
+    print('Cut sessions to display?')
+    print('Iterate through sessions and sens remainder to next session')
+    print('Compute session first pass')
+    print('Do a second compute with passthrough')
+    print('Convert session-basec charge to profile')
+    print('Have parameter that shifts within a session?')
+    print('Do kilometers/consumption split for sessions?')
+    print('Do an effetive session end andthen a match between the approaches')
