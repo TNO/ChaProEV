@@ -10,7 +10,7 @@ amount_for_scenarios = 4
 amount_for_pickle_saves = 4
 
 [interim_files]
-pickle = true
+pickle = false
 consumption_tables_frequencies = ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
 save_consumption_table = [false, false, true, false, false]
 
@@ -197,3 +197,10 @@ index_name = 'Variant name'
 own_driveway_name = 'own_driveway'
 on_street_name = 'street_parking'
 profiles_index = ['Time Tag', 'Hour Number', 'SPINE_hour_number', 'Day Type', 'Hour index from day start']
+
+
+[sessions]
+produce = true
+generate_profiles = true
+[standard_profiles]
+produce = true

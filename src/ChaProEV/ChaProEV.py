@@ -200,6 +200,9 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
 def fleet_profiles(
     case_name: str, scenario_name: str, general_parameters: Box
 ) -> None:
+    produce_standard_profiles: bool = (
+        general_parameters.standard_profiles.produce
+    )
     home_type_parameters: Box = general_parameters.home_type
     consumption_parameters: Box = general_parameters.consumption
     consumption_table_name: str = consumption_parameters.consumption_table_name
@@ -260,52 +263,59 @@ def fleet_profiles(
             carrier_fleet_thousands * consumption_table[consumption_name]
         )
         if energy_carrier == 'electricity':
-            reference_profile: pd.DataFrame = (
-                pd.read_pickle(f'{output_folder}/{scenario_name}_profile.pkl')
-                .reset_index()
-                .set_index(profiles_index)
-                .astype(float)
-            )
-            fleet_profile: pd.DataFrame = pd.DataFrame(
-                columns=fleet_headers, index=reference_profile.index
-            )
+            if produce_standard_profiles:
+                reference_profile: pd.DataFrame = (
+                    pd.read_pickle(
+                        f'{output_folder}/{scenario_name}_profile.pkl'
+                    )
+                    .reset_index()
+                    .set_index(profiles_index)
+                    .astype(float)
+                )
+                fleet_profile: pd.DataFrame = pd.DataFrame(
+                    columns=fleet_headers, index=reference_profile.index
+                )
 
-            for profile_header, fleet_header in zip(
-                profile_headers, fleet_headers
-            ):
-                fleet_profile[fleet_header] = (
-                    carrier_fleet_thousands * reference_profile[profile_header]
+                for profile_header, fleet_header in zip(
+                    profile_headers, fleet_headers
+                ):
+                    fleet_profile[fleet_header] = (
+                        carrier_fleet_thousands
+                        * reference_profile[profile_header]
+                    )
+                fleet_profile.to_pickle(
+                    f'{output_folder}/{scenario_name}_profile_fleet.pkl'
                 )
-            fleet_profile.to_pickle(
-                f'{output_folder}/{scenario_name}_profile_fleet.pkl'
-            )
-            reference_sessions: pd.DataFrame = pd.read_pickle(
-                f'{output_folder}/{scenario_name}_charging_sessions.pkl'
-            )
-            sessions_dataframe_parameters: Box = (
-                general_parameters.sessions_dataframe
-            )
-            fleet_display_dataframe_headers: ty.List[str] = (
-                sessions_dataframe_parameters.fleet_display_dataframe_headers
-            )
-            fleet_sessions: pd.DataFrame = pd.DataFrame(
-                columns=fleet_display_dataframe_headers,
-                index=reference_sessions.index,
-            )
-            for profile_header, fleet_header in zip(
-                reference_sessions.columns, fleet_display_dataframe_headers
-            ):
-                fleet_sessions[fleet_header] = (
-                    carrier_fleet_thousands
-                    * reference_sessions[profile_header]
+            produce_sessions: bool = general_parameters.sessions.produce
+            if produce_sessions:
+                reference_sessions: pd.DataFrame = pd.read_pickle(
+                    f'{output_folder}/{scenario_name}_charging_sessions.pkl'
                 )
+                sessions_dataframe_params: Box = (
+                    general_parameters.sessions_dataframe
+                )
+                fleet_display_dataframe_headers: ty.List[str] = (
+                    sessions_dataframe_params.fleet_display_dataframe_headers
+                )
+                fleet_sessions: pd.DataFrame = pd.DataFrame(
+                    columns=fleet_display_dataframe_headers,
+                    index=reference_sessions.index,
+                )
+                for profile_header, fleet_header in zip(
+                    reference_sessions.columns, fleet_display_dataframe_headers
+                ):
+                    fleet_sessions[fleet_header] = (
+                        carrier_fleet_thousands
+                        * reference_sessions[profile_header]
+                    )
 
     fleet_consumption_table.to_pickle(
         f'{output_folder}/{scenario_name}_{consumption_table_name}_fleet.pkl'
     )
-    fleet_sessions.to_pickle(
-        f'{output_folder}/{scenario_name}_charging_sessions_fleet.pkl'
-    )
+    if produce_sessions:
+        fleet_sessions.to_pickle(
+            f'{output_folder}/{scenario_name}_charging_sessions_fleet.pkl'
+        )
 
 
 def run_scenario(
@@ -365,49 +375,61 @@ def run_scenario(
         (datetime.datetime.now() - cons_start).total_seconds(),
     )
     charge_start: datetime.datetime = datetime.datetime.now()
-    charging_sessions_with_charged_amounts = (
-        charging.charging_amounts_in_charging_sessions(
-            run_charging_sessions_dataframe, scenario, general_parameters
-        )
-    )
+    produce_sessions: bool = general_parameters.sessions.produce
 
-    (
-        battery_spaces,
-        total_battery_space_per_location,
-        charge_drawn_by_vehicles,
-        charge_drawn_from_network,
-    ) = charging.get_charging_profile(
-        location_split,
-        run_mobility_matrix,
-        maximal_delivered_power_per_location,
-        maximal_delivered_power,
-        scenario,
-        case_name,
-        general_parameters,
+    if produce_sessions:
+        charging_sessions_with_charged_amounts = (
+            charging.charging_amounts_in_charging_sessions(
+                run_charging_sessions_dataframe, scenario, general_parameters
+            )
+        )
+    produce_standard_profiles: bool = (
+        general_parameters.standard_profiles.produce
     )
-    (
-        charging_profile_to_vehicle_from_sessions,
-        charging_profile_from_network_from_sessions,
-    ) = charging.get_profile_from_sessions(
-        charging_sessions_with_charged_amounts,
-        scenario,
-        general_parameters,
+    if produce_standard_profiles:
+        (
+            battery_spaces,
+            total_battery_space_per_location,
+            charge_drawn_by_vehicles,
+            charge_drawn_from_network,
+        ) = charging.get_charging_profile(
+            location_split,
+            run_mobility_matrix,
+            maximal_delivered_power_per_location,
+            maximal_delivered_power,
+            scenario,
+            case_name,
+            general_parameters,
+        )
+    profiles_from_sessions: bool = (
+        general_parameters.sessions.generate_profiles
     )
+    if produce_sessions and profiles_from_sessions:
+        (
+            charging_profile_to_vehicle_from_sessions,
+            charging_profile_from_network_from_sessions,
+        ) = charging.get_profile_from_sessions(
+            charging_sessions_with_charged_amounts,
+            scenario,
+            general_parameters,
+        )
     pickle_interim_files: bool = general_parameters.interim_files.pickle
     output_root: str = general_parameters.files.output_root
-    if pickle_interim_files:
-        charging_sessions_with_charged_amounts.to_pickle(
-            f'{output_root}/{case_name}/{scenario_name}_'
-            f'charging_sessions_with_charged_amounts.pkl'
-        )
-        charging_profile_to_vehicle_from_sessions.to_pickle(
-            f'{output_root}/{case_name}/{scenario_name}'
-            f'_charging_profile_to_vehicle_from_sessions.pkl'
-        )
-        charging_profile_from_network_from_sessions.to_pickle(
-            f'{output_root}/{case_name}/{scenario_name}'
-            f'_charging_profile_from_network_from_sessions.pkl'
-        )
+    if produce_sessions:
+        if pickle_interim_files:
+            charging_sessions_with_charged_amounts.to_pickle(
+                f'{output_root}/{case_name}/{scenario_name}_'
+                f'charging_sessions_with_charged_amounts.pkl'
+            )
+            if profiles_from_sessions:
+                charging_profile_to_vehicle_from_sessions.to_pickle(
+                    f'{output_root}/{case_name}/{scenario_name}'
+                    f'_charging_profile_to_vehicle_from_sessions.pkl'
+                )
+                charging_profile_from_network_from_sessions.to_pickle(
+                    f'{output_root}/{case_name}/{scenario_name}'
+                    f'_charging_profile_from_network_from_sessions.pkl'
+                )
 
     print(
         f'Charge {scenario_name}',
@@ -418,82 +440,89 @@ def run_scenario(
     battery_capacity_dataframe: pd.DataFrame = (
         battery_capacity * location_split
     )
-    state_of_charge_dataframe: pd.DataFrame = (
-        battery_capacity_dataframe - total_battery_space_per_location
-    )
+    if produce_standard_profiles:
+        state_of_charge_dataframe: pd.DataFrame = (
+            battery_capacity_dataframe - total_battery_space_per_location
+        )
 
-    connectivities: np.ndarray = np.array(
-        [
-            scenario.locations[dataframe_location].connectivity
-            for dataframe_location in battery_capacity_dataframe.columns
+        connectivities: np.ndarray = np.array(
+            [
+                scenario.locations[dataframe_location].connectivity
+                for dataframe_location in battery_capacity_dataframe.columns
+            ]
+        )
+        connected_total_battery_space_per_location: pd.DataFrame = (
+            total_battery_space_per_location * connectivities
+        )
+        connected_battery_capacity_dataframe: pd.DataFrame = (
+            battery_capacity_dataframe * connectivities
+        )
+        connected_state_of_charge_dataframe: pd.DataFrame = (
+            state_of_charge_dataframe * connectivities
+        )
+
+        dataframes_for_profile: ty.List[pd.DataFrame] = [
+            charge_drawn_from_network,
+            connected_total_battery_space_per_location,
+            connected_state_of_charge_dataframe,
+            connected_battery_capacity_dataframe,
+            run_next_leg_charge_from_network,
+            run_next_leg_charge_to_vehicle,
+            connectivity_per_location,
+            maximal_delivered_power_per_location,
+            maximal_received_power_per_location,
+            vehicle_discharge_power_per_location,
+            discharge_power_to_network_per_location,
         ]
-    )
-    connected_total_battery_space_per_location: pd.DataFrame = (
-        total_battery_space_per_location * connectivities
-    )
-    connected_battery_capacity_dataframe: pd.DataFrame = (
-        battery_capacity_dataframe * connectivities
-    )
-    connected_state_of_charge_dataframe: pd.DataFrame = (
-        state_of_charge_dataframe * connectivities
-    )
-
-    dataframes_for_profile: ty.List[pd.DataFrame] = [
-        charge_drawn_from_network,
-        connected_total_battery_space_per_location,
-        connected_state_of_charge_dataframe,
-        connected_battery_capacity_dataframe,
-        run_next_leg_charge_from_network,
-        run_next_leg_charge_to_vehicle,
-        connectivity_per_location,
-        maximal_delivered_power_per_location,
-        maximal_received_power_per_location,
-        vehicle_discharge_power_per_location,
-        discharge_power_to_network_per_location,
-    ]
-    profile_dataframe_headers: ty.List[str] = (
-        general_parameters.profile_dataframe.headers
-    )
-    profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
-        scenario, general_parameters, locations_as_columns=False
-    )
-    for dataframe_for_profile, dataframe_header in zip(
-        dataframes_for_profile, profile_dataframe_headers
-    ):
-
-        profile_dataframe[dataframe_header] = dataframe_for_profile.sum(axis=1)
-
-    output_folder: str = f'{output_root}/{case_name}'
     display_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
     )[2]
-    profile_dataframe = profile_dataframe.loc[display_range]
-    profile_dataframe.index.name = 'Time Tag'
-    profile_dataframe.to_pickle(f'{output_folder}/{scenario_name}_profile.pkl')
+    output_folder: str = f'{output_root}/{case_name}'
+    if produce_standard_profiles:
+        profile_dataframe_headers: ty.List[str] = (
+            general_parameters.profile_dataframe.headers
+        )
+        profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
+            scenario, general_parameters, locations_as_columns=False
+        )
+        for dataframe_for_profile, dataframe_header in zip(
+            dataframes_for_profile, profile_dataframe_headers
+        ):
 
-    # print(charging_sessions_with_charged_amounts.info())
-    charging_sessions_with_charged_amounts = (
-        charging_sessions_with_charged_amounts.loc[
-            charging_sessions_with_charged_amounts['Start time']
-            .apply(pd.to_datetime)
-            .between(display_range[0], display_range[-1])
-        ]
-    )
-    display_session_headers: ty.List[str] = (
-        scenario.charging_sessions.display_dataframe_headers
-    )
-    display_session_index: ty.List[str] = (
-        scenario.charging_sessions.display_dataframe_index
-    )
-    display_charging_sessions: pd.DataFrame = (
-        charging_sessions_with_charged_amounts[
-            display_session_headers
-        ].set_index(display_session_index)
-    )
+            profile_dataframe[dataframe_header] = dataframe_for_profile.sum(
+                axis=1
+            )
 
-    display_charging_sessions.to_pickle(
-        f'{output_folder}/{scenario_name}_charging_sessions.pkl'
-    )
+        profile_dataframe = profile_dataframe.loc[display_range]
+        profile_dataframe.index.name = 'Time Tag'
+        profile_dataframe.to_pickle(
+            f'{output_folder}/{scenario_name}_profile.pkl'
+        )
+
+    if produce_sessions:
+        charging_sessions_with_charged_amounts = (
+            charging_sessions_with_charged_amounts.loc[
+                charging_sessions_with_charged_amounts['Start time']
+                .apply(pd.to_datetime)
+                .between(display_range[0], display_range[-1])
+            ]
+        )
+        display_session_headers: ty.List[str] = (
+            scenario.charging_sessions.display_dataframe_headers
+        )
+        display_session_index: ty.List[str] = (
+            scenario.charging_sessions.display_dataframe_index
+        )
+
+        display_charging_sessions: pd.DataFrame = (
+            charging_sessions_with_charged_amounts[
+                display_session_headers
+            ].set_index(display_session_index)
+        )
+
+        display_charging_sessions.to_pickle(
+            f'{output_folder}/{scenario_name}_charging_sessions.pkl'
+        )
     do_fleet_tables: bool = (
         general_parameters.profile_dataframe.do_fleet_tables
     )
