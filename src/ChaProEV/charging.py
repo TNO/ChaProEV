@@ -1503,8 +1503,7 @@ def charging_amounts_in_charging_sessions(
         rolled_deficit: np.ndarray = np.roll(
             charging_sessions_with_charged_amounts['Charge deficit (kWh)'], 1
         )
-        # print(charging_sessions_with_charged_amounts.iloc[18502])
-        # print(charging_sessions_with_charged_amounts.iloc[18503])
+
         charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
             charging_sessions_with_charged_amounts['Target charge (kWh)']
             - charging_sessions_with_charged_amounts['Charge deficit (kWh)']
@@ -1539,7 +1538,7 @@ def charging_amounts_in_charging_sessions(
         total_charge_deficit = charging_sessions_with_charged_amounts[
             'Charge deficit (kWh)'
         ].sum()
-        # print(total_charge_deficit)
+
     charging_sessions_locations: ty.List[str] = list(
         set(charging_sessions_with_charged_amounts['Location'])
     )
@@ -1550,7 +1549,7 @@ def charging_amounts_in_charging_sessions(
     location_loss_factors_dict: ty.Dict[str, float] = dict(
         zip(charging_sessions_locations, location_charger_loss_factors)
     )
-    # print(location_loss_factors_dict)
+
     charging_sessions_with_charged_amounts[
         'Charge from network (kWh)'
     ] = charging_sessions_with_charged_amounts[
@@ -1560,8 +1559,142 @@ def charging_amounts_in_charging_sessions(
     ].map(
         location_loss_factors_dict
     )
+    charging_sessions_with_charged_amounts[
+        'Duration at constant charge (hours)'
+    ] = charging_sessions_with_charged_amounts['Charge to vehicle (kWh)'] / (
+        charging_sessions_with_charged_amounts['Modulation factor']
+        * charging_sessions_with_charged_amounts[
+            'Charging power to vehicle (kW)'
+        ]
+    )
+    constant_charge_time_shifts: pd.Series = pd.Series(
+        [
+            datetime.timedelta(hours=constant_charge_time)
+            for constant_charge_time in charging_sessions_with_charged_amounts[
+                'Duration at constant charge (hours)'
+            ]
+        ]
+    )
+    charging_sessions_with_charged_amounts[
+        'End time if constant charge from start'
+    ] = (
+        charging_sessions_with_charged_amounts['Start time']
+        + constant_charge_time_shifts
+    )
 
     return charging_sessions_with_charged_amounts
+
+
+def get_profile_from_sessions(
+    sessions: pd.DataFrame, scenario: Box, general_parameters: Box
+) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
+    charging_profile_from_sessions: pd.DataFrame = (
+        run_time.get_time_stamped_dataframe(scenario, general_parameters)
+    ).fillna(0)
+    charging_profile_to_vehicle_from_sessions: pd.DataFrame = (
+        run_time.get_time_stamped_dataframe(scenario, general_parameters)
+    ).fillna(0)
+    charging_profile_from_network_from_sessions: pd.DataFrame = (
+        run_time.get_time_stamped_dataframe(scenario, general_parameters)
+    ).fillna(0)
+
+    sessions_charging_slots: ty.List = [
+        pd.date_range(
+            start=session_start.replace(second=0, microsecond=0, minute=0),
+            end=session_end.replace(second=0, microsecond=0, minute=0),
+            inclusive='both',
+            freq='1h',
+        )
+        for session_start, session_end in zip(
+            sessions['Start time'],
+            sessions['End time if constant charge from start'],
+        )
+    ]
+    used_powers_to_vehicle: pd.Series = (
+        sessions['Charging power to vehicle (kW)']
+        * sessions['Modulation factor']
+    )
+    used_powers_from_network: pd.Series = (
+        sessions['Charging power from network (kW)']
+        * sessions['Modulation factor']
+    )
+    sessions_charging_slots_charge_factors_to_vehicle: ty.List[np.ndarray] = [
+        used_power * np.ones(len(session_charging_slots))
+        for session_charging_slots, used_power in zip(
+            sessions_charging_slots, used_powers_to_vehicle
+        )
+    ]
+    sessions_charging_slots_charge_factors_from_network: ty.List[
+        np.ndarray
+    ] = [
+        used_power * np.ones(len(session_charging_slots))
+        for session_charging_slots, used_power in zip(
+            sessions_charging_slots, used_powers_from_network
+        )
+    ]
+
+    for (
+        session_charging_slots_charge_factors_to_vehicle,
+        session_charging_slots_charge_factors_from_network,
+        start_time,
+        end_time,
+        session_charging_slots,
+    ) in zip(
+        sessions_charging_slots_charge_factors_to_vehicle,
+        sessions_charging_slots_charge_factors_from_network,
+        sessions['Start time'],
+        sessions['End time if constant charge from start'],
+        sessions_charging_slots,
+    ):
+
+        first_slot_non_charging_portion: float = (
+            start_time - session_charging_slots[0]
+        ).total_seconds() / general_parameters.time.SECONDS_PER_HOUR
+        last_slot_charging_portion: float = (
+            end_time - session_charging_slots[-1]
+        ).total_seconds() / general_parameters.time.SECONDS_PER_HOUR
+
+        session_charging_slots_charge_factors_to_vehicle[0] *= (
+            1 - first_slot_non_charging_portion
+        )
+        session_charging_slots_charge_factors_from_network[0] *= (
+            1 - first_slot_non_charging_portion
+        )
+        session_charging_slots_charge_factors_to_vehicle[
+            -1
+        ] *= last_slot_charging_portion
+        session_charging_slots_charge_factors_from_network[
+            -1
+        ] *= last_slot_charging_portion
+
+    for (
+        location,
+        session_charging_slots,
+        session_charging_slots_charge_factors_to_vehicle,
+        session_charging_slots_charge_factors_from_network,
+    ) in zip(
+        sessions['Location'],
+        sessions_charging_slots,
+        sessions_charging_slots_charge_factors_to_vehicle,
+        sessions_charging_slots_charge_factors_from_network,
+    ):
+        for time_slot, charge_to_vehicle, charge_from_network in zip(
+            session_charging_slots,
+            session_charging_slots_charge_factors_to_vehicle,
+            session_charging_slots_charge_factors_from_network,
+        ):
+            if time_slot in charging_profile_from_sessions.index:
+                charging_profile_to_vehicle_from_sessions.loc[
+                    time_slot, location
+                ] += charge_to_vehicle
+                charging_profile_from_network_from_sessions.loc[
+                    time_slot, location
+                ] += charge_from_network
+
+    return (
+        charging_profile_to_vehicle_from_sessions,
+        charging_profile_from_network_from_sessions,
+    )
 
 
 # def shift_excess_demand_to_next_session
@@ -1581,13 +1714,23 @@ if __name__ == '__main__':
     run_charging_sessions_dataframe: pd.DataFrame = pd.read_pickle(
         'output/Mopo/XX_car_run_charging_sessions.pkl'
     )
-    # print(pd.Series(np.ones(len(run_charging_sessions_dataframe.index))))
+
     charging_sessions_with_charged_amounts = (
         charging_amounts_in_charging_sessions(
             run_charging_sessions_dataframe, scenario, general_parameters
         )
     )
-
+    (
+        charging_profile_to_vehicle_from_sessions,
+        charging_profile_from_network_from_sessions,
+    ) = get_profile_from_sessions(
+        charging_sessions_with_charged_amounts, scenario, general_parameters
+    )
+    print(
+        charging_profile_to_vehicle_from_sessions,
+        charging_profile_from_network_from_sessions,
+    )
+    exit()
     # print(charging_sessions_with_charged_amounts)
     # print(charging_sessions_with_charged_amounts.info())
     # exit()

@@ -385,6 +385,30 @@ def run_scenario(
         case_name,
         general_parameters,
     )
+    (
+        charging_profile_to_vehicle_from_sessions,
+        charging_profile_from_network_from_sessions,
+    ) = charging.get_profile_from_sessions(
+        charging_sessions_with_charged_amounts,
+        scenario,
+        general_parameters,
+    )
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
+    output_root: str = general_parameters.files.output_root
+    if pickle_interim_files:
+        charging_sessions_with_charged_amounts.to_pickle(
+            f'{output_root}/{case_name}/{scenario_name}_'
+            f'charging_sessions_with_charged_amounts.pkl'
+        )
+        charging_profile_to_vehicle_from_sessions.to_pickle(
+            f'{output_root}/{case_name}/{scenario_name}'
+            f'_charging_profile_to_vehicle_from_sessions.pkl'
+        )
+        charging_profile_from_network_from_sessions.to_pickle(
+            f'{output_root}/{case_name}/{scenario_name}'
+            f'_charging_profile_from_network_from_sessions.pkl'
+        )
+
     print(
         f'Charge {scenario_name}',
         (datetime.datetime.now() - charge_start).total_seconds(),
@@ -439,7 +463,6 @@ def run_scenario(
 
         profile_dataframe[dataframe_header] = dataframe_for_profile.sum(axis=1)
 
-    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
     display_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
@@ -564,3 +587,13 @@ if __name__ == '__main__':
     print('Have parameter that shifts within a session?')
     print('Do kilometers/consumption split for sessions?')
     print('Do an effetive session end andthen a match between the approaches')
+    print('Make profile DF (with all) from sessions version')
+    print('Make fleet version')
+    print('Toggle on/off')
+    print('Compare profiles')
+    # Add actual stop time (if using full power)
+    # Then infer profiles
+    # DO this in a sperate DF that will be used to compare
+    # COnnectivity: does the groupneed to be smaller? 
+    # Also somehow include legs from before that did not charge because of connectivity
+    # Base profile is spread according to partial arrivals.
