@@ -11,6 +11,7 @@ from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
+import tqdm
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -591,7 +592,15 @@ def run_ChaProEV(case_name: str) -> None:
     pool_inputs: ty.Iterator[ty.Tuple[Box, str, Box]] = zip(
         scenarios, repeat(case_name), repeat(general_parameters)
     )
-
+    progress_bars_parameters: Box = general_parameters.progress_bars
+    display_scenario_run: bool = progress_bars_parameters.display_scenario_run
+    scenario_run_description: str = (
+        progress_bars_parameters.scenario_run_description
+    )
+    if display_scenario_run:
+        pool_inputs = tqdm.tqdm(
+            pool_inputs, desc=scenario_run_description, total=len(scenarios)
+        )
     with Pool(amount_of_parallel_processes) as scenarios_pool:
         scenarios_pool.starmap(run_scenario, pool_inputs)
 

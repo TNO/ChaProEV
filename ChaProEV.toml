@@ -206,5 +206,7 @@ generate_profiles = true
 produce = true
 
 [progress_bars]
-display_scenario_run = false
-scenario_run_description =  'Scenarios running'
+display_scenario_run = true
+scenario_run_description =  'Scenarios started'
+display_saving_pool_run = true
+saving_pool_run_description =  'Saving extra end outputs started'

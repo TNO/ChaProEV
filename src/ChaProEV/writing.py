@@ -14,6 +14,7 @@ from itertools import repeat
 from multiprocessing import Pool
 
 import pandas as pd
+import tqdm
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -63,6 +64,19 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         repeat(output_folder),
         repeat(general_parameters),
     )
+    progress_bars_parameters: Box = general_parameters.progress_bars
+    display_saving_pool_run: bool = (
+        progress_bars_parameters.display_saving_pool_run
+    )
+    saving_pool_run_description: str = (
+        progress_bars_parameters.saving_pool_run_description
+    )
+    if display_saving_pool_run:
+        saving_pool_inputs = tqdm.tqdm(
+            saving_pool_inputs,
+            desc=saving_pool_run_description,
+            total=len(tables_to_save),
+        )
     with Pool(number_of_parallel_processes) as saving_pool:
         saving_pool.starmap(cook.save_dataframe, saving_pool_inputs)
 
