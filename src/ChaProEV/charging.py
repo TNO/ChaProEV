@@ -770,7 +770,7 @@ def copy_day_type_profiles_to_whole_run(
     # a shift occurs over several days (such as holiday departures or
     # returns occurring over the two days of a weekend).
     # We therefore need to ensure that the sum of battery spaces is
-    # equal to the location split. We do this by adjustinmg the battery
+    # equal to the location split. We do this by adjusting the battery
     # space with 0 kWh.
 
     for location_name in location_names:
@@ -793,7 +793,7 @@ def copy_day_type_profiles_to_whole_run(
             battery_spaces[location_name][0] + location_correction
         )
 
-    # Some trips result in charging events spilling over int the next day
+    # Some trips result in charging events spilling over into the next day
 
     (
         spillover_battery_spaces,
@@ -1317,9 +1317,29 @@ def get_charging_profile(
             and (time_tag.hour == day_start_hour)
             and (run_day_type in day_types_to_compute)
         ):
-            day_types_to_compute.remove(run_day_type)
-            compute_charge = True
-            time_tags_of_day_type = []
+            # For the da to be representative, it cannot have
+            # charging from the prior day (this spillover issue
+            # will be dealt with later)
+            weighted_residual_battery_spaces: float = 0
+            for charging_location_to_test in location_names:
+                location_residual_battery_spaces: pd.Series = battery_spaces[
+                    charging_location_to_test
+                ].iloc[time_tag_index - 1]
+                location_weighted_residual_battery_spaces: float = (
+                    location_residual_battery_spaces.index.values
+                    * location_residual_battery_spaces
+                ).sum()
+                weighted_residual_battery_spaces += (
+                    location_weighted_residual_battery_spaces
+                )
+            does_charge_demand_spillover: bool = (
+                weighted_residual_battery_spaces > zero_threshold
+            )
+
+            if not does_charge_demand_spillover:
+                day_types_to_compute.remove(run_day_type)
+                compute_charge = True
+                time_tags_of_day_type = []
 
         if compute_charge:
 
@@ -1730,7 +1750,7 @@ if __name__ == '__main__':
         charging_profile_to_vehicle_from_sessions,
         charging_profile_from_network_from_sessions,
     )
-    exit()
+
     # print(charging_sessions_with_charged_amounts)
     # print(charging_sessions_with_charged_amounts.info())
     # exit()
@@ -1745,7 +1765,7 @@ if __name__ == '__main__':
     print(sessions_2018['Charge to vehicle (kWh)'].sum())
     print(sessions_2018['Charge from network (kWh)'].sum())
     print(sessions_2018)
-    exit()
+
     case_name = 'Mopo'
     scenario_name = 'XX_car'
     # scenario_file_name: str = (

@@ -33,7 +33,7 @@ def test_charge_and_consumption() -> None:
         hour=test_end_hour,
     )
 
-    test_range: pd.date_range = pd.date_range(
+    test_range: pd.DatetimeIndex = pd.date_range(
         start=test_start_date, end=test_end_date, freq='1h', inclusive='both'
     )
     test_scenarios: ty.List[str] = [

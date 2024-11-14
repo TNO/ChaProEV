@@ -9,7 +9,7 @@
 
 # Run parameters
 [run]
-use_day_types_in_charge_computing = true
+use_day_types_in_charge_computing = false
 [run.start]
 year = 2017
 month = 12

@@ -594,6 +594,7 @@ if __name__ == '__main__':
     # Add actual stop time (if using full power)
     # Then infer profiles
     # DO this in a sperate DF that will be used to compare
-    # COnnectivity: does the groupneed to be smaller? 
-    # Also somehow include legs from before that did not charge because of connectivity
+    # COnnectivity: does the groupneed to be smaller?
+    # Also somehow include legs from before that did not charge because
+    # of connectivity
     # Base profile is spread according to partial arrivals.
