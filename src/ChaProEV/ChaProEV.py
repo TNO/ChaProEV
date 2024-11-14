@@ -321,7 +321,7 @@ def fleet_profiles(
         )
 
 
-def make_display_dataframes(
+def make_profile_display_dataframe(
     location_split: pd.DataFrame,
     total_battery_space_per_location: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
@@ -332,103 +332,108 @@ def make_display_dataframes(
     maximal_received_power_per_location: pd.DataFrame,
     vehicle_discharge_power_per_location: pd.DataFrame,
     discharge_power_to_network_per_location: pd.DataFrame,
-    charging_sessions_with_charged_amounts: pd.DataFrame,
     scenario: Box,
     general_parameters: Box,
-    case_name: str,
+    case_name: str
 ) -> None:
-    produce_standard_profiles: bool = (
-        general_parameters.standard_profiles.produce
-    )
-    produce_sessions: bool = general_parameters.sessions.produce
+
     battery_capacity: float = scenario.vehicle.battery_capacity
     battery_capacity_dataframe: pd.DataFrame = (
         battery_capacity * location_split
     )
-    if produce_standard_profiles:
-        state_of_charge_dataframe: pd.DataFrame = (
-            battery_capacity_dataframe - total_battery_space_per_location
-        )
 
-        connectivities: np.ndarray = np.array(
-            [
-                scenario.locations[dataframe_location].connectivity
-                for dataframe_location in battery_capacity_dataframe.columns
-            ]
-        )
-        connected_total_battery_space_per_location: pd.DataFrame = (
-            total_battery_space_per_location * connectivities
-        )
-        connected_battery_capacity_dataframe: pd.DataFrame = (
-            battery_capacity_dataframe * connectivities
-        )
-        connected_state_of_charge_dataframe: pd.DataFrame = (
-            state_of_charge_dataframe * connectivities
-        )
+    state_of_charge_dataframe: pd.DataFrame = (
+        battery_capacity_dataframe - total_battery_space_per_location
+    )
 
-        dataframes_for_profile: ty.List[pd.DataFrame] = [
-            charge_drawn_from_network,
-            connected_total_battery_space_per_location,
-            connected_state_of_charge_dataframe,
-            connected_battery_capacity_dataframe,
-            run_next_leg_charge_from_network,
-            run_next_leg_charge_to_vehicle,
-            connectivity_per_location,
-            maximal_delivered_power_per_location,
-            maximal_received_power_per_location,
-            vehicle_discharge_power_per_location,
-            discharge_power_to_network_per_location,
+    connectivities: np.ndarray = np.array(
+        [
+            scenario.locations[dataframe_location].connectivity
+            for dataframe_location in battery_capacity_dataframe.columns
         ]
+    )
+    connected_total_battery_space_per_location: pd.DataFrame = (
+        total_battery_space_per_location * connectivities
+    )
+    connected_battery_capacity_dataframe: pd.DataFrame = (
+        battery_capacity_dataframe * connectivities
+    )
+    connected_state_of_charge_dataframe: pd.DataFrame = (
+        state_of_charge_dataframe * connectivities
+    )
+
+    dataframes_for_profile: ty.List[pd.DataFrame] = [
+        charge_drawn_from_network,
+        connected_total_battery_space_per_location,
+        connected_state_of_charge_dataframe,
+        connected_battery_capacity_dataframe,
+        run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
+        connectivity_per_location,
+        maximal_delivered_power_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
+    ]
+
     display_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
     )[2]
     output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
-    if produce_standard_profiles:
-        profile_dataframe_headers: ty.List[str] = (
-            general_parameters.profile_dataframe.headers
-        )
-        profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
-            scenario, general_parameters, locations_as_columns=False
-        )
-        for dataframe_for_profile, dataframe_header in zip(
-            dataframes_for_profile, profile_dataframe_headers
-        ):
 
-            profile_dataframe[dataframe_header] = dataframe_for_profile.sum(
-                axis=1
-            )
+    profile_dataframe_headers: ty.List[str] = (
+        general_parameters.profile_dataframe.headers
+    )
+    profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
+        scenario, general_parameters, locations_as_columns=False
+    )
+    for dataframe_for_profile, dataframe_header in zip(
+        dataframes_for_profile, profile_dataframe_headers
+    ):
 
-        profile_dataframe = profile_dataframe.loc[display_range]
-        profile_dataframe.index.name = 'Time Tag'
-        profile_dataframe.to_pickle(
-            f'{output_folder}/{scenario.name}_profile.pkl'
-        )
+        profile_dataframe[dataframe_header] = dataframe_for_profile.sum(axis=1)
 
-    if produce_sessions:
-        charging_sessions_with_charged_amounts = (
-            charging_sessions_with_charged_amounts.loc[
-                charging_sessions_with_charged_amounts['Start time']
-                .apply(pd.to_datetime)
-                .between(display_range[0], display_range[-1])
-            ]
-        )
-        display_session_headers: ty.List[str] = (
-            scenario.charging_sessions.display_dataframe_headers
-        )
-        display_session_index: ty.List[str] = (
-            scenario.charging_sessions.display_dataframe_index
-        )
+    profile_dataframe = profile_dataframe.loc[display_range]
+    profile_dataframe.index.name = 'Time Tag'
+    profile_dataframe.to_pickle(f'{output_folder}/{scenario.name}_profile.pkl')
 
-        display_charging_sessions: pd.DataFrame = (
-            charging_sessions_with_charged_amounts[
-                display_session_headers
-            ].set_index(display_session_index)
-        )
 
-        display_charging_sessions.to_pickle(
-            f'{output_folder}/{scenario.name}_charging_sessions.pkl'
-        )
+def make_sessions_display_dataframes(
+    charging_sessions_with_charged_amounts: pd.DataFrame,
+    scenario: Box,
+    general_parameters: Box,
+    case_name: str,
+) -> None:
+    display_range: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[2]
+    output_root: str = general_parameters.files.output_root
+    output_folder: str = f'{output_root}/{case_name}'
+
+    charging_sessions_with_charged_amounts = (
+        charging_sessions_with_charged_amounts.loc[
+            charging_sessions_with_charged_amounts['Start time']
+            .apply(pd.to_datetime)
+            .between(display_range[0], display_range[-1])
+        ]
+    )
+    display_session_headers: ty.List[str] = (
+        scenario.charging_sessions.display_dataframe_headers
+    )
+    display_session_index: ty.List[str] = (
+        scenario.charging_sessions.display_dataframe_index
+    )
+
+    display_charging_sessions: pd.DataFrame = (
+        charging_sessions_with_charged_amounts[
+            display_session_headers
+        ].set_index(display_session_index)
+    )
+
+    display_charging_sessions.to_pickle(
+        f'{output_folder}/{scenario.name}_charging_sessions.pkl'
+    )
 
 
 @cook.function_timer
@@ -485,6 +490,7 @@ def run_scenario(
                 case_name,
             )
         )
+
     produce_standard_profiles: bool = (
         general_parameters.standard_profiles.produce
     )
@@ -503,6 +509,7 @@ def run_scenario(
             case_name,
             general_parameters,
         )
+
     profiles_from_sessions: bool = (
         general_parameters.sessions.generate_profiles
     )
@@ -516,23 +523,29 @@ def run_scenario(
             general_parameters,
             case_name,
         )
-
-    make_display_dataframes(
-        location_split,
-        total_battery_space_per_location,
-        charge_drawn_from_network,
-        run_next_leg_charge_from_network,
-        run_next_leg_charge_to_vehicle,
-        connectivity_per_location,
-        maximal_delivered_power_per_location,
-        maximal_received_power_per_location,
-        vehicle_discharge_power_per_location,
-        discharge_power_to_network_per_location,
-        charging_sessions_with_charged_amounts,
-        scenario,
-        general_parameters,
-        case_name,
-    )
+    if produce_standard_profiles:
+        make_profile_display_dataframe(
+            location_split,
+            total_battery_space_per_location,
+            charge_drawn_from_network,
+            run_next_leg_charge_from_network,
+            run_next_leg_charge_to_vehicle,
+            connectivity_per_location,
+            maximal_delivered_power_per_location,
+            maximal_received_power_per_location,
+            vehicle_discharge_power_per_location,
+            discharge_power_to_network_per_location,
+            scenario,
+            general_parameters,
+            case_name,
+        )
+    if produce_sessions:
+        make_sessions_display_dataframes(
+            charging_sessions_with_charged_amounts,
+            scenario,
+            general_parameters,
+            case_name,
+        )
 
     do_fleet_tables: bool = (
         general_parameters.profile_dataframe.do_fleet_tables
@@ -633,7 +646,7 @@ if __name__ == '__main__':
     # print('Convert session-basec charge to profile')
     # print('Have parameter that shifts within a session?')
     # print('Do kilometers/consumption split for sessions?')
-    # print('Do an effetive session end andthen a match between the approaches')
+    # print('Do effetive session end andthen a match between the approaches')
     # print('Make profile DF (with all) from sessions version')
     # print('Make fleet version')
     # print('Compare profiles')
