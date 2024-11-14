@@ -1213,6 +1213,7 @@ def write_output(
             f'{output_folder}/{scenario_name}_sum_of_battery_spaces.pkl'
         )
 
+
 @cook.function_timer
 def get_charging_profile(
     location_split: pd.DataFrame,
@@ -1456,6 +1457,7 @@ def session_modulation(
     )
     return modulation_factor
 
+
 @cook.function_timer
 def charging_amounts_in_charging_sessions(
     run_charging_sessions_dataframe: pd.DataFrame,
@@ -1601,8 +1603,16 @@ def charging_amounts_in_charging_sessions(
         charging_sessions_with_charged_amounts['Start time']
         + constant_charge_time_shifts
     )
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
+    output_root: str = general_parameters.files.output_root
+    if pickle_interim_files:
+        charging_sessions_with_charged_amounts.to_pickle(
+            f'{output_root}/{case_name}/{scenario_name}_'
+            f'charging_sessions_with_charged_amounts.pkl'
+        )
 
     return charging_sessions_with_charged_amounts
+
 
 @cook.function_timer
 def get_profile_from_sessions(
@@ -1710,6 +1720,19 @@ def get_profile_from_sessions(
                 charging_profile_from_network_from_sessions.loc[
                     time_slot, location
                 ] += charge_from_network
+
+    output_root: str = general_parameters.files.output_root
+    pickle_interim_files: bool = general_parameters.interim_files.pickle
+    if pickle_interim_files:
+
+        charging_profile_to_vehicle_from_sessions.to_pickle(
+            f'{output_root}/{case_name}/{scenario_name}'
+            f'_charging_profile_to_vehicle_from_sessions.pkl'
+        )
+        charging_profile_from_network_from_sessions.to_pickle(
+            f'{output_root}/{case_name}/{scenario_name}'
+            f'_charging_profile_from_network_from_sessions.pkl'
+        )
 
     return (
         charging_profile_to_vehicle_from_sessions,

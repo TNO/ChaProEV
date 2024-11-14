@@ -401,23 +401,6 @@ def run_scenario(
             scenario,
             general_parameters,
         )
-    pickle_interim_files: bool = general_parameters.interim_files.pickle
-    output_root: str = general_parameters.files.output_root
-    if produce_sessions:
-        if pickle_interim_files:
-            charging_sessions_with_charged_amounts.to_pickle(
-                f'{output_root}/{case_name}/{scenario_name}_'
-                f'charging_sessions_with_charged_amounts.pkl'
-            )
-            if profiles_from_sessions:
-                charging_profile_to_vehicle_from_sessions.to_pickle(
-                    f'{output_root}/{case_name}/{scenario_name}'
-                    f'_charging_profile_to_vehicle_from_sessions.pkl'
-                )
-                charging_profile_from_network_from_sessions.to_pickle(
-                    f'{output_root}/{case_name}/{scenario_name}'
-                    f'_charging_profile_from_network_from_sessions.pkl'
-                )
 
     battery_capacity: float = scenario.vehicle.battery_capacity
     battery_capacity_dataframe: pd.DataFrame = (
@@ -460,6 +443,7 @@ def run_scenario(
     display_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
     )[2]
+    output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
     if produce_standard_profiles:
         profile_dataframe_headers: ty.List[str] = (
