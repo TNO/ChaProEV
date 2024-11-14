@@ -1214,7 +1214,7 @@ def write_output(
         )
 
 
-@cook.function_timer
+# @cook.function_timer
 def get_charging_profile(
     location_split: pd.DataFrame,
     run_mobility_matrix: pd.DataFrame,
@@ -1458,7 +1458,7 @@ def session_modulation(
     return modulation_factor
 
 
-@cook.function_timer
+# @cook.function_timer
 def charging_amounts_in_charging_sessions(
     run_charging_sessions_dataframe: pd.DataFrame,
     scenario: Box,
@@ -1615,7 +1615,7 @@ def charging_amounts_in_charging_sessions(
     return charging_sessions_with_charged_amounts
 
 
-@cook.function_timer
+# @cook.function_timer
 def get_profile_from_sessions(
     sessions: pd.DataFrame,
     scenario: Box,

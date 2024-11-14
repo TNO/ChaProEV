@@ -1972,7 +1972,7 @@ def get_kilometers_for_next_leg(
     )
 
 
-@cook.function_timer
+# @cook.function_timer
 def make_mobility_data(
     location_connections: pd.DataFrame,
     legs: define.Leg,

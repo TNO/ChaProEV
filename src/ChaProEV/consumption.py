@@ -207,7 +207,7 @@ def get_energy_for_next_leg(
         )
 
 
-@cook.function_timer
+# @cook.function_timer
 def get_consumption_data(
     run_mobility_matrix: pd.DataFrame,
     next_leg_kilometers: pd.DataFrame,

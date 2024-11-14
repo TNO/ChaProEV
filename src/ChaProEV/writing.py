@@ -55,15 +55,17 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         number_of_parallel_processes = (
             general_parameters.parallel_processing.amount_for_pickle_saves
         )
-    saving_pool_inputs: ty.Iterator[
-        ty.Tuple[pd.DataFrame, str, str, str, Box]
-    ] = zip(
+    saving_pool_inputs: (
+        ty.Iterator[ty.Tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
+    ) = zip(
         tables_to_save,
         output_table_names,
         repeat(groupfile_name),
         repeat(output_folder),
         repeat(general_parameters),
     )
+    # the ty.Any alternative is there because transforming it with the
+    # progress bar makes mypy think it change is type
     progress_bars_parameters: Box = general_parameters.progress_bars
     display_saving_pool_run: bool = (
         progress_bars_parameters.display_saving_pool_run

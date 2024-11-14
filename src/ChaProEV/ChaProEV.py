@@ -108,7 +108,7 @@ except ModuleNotFoundError:
 # we are importing again
 
 
-@cook.function_timer
+# @cook.function_timer
 def car_home_parking(case_name: str, general_parameters: Box) -> None:
     home_type_parameters: Box = general_parameters.home_type
     input_root: str = general_parameters.files.input_root
@@ -199,7 +199,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             fleet_profiles(case_name, variant_name, general_parameters)
 
 
-@cook.function_timer
+# @cook.function_timer
 def fleet_profiles(
     case_name: str, scenario_name: str, general_parameters: Box
 ) -> None:
@@ -542,7 +542,7 @@ def run_scenario(
         fleet_profiles(case_name, scenario_name, general_parameters)
 
 
-@cook.function_timer
+# @cook.function_timer
 def load_scenarios(case_name: str) -> ty.List[Box]:
     scenario_folder_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
     scenario_files: ty.List[str] = [
@@ -589,9 +589,11 @@ def run_ChaProEV(case_name: str) -> None:
             general_parameters.parallel_processing.amount_for_scenarios
         )
 
-    pool_inputs: ty.Iterator[ty.Tuple[Box, str, Box]] = zip(
+    pool_inputs: ty.Iterator[ty.Tuple[Box, str, Box]] | ty.Any = zip(
         scenarios, repeat(case_name), repeat(general_parameters)
     )
+    # the ty.Any alternative is there because transforming it with the
+    # progress bar makes mypy think it change is type
     progress_bars_parameters: Box = general_parameters.progress_bars
     display_scenario_run: bool = progress_bars_parameters.display_scenario_run
     scenario_run_description: str = (
@@ -599,8 +601,11 @@ def run_ChaProEV(case_name: str) -> None:
     )
     if display_scenario_run:
         pool_inputs = tqdm.tqdm(
-            pool_inputs, desc=scenario_run_description, total=len(scenarios)
+            pool_inputs,
+            desc=scenario_run_description,
+            total=len(scenarios),
         )
+
     with Pool(amount_of_parallel_processes) as scenarios_pool:
         scenarios_pool.starmap(run_scenario, pool_inputs)
 
@@ -621,19 +626,17 @@ if __name__ == '__main__':
     case_name = 'Mopo'
 
     run_ChaProEV(case_name)
-    print('Add sessions into next day')
-    print('Cut sessions to display?')
-    print('Iterate through sessions and sens remainder to next session')
-    print('Compute session first pass')
-    print('Do a second compute with passthrough')
-    print('Convert session-basec charge to profile')
-    print('Have parameter that shifts within a session?')
-    print('Do kilometers/consumption split for sessions?')
-    print('Do an effetive session end andthen a match between the approaches')
-    print('Make profile DF (with all) from sessions version')
-    print('Make fleet version')
-    print('Toggle on/off')
-    print('Compare profiles')
+    # print('Add sessions into next day')
+    # print('Iterate through sessions and send remainder to next session')
+    # print('Compute session first pass')
+    # print('Do a second compute with passthrough')
+    # print('Convert session-basec charge to profile')
+    # print('Have parameter that shifts within a session?')
+    # print('Do kilometers/consumption split for sessions?')
+    # print('Do an effetive session end andthen a match between the approaches')
+    # print('Make profile DF (with all) from sessions version')
+    # print('Make fleet version')
+    # print('Compare profiles')
     # Add actual stop time (if using full power)
     # Then infer profiles
     # DO this in a sperate DF that will be used to compare
