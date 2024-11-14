@@ -18,6 +18,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 
+@cook.function_timer
 def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
     '''
     Saves the pickle files to other formats

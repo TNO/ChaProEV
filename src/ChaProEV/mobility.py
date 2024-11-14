@@ -22,6 +22,7 @@ import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
+
 try:
     import run_time  # type: ignore
 
@@ -645,8 +646,7 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
-        mobility_module_parameters
-        .maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays
     )
 
     # Some useful quantities telling us how many of which day type there are
@@ -1972,6 +1972,7 @@ def get_kilometers_for_next_leg(
     )
 
 
+@cook.function_timer
 def make_mobility_data(
     location_connections: pd.DataFrame,
     legs: define.Leg,

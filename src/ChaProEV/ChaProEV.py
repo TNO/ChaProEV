@@ -107,6 +107,7 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+@cook.function_timer
 def car_home_parking(case_name: str, general_parameters: Box) -> None:
     home_type_parameters: Box = general_parameters.home_type
     input_root: str = general_parameters.files.input_root
@@ -197,6 +198,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             fleet_profiles(case_name, variant_name, general_parameters)
 
 
+@cook.function_timer
 def fleet_profiles(
     case_name: str, scenario_name: str, general_parameters: Box
 ) -> None:
@@ -318,21 +320,16 @@ def fleet_profiles(
         )
 
 
+@cook.function_timer
 def run_scenario(
     scenario: Box, case_name: str, general_parameters: Box
 ) -> None:
     scenario_name: str = scenario.name
     print(scenario_name)
-    decla_start: datetime.datetime = datetime.datetime.now()
     location_connections, legs, locations, trips = (
         define.declare_all_instances(scenario, case_name, general_parameters)
     )
-    print(
-        f'Declare {scenario_name}',
-        (datetime.datetime.now() - decla_start).total_seconds(),
-    )
 
-    mob_start: datetime.datetime = datetime.datetime.now()
     (
         run_mobility_matrix,
         location_split,
@@ -357,11 +354,7 @@ def run_scenario(
         case_name,
         general_parameters,
     )
-    print(
-        f'Mobility {scenario_name}',
-        (datetime.datetime.now() - mob_start).total_seconds(),
-    )
-    cons_start: datetime.datetime = datetime.datetime.now()
+
     consumption.get_consumption_data(
         run_mobility_matrix,
         run_next_leg_kilometers,
@@ -370,13 +363,8 @@ def run_scenario(
         case_name,
         general_parameters,
     )
-    print(
-        f'Consumption {scenario_name}',
-        (datetime.datetime.now() - cons_start).total_seconds(),
-    )
-    charge_start: datetime.datetime = datetime.datetime.now()
-    produce_sessions: bool = general_parameters.sessions.produce
 
+    produce_sessions: bool = general_parameters.sessions.produce
     if produce_sessions:
         charging_sessions_with_charged_amounts = (
             charging.charging_amounts_in_charging_sessions(
@@ -430,11 +418,6 @@ def run_scenario(
                     f'{output_root}/{case_name}/{scenario_name}'
                     f'_charging_profile_from_network_from_sessions.pkl'
                 )
-
-    print(
-        f'Charge {scenario_name}',
-        (datetime.datetime.now() - charge_start).total_seconds(),
-    )
 
     battery_capacity: float = scenario.vehicle.battery_capacity
     battery_capacity_dataframe: pd.DataFrame = (
@@ -531,6 +514,7 @@ def run_scenario(
         fleet_profiles(case_name, scenario_name, general_parameters)
 
 
+@cook.function_timer
 def load_scenarios(case_name: str) -> ty.List[Box]:
     scenario_folder_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
     scenario_files: ty.List[str] = [
@@ -551,8 +535,8 @@ def load_scenarios(case_name: str) -> ty.List[Box]:
     return scenarios
 
 
+@cook.function_timer
 def run_ChaProEV(case_name: str) -> None:
-    start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
     general_parameters: Box = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
@@ -586,17 +570,10 @@ def run_ChaProEV(case_name: str) -> None:
     do_car_home_type_split: bool = (
         general_parameters.home_type.do_car_home_type_split
     )
-
     if do_car_home_type_split:
         car_home_parking(case_name, general_parameters)
 
-    write_start: datetime.datetime = datetime.datetime.now()
     writing.extra_end_outputs(case_name, general_parameters)
-    print(
-        'Writing other outputs',
-        (datetime.datetime.now() - write_start).total_seconds(),
-    )
-    print('Total time', (datetime.datetime.now() - start_).total_seconds())
 
 
 if __name__ == '__main__':

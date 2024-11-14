@@ -6,6 +6,7 @@ import toml
 from ETS_CookBook import ETS_CookBook as cook
 
 
+@cook.function_timer
 def make_variants(case_name: str, csv_version: bool = True) -> None:
 
     if csv_version:

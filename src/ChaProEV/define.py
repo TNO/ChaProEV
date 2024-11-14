@@ -1706,6 +1706,7 @@ def declare_class_instances(
     return instances
 
 
+@cook.function_timer
 def declare_all_instances(
     scenario: Box, case_name: str, general_parameters: Box
 ) -> ty.Tuple[
