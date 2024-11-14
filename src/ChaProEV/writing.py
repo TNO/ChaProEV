@@ -54,18 +54,17 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         number_of_parallel_processes = (
             general_parameters.parallel_processing.amount_for_pickle_saves
         )
-
+    saving_pool_inputs: ty.Iterator[
+        ty.Tuple[pd.DataFrame, str, str, str, Box]
+    ] = zip(
+        tables_to_save,
+        output_table_names,
+        repeat(groupfile_name),
+        repeat(output_folder),
+        repeat(general_parameters),
+    )
     with Pool(number_of_parallel_processes) as saving_pool:
-        saving_pool.starmap(
-            cook.save_dataframe,
-            zip(
-                tables_to_save,
-                output_table_names,
-                repeat(groupfile_name),
-                repeat(output_folder),
-                repeat(general_parameters),
-            ),
-        )
+        saving_pool.starmap(cook.save_dataframe, saving_pool_inputs)
 
 
 def write_scenario_parameters(

@@ -10,7 +10,7 @@ amount_for_scenarios = 4
 amount_for_pickle_saves = 4
 
 [interim_files]
-pickle = false
+pickle = true
 consumption_tables_frequencies = ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
 save_consumption_table = [false, false, true, false, false]
 
@@ -204,3 +204,7 @@ produce = true
 generate_profiles = true
 [standard_profiles]
 produce = true
+
+[progress_bars]
+display_scenario_run = false
+scenario_run_description =  'Scenarios running'

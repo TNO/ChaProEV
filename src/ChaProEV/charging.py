@@ -1072,7 +1072,7 @@ def write_output(
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
     ]
-    scenario_name: str = scenario.name
+    scenario.name
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1091,7 +1091,7 @@ def write_output(
         ].set_index(['Time Tag', 'Hour Number', 'SPINE_Hour_Number'])
         if pickle_interim_files:
             battery_spaces[location_name].to_pickle(
-                f'{output_folder}/{scenario_name}_'
+                f'{output_folder}/{scenario.name}_'
                 f'{location_name}_battery_spaces.pkl'
             )
     charge_drawn_from_network = charge_drawn_from_network.reset_index()
@@ -1102,7 +1102,7 @@ def write_output(
     )
     if pickle_interim_files:
         charge_drawn_from_network.to_pickle(
-            f'{output_folder}/{scenario_name}_charge_drawn_from_network.pkl'
+            f'{output_folder}/{scenario.name}_charge_drawn_from_network.pkl'
         )
 
     charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
@@ -1116,13 +1116,13 @@ def write_output(
     )
     if pickle_interim_files:
         charge_drawn_from_network_total.to_pickle(
-            f'{output_folder}/{scenario_name}_'
+            f'{output_folder}/{scenario.name}_'
             'charge_drawn_from_network_total.pkl'
         )
 
     if pickle_interim_files:
         total_battery_space_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
+            f'{output_folder}/{scenario.name}_'
             'total_battery_space_per_location.pkl'
         )
 
@@ -1142,7 +1142,7 @@ def write_output(
         ]
     if pickle_interim_files:
         percentage_of_maximal_delivered_power_used_per_location.to_pickle(
-            f'{output_folder}/{scenario_name}_'
+            f'{output_folder}/{scenario.name}_'
             f'percentage_of_maximal_delivered_power_used_per_location.pkl'
         )
 
@@ -1165,7 +1165,7 @@ def write_output(
     ]
     if pickle_interim_files:
         percentage_of_maximal_delivered_power_used.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             f'_percentage_of_maximal_delivered_power_used.pkl'
         )
 
@@ -1177,7 +1177,7 @@ def write_output(
     )
     if pickle_interim_files:
         charge_drawn_by_vehicles.to_pickle(
-            f'{output_folder}/{scenario_name}_charge_drawn_by_vehicles.pkl'
+            f'{output_folder}/{scenario.name}_charge_drawn_by_vehicles.pkl'
         )
 
     charge_drawn_by_vehicles_total: pd.DataFrame = pd.DataFrame(
@@ -1191,7 +1191,7 @@ def write_output(
     )
     if pickle_interim_files:
         charge_drawn_by_vehicles_total.to_pickle(
-            f'{output_folder}/{scenario_name}'
+            f'{output_folder}/{scenario.name}'
             '_charge_drawn_by_vehicles_total.pkl'
         )
 
@@ -1210,7 +1210,7 @@ def write_output(
         )
     if pickle_interim_files:
         sum_of_battery_spaces.to_pickle(
-            f'{output_folder}/{scenario_name}_sum_of_battery_spaces.pkl'
+            f'{output_folder}/{scenario.name}_sum_of_battery_spaces.pkl'
         )
 
 
@@ -1463,6 +1463,7 @@ def charging_amounts_in_charging_sessions(
     run_charging_sessions_dataframe: pd.DataFrame,
     scenario: Box,
     general_parameters: Box,
+    case_name: str,
 ) -> pd.DataFrame:
     charging_sessions_with_charged_amounts: pd.DataFrame = (
         run_charging_sessions_dataframe.copy()
@@ -1607,7 +1608,7 @@ def charging_amounts_in_charging_sessions(
     output_root: str = general_parameters.files.output_root
     if pickle_interim_files:
         charging_sessions_with_charged_amounts.to_pickle(
-            f'{output_root}/{case_name}/{scenario_name}_'
+            f'{output_root}/{case_name}/{scenario.name}_'
             f'charging_sessions_with_charged_amounts.pkl'
         )
 
@@ -1616,7 +1617,10 @@ def charging_amounts_in_charging_sessions(
 
 @cook.function_timer
 def get_profile_from_sessions(
-    sessions: pd.DataFrame, scenario: Box, general_parameters: Box
+    sessions: pd.DataFrame,
+    scenario: Box,
+    general_parameters: Box,
+    case_name: str,
 ) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
     charging_profile_from_sessions: pd.DataFrame = (
         run_time.get_time_stamped_dataframe(scenario, general_parameters)
@@ -1726,11 +1730,11 @@ def get_profile_from_sessions(
     if pickle_interim_files:
 
         charging_profile_to_vehicle_from_sessions.to_pickle(
-            f'{output_root}/{case_name}/{scenario_name}'
+            f'{output_root}/{case_name}/{scenario.name}'
             f'_charging_profile_to_vehicle_from_sessions.pkl'
         )
         charging_profile_from_network_from_sessions.to_pickle(
-            f'{output_root}/{case_name}/{scenario_name}'
+            f'{output_root}/{case_name}/{scenario.name}'
             f'_charging_profile_from_network_from_sessions.pkl'
         )
 
@@ -1760,14 +1764,20 @@ if __name__ == '__main__':
 
     charging_sessions_with_charged_amounts = (
         charging_amounts_in_charging_sessions(
-            run_charging_sessions_dataframe, scenario, general_parameters
+            run_charging_sessions_dataframe,
+            scenario,
+            general_parameters,
+            case_name,
         )
     )
     (
         charging_profile_to_vehicle_from_sessions,
         charging_profile_from_network_from_sessions,
     ) = get_profile_from_sessions(
-        charging_sessions_with_charged_amounts, scenario, general_parameters
+        charging_sessions_with_charged_amounts,
+        scenario,
+        general_parameters,
+        case_name,
     )
     print(
         charging_profile_to_vehicle_from_sessions,

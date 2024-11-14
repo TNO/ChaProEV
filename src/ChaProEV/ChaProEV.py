@@ -320,88 +320,26 @@ def fleet_profiles(
         )
 
 
-@cook.function_timer
-def run_scenario(
-    scenario: Box, case_name: str, general_parameters: Box
+def make_display_dataframes(
+    location_split: pd.DataFrame,
+    total_battery_space_per_location: pd.DataFrame,
+    charge_drawn_from_network: pd.DataFrame,
+    run_next_leg_charge_from_network: pd.DataFrame,
+    run_next_leg_charge_to_vehicle: pd.DataFrame,
+    connectivity_per_location: pd.DataFrame,
+    maximal_delivered_power_per_location: pd.DataFrame,
+    maximal_received_power_per_location: pd.DataFrame,
+    vehicle_discharge_power_per_location: pd.DataFrame,
+    discharge_power_to_network_per_location: pd.DataFrame,
+    charging_sessions_with_charged_amounts: pd.DataFrame,
+    scenario: Box,
+    general_parameters: Box,
+    case_name: str,
 ) -> None:
-    scenario_name: str = scenario.name
-    print(scenario_name)
-    location_connections, legs, locations, trips = (
-        define.declare_all_instances(scenario, case_name, general_parameters)
-    )
-
-    (
-        run_mobility_matrix,
-        location_split,
-        maximal_delivered_power_per_location,
-        maximal_delivered_power,
-        connectivity_per_location,
-        maximal_received_power_per_location,
-        vehicle_discharge_power_per_location,
-        discharge_power_to_network_per_location,
-        run_next_leg_kilometers,
-        run_next_leg_kilometers_cumulative,
-        run_next_leg_charge_from_network,
-        run_next_leg_charge_to_vehicle,
-        run_charging_sessions,
-        run_charging_sessions_dataframe,
-    ) = mobility.make_mobility_data(
-        location_connections,
-        legs,
-        locations,
-        trips,
-        scenario,
-        case_name,
-        general_parameters,
-    )
-
-    consumption.get_consumption_data(
-        run_mobility_matrix,
-        run_next_leg_kilometers,
-        run_next_leg_kilometers_cumulative,
-        scenario,
-        case_name,
-        general_parameters,
-    )
-
-    produce_sessions: bool = general_parameters.sessions.produce
-    if produce_sessions:
-        charging_sessions_with_charged_amounts = (
-            charging.charging_amounts_in_charging_sessions(
-                run_charging_sessions_dataframe, scenario, general_parameters
-            )
-        )
     produce_standard_profiles: bool = (
         general_parameters.standard_profiles.produce
     )
-    if produce_standard_profiles:
-        (
-            battery_spaces,
-            total_battery_space_per_location,
-            charge_drawn_by_vehicles,
-            charge_drawn_from_network,
-        ) = charging.get_charging_profile(
-            location_split,
-            run_mobility_matrix,
-            maximal_delivered_power_per_location,
-            maximal_delivered_power,
-            scenario,
-            case_name,
-            general_parameters,
-        )
-    profiles_from_sessions: bool = (
-        general_parameters.sessions.generate_profiles
-    )
-    if produce_sessions and profiles_from_sessions:
-        (
-            charging_profile_to_vehicle_from_sessions,
-            charging_profile_from_network_from_sessions,
-        ) = charging.get_profile_from_sessions(
-            charging_sessions_with_charged_amounts,
-            scenario,
-            general_parameters,
-        )
-
+    produce_sessions: bool = general_parameters.sessions.produce
     battery_capacity: float = scenario.vehicle.battery_capacity
     battery_capacity_dataframe: pd.DataFrame = (
         battery_capacity * location_split
@@ -463,7 +401,7 @@ def run_scenario(
         profile_dataframe = profile_dataframe.loc[display_range]
         profile_dataframe.index.name = 'Time Tag'
         profile_dataframe.to_pickle(
-            f'{output_folder}/{scenario_name}_profile.pkl'
+            f'{output_folder}/{scenario.name}_profile.pkl'
         )
 
     if produce_sessions:
@@ -488,8 +426,113 @@ def run_scenario(
         )
 
         display_charging_sessions.to_pickle(
-            f'{output_folder}/{scenario_name}_charging_sessions.pkl'
+            f'{output_folder}/{scenario.name}_charging_sessions.pkl'
         )
+
+
+@cook.function_timer
+def run_scenario(
+    scenario: Box, case_name: str, general_parameters: Box
+) -> None:
+    scenario_name: str = scenario.name
+    print(scenario_name)
+    location_connections, legs, locations, trips = (
+        define.declare_all_instances(scenario, case_name, general_parameters)
+    )
+
+    (
+        run_mobility_matrix,
+        location_split,
+        maximal_delivered_power_per_location,
+        maximal_delivered_power,
+        connectivity_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+        run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
+        run_charging_sessions,
+        run_charging_sessions_dataframe,
+    ) = mobility.make_mobility_data(
+        location_connections,
+        legs,
+        locations,
+        trips,
+        scenario,
+        case_name,
+        general_parameters,
+    )
+
+    consumption.get_consumption_data(
+        run_mobility_matrix,
+        run_next_leg_kilometers,
+        run_next_leg_kilometers_cumulative,
+        scenario,
+        case_name,
+        general_parameters,
+    )
+
+    produce_sessions: bool = general_parameters.sessions.produce
+    if produce_sessions:
+        charging_sessions_with_charged_amounts = (
+            charging.charging_amounts_in_charging_sessions(
+                run_charging_sessions_dataframe,
+                scenario,
+                general_parameters,
+                case_name,
+            )
+        )
+    produce_standard_profiles: bool = (
+        general_parameters.standard_profiles.produce
+    )
+    if produce_standard_profiles:
+        (
+            battery_spaces,
+            total_battery_space_per_location,
+            charge_drawn_by_vehicles,
+            charge_drawn_from_network,
+        ) = charging.get_charging_profile(
+            location_split,
+            run_mobility_matrix,
+            maximal_delivered_power_per_location,
+            maximal_delivered_power,
+            scenario,
+            case_name,
+            general_parameters,
+        )
+    profiles_from_sessions: bool = (
+        general_parameters.sessions.generate_profiles
+    )
+    if produce_sessions and profiles_from_sessions:
+        (
+            charging_profile_to_vehicle_from_sessions,
+            charging_profile_from_network_from_sessions,
+        ) = charging.get_profile_from_sessions(
+            charging_sessions_with_charged_amounts,
+            scenario,
+            general_parameters,
+            case_name,
+        )
+
+    make_display_dataframes(
+        location_split,
+        total_battery_space_per_location,
+        charge_drawn_from_network,
+        run_next_leg_charge_from_network,
+        run_next_leg_charge_to_vehicle,
+        connectivity_per_location,
+        maximal_delivered_power_per_location,
+        maximal_received_power_per_location,
+        vehicle_discharge_power_per_location,
+        discharge_power_to_network_per_location,
+        charging_sessions_with_charged_amounts,
+        scenario,
+        general_parameters,
+        case_name,
+    )
+
     do_fleet_tables: bool = (
         general_parameters.profile_dataframe.do_fleet_tables
     )
@@ -545,11 +588,12 @@ def run_ChaProEV(case_name: str) -> None:
             general_parameters.parallel_processing.amount_for_scenarios
         )
 
+    pool_inputs: ty.Iterator[ty.Tuple[Box, str, Box]] = zip(
+        scenarios, repeat(case_name), repeat(general_parameters)
+    )
+
     with Pool(amount_of_parallel_processes) as scenarios_pool:
-        scenarios_pool.starmap(
-            run_scenario,
-            zip(scenarios, repeat(case_name), repeat(general_parameters)),
-        )
+        scenarios_pool.starmap(run_scenario, pool_inputs)
 
     do_car_home_type_split: bool = (
         general_parameters.home_type.do_car_home_type_split
