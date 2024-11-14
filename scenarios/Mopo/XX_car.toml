@@ -67,7 +67,7 @@ download_EV_tool_data = false
 vehicle = 'car'
 connectivity = 1
 charging_power = 8.9  # kW
-charger_efficiency = 0.85
+charger_efficiency = 0.77
 latitude = 52
 longitude = 6.2
 base_charging_price = 0.25  # €/kWh
@@ -77,7 +77,7 @@ percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 4.2 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_network = 0.6
 [locations.work]
 vehicle = 'car'
 connectivity = 0.25
@@ -92,7 +92,7 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 6.6 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_network = 0.7
 [locations.leisure]
 vehicle = 'car'
 connectivity = 0.25
@@ -107,12 +107,12 @@ percentage_in_location_at_run_start = 0
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 0 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_network = 0.7
 [locations.weekend]
 vehicle = 'car'
 connectivity = 0.1
 charging_power = 22  # kW
-charger_efficiency = 0.85
+charger_efficiency = 0.89
 latitude = 51.8
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh
@@ -127,7 +127,7 @@ proportion_of_discharge_to_network = 0.9
 vehicle = 'car'
 connectivity = 1
 charging_power = 22  # kW
-charger_efficiency = 0.85
+charger_efficiency = 0.89
 latitude = 53.0
 longitude = 6.2
 base_charging_price = 0.35  # €/kWh

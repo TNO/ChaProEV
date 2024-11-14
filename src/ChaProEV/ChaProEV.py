@@ -334,7 +334,7 @@ def make_profile_display_dataframe(
     discharge_power_to_network_per_location: pd.DataFrame,
     scenario: Box,
     general_parameters: Box,
-    case_name: str
+    case_name: str,
 ) -> None:
 
     battery_capacity: float = scenario.vehicle.battery_capacity
@@ -396,6 +396,14 @@ def make_profile_display_dataframe(
 
     profile_dataframe = profile_dataframe.loc[display_range]
     profile_dataframe.index.name = 'Time Tag'
+    profile_dataframe['Effective charging efficiency'] = (
+        profile_dataframe['Connected Power to Vehicles (kW)']
+        / profile_dataframe['Connected Power from Network (kW)']
+    )
+    profile_dataframe['Effective discharge efficiency'] = (
+        profile_dataframe['Discharge Power to Network (kW)']
+        / profile_dataframe['Vehicle Discharge Power (kW)']
+    )
     profile_dataframe.to_pickle(f'{output_folder}/{scenario.name}_profile.pkl')
 
 
