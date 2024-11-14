@@ -286,6 +286,14 @@ def fleet_profiles(
                         carrier_fleet_thousands
                         * reference_profile[profile_header]
                     )
+                fleet_profile['Effective charging efficiency'] = (
+                    fleet_profile['Connected Power to Vehicles (MW)']
+                    / fleet_profile['Connected Power from Network (MW)']
+                )
+                fleet_profile['Effective discharge efficiency'] = (
+                    fleet_profile['Discharge Power to Network (MW)']
+                    / fleet_profile['Vehicle Discharge Power (MW)']
+                )
                 fleet_profile.to_pickle(
                     f'{output_folder}/{scenario_name}_profile_fleet.pkl'
                 )
