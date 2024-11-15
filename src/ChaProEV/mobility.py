@@ -22,7 +22,6 @@ import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
-
 try:
     import run_time  # type: ignore
 
@@ -2076,12 +2075,14 @@ def make_mobility_data(
     pickle_interim_files: bool = general_parameters.interim_files.pickle
 
     charging_sessions_headers: ty.List[str] = (
-        scenario.charging_sessions.run_dataframe_headers
+        general_parameters.sessions_dataframe.run_dataframe_headers
     )
 
     run_charging_sessions_dataframe: pd.DataFrame = (
         define.get_charging_sessions_dataframe(
-            run_charging_sessions, scenario, charging_sessions_headers
+            run_charging_sessions,
+            general_parameters,
+            charging_sessions_headers,
         )
     )
     if pickle_interim_files:

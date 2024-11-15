@@ -287,8 +287,8 @@ def fleet_profiles(
                         * reference_profile[profile_header]
                     )
                 fleet_profile['Effective charging efficiency'] = (
-                    fleet_profile['Connected Power to Vehicles (MW)']
-                    / fleet_profile['Connected Power from Network (MW)']
+                    fleet_profile['Charging Power to Vehicles (MW)']
+                    / fleet_profile['Charging Power from Network (MW)']
                 )
                 fleet_profile['Effective discharge efficiency'] = (
                     fleet_profile['Discharge Power to Network (MW)']
@@ -319,6 +319,14 @@ def fleet_profiles(
                         carrier_fleet_thousands
                         * reference_sessions[profile_header]
                     )
+                fleet_sessions['Effective charging efficiency'] = (
+                    fleet_sessions['Charging Power to Vehicles (MW)']
+                    / fleet_sessions['Charging Power from Network (MW)']
+                )
+                fleet_sessions['Effective discharge efficiency'] = (
+                    fleet_sessions['Discharge Power to Network (MW)']
+                    / fleet_sessions['Vehicle Discharge Power (MW)']
+                )
 
     fleet_consumption_table.to_pickle(
         f'{output_folder}/{scenario_name}_{consumption_table_name}_fleet.pkl'
@@ -405,8 +413,8 @@ def make_profile_display_dataframe(
     profile_dataframe = profile_dataframe.loc[display_range]
     profile_dataframe.index.name = 'Time Tag'
     profile_dataframe['Effective charging efficiency'] = (
-        profile_dataframe['Connected Power to Vehicles (kW)']
-        / profile_dataframe['Connected Power from Network (kW)']
+        profile_dataframe['Charging Power to Vehicles (kW)']
+        / profile_dataframe['Charging Power from Network (kW)']
     )
     profile_dataframe['Effective discharge efficiency'] = (
         profile_dataframe['Discharge Power to Network (kW)']
@@ -435,16 +443,24 @@ def make_sessions_display_dataframes(
         ]
     )
     display_session_headers: ty.List[str] = (
-        scenario.charging_sessions.display_dataframe_headers
+        general_parameters.sessions_dataframe.display_dataframe_headers
     )
     display_session_index: ty.List[str] = (
-        scenario.charging_sessions.display_dataframe_index
+        general_parameters.sessions_dataframe.display_dataframe_index
     )
 
     display_charging_sessions: pd.DataFrame = (
         charging_sessions_with_charged_amounts[
             display_session_headers
         ].set_index(display_session_index)
+    )
+    display_charging_sessions['Effective charging efficiency'] = (
+        display_charging_sessions['Charging Power to Vehicles (kW)']
+        / display_charging_sessions['Charging Power from Network (kW)']
+    )
+    display_charging_sessions['Effective discharge efficiency'] = (
+        display_charging_sessions['Discharge Power to Network (kW)']
+        / display_charging_sessions['Vehicle Discharge Power (kW)']
     )
 
     display_charging_sessions.to_pickle(

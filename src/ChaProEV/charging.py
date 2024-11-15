@@ -1477,31 +1477,31 @@ def charging_amounts_in_charging_sessions(
 
     charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
         charging_sessions_with_charged_amounts[
-            'Previous leg consumption (kWh)'
+            'Demand for incoming leg (kWh) (to vehicle)'
         ]
     )
     charging_sessions_with_charged_amounts[
-        'Maximal Possible Charge to Vehicle (kWh)'
+        'Maximal Possible Charge to Vehicles (kWh)'
     ] = (
         charging_sessions_with_charged_amounts['Duration (hours)']
         * charging_sessions_with_charged_amounts[
-            'Charging power to vehicle (kW)'
+            'Charging Power to Vehicles (kW)'
         ]
     )
     charging_sessions_with_charged_amounts['Modulation factor'] = (
         session_modulation(charging_sessions_with_charged_amounts).values
     )
     charging_sessions_with_charged_amounts[
-        'Available Charge to Vehicle (kWh)'
+        'Available Charge to Vehicles (kWh)'
     ] = charging_sessions_with_charged_amounts['Modulation factor'].multiply(
         charging_sessions_with_charged_amounts[
-            'Maximal Possible Charge to Vehicle (kWh)'
+            'Maximal Possible Charge to Vehicles (kWh)'
         ]
     )
-    charging_sessions_with_charged_amounts['Charge to vehicle (kWh)'] = (
+    charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] = (
         charging_sessions_with_charged_amounts[
             [
-                'Available Charge to Vehicle (kWh)',
+                'Available Charge to Vehicles (kWh)',
                 'Target charge (kWh)',
             ]
         ].min(axis=1)
@@ -1509,7 +1509,7 @@ def charging_amounts_in_charging_sessions(
     charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
         charging_sessions_with_charged_amounts['Target charge (kWh)']
         - charging_sessions_with_charged_amounts[
-            'Available Charge to Vehicle (kWh)'
+            'Available Charge to Vehicles (kWh)'
         ]
     )
     charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = [
@@ -1538,10 +1538,10 @@ def charging_amounts_in_charging_sessions(
             + rolled_deficit
         )
 
-        charging_sessions_with_charged_amounts['Charge to vehicle (kWh)'] = (
+        charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] = (
             charging_sessions_with_charged_amounts[
                 [
-                    'Available Charge to Vehicle (kWh)',
+                    'Available Charge to Vehicles (kWh)',
                     'Target charge (kWh)',
                 ]
             ].min(axis=1)
@@ -1549,7 +1549,7 @@ def charging_amounts_in_charging_sessions(
         charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
             charging_sessions_with_charged_amounts['Target charge (kWh)']
             - charging_sessions_with_charged_amounts[
-                'Available Charge to Vehicle (kWh)'
+                'Available Charge to Vehicles (kWh)'
             ]
         )
         charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = [
@@ -1574,9 +1574,9 @@ def charging_amounts_in_charging_sessions(
     )
 
     charging_sessions_with_charged_amounts[
-        'Charge from network (kWh)'
+        'Charge from Network (kWh)'
     ] = charging_sessions_with_charged_amounts[
-        'Charge to vehicle (kWh)'
+        'Charge to Vehicles (kWh)'
     ] * charging_sessions_with_charged_amounts[
         'Location'
     ].map(
@@ -1584,10 +1584,10 @@ def charging_amounts_in_charging_sessions(
     )
     charging_sessions_with_charged_amounts[
         'Duration at constant charge (hours)'
-    ] = charging_sessions_with_charged_amounts['Charge to vehicle (kWh)'] / (
+    ] = charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] / (
         charging_sessions_with_charged_amounts['Modulation factor']
         * charging_sessions_with_charged_amounts[
-            'Charging power to vehicle (kW)'
+            'Charging Power to Vehicles (kW)'
         ]
     )
     constant_charge_time_shifts: pd.Series = pd.Series(
@@ -1645,11 +1645,11 @@ def get_profile_from_sessions(
         )
     ]
     used_powers_to_vehicle: pd.Series = (
-        sessions['Charging power to vehicle (kW)']
+        sessions['Charging Power to Vehicles (kW)']
         * sessions['Modulation factor']
     )
     used_powers_from_network: pd.Series = (
-        sessions['Charging power from network (kW)']
+        sessions['Charging Power from Network (kW)']
         * sessions['Modulation factor']
     )
     sessions_charging_slots_charge_factors_to_vehicle: ty.List[np.ndarray] = [
@@ -1795,8 +1795,8 @@ if __name__ == '__main__':
     sessions_2018 = charging_sessions_with_charged_amounts.loc[
         charging_sessions_with_charged_amounts['Start time'].dt.year == 2018
     ]
-    print(sessions_2018['Charge to vehicle (kWh)'].sum())
-    print(sessions_2018['Charge from network (kWh)'].sum())
+    print(sessions_2018['Charging Power to Vehicles (kW)'].sum())
+    print(sessions_2018['Charging Power from Network (kW)'].sum())
     print(sessions_2018)
 
     case_name = 'Mopo'
@@ -1805,7 +1805,7 @@ if __name__ == '__main__':
     #     f'scenarios/{case_name}/{test_scenario_name}.toml'
     # )
     # scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
-    scenario.name = test_scenario_name
+    scenario.name = scenario_name
     general_parameters_file_name = 'ChaProEV.toml'
     general_parameters = Box(
         cook.parameters_from_TOML(general_parameters_file_name)

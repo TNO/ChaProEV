@@ -2043,12 +2043,14 @@ def declare_all_instances(
                 f'.pkl'
             )
             charging_sessions_headers: ty.List[str] = (
-                scenario.charging_sessions.dataframe_headers
+                general_parameters.sessions_dataframe.dataframe_headers
             )
 
             charging_sessions_dataframe: pd.DataFrame = (
                 get_charging_sessions_dataframe(
-                    trip.charging_sessions, scenario, charging_sessions_headers
+                    trip.charging_sessions,
+                    general_parameters,
+                    charging_sessions_headers,
                 )
             )
 
@@ -2062,14 +2064,16 @@ def declare_all_instances(
 
 
 def get_charging_sessions_dataframe(
-    charging_sessions: ty.List, scenario: Box, chosen_headers: ty.List[str]
+    charging_sessions: ty.List,
+    general_parameters: Box,
+    chosen_headers: ty.List[str],
 ) -> pd.DataFrame:
     charging_sessions_dataframe: pd.DataFrame = pd.DataFrame(
         index=range(len(charging_sessions))
     )
 
     charging_sessions_properties: ty.List[str] = (
-        scenario.charging_sessions.properties
+        general_parameters.sessions_dataframe.properties
     )
     for session_index, session in enumerate(charging_sessions):
         for charging_session_header, charging_session_property in zip(
