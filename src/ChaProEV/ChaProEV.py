@@ -119,6 +119,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
     ).set_index(home_type_parameters.index_name)
 
     profiles_index: ty.List[str] = home_type_parameters.profiles_index
+    sessions_index: ty.List[str] = home_type_parameters.sessions_index
     own_driveway_name: str = home_type_parameters.own_driveway_name
     on_street_name: str = home_type_parameters.on_street_name
 
@@ -161,6 +162,33 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             .set_index(profiles_index)
             .astype(float)
         )
+        own_driveway_values_to_vehicles_from_sessions: pd.DataFrame = (
+            pd.read_pickle(
+                f'{output_folder}/{own_driveway_profile_prefix}'
+                f'_charging_profile_to_vehicle_from_sessions.pkl'
+            )
+            .reset_index()
+            .set_index(profiles_index)
+            .astype(float)
+        )
+        own_driveway_values_from_network_from_sessions: pd.DataFrame = (
+            pd.read_pickle(
+                f'{output_folder}/{own_driveway_profile_prefix}'
+                f'_charging_profile_from_network_from_sessions.pkl'
+            )
+            .reset_index()
+            .set_index(profiles_index)
+            .astype(float)
+        )
+        charging_sessions_own_driveway_values: pd.DataFrame = pd.DataFrame(
+            pd.read_pickle(
+                f'{output_folder}/{own_driveway_profile_prefix}'
+                f'_charging_sessions.pkl'
+            )
+            .reset_index()
+            .set_index(sessions_index)
+            .astype(float)
+        )
 
         on_street_values: pd.DataFrame = (
             pd.read_pickle(
@@ -168,20 +196,101 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             )
             .reset_index()
             .set_index(profiles_index)
+            .astype(float)
+        )
+
+        on_street_values_to_vehicles_from_sessions: pd.DataFrame = (
+            pd.read_pickle(
+                f'{output_folder}/{on_street_profile_prefix}'
+                f'_charging_profile_to_vehicle_from_sessions.pkl'
+            )
+            .reset_index()
+            .set_index(profiles_index)
+            .astype(float)
+        )
+        on_street_values_from_network_from_sessions: pd.DataFrame = (
+            pd.read_pickle(
+                f'{output_folder}/{on_street_profile_prefix}'
+                f'_charging_profile_from_network_from_sessions.pkl'
+            )
+            .reset_index()
+            .set_index(profiles_index)
+            .astype(float)
+        )
+        charging_sessions_on_street_values: pd.DataFrame = pd.DataFrame(
+            pd.read_pickle(
+                f'{output_folder}/{on_street_profile_prefix}'
+                f'_charging_sessions.pkl'
+            )
+            .reset_index()
+            .set_index(sessions_index)
+            .astype(float)
         )
 
         combined_values: pd.DataFrame = pd.DataFrame(
             index=own_driveway_values.index,
             columns=own_driveway_values.columns,
         )
+        combined_values_to_vehicles_from_sessions: pd.DataFrame = pd.DataFrame(
+            index=own_driveway_values_to_vehicles_from_sessions.index,
+            columns=own_driveway_values_to_vehicles_from_sessions.columns,
+        )
+        combined_values_from_network_from_sessions: pd.DataFrame = (
+            pd.DataFrame(
+                index=own_driveway_values_from_network_from_sessions.index,
+                columns=own_driveway_values_from_network_from_sessions.columns,
+            )
+        )
         for quantity in combined_values.columns:
             combined_values[quantity] = (
                 own_driveway_percentage * own_driveway_values[quantity]
                 + (1 - own_driveway_percentage) * on_street_values[quantity]
             )
+            combined_values_to_vehicles_from_sessions[quantity] = (
+                own_driveway_percentage
+                * own_driveway_values_to_vehicles_from_sessions[quantity]
+                + (1 - own_driveway_percentage)
+                * on_street_values_to_vehicles_from_sessions[quantity]
+            )
+            combined_values_from_network_from_sessions[quantity] = (
+                own_driveway_percentage
+                * own_driveway_values_from_network_from_sessions[quantity]
+                + (1 - own_driveway_percentage)
+                * on_street_values_from_network_from_sessions[quantity]
+            )
+        sessions_values_columns: ty.List[str] = (
+            home_type_parameters.sessions_values_columns
+        )
+        for sessions_values_column in sessions_values_columns:
+            charging_sessions_own_driveway_values[
+                sessions_values_column
+            ] *= own_driveway_percentage
+            charging_sessions_on_street_values[sessions_values_column] *= (
+                1 - own_driveway_percentage
+            )
+
+        combined_sessions: pd.DataFrame = pd.concat(
+            [
+                charging_sessions_own_driveway_values,
+                charging_sessions_on_street_values,
+            ]
+        )
 
         combined_values.to_pickle(
             f'{output_folder}/{variant_name}_profile.pkl'
+        )
+
+        combined_values_to_vehicles_from_sessions.to_pickle(
+            f'{output_folder}/{variant_name}'
+            f'_charging_profile_to_vehicle_from_sessions.pkl'
+        )
+        combined_values_from_network_from_sessions.to_pickle(
+            f'{output_folder}/{variant_name}'
+            f'_charging_profile_from_network_from_sessions.pkl'
+        )
+
+        combined_sessions.to_pickle(
+            f'{output_folder}/{variant_name}_charging_sessions.pkl'
         )
 
         weekly_consumption_table: pd.DataFrame = pd.read_pickle(

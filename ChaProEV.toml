@@ -88,10 +88,6 @@ display_dataframe_index = [
 ]
 
 
-
-
-
-
 fleet_display_dataframe_headers = [
     'Previous leg consumption (MWh)', 'Next leg consumption (MWh)',
     'Connectivity (thousands)',
@@ -241,7 +237,15 @@ index_name = 'Variant name'
 own_driveway_name = 'own_driveway'
 on_street_name = 'street_parking'
 profiles_index = ['Time Tag', 'Hour Number', 'SPINE_hour_number', 'Day Type', 'Hour index from day start']
-
+sessions_index = ['Location' 'Start time', 'End time']
+sessions_values_columns = [    
+    'Demand for incoming leg (kWh) (to vehicle)', 'Demand for next leg (kWh) (to vehicle)',
+    'Connectivity (%)',
+    'Charging Power to Vehicles (kW)', 'Charging Power from Network (kW)',
+    'Vehicle Discharge Power (kW)', 'Discharge Power to Network (kW)',
+    'Maximal Possible Charge to Vehicles (kWh)',
+    'Charge to Vehicles (kWh)', 'Charge from Network (kWh)'
+]
 
 [sessions]
 produce = true
