@@ -246,6 +246,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
                 own_driveway_percentage * own_driveway_values[quantity]
                 + (1 - own_driveway_percentage) * on_street_values[quantity]
             )
+        for quantity in combined_values_to_vehicles_from_sessions.columns:
             combined_values_to_vehicles_from_sessions[quantity] = (
                 own_driveway_percentage
                 * own_driveway_values_to_vehicles_from_sessions[quantity]
@@ -261,11 +262,11 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
         sessions_values_columns: ty.List[str] = (
             home_type_parameters.sessions_values_columns
         )
-        for sessions_values_column in sessions_values_columns:
+        for quantity in sessions_values_columns:
             charging_sessions_own_driveway_values[
-                sessions_values_column
+                quantity
             ] *= own_driveway_percentage
-            charging_sessions_on_street_values[sessions_values_column] *= (
+            charging_sessions_on_street_values[quantity] *= (
                 1 - own_driveway_percentage
             )
 
