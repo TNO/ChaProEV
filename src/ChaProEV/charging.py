@@ -1726,17 +1726,15 @@ def get_profile_from_sessions(
                 ] += charge_from_network
 
     output_root: str = general_parameters.files.output_root
-    pickle_interim_files: bool = general_parameters.interim_files.pickle
-    if pickle_interim_files:
 
-        charging_profile_to_vehicle_from_sessions.to_pickle(
-            f'{output_root}/{case_name}/{scenario.name}'
-            f'_charging_profile_to_vehicle_from_sessions.pkl'
-        )
-        charging_profile_from_network_from_sessions.to_pickle(
-            f'{output_root}/{case_name}/{scenario.name}'
-            f'_charging_profile_from_network_from_sessions.pkl'
-        )
+    charging_profile_to_vehicle_from_sessions.to_pickle(
+        f'{output_root}/{case_name}/{scenario.name}'
+        f'_charging_profile_to_vehicle_from_sessions.pkl'
+    )
+    charging_profile_from_network_from_sessions.to_pickle(
+        f'{output_root}/{case_name}/{scenario.name}'
+        f'_charging_profile_from_network_from_sessions.pkl'
+    )
 
     return (
         charging_profile_to_vehicle_from_sessions,

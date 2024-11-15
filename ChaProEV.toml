@@ -237,7 +237,7 @@ index_name = 'Variant name'
 own_driveway_name = 'own_driveway'
 on_street_name = 'street_parking'
 profiles_index = ['Time Tag', 'Hour Number', 'SPINE_hour_number', 'Day Type', 'Hour index from day start']
-sessions_index = ['Location' 'Start time', 'End time']
+sessions_index = ['Location', 'Start time', 'End time']
 sessions_values_columns = [    
     'Demand for incoming leg (kWh) (to vehicle)', 'Demand for next leg (kWh) (to vehicle)',
     'Connectivity (%)',
