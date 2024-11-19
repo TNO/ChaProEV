@@ -1216,7 +1216,7 @@ def write_output(
     charge_drawn_from_network_total['Total Charge Drawn (kWh)'] = (
         charge_drawn_from_network.sum(axis=1)
     )
-    
+
     charging_costs_total: pd.Series = charging_costs.sum(axis=1)
     percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
         pd.DataFrame(index=charge_drawn_from_network.index)
@@ -1334,7 +1334,11 @@ def get_charging_profile(
     case_name: str,
     general_parameters: Box,
 ) -> ty.Tuple[
-    ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame, pd.DataFrame
+    ty.Dict[str, pd.DataFrame],
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
+    pd.DataFrame,
 ]:
     '''
     This is the main function of the charging module.
@@ -1561,6 +1565,7 @@ def get_charging_profile(
         total_battery_space_per_location,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
+        charging_costs,
     )
 
 
@@ -1934,6 +1939,7 @@ if __name__ == '__main__':
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
         total_battery_space_per_location,
+        charging_costs,
     ) = get_charging_profile(
         location_split,
         run_mobility_matrix,

@@ -343,7 +343,7 @@ def fleet_profiles(
 
     fleet_split: pd.DataFrame = pd.read_csv(
         f'{input_folder}/{fleet_file_name}'
-    ).set_index('Variant name')
+    ).set_index('Scenario')
 
     total_fleet_thousands: float = float(
         fleet_split.loc[scenario_name]['Total Fleet (thousands)']
@@ -409,9 +409,9 @@ def fleet_profiles(
                 ] = fleet_profile['Effective discharge efficiency'].fillna(
                     general_parameters.discharge.no_discharge_efficiency_output
                 )
-                fleet_profile[
+                fleet_profile['Effective charging efficiency'] = fleet_profile[
                     'Effective charging efficiency'
-                ] = fleet_profile['Effective charging efficiency'].fillna(
+                ].fillna(
                     general_parameters.discharge.no_charge_efficiency_output
                 )
                 fleet_profile.to_pickle(
@@ -550,16 +550,12 @@ def make_profile_display_dataframe(
         profile_dataframe['Discharge Power to Network (kW)']
         / profile_dataframe['Vehicle Discharge Power (kW)']
     )
-    profile_dataframe['Effective discharge efficiency'] = (
-        profile_dataframe['Effective discharge efficiency'].fillna(
-            general_parameters.discharge.no_discharge_efficiency_output
-        )
-    )
-    profile_dataframe['Effective charging efficiency'] = (
-        profile_dataframe['Effective charging efficiency'].fillna(
-            general_parameters.discharge.no_charge_efficiency_output
-        )
-    )
+    profile_dataframe['Effective discharge efficiency'] = profile_dataframe[
+        'Effective discharge efficiency'
+    ].fillna(general_parameters.discharge.no_discharge_efficiency_output)
+    profile_dataframe['Effective charging efficiency'] = profile_dataframe[
+        'Effective charging efficiency'
+    ].fillna(general_parameters.discharge.no_charge_efficiency_output)
     profile_dataframe.to_pickle(f'{output_folder}/{scenario.name}_profile.pkl')
 
 
@@ -654,7 +650,7 @@ def run_scenario(
         general_parameters,
     )
 
-    consumption.get_consumption_data(
+    consumption_table: pd.DataFrame = consumption.get_consumption_data(
         run_mobility_matrix,
         run_next_leg_kilometers,
         run_next_leg_kilometers_cumulative,
@@ -683,6 +679,7 @@ def run_scenario(
             total_battery_space_per_location,
             charge_drawn_by_vehicles,
             charge_drawn_from_network,
+            charging_costs,
         ) = charging.get_charging_profile(
             location_split,
             run_mobility_matrix,
@@ -736,6 +733,89 @@ def run_scenario(
 
     if do_fleet_tables:
         fleet_profiles(case_name, scenario_name, general_parameters)
+
+    display_run_totals, display_fleet_run_totals = make_display_totals(
+        charging_costs,
+        charge_drawn_from_network,
+        charge_drawn_by_vehicles,
+        consumption_table,
+        scenario,
+        general_parameters,
+        case_name,
+    )
+    # print(scenario.name)
+    # print(display_run_totals)
+    # print(display_fleet_run_totals)
+
+
+def make_display_totals(
+    charging_costs: pd.DataFrame,
+    charge_drawn_from_network: pd.DataFrame,
+    charge_drawn_by_vehicles: pd.DataFrame,
+    consumption_table: pd.DataFrame,
+    scenario: Box,
+    general_parameters: Box,
+    case_name: str,
+) -> ty.Tuple[pd.Series, pd.Series]:
+    display_range: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[2]
+    display_run_charging_costs: float = (
+        charging_costs.loc[display_range].sum().sum()
+    )
+    display_run_charge_from_network: float = (
+        charge_drawn_from_network.loc[display_range].sum().sum()
+    )
+    display_run_charge_drwan_by_vehicles: float = (
+        charge_drawn_by_vehicles.loc[display_range].sum().sum()
+    )
+    display_run_kilometrage: float = consumption_table.loc[display_range][
+        'Kilometers'
+    ].sum()
+    display_run_totals: pd.Series = pd.Series()
+    display_run_totals['Kilometers'] = display_run_kilometrage
+    display_run_totals['Charge drawn by vehicles (kWh)'] = (
+        display_run_charge_drwan_by_vehicles
+    )
+    display_run_totals['Charge drawn from network (kWh)'] = (
+        display_run_charge_from_network
+    )
+    display_run_totals['Charging costs (€)'] = display_run_charging_costs
+    input_root: str = general_parameters.files.input_root
+    input_folder: str = f'{input_root}/{case_name}'
+    fleet_file_name: str = general_parameters.profile_dataframe.fleet_file_name
+    fleet_split: pd.DataFrame = pd.read_csv(
+        f'{input_folder}/{fleet_file_name}'
+    ).set_index('Scenario')
+
+    total_electric_fleet_thousands: float = float(
+        fleet_split.loc[scenario.name]['Total Fleet (thousands)']
+        * fleet_split.loc[scenario.name]['electricity proportion']
+    )
+    display_fleet_run_totals: pd.Series = pd.Series()
+    display_fleet_run_totals['Thousand Kilometers'] = (
+        display_run_kilometrage * total_electric_fleet_thousands
+    )
+    display_fleet_run_totals['Charge drawn by vehicles (MWh)'] = (
+        display_run_charge_drwan_by_vehicles * total_electric_fleet_thousands
+    )
+    display_fleet_run_totals['Charge drawn from network (MWh)'] = (
+        display_run_charge_from_network * total_electric_fleet_thousands
+    )
+    display_fleet_run_totals['Charging costs (thousand €)'] = (
+        display_run_charging_costs * total_electric_fleet_thousands
+    )
+    output_root: str = general_parameters.files.output_root
+    output_folder: str = f'{output_root}/{case_name}'
+    display_run_totals.to_pickle(
+        f'{output_folder}/{scenario.name}_display_run_totals.pkl'
+    )
+    display_fleet_run_totals.to_pickle(
+        f'{output_folder}/{scenario.name}'
+        f'_display_electric_fleet_run_totals.pkl'
+    )
+
+    return display_run_totals, display_fleet_run_totals
 
 
 # @cook.function_timer
@@ -823,7 +903,6 @@ if __name__ == '__main__':
 
     run_ChaProEV(case_name)
 
-    # display run totals (km, costs, energy fron net / to car)
     # print('Add sessions into next day')
     # print('Iterate through sessions and send remainder to next session')
     # print('Compute session first pass')

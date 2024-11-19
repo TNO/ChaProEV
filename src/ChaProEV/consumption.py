@@ -28,7 +28,7 @@ def create_consumption_tables(
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> None:
+) -> pd.DataFrame:
     '''
     Creates the consumption tables
     '''
@@ -168,6 +168,7 @@ def create_consumption_tables(
         yearly_consumption_table.to_pickle(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
+    return consumption_table
 
 
 def get_energy_for_next_leg(
@@ -215,8 +216,8 @@ def get_consumption_data(
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> None:
-    create_consumption_tables(
+) -> pd.DataFrame:
+    consumption_table = create_consumption_tables(
         run_mobility_matrix, scenario, case_name, general_parameters
     )
     get_energy_for_next_leg(
@@ -226,6 +227,7 @@ def get_consumption_data(
         case_name,
         general_parameters,
     )
+    return consumption_table
 
 
 if __name__ == '__main__':
@@ -251,7 +253,7 @@ if __name__ == '__main__':
         f'{output_folder}/{scenario_name}_'
         'next_leg_kilometers_cumulative.pkl',
     )
-    get_consumption_data(
+    consumption_table: pd.DataFrame = get_consumption_data(
         run_mobility_matrix,
         next_leg_kilometers,
         next_leg_kilometers_cumulative,
