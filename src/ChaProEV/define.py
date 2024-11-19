@@ -721,8 +721,8 @@ class Location:
         )
         location.latitude: float = this_location_parameters.latitude
         location.longitude: float = this_location_parameters.longitude
-        location.base_charging_price: float = (
-            this_location_parameters.base_charging_price
+        location.charging_price: float = (
+            this_location_parameters.charging_price
         )
         location.charging_desirability: float = (
             this_location_parameters.charging_desirability

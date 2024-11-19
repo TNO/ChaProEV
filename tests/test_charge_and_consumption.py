@@ -52,7 +52,7 @@ def test_charge_and_consumption() -> None:
         )
         charge_drawn_in_test: float = (
             charge_drawn_by_vehicles_dataframe_in_test[
-                'Total Charge Drawn (kW)'
+                'Total Charge Drawn (kWh)'
             ].sum()
         )
 

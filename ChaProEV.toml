@@ -258,3 +258,7 @@ display_scenario_run = true
 scenario_run_description =  'Scenarios started'
 display_saving_pool_run = true
 saving_pool_run_description =  'Saving extra end outputs started'
+
+[discharge]
+no_discharge_efficiency_output = 'No discharge'
+no_charge_efficiency_output = 'No charge'

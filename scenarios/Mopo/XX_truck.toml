@@ -70,7 +70,7 @@ charging_power = 200  # kW
 charger_efficiency = 0.85
 latitude = 52
 longitude = 6.2
-base_charging_price = 0.25  # €/kWh
+charging_price = 0.25  # €/kWh
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 percentage_in_location_at_run_start = 1
@@ -78,6 +78,11 @@ percentage_in_location_at_run_start = 1
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 150 # kW
 proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
 [locations.truck_customer]
 vehicle = 'truck'
 connectivity = 0.1
@@ -85,7 +90,7 @@ charging_power = 200  # kW
 charger_efficiency = 0.85
 latitude = 52
 longitude = 6.2
-base_charging_price = 0.25  # €/kWh
+charging_price = 0.25  # €/kWh
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 percentage_in_location_at_run_start = 1
@@ -93,6 +98,11 @@ percentage_in_location_at_run_start = 1
 # compute_start_location_split in mobility_module below)
 vehicle_discharge_power = 0 # kW
 proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
 
 [legs]
 # You can add legs here by copying existing legs,
@@ -413,6 +423,8 @@ fitting_polynomial_order = 6
 
 
 [charging]
+price_reaction_exponent = 0 # 0.5
+desirability_reaction_exponent = 0 # 1
 
 [charging_sessions]
 resolution = 1 # subdivisions from main unit of time

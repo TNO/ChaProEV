@@ -16,6 +16,7 @@ def test_empty_values() -> None:
                     f'{folder_to_test}/{test_file}'
                 )
                 print(test_dataframe)
+                print(test_file)
                 assert not test_dataframe.isnull().values.any()
 
 

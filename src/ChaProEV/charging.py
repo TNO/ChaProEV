@@ -34,6 +34,92 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+def get_time_modulation(
+    run_range: pd.DatetimeIndex, scenario: Box, general_parameters: Box
+) -> pd.DataFrame:
+    time_modulation: pd.DataFrame = pd.DataFrame(
+        np.ones((len(run_range), len(scenario.locations))),
+        columns=scenario.locations,
+        index=run_range,
+    )
+    for location in scenario.locations:
+        time_modulation_factors: ty.List[float] = scenario.locations[
+            location
+        ].time_modulation_factors
+        for hour_index, time_modulation_factor in enumerate(
+            time_modulation_factors
+        ):
+            time_modulation.loc[
+                pd.to_datetime(time_modulation.index).hour == hour_index,
+                location,
+            ] = time_modulation_factor
+    print('Add deasons and such?')
+    return time_modulation
+
+
+def get_charging_modulation(
+    run_range: pd.DatetimeIndex,
+    scenario: Box,
+    general_parameters: Box,
+) -> pd.DataFrame:
+    charging_modulation: pd.DataFrame = get_time_modulation(
+        run_range, scenario, general_parameters
+    )
+
+    location_prices: ty.List[float] = [
+        scenario.locations[location_tested].charging_price
+        for location_tested in scenario.locations
+    ]
+
+    if scenario.charging.price_reaction_exponent > 0:
+        location_price_factor: pd.Series = pd.Series(
+            [
+                (
+                    (min(location_prices) / (location_price))
+                    ** scenario.charging.price_reaction_exponent
+                    if location_price > 0
+                    else 1
+                )
+                for location_price in location_prices
+            ],
+            index=scenario.locations,
+        )
+    else:
+        location_price_factor = pd.Series(
+            np.ones(len(scenario.locations)), index=scenario.locations
+        )
+
+    location_desirabilities: ty.List[float] = [
+        scenario.locations[location_tested].charging_desirability
+        for location_tested in scenario.locations
+    ]
+
+    if scenario.charging.desirability_reaction_exponent > 0:
+        location_desirability_factor: pd.Series = pd.Series(
+            [
+                (
+                    (location_desirability / max(location_desirabilities))
+                    ** scenario.charging.desirability_reaction_exponent
+                )
+                for location_desirability in location_desirabilities
+            ],
+            index=scenario.locations,
+        )
+    else:
+        location_desirability_factor = pd.Series(
+            np.ones(len(scenario.locations)), index=scenario.locations
+        )
+
+    for location in scenario.locations:
+        charging_modulation[location] *= (
+            location_price_factor[location]
+            * location_desirability_factor[location]
+        )
+    print('Do adaptive (either only at loc or for rest of day)')
+
+    return charging_modulation
+
+
 def get_charging_framework(
     location_split: pd.DataFrame,
     run_mobility_matrix: pd.DataFrame,
@@ -52,12 +138,15 @@ def get_charging_framework(
     pd.Series,
     pd.DataFrame,
     pd.DataFrame,
+    pd.DataFrame,
 ]:
     '''
     Produces the structures we want for the charging profiles
     '''
 
-    run_range = run_time.get_time_range(scenario, general_parameters)[0]
+    run_range: pd.DatetimeIndex = run_time.get_time_range(
+        scenario, general_parameters
+    )[0]
 
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
@@ -149,6 +238,9 @@ def get_charging_framework(
         columns=[float(0)],
         index=mobility_locations_index,
     )
+    charging_modulation: pd.DataFrame = get_charging_modulation(
+        run_range, scenario, general_parameters
+    )
 
     return (
         battery_spaces,
@@ -162,6 +254,7 @@ def get_charging_framework(
         run_departures_impact_gaps,
         travelling_battery_spaces,
         total_battery_space_per_location,
+        charging_modulation,
     )
 
 
@@ -546,6 +639,7 @@ def compute_charging_events(
     scenario: Box,
     general_parameters: Box,
     location_names: ty.List[str],
+    charging_modulation: pd.DataFrame,
 ) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
 
     zero_threshold: float = general_parameters.numbers.zero_threshold
@@ -561,7 +655,13 @@ def compute_charging_events(
         )
 
         percent_charging: float = charging_location_parameters.connectivity
-        max_charge: float = charging_location_parameters.charging_power
+        location_charging_power: float = (
+            charging_location_parameters.charging_power
+        )
+        location_modulated_charging_power: float = (
+            location_charging_power
+            * float(charging_modulation.loc[time_tag][charging_location])
+        )
 
         # This variable is useful if new battery spaces
         # are added within this charging procedure
@@ -570,7 +670,7 @@ def compute_charging_events(
         ].columns.values
         charge_drawn_per_charging_vehicle: np.ndarray = np.array(
             [
-                min(this_battery_space, max_charge)
+                min(this_battery_space, location_modulated_charging_power)
                 for this_battery_space in original_battery_spaces
             ]
         )
@@ -580,7 +680,7 @@ def compute_charging_events(
 
         vehicles_charging: ty.Any = (
             percent_charging * battery_spaces[charging_location].loc[time_tag]
-        )  # It is a flaot, but MyPy does not get it
+        )  # It is a float, but MyPy does not get it
 
         charge_drawn_by_vehicles_this_time_tag_per_battery_space: (
             pd.Series[float] | pd.DataFrame
@@ -807,6 +907,7 @@ def copy_day_type_profiles_to_whole_run(
         run_departures_impact_gaps,
         spillover_travelling_battery_spaces,
         total_battery_space_per_location,
+        charging_modulation,
     ) = get_charging_framework(
         location_split,
         run_mobility_matrix,
@@ -973,6 +1074,7 @@ def copy_day_type_profiles_to_whole_run(
                     scenario,
                     general_parameters,
                     location_names,
+                    charging_modulation,
                 )
 
                 spillover_battery_spaces_after_charging: pd.Series = (
@@ -1243,6 +1345,7 @@ def get_charging_profile(
         run_departures_impact_gaps,
         travelling_battery_spaces,
         total_battery_space_per_location,
+        charging_modulation,
     ) = get_charging_framework(
         location_split,
         run_mobility_matrix,
@@ -1383,6 +1486,7 @@ def get_charging_profile(
                 scenario,
                 general_parameters,
                 location_names,
+                charging_modulation,
             )
 
             if use_day_types_in_charge_computing and (
@@ -1747,15 +1851,16 @@ def get_profile_from_sessions(
 # def shift to next session (do this wile not setisfied?)
 if __name__ == '__main__':
     case_name = 'Mopo'
-    test_scenario_name = 'XX_car'
+    scenario_name = 'XX_car'
     general_parameters_file_name = 'ChaProEV.toml'
     general_parameters = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
     )
-    scenario_file_name: str = (
-        f'scenarios/{case_name}/{test_scenario_name}.toml'
-    )
+    scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     scenario = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario.name = scenario_name
+    # print(get_time_modulation(scenario, general_parameters))
+
     run_charging_sessions_dataframe: pd.DataFrame = pd.read_pickle(
         'output/Mopo/XX_car_run_charging_sessions.pkl'
     )
@@ -1777,14 +1882,7 @@ if __name__ == '__main__':
         general_parameters,
         case_name,
     )
-    print(
-        charging_profile_to_vehicle_from_sessions,
-        charging_profile_from_network_from_sessions,
-    )
 
-    # print(charging_sessions_with_charged_amounts)
-    # print(charging_sessions_with_charged_amounts.info())
-    # exit()
     charging_sessions_with_charged_amounts['Start time'] = (
         charging_sessions_with_charged_amounts['Start time'].astype(
             'datetime64[ns]'
@@ -1810,7 +1908,7 @@ if __name__ == '__main__':
     )
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
-    location_split_table_name: str = f'{test_scenario_name}_location_split'
+    location_split_table_name: str = f'{scenario_name}_location_split'
     location_split: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{location_split_table_name}.pkl'
     )

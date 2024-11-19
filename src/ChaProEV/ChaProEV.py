@@ -383,7 +383,7 @@ def fleet_profiles(
                     )
                     .reset_index()
                     .set_index(profiles_index)
-                    .astype(float)
+                    # .astype(float)
                 )
                 fleet_profile: pd.DataFrame = pd.DataFrame(
                     columns=fleet_headers, index=reference_profile.index
@@ -403,6 +403,16 @@ def fleet_profiles(
                 fleet_profile['Effective discharge efficiency'] = (
                     fleet_profile['Discharge Power to Network (MW)']
                     / fleet_profile['Vehicle Discharge Power (MW)']
+                )
+                fleet_profile[
+                    'Effective discharge efficiency'
+                ] = fleet_profile['Effective discharge efficiency'].fillna(
+                    general_parameters.discharge.no_discharge_efficiency_output
+                )
+                fleet_profile[
+                    'Effective charging efficiency'
+                ] = fleet_profile['Effective charging efficiency'].fillna(
+                    general_parameters.discharge.no_charge_efficiency_output
                 )
                 fleet_profile.to_pickle(
                     f'{output_folder}/{scenario_name}_profile_fleet.pkl'
@@ -436,6 +446,16 @@ def fleet_profiles(
                 fleet_sessions['Effective discharge efficiency'] = (
                     fleet_sessions['Discharge Power to Network (MW)']
                     / fleet_sessions['Vehicle Discharge Power (MW)']
+                )
+                fleet_sessions[
+                    'Effective discharge efficiency'
+                ] = fleet_sessions['Effective discharge efficiency'].fillna(
+                    general_parameters.discharge.no_discharge_efficiency_output
+                )
+                fleet_sessions[
+                    'Effective charging efficiency'
+                ] = fleet_sessions['Effective charging efficiency'].fillna(
+                    general_parameters.discharge.no_charge_efficiency_output
                 )
 
     fleet_consumption_table.to_pickle(
@@ -530,6 +550,16 @@ def make_profile_display_dataframe(
         profile_dataframe['Discharge Power to Network (kW)']
         / profile_dataframe['Vehicle Discharge Power (kW)']
     )
+    profile_dataframe['Effective discharge efficiency'] = (
+        profile_dataframe['Effective discharge efficiency'].fillna(
+            general_parameters.discharge.no_discharge_efficiency_output
+        )
+    )
+    profile_dataframe['Effective charging efficiency'] = (
+        profile_dataframe['Effective charging efficiency'].fillna(
+            general_parameters.discharge.no_charge_efficiency_output
+        )
+    )
     profile_dataframe.to_pickle(f'{output_folder}/{scenario.name}_profile.pkl')
 
 
@@ -571,6 +601,17 @@ def make_sessions_display_dataframes(
     display_charging_sessions['Effective discharge efficiency'] = (
         display_charging_sessions['Discharge Power to Network (kW)']
         / display_charging_sessions['Vehicle Discharge Power (kW)']
+    )
+
+    display_charging_sessions['Effective discharge efficiency'] = (
+        display_charging_sessions['Effective discharge efficiency'].fillna(
+            general_parameters.discharge.no_discharge_efficiency_output
+        )
+    )
+    display_charging_sessions['Effective charging efficiency'] = (
+        display_charging_sessions['Effective charging efficiency'].fillna(
+            general_parameters.discharge.no_charge_efficiency_output
+        )
     )
 
     display_charging_sessions.to_pickle(
