@@ -822,6 +822,8 @@ if __name__ == '__main__':
     case_name = 'Mopo'
 
     run_ChaProEV(case_name)
+
+    # display run totals (km, costs, energy fron net / to car)
     # print('Add sessions into next day')
     # print('Iterate through sessions and send remainder to next session')
     # print('Compute session first pass')

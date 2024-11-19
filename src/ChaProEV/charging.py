@@ -53,7 +53,7 @@ def get_time_modulation(
                 pd.to_datetime(time_modulation.index).hour == hour_index,
                 location,
             ] = time_modulation_factor
-    print('Add deasons and such?')
+
     return time_modulation
 
 
@@ -115,7 +115,6 @@ def get_charging_modulation(
             location_price_factor[location]
             * location_desirability_factor[location]
         )
-    print('Do adaptive (either only at loc or for rest of day)')
 
     return charging_modulation
 
@@ -1149,6 +1148,7 @@ def write_output(
     total_battery_space_per_location: pd.DataFrame,
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
+    charging_costs: pd.DataFrame,
     scenario: Box,
     case_name: str,
     maximal_delivered_power_per_location: pd.DataFrame,
@@ -1206,6 +1206,9 @@ def write_output(
         charge_drawn_from_network.to_pickle(
             f'{output_folder}/{scenario.name}_charge_drawn_from_network.pkl'
         )
+        charging_costs.to_pickle(
+            f'{output_folder}/{scenario.name}_charging_costs.pkl'
+        )
 
     charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_from_network.index
@@ -1213,6 +1216,8 @@ def write_output(
     charge_drawn_from_network_total['Total Charge Drawn (kWh)'] = (
         charge_drawn_from_network.sum(axis=1)
     )
+    
+    charging_costs_total: pd.Series = charging_costs.sum(axis=1)
     percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
         pd.DataFrame(index=charge_drawn_from_network.index)
     )
@@ -1220,6 +1225,9 @@ def write_output(
         charge_drawn_from_network_total.to_pickle(
             f'{output_folder}/{scenario.name}_'
             'charge_drawn_from_network_total.pkl'
+        )
+        charging_costs_total.to_pickle(
+            f'{output_folder}/{scenario.name}_total_charging_costs.pkl'
         )
 
     if pickle_interim_files:
@@ -1532,11 +1540,15 @@ def get_charging_profile(
         total_battery_space_per_location[location_name] = (
             location_total_battery_space
         )
+    charging_costs: pd.DataFrame = charge_drawn_from_network.copy()
+    for location in scenario.locations:
+        charging_costs[location] *= scenario.locations[location].charging_price
     write_output(
         battery_spaces,
         total_battery_space_per_location,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
+        charging_costs,
         scenario,
         case_name,
         maximal_delivered_power_per_location,
@@ -1859,7 +1871,6 @@ if __name__ == '__main__':
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     scenario = Box(cook.parameters_from_TOML(scenario_file_name))
     scenario.name = scenario_name
-    # print(get_time_modulation(scenario, general_parameters))
 
     run_charging_sessions_dataframe: pd.DataFrame = pd.read_pickle(
         'output/Mopo/XX_car_run_charging_sessions.pkl'
@@ -1888,12 +1899,6 @@ if __name__ == '__main__':
             'datetime64[ns]'
         )
     )
-    sessions_2018 = charging_sessions_with_charged_amounts.loc[
-        charging_sessions_with_charged_amounts['Start time'].dt.year == 2018
-    ]
-    print(sessions_2018['Charging Power to Vehicles (kW)'].sum())
-    print(sessions_2018['Charging Power from Network (kW)'].sum())
-    print(sessions_2018)
 
     case_name = 'Mopo'
     scenario_name = 'XX_car'
