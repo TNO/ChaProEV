@@ -187,7 +187,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             )
             .reset_index()
             .set_index(sessions_index)
-            .astype(float)
+            # .astype(float)
         )
 
         on_street_values: pd.DataFrame = (
@@ -196,7 +196,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             )
             .reset_index()
             .set_index(profiles_index)
-            .astype(float)
+            # .astype(float)
         )
 
         on_street_values_to_vehicles_from_sessions: pd.DataFrame = (
@@ -206,7 +206,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             )
             .reset_index()
             .set_index(profiles_index)
-            .astype(float)
+            # .astype(float)
         )
         on_street_values_from_network_from_sessions: pd.DataFrame = (
             pd.read_pickle(
@@ -215,7 +215,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             )
             .reset_index()
             .set_index(profiles_index)
-            .astype(float)
+            # .astype(float)
         )
         charging_sessions_on_street_values: pd.DataFrame = pd.DataFrame(
             pd.read_pickle(
@@ -224,7 +224,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
             )
             .reset_index()
             .set_index(sessions_index)
-            .astype(float)
+            # .astype(float)
         )
 
         combined_values: pd.DataFrame = pd.DataFrame(
