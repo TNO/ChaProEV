@@ -70,8 +70,10 @@ src/ChaProEV/consumption.py
 src/ChaProEV/define.py
 src/ChaProEV/make_variants.py
 src/ChaProEV/mobility.py
+src/ChaProEV/profiles.py
 src/ChaProEV/py.typed
 src/ChaProEV/run_time.py
+src/ChaProEV/scenarios_module.py
 src/ChaProEV/weather.py
 src/ChaProEV/writing.py
 src/ChaProEV.egg-info/PKG-INFO
