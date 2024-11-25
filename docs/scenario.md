@@ -3,7 +3,37 @@
 This page describes the elements of the scenario file
 
 ## run
-
+Run parameters give the elements to produce the time tags of the run range.
+### use_day_types_in_charge_computing 
+If set to true, the charging computations will be done per day type rather
+than for all days of the run, which fastens the computations.
+### start
+This part gives the year, month, day, hour, and minute of the start of the
+computations. It is best to set this to a day hour start for consistency
+and then cut off the start for display (see below). For example,
+start on 31/12/2019 at 05:00 if your day start hour is 05:00 and if you want
+to show results starting on 1/1/2020 at 00:00.
+### end
+This part gives the year, month, day, hour, and minute of the end of the
+computations. Note that the end time tag is not included in the run,
+so put 1/1/2021 at 00:00 if you want to compute for 2020.
+### display_start
+This is the first time tag you want to show in your end results.
+### display_end
+This is the first time tag that does not appear in your displayed results.
+### frequency
+The time frequency of the run (size and type).
+For the type, use 'H' for hours, 'min' for minutes,
+'S' for seconds, 'D' for days. For more info and other types, see 
+[here](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases).
+The current model uses  hourly (so 1 and 'h'). Changing that might require
+some adjustments in the code.
+### display frequency
+The frequency of the displayed values can be different than the frequency of the compuatations.
+In the current version, this needs to be the same or less frequent than the computation frequencey above.
+### extra_downloads
+This is to decide if you want to dowload some files (note that this concerns the
+currently inactive weather module).
 ## locations
 
 ## legs

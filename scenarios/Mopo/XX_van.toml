@@ -114,7 +114,7 @@ time_modulation_factors = [
 # etc.
 [legs.van_to_customer]
 vehicle = 'van'
-distance = 20  # km
+distance = 2.6  # km # Chosen to match 18_000 km per year
 duration = 0.25  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
@@ -140,7 +140,7 @@ end = 'van_customer'
 mix = [0.8, 0.2]
 [legs.van_to_base]
 vehicle = 'van'
-distance = 20  # km
+distance = 2.6  # km # Chosen to match 18_000 km per year
 duration = 0.25  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
@@ -165,23 +165,23 @@ end = 'van_base'
 # road_types = ['highway', 'city']
 mix = [0.8, 0.2]
 
-
-
-
 [vehicle]
 name = 'van'
 base_location = 'van_base' # not relevant for cars
-yearly_kilometrage = 42_000
+yearly_kilometrage = 18_000
+# https://www.cbs.nl/nl-nl/visualisaties/verkeer-en-vervoer/verkeer/verkeersprestaties-bestelautos
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
 use_weighted = false
 battery_capacity = 80  # kWh
 solar_panel_size_kWp = 0  # kWp
 [vehicle.base_consumption_per_km]
-electricity_kWh = 0.2
-gasoline_litres = 0.075
-diesel_litres = 0.05
-hydrogen_kg = 0.006340
+electricity_kWh = 0.1451
+gasoline_litres = 0.0649
+diesel_litres = 0.0557
+hydrogen_kg = 0.0076
+LPG_litres = 0.092
+CNG_kg = 0.0461
 
 [trips]
 [trips.van_weekday]
@@ -211,7 +211,7 @@ repeated_sequence = [
     'van_to_customer',
     'van_to_base',
     ]
-repetition_amounts = [4, 2, 2, 1]
+repetition_amounts = [3, 1, 1, 1]
 time_between_repetitions = [0.1, 1, 0.1, 1] # hours
 
 [trips.van_weekend]
@@ -241,7 +241,7 @@ repeated_sequence = [
     'van_to_customer',
     'van_to_base',
     ]
-repetition_amounts = [2, 2, 2, 1]
+repetition_amounts = [1, 1, 1, 1]
 time_between_repetitions = [0.1, 2, 0.1, 2] # hours
 
 

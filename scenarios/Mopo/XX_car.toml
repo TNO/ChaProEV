@@ -406,10 +406,13 @@ use_weighted = false
 battery_capacity = 80  # kWh
 solar_panel_size_kWp = 0  # kWp
 [vehicle.base_consumption_per_km]
-electricity_kWh = 0.2
-gasoline_litres = 0.075
-diesel_litres = 0.05
-hydrogen_kg = 0.006340
+# https://www.autoweek.nl/verbruiksmonitor/
+electricity_kWh = 0.1451
+gasoline_litres = 0.0649
+diesel_litres = 0.0557
+hydrogen_kg = 0.0076
+LPG_litres = 0.092
+CNG_kg = 0.0461
 
 [trips]
 [trips.commute_to_work]

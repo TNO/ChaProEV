@@ -557,7 +557,6 @@ def get_travelling_group_travel_impact(
             percent_in_first_slot = 1 + percent_in_first_slot
 
         if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
-
             print('Trip extending beyond day end. Check your entry')
             exit()
 
@@ -583,10 +582,9 @@ def get_travelling_group_travel_impact(
         if percent_in_first_slot <= 0:
             travelling_group_first_slot += 1
             percent_in_first_slot = 1 + percent_in_first_slot
-
         if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
-
             print('Trip extending beyond day end. Check your entry')
+            print('dddd')
             exit()
 
     return mobility_matrix
@@ -1069,7 +1067,6 @@ class Trip:
             first_leg: str = trip.legs[0]
             initial_location: str = scenario.legs[first_leg].locations.start
             trip.location_split[initial_location] = 1
-
         trip.location_split, trip.mobility_matrix = (
             get_location_split_and_impact_of_departures_and_arrivals(
                 trip.location_names,

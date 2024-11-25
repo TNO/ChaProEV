@@ -189,8 +189,9 @@ mix = [0.8, 0.2]
 
 [legs.bus_from_route_start_to_route_end]
 vehicle = 'bus'
-distance = 20  # km
-duration = 0.5  # hours
+distance = 11  # km
+duration = 0.66  # hours
+# Bus 28 in The Hague has a 40 minute route that is about 10-12 km (value chosen to be close to 90_000 kilometers per year)
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -217,8 +218,9 @@ mix = [0.8, 0.2]
 
 [legs.bus_from_route_end_to_route_start]
 vehicle = 'bus'
-distance = 20  # km
-duration = 0.5  # hours
+distance = 11  # km
+duration = 0.66  # hours
+# Bus 28 in The Hague has a 40 minute route that is about 10-12 km (value chosen to be close to 90_000 kilometers per year)
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -244,20 +246,27 @@ mix = [0.8, 0.2]
 
 
 
+
 [vehicle]
 name = 'bus'
 base_location = 'bus_depot' # not relevant for cars
-yearly_kilometrage = 42_000
+yearly_kilometrage = 90_000
+# https://www.ebusco.com/wp-content/uploads/Website_Brochure_NL_V1-4.pdf
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
 use_weighted = false
-battery_capacity = 80  # kWh
+battery_capacity = 500  # kWh
+# https://www.ebusco.com/wp-content/uploads/Website_Brochure_NL_V1-4.pdf
 solar_panel_size_kWp = 0  # kWp
 [vehicle.base_consumption_per_km]
-electricity_kWh = 0.2
-gasoline_litres = 0.075
-diesel_litres = 0.05
-hydrogen_kg = 0.006340
+electricity_kWh = 0.76
+# https://www.ebusco.com/wp-content/uploads/Website_Brochure_NL_V1-4.pdf
+# Others scaled accroding to cars
+gasoline_litres = 0.3399
+diesel_litres = 0.2917
+hydrogen_kg = 0.0398
+CNG_kg = 0.2415
+LNG_kg = 0.2415
 
 [trips]
 
@@ -268,18 +277,14 @@ legs = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
-    'bus_from_depot_to_route_start',
-    'bus_from_route_start_to_route_end',
-    'bus_from_route_end_to_route_start',
-    'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+time_between_legs = [0, 0.1, 0]
 
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -287,8 +292,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [3, 3]
-time_between_repetitions = [0.1, 0.22] # hours
+repetition_amounts = [11]
+time_between_repetitions = [0.1] # hours
 
 [trips.bus_weekend_in_workweek]
 vehicle = 'bus'
@@ -297,17 +302,14 @@ legs = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
-    'bus_from_depot_to_route_start',
-    'bus_from_route_start_to_route_end',
-    'bus_from_route_end_to_route_start',
-    'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+time_between_legs = [0, 0.1, 0]
+
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -315,8 +317,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [2, 2]
-time_between_repetitions = [0.1, 0.22] # hours
+repetition_amounts = [7]
+time_between_repetitions = [0.1] # hours
 
 
 [trips.bus_weekday_in_holiday_week]
@@ -326,18 +328,14 @@ legs = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
-    'bus_from_depot_to_route_start',
-    'bus_from_route_start_to_route_end',
-    'bus_from_route_end_to_route_start',
-    'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+time_between_legs = [0, 0.1, 0]
 
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -345,8 +343,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [2, 2]
-time_between_repetitions = [0.2, 0.42] # hours
+repetition_amounts = [9]
+time_between_repetitions = [0.1] # hours
 
 [trips.bus_weekend_in_holiday_week]
 vehicle = 'bus'
@@ -355,17 +353,14 @@ legs = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start',
     'bus_from_route_start_to_depot',
-    'bus_from_depot_to_route_start',
-    'bus_from_route_start_to_route_end',
-    'bus_from_route_end_to_route_start',
-    'bus_from_route_start_to_depot',
 ]
-time_between_legs = [0, 0.25, 0, 4, 0, 0.25, 0]
+time_between_legs = [0, 0.1, 0]
+
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0, 0.25, 0.5, 0.25, 0, 0, 0,
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -373,8 +368,8 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [1, 1]
-time_between_repetitions = [0.1, 0.22] # hours
+repetition_amounts = [7]
+time_between_repetitions = [0.1] # hours
 
 
 # These parameters are used for the ChaProEV mobility module
