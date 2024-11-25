@@ -40,8 +40,8 @@ def get_run_duration(
     ).total_seconds()
 
     time_parameters: Box = general_parameters.time
-    SECONDS_PER_HOUR: int = time_parameters.SECONDS_PER_HOUR
-    HOURS_IN_A_DAY: int = time_parameters.HOURS_IN_A_DAY
+    SECONDS_PER_HOUR: int = int(time_parameters.SECONDS_PER_HOUR)
+    HOURS_IN_A_DAY: int = int(time_parameters.HOURS_IN_A_DAY)
     DAYS_IN_A_YEAR: float = time_parameters.DAYS_IN_A_YEAR
     SECONDS_PER_YEAR: float = (
         SECONDS_PER_HOUR * HOURS_IN_A_DAY * DAYS_IN_A_YEAR
@@ -61,11 +61,11 @@ def get_time_range(
     '''
     run_parameters: Box = scenario.run
     run_start_parameters: Box = run_parameters.start
-    run_start_year: int = run_start_parameters.year
-    run_start_month: int = run_start_parameters.month
-    run_start_day: int = run_start_parameters.day
-    run_start_hour: int = run_start_parameters.hour
-    run_start_minute: int = run_start_parameters.minute
+    run_start_year: int = int(run_start_parameters.year)
+    run_start_month: int = int(run_start_parameters.month)
+    run_start_day: int = int(run_start_parameters.day)
+    run_start_hour: int = int(run_start_parameters.hour)
+    run_start_minute: int = int(run_start_parameters.minute)
 
     run_start: datetime.datetime = datetime.datetime(
         run_start_year,
@@ -76,11 +76,11 @@ def get_time_range(
     )
 
     display_run_start_parameters: Box = run_parameters.display_start
-    display_run_start_year: int = display_run_start_parameters.year
-    display_run_start_month: int = display_run_start_parameters.month
-    display_run_start_day: int = display_run_start_parameters.day
-    display_run_start_hour: int = display_run_start_parameters.hour
-    display_run_start_minute: int = display_run_start_parameters.minute
+    display_run_start_year: int = int(display_run_start_parameters.year)
+    display_run_start_month: int = int(display_run_start_parameters.month)
+    display_run_start_day: int = int(display_run_start_parameters.day)
+    display_run_start_hour: int = int(display_run_start_parameters.hour)
+    display_run_start_minute: int = int(display_run_start_parameters.minute)
 
     display_run_start: datetime.datetime = datetime.datetime(
         display_run_start_year,
@@ -92,7 +92,7 @@ def get_time_range(
 
     mobility_module_parameters: Box = scenario.mobility_module
 
-    day_start_hour: int = mobility_module_parameters.day_start_hour
+    day_start_hour: int = int(mobility_module_parameters.day_start_hour)
     compute_start_location_split: bool = (
         mobility_module_parameters.compute_start_location_split
     )
@@ -118,22 +118,22 @@ def get_time_range(
         )
 
     run_end_parameters: Box = run_parameters.end
-    run_end_year: int = run_end_parameters.year
-    run_end_month: int = run_end_parameters.month
-    run_end_day: int = run_end_parameters.day
-    run_end_hour: int = run_end_parameters.hour
-    run_end_minute: int = run_end_parameters.minute
+    run_end_year: int = int(run_end_parameters.year)
+    run_end_month: int = int(run_end_parameters.month)
+    run_end_day: int = int(run_end_parameters.day)
+    run_end_hour: int = int(run_end_parameters.hour)
+    run_end_minute: int = int(run_end_parameters.minute)
 
     run_end: datetime.datetime = datetime.datetime(
         run_end_year, run_end_month, run_end_day, run_end_hour, run_end_minute
     )
 
     display_run_end_parameters: Box = run_parameters.display_end
-    display_run_end_year: int = display_run_end_parameters.year
-    display_run_end_month: int = display_run_end_parameters.month
-    display_run_end_day: int = display_run_end_parameters.day
-    display_run_end_hour: int = display_run_end_parameters.hour
-    display_run_end_minute: int = display_run_end_parameters.minute
+    display_run_end_year: int = int(display_run_end_parameters.year)
+    display_run_end_month: int = int(display_run_end_parameters.month)
+    display_run_end_day: int = int(display_run_end_parameters.day)
+    display_run_end_hour: int = int(display_run_end_parameters.hour)
+    display_run_end_minute: int = int(display_run_end_parameters.minute)
 
     display_run_end: datetime.datetime = datetime.datetime(
         display_run_end_year,
@@ -216,7 +216,7 @@ def get_time_stamped_dataframe(
         time_stamped_dataframe, scenario, general_parameters
     )
 
-    day_start_hour: int = scenario.mobility_module.day_start_hour
+    day_start_hour: int = int(scenario.mobility_module.day_start_hour)
     HOURS_IN_A_DAY = general_parameters.time.HOURS_IN_A_DAY
     hour_in_day: ty.List[int] = [
         (
@@ -304,7 +304,7 @@ def add_day_type_to_time_stamped_dataframe(
     Adds a column with the date type
     to a time-stamped_dataframe
     '''
-    day_start_hour: int = scenario.mobility_module.day_start_hour
+    day_start_hour: int = int(scenario.mobility_module.day_start_hour)
     day_types: ty.List[str] = [
         get_day_type(
             time_tag - datetime.timedelta(hours=day_start_hour),
@@ -323,13 +323,13 @@ def get_day_start_time_tags_and_types(
 ) -> ty.List[ty.Tuple[datetime.datetime, str]]:
     time_tags_and_types: ty.List[ty.Tuple[datetime.datetime, str]] = []
 
-    run_start_year: int = scenario.run.start.year
-    run_start_month: int = scenario.run.start.month
-    run_start_day: int = scenario.run.start.day
-    run_end_year: int = scenario.run.end.year
-    run_end_month: int = scenario.run.end.month
-    run_end_day: int = scenario.run.end.day
-    day_start_hour: int = scenario.mobility_module.day_start_hour
+    run_start_year: int = int(scenario.run.start.year)
+    run_start_month: int = int(scenario.run.start.month)
+    run_start_day: int = int(scenario.run.start.day)
+    run_end_year: int = int(scenario.run.end.year)
+    run_end_month: int = int(scenario.run.end.month)
+    run_end_day: int = int(scenario.run.end.day)
+    day_start_hour: int = int(scenario.mobility_module.day_start_hour)
     tags_start: datetime.datetime = datetime.datetime(
         year=run_start_year,
         month=run_start_month,
@@ -378,8 +378,8 @@ def from_day_to_run(
     ):
         rolled_dataframe_to_clone[column] = column_values
 
-    SECONDS_PER_HOUR: int = general_parameters.time.SECONDS_PER_HOUR
-    HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
+    SECONDS_PER_HOUR: int = int(general_parameters.time.SECONDS_PER_HOUR)
+    HOURS_IN_A_DAY: int = int(general_parameters.time.HOURS_IN_A_DAY)
     run_number_of_seconds: float = (
         run_range[-1] - run_range[0]
     ).total_seconds()

@@ -189,9 +189,9 @@ mix = [0.8, 0.2]
 
 [legs.bus_from_route_start_to_route_end]
 vehicle = 'bus'
-distance = 11  # km
+distance = 13  # km
 duration = 0.66  # hours
-# Bus 28 in The Hague has a 40 minute route that is about 10-12 km (value chosen to be close to 90_000 kilometers per year)
+# Bus 28 in The Hague has a 40 minute route that is about 10-15 km (value chosen to be close to 90_000 kilometers per year)
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -218,9 +218,9 @@ mix = [0.8, 0.2]
 
 [legs.bus_from_route_end_to_route_start]
 vehicle = 'bus'
-distance = 11  # km
+distance = 13  # km
 duration = 0.66  # hours
-# Bus 28 in The Hague has a 40 minute route that is about 10-12 km (value chosen to be close to 90_000 kilometers per year)
+# Bus 28 in The Hague has a 40 minute route that is about 10-15 km (value chosen to be close to 90_000 kilometers per year)
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -284,7 +284,7 @@ time_between_legs = [0, 0.1, 0]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -292,7 +292,7 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [11]
+repetition_amounts = [9]
 time_between_repetitions = [0.1] # hours
 
 [trips.bus_weekend_in_workweek]
@@ -335,7 +335,7 @@ time_between_legs = [0, 0.1, 0]
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0.25, 0.75, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
@@ -343,7 +343,7 @@ repeated_sequence = [
     'bus_from_route_start_to_route_end',
     'bus_from_route_end_to_route_start'
     ]
-repetition_amounts = [9]
+repetition_amounts = [8]
 time_between_repetitions = [0.1] # hours
 
 [trips.bus_weekend_in_holiday_week]
