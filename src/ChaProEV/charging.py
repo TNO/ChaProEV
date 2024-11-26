@@ -1097,6 +1097,22 @@ def copy_day_type_profiles_to_whole_run(
                     for (
                         modified_battery_space
                     ) in spillover_battery_spaces_change.index:
+                        if (
+                            modified_battery_space
+                            not in battery_spaces[spillover_location].columns
+                        ):
+                            battery_spaces[spillover_location][
+                                modified_battery_space
+                            ] = float(0)
+                            # We sort the battery spaces for consistency
+                            battery_spaces[
+                                spillover_location
+                            ] = battery_spaces[spillover_location].reindex(
+                                sorted(
+                                    battery_spaces[spillover_location].columns
+                                ),
+                                axis=1,
+                            )
                         battery_spaces[spillover_location].loc[
                             spillover_time_tag, modified_battery_space
                         ] = (
@@ -1868,51 +1884,52 @@ def get_profile_from_sessions(
 # def shift to next session (do this wile not setisfied?)
 if __name__ == '__main__':
     case_name = 'Mopo'
-    scenario_name = 'XX_car'
+    # scenario_name = 'XX_car'
     general_parameters_file_name = 'ChaProEV.toml'
     general_parameters = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
     )
+    # scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
+    # scenario = Box(cook.parameters_from_TOML(scenario_file_name))
+    # scenario.name = scenario_name
+
+    # run_charging_sessions_dataframe: pd.DataFrame = pd.read_pickle(
+    #     'output/Mopo/XX_car_run_charging_sessions.pkl'
+    # )
+
+    # charging_sessions_with_charged_amounts = (
+    #     charging_amounts_in_charging_sessions(
+    #         run_charging_sessions_dataframe,
+    #         scenario,
+    #         general_parameters,
+    #         case_name,
+    #     )
+    # )
+    # (
+    #     charging_profile_to_vehicle_from_sessions,
+    #     charging_profile_from_network_from_sessions,
+    # ) = get_profile_from_sessions(
+    #     charging_sessions_with_charged_amounts,
+    #     scenario,
+    #     general_parameters,
+    #     case_name,
+    # )
+
+    # charging_sessions_with_charged_amounts['Start time'] = (
+    #     charging_sessions_with_charged_amounts['Start time'].astype(
+    #         'datetime64[ns]'
+    #     )
+    # )
+
+    # case_name = 'Mopo'
+    scenario_name = 'Switzerland_car_own_driveway_2050'
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
+    # # scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    # scenario.name = scenario_name
+    general_parameters_file_name = 'ChaProEV.toml'
+
     scenario = Box(cook.parameters_from_TOML(scenario_file_name))
     scenario.name = scenario_name
-
-    run_charging_sessions_dataframe: pd.DataFrame = pd.read_pickle(
-        'output/Mopo/XX_car_run_charging_sessions.pkl'
-    )
-
-    charging_sessions_with_charged_amounts = (
-        charging_amounts_in_charging_sessions(
-            run_charging_sessions_dataframe,
-            scenario,
-            general_parameters,
-            case_name,
-        )
-    )
-    (
-        charging_profile_to_vehicle_from_sessions,
-        charging_profile_from_network_from_sessions,
-    ) = get_profile_from_sessions(
-        charging_sessions_with_charged_amounts,
-        scenario,
-        general_parameters,
-        case_name,
-    )
-
-    charging_sessions_with_charged_amounts['Start time'] = (
-        charging_sessions_with_charged_amounts['Start time'].astype(
-            'datetime64[ns]'
-        )
-    )
-
-    case_name = 'Mopo'
-    scenario_name = 'XX_car'
-    # scenario_file_name: str = (
-    #     f'scenarios/{case_name}/{test_scenario_name}.toml'
-    # )
-    # scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
-    scenario.name = scenario_name
-    general_parameters_file_name = 'ChaProEV.toml'
     general_parameters = Box(
         cook.parameters_from_TOML(general_parameters_file_name)
     )
@@ -1936,9 +1953,9 @@ if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
     (
         battery_spaces,
+        total_battery_space_per_location,
         charge_drawn_by_vehicles,
         charge_drawn_from_network,
-        total_battery_space_per_location,
         charging_costs,
     ) = get_charging_profile(
         location_split,

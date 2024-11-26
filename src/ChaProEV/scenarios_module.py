@@ -230,3 +230,7 @@ def load_scenarios(case_name: str) -> ty.List[Box]:
     for scenario, scenario_file in zip(scenarios, scenario_files):
         scenario.name = scenario_file.split('.')[0]
     return scenarios
+
+
+if __name__ == '__main__':
+    case_name = 'Mopo'

@@ -1,0 +1,405 @@
+[run]
+use_day_types_in_charge_computing = true
+
+[vehicle]
+name = "car"
+base_location = "home"
+yearly_kilometrage = 13422.74074
+kilometers_column_for_consumption = "Arrivals"
+use_weighted = false
+battery_capacity = 66.09381655
+solar_panel_size_kWp = 0
+
+[mobility_module]
+day_start_hour = 5.0
+compute_start_location_split = true
+day_types = [ "weekday_in_work_week", "weekend_in_work_week", "weekday_in_holiday_week", "weekend_in_holiday_week", "weekend_holiday_departures", "weekend_holiday_returns", "holiday_overlap_weekend",]
+mobility_quantities = [ "Departures amount", "Departures kilometers", "Departures weighted kilometers", "Departures impact", "Departures impact kilometers", "Departures impact weighted kilometers", "Arrivals amount", "Arrivals kilometers", "Arrivals weighted kilometers", "Arrivals impact", "Arrivals impact kilometers", "Arrivals impact weighted kilometers",]
+battery_space_shift_quantities = [ "departures", "departures_weighted", "departures_impact", "departures_impact_weighted", "arrivals", "arrivals_weighted", "arrivals_impact", "arrivals_impact_weighted",]
+location_connections_headers = [ "Duration (hours)", "Distance (km)", "Weighted distance (km)",]
+mobility_index_names = [ "From", "To", "Time Tag",]
+kilometers_driven_headers = [ "Proportion at base", "Proportion idle en route", "Proportion driving", "Proportion of run time driving", "Driven kilometers (km)",]
+holiday_weeks = [ 1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53,]
+number_of_holiday_weeks = 10
+holiday_departures_in_weekend_week_numbers = [ 7, 17, 27, 30, 41, 50,]
+holiday_returns_in_weekend_week_numbers = [ 1, 8, 18, 30, 33, 42,]
+work_hours_in_a_work_day = 8
+hours_worked_per_work_week = 36.2
+hours_in_a_standard_work_week = 40
+percentage_working_on_a_work_week = 1
+worked_hours_per_year = 1576.161491
+leisure_trips_per_weekend = 1
+leisure_trips_per_week_outside_weekends = 2
+maximal_fill_percentage_leisure_trips_on_non_work_weekdays = 1
+weekday_leisure_trips = 2
+percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
+weekend_trips_per_year = 12
+holiday_trips_taken = 1
+time_spent_at_holiday_destination = 14
+
+[transport_factors]
+road_types = [ "highway", "city",]
+weights = [ 0.66, 1.6,]
+
+[weather]
+weather_factors_table_root_name = "weather_factors"
+
+[charging]
+price_reaction_exponent = 0
+desirability_reaction_exponent = 0
+
+[charging_sessions]
+resolution = 1
+
+[run.start]
+year = 2017
+month = 12
+day = 31
+hour = 5.0
+minute = 0
+
+[run.end]
+year = 2019
+month = 1
+day = 1
+hour = 0
+minute = 0
+
+[run.display_start]
+year = 2018
+month = 1
+day = 1
+hour = 0
+minute = 0
+
+[run.display_end]
+year = 2019
+month = 1
+day = 1
+hour = 0
+minute = 0
+
+[run.frequency]
+size = 1
+type = "h"
+
+[run.display_frequency]
+size = 1
+type = "h"
+
+[run.get_extra_downloads]
+download_weather_data = false
+make_weather_database = false
+download_EV_tool_data = false
+
+[locations.home]
+vehicle = "car"
+connectivity = 1
+charging_power = 7.4
+charger_efficiency = 0.87
+latitude = 52
+longitude = 6.2
+charging_price = 0.25
+charging_desirability = 1
+percentage_in_location_at_run_start = 1
+vehicle_discharge_power = 7.4
+proportion_of_discharge_to_network = 0.87
+time_modulation_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[locations.work]
+vehicle = "car"
+connectivity = 0.75
+charging_power = 22.0
+charger_efficiency = 0.92
+latitude = 52.1
+longitude = 5.8
+charging_price = 0
+charging_desirability = 1
+percentage_in_location_at_run_start = 0
+vehicle_discharge_power = 22.0
+proportion_of_discharge_to_network = 0.92
+time_modulation_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[locations.leisure]
+vehicle = "car"
+connectivity = 0.75
+charging_power = 22.0
+charger_efficiency = 0.92
+latitude = 52.1
+longitude = 6.2
+charging_price = 0.35
+charging_desirability = 0.25
+percentage_in_location_at_run_start = 0
+vehicle_discharge_power = 22.0
+proportion_of_discharge_to_network = 0.92
+time_modulation_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[locations.weekend]
+vehicle = "car"
+connectivity = 0.375
+charging_power = 22.0
+charger_efficiency = 0.92
+latitude = 51.8
+longitude = 6.2
+charging_price = 0.35
+charging_desirability = 0.1
+percentage_in_location_at_run_start = 0
+vehicle_discharge_power = 22.0
+proportion_of_discharge_to_network = 0.92
+time_modulation_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[locations.holiday]
+vehicle = "car"
+connectivity = 1
+charging_power = 22.0
+charger_efficiency = 0.92
+latitude = 53.0
+longitude = 6.2
+charging_price = 0.35
+charging_desirability = 0.2
+percentage_in_location_at_run_start = 0
+vehicle_discharge_power = 22.0
+proportion_of_discharge_to_network = 0.92
+time_modulation_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.go_to_work]
+vehicle = "car"
+distance = 21.18518519
+duration = 0.433333333
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.come_from_work]
+vehicle = "car"
+distance = 21.18518519
+duration = 0.433333333
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.home_to_leisure]
+vehicle = "car"
+distance = 5.777777778
+duration = 0.118181818
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.leisure_to_home]
+vehicle = "car"
+distance = 5.777777778
+duration = 0.118181818
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.home_to_weekend]
+vehicle = "car"
+distance = 96.2962963
+duration = 0.962962963
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.weekend_to_home]
+vehicle = "car"
+distance = 96.2962963
+duration = 0.962962963
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.home_to_holiday]
+vehicle = "car"
+distance = 385.1851852
+duration = 3.851851852
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[legs.holiday_to_home]
+vehicle = "car"
+distance = 385.1851852
+duration = 3.851851852
+hour_in_day_factors = [ 1, 1, 1, 1, 1, 1, 1, 1, 1.2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,]
+
+[vehicle.base_consumption_per_km]
+electricity_kWh = 0.15983688
+gasoline_litres = 0.071491478
+diesel_litres = 0.061357093
+hydrogen_kg = 0.008371883
+LPG_litres = 0.101343852
+CNG_kg = 0.050782082
+
+[trips.commute_to_work]
+vehicle = "car"
+legs = [ "go_to_work", "come_from_work",]
+time_between_legs = [ 9,]
+percentage_station_users = 0
+start_probabilities = [ 0, 0, 0.25, 0.5, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.commute_to_work_and_leisure]
+vehicle = "car"
+legs = [ "go_to_work", "come_from_work", "home_to_leisure", "leisure_to_home",]
+time_between_legs = [ 9, 2, 3,]
+percentage_station_users = 0
+start_probabilities = [ 0, 0, 0.25, 0.5, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.leisure_only]
+vehicle = "car"
+legs = [ "home_to_leisure", "leisure_to_home",]
+time_between_legs = [ 2,]
+percentage_station_users = 0
+start_probabilities = [ 0, 0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.weekend_trip]
+vehicle = "car"
+legs = [ "home_to_weekend", "weekend_to_home",]
+time_between_legs = [ 4,]
+percentage_station_users = 0
+start_probabilities = [ 0, 0.083333333, 0.083333333, 0.083333333, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.holiday_outward]
+vehicle = "car"
+legs = [ "home_to_holiday",]
+time_between_legs = []
+percentage_station_users = 0
+start_probabilities = [ 0, 0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.holiday_back]
+vehicle = "car"
+legs = [ "holiday_to_home",]
+time_between_legs = []
+percentage_station_users = 0
+start_probabilities = [ 0, 0.03125, 0.03125, 0.03125, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.09375, 0.03125, 0.03125, 0.03125, 0.03125, 0.03125, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.stay_put_home]
+vehicle = "car"
+legs = []
+time_between_legs = []
+percentage_station_users = 0
+start_probabilities = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[trips.stay_put_holiday]
+vehicle = "car"
+legs = []
+time_between_legs = []
+percentage_station_users = 0
+start_probabilities = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,]
+repeated_sequence = []
+repetition_amounts = [ 0,]
+time_between_repetitions = [ 0,]
+
+[mobility_module.trips_per_day_type]
+bus = [ "bus_weekday_in_workweek", "bus_weekend_in_workweek", "bus_weekday_in_holiday_week", "bus_weekend_in_holiday_week", "bus_weekend_in_holiday_week", "bus_weekend_in_holiday_week", "bus_weekend_in_holiday_week",]
+truck = [ "truck_weekday", "truck_weekend", "truck_weekday", "truck_weekend", "truck_weekend", "truck_weekend", "truck_weekend",]
+van = [ "van_weekday", "van_weekend", "van_weekday", "van_weekend", "van_weekend", "van_weekend", "van_weekend",]
+
+[weather.source_data]
+start_year = 2020
+end_year = 2022
+quantities = [ "2m_temperature", "skin_temperature", "surface_solar_radiation_downwards", "total_precipitation",]
+raw_data_folder = "input/cds_weather_data"
+latitude_min = 36
+latitude_max = 68
+longitude_min = -11
+longitude_max = 60
+
+[weather.processed_data]
+raw_data_folder = "input/cds_weather_data"
+processed_folder = "input/processed_weather_data"
+weather_database_file_name = "weather.sqlite3"
+chunk_size = 100000
+quantities = [ "2m_temperature", "skin_temperature", "surface_solar_radiation_downwards", "total_precipitation",]
+KELVIN_TO_CELSIUS = -273.15
+quantity_tags = [ "t2m", "skt", "ssrd", "tp",]
+quantity_processed_names = [ "Temperature at 2 meters (°C)", "Skin temperature (°C)", "Surface solar radiation downwards (J/m2)", "Total precipitation (m)",]
+cumulative_quantity_processed_names = [ "Surface solar radiation downwards (J/m2)", "Total precipitation (m)",]
+cumulative_quantities = [ "surface_solar_radiation_downwards", "total_precipitation",]
+queries_for_cumulative_quantities = [ "SELECT * FROM 'Surface solar radiation downwards (J/m2)';", "SELECT * FROM 'Total precipitation (m)';",]
+temperature_quantities = [ "2m_temperature", "skin_temperature",]
+processed_index_tags = [ "Timetag", "Latitude", "Longitude",]
+latitude_min = 50.6
+latitude_max = 53.5
+longitude_min = 3.4
+longitude_max = 7.2
+coordinate_step = 0.1
+
+[weather.EV_tool]
+EV_tool_url = "https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.57"
+efficiency_curve_script_index = 2
+data_splitter = "Temp:"
+file_name = "vehicle_temperature_efficiencies"
+groupfile_name = "vehicle_temperature_efficiencies"
+folder = "input"
+efficiency_factor_column_name = "Vehicle Relative efficiency factor"
+
+[weather.vehicle_temperature_efficiencies]
+folder = "input"
+file_name = "vehicle_temperature_efficiencies.pkl"
+fitting_polynomial_order = 6
+
+[legs.go_to_work.locations]
+start = "home"
+end = "work"
+
+[legs.go_to_work.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.come_from_work.locations]
+start = "work"
+end = "home"
+
+[legs.come_from_work.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.home_to_leisure.locations]
+start = "home"
+end = "leisure"
+
+[legs.home_to_leisure.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.leisure_to_home.locations]
+start = "leisure"
+end = "home"
+
+[legs.leisure_to_home.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.home_to_weekend.locations]
+start = "home"
+end = "weekend"
+
+[legs.home_to_weekend.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.weekend_to_home.locations]
+start = "weekend"
+end = "home"
+
+[legs.weekend_to_home.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.home_to_holiday.locations]
+start = "home"
+end = "holiday"
+
+[legs.home_to_holiday.road_type_mix]
+mix = [ 0.8, 0.2,]
+
+[legs.holiday_to_home.locations]
+start = "holiday"
+end = "home"
+
+[legs.holiday_to_home.road_type_mix]
+mix = [ 0.8, 0.2,]
