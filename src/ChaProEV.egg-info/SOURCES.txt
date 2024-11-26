@@ -58,6 +58,7 @@ docs/build/html/_static/pygments.css
 docs/build/html/_static/searchtools.js
 docs/build/html/_static/sphinx_highlight.js
 docs/source/index.rst
+scenarios/Mopo/Switzerland_car_own_driveway_2050.toml
 scenarios/Mopo/XX_bus.toml
 scenarios/Mopo/XX_car.toml
 scenarios/Mopo/XX_truck.toml
