@@ -1124,11 +1124,15 @@ def copy_day_type_profiles_to_whole_run(
                             ]
                         )
 
-                spillover_battery_spaces[spillover_location] = (
-                    spillover_battery_spaces[spillover_location].drop(
-                        float(0), axis=1
+                if (
+                    float(0)
+                    in spillover_battery_spaces[spillover_location].columns
+                ):
+                    spillover_battery_spaces[spillover_location] = (
+                        spillover_battery_spaces[spillover_location].drop(
+                            float(0), axis=1
+                        )
                     )
-                )
 
                 charge_drawn_by_vehicles.loc[
                     spillover_time_tag, spillover_location
@@ -1922,7 +1926,7 @@ if __name__ == '__main__':
     # )
 
     # case_name = 'Mopo'
-    scenario_name = 'Switzerland_car_own_driveway_2050'
+    scenario_name = 'Latvia_car_own_driveway_2050'
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     # # scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
     # scenario.name = scenario_name
