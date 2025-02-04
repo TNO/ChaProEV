@@ -41,16 +41,16 @@ except ModuleNotFoundError:
 
 
 def get_trip_charging_sessions(
-    end_locations_of_legs: ty.List[str],
-    start_probabilities: ty.List[float],
-    time_between_legs_used: ty.List[float],
-    leg_driving_times: ty.List[float],
-    leg_distances: ty.List[float],
-    weighted_leg_distances: ty.List[float],
+    end_locations_of_legs: list[str],
+    start_probabilities: list[float],
+    time_between_legs_used: list[float],
+    leg_driving_times: list[float],
+    leg_distances: list[float],
+    weighted_leg_distances: list[float],
     scenario: Box,
     general_parameters: Box,
-) -> ty.List:
-    trip_charging_sessions: ty.List[TripChargingSession] = []
+) -> list:
+    trip_charging_sessions: list[TripChargingSession] = []
     charging_session_resolution: int = scenario.charging_sessions.resolution
     vehicle_electricity_consumption: float = (
         scenario.vehicle.base_consumption_per_km.electricity_kWh
@@ -162,7 +162,7 @@ def get_trip_charging_sessions(
 def mobility_matrix_to_run_mobility_matrix(
     matrix_to_expand,  # It is a DataFRame, but MyPy seems to have issues
     # with DataFrmes with a MultiIndex
-    leg_tuples: ty.List[ty.Tuple[str, str]],
+    leg_tuples: list[tuple[str, str]],
     run_index: pd.MultiIndex,
     run_time_tags: pd.DatetimeIndex,
     start_hour: int,
@@ -192,7 +192,7 @@ def mobility_matrix_to_run_mobility_matrix(
 
 def get_slot_split(
     percent_in_first_slot, travelling_group_size
-) -> ty.Tuple[float, float, float]:
+) -> tuple[float, float, float]:
 
     percent_in_next_slot: float = 1 - percent_in_first_slot
 
@@ -235,7 +235,7 @@ def compute_travel_impact(
     leg_destination: str,
     distance: float,
     weighted_distance: float,
-    battery_space_shifts: ty.Dict,
+    battery_space_shifts: dict,
     vehicle_electricity_consumption: float,
 ) -> pd.DataFrame:
 
@@ -496,13 +496,13 @@ def get_travelling_group_travel_impact(
     mobility_matrix: pd.DataFrame,
     travelling_group_size: float,
     travelling_group_start_slot: int,
-    time_between_legs_used: ty.List[float],
-    leg_driving_times: ty.List[float],
-    start_locations_of_legs: ty.List[str],
-    end_locations_of_legs: ty.List[str],
-    leg_distances: ty.List[float],
-    leg_weighted_distances: ty.List[float],
-    battery_space_shifts: ty.Dict[ty.Tuple[str, str], pd.DataFrame],
+    time_between_legs_used: list[float],
+    leg_driving_times: list[float],
+    start_locations_of_legs: list[str],
+    end_locations_of_legs: list[str],
+    leg_distances: list[float],
+    leg_weighted_distances: list[float],
+    battery_space_shifts: dict[tuple[str, str], pd.DataFrame],
     vehicle_electricity_consumption: float,
     HOURS_IN_A_DAY: int,
 ) -> pd.DataFrame:
@@ -591,28 +591,28 @@ def get_travelling_group_travel_impact(
 
 
 def get_location_split_and_impact_of_departures_and_arrivals(
-    location_names: ty.List[str],
+    location_names: list[str],
     location_split: pd.DataFrame,
     mobility_matrix,  # It is a DataFrame, but Mypy has issues with
     # assigning MultiIndex DataFrames
-    start_probabilities: ty.List[float],
-    time_between_legs: ty.List[float],
-    leg_driving_times: ty.List[float],
-    start_locations_of_legs: ty.List[str],
-    end_locations_of_legs: ty.List[str],
-    leg_distances: ty.List[float],
-    weighted_leg_distances: ty.List[float],
-    battery_space_shifts: ty.Dict[ty.Tuple[str, str], pd.DataFrame],
+    start_probabilities: list[float],
+    time_between_legs: list[float],
+    leg_driving_times: list[float],
+    start_locations_of_legs: list[str],
+    end_locations_of_legs: list[str],
+    leg_distances: list[float],
+    weighted_leg_distances: list[float],
+    battery_space_shifts: dict[tuple[str, str], pd.DataFrame],
     vehicle_electricity_consumption: float,
     HOURS_IN_A_DAY: int,
-) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     if len(leg_driving_times) > 0:
         # If there are no legs, the arrays stay full of zeroes
         dummy_time_between_legs: float = 0
         # This dummy value is added so that we can iterate through a
         # zip of driving times and times between legs that have the
         # same length as the amount of legs
-        time_between_legs_used: ty.List[float] = time_between_legs.copy()
+        time_between_legs_used: list[float] = time_between_legs.copy()
         time_between_legs_used.append(dummy_time_between_legs)
         for travelling_group_start_slot, travelling_group_size in enumerate(
             start_probabilities
@@ -633,12 +633,12 @@ def get_location_split_and_impact_of_departures_and_arrivals(
                     HOURS_IN_A_DAY,
                 )
 
-        possible_origins: ty.List[str] = list(
+        possible_origins: list[str] = list(
             set(mobility_matrix.index.get_level_values('From'))
         )
 
         for start_location in possible_origins:
-            possible_destinations: ty.List[str] = list(
+            possible_destinations: list[str] = list(
                 set(
                     (
                         mobility_matrix.loc[
@@ -687,14 +687,14 @@ class Leg:
         leg.vehicle: str = leg_parameters.vehicle
         leg.distance: float = leg_parameters.distance
         leg.duration: float = leg_parameters.duration
-        leg.hour_in_day_factors: ty.List[float] = (
+        leg.hour_in_day_factors: list[float] = (
             leg_parameters.hour_in_day_factors
         )
         locations: Box = leg_parameters.locations
         leg.start_location: str = locations.start
         leg.end_location: str = locations.end
         road_type_parameters: Box = leg_parameters.road_type_mix
-        leg.road_type_mix: ty.List[float] = road_type_parameters.mix
+        leg.road_type_mix: list[float] = road_type_parameters.mix
 
 
 class Location:
@@ -749,36 +749,36 @@ class Trip:
         trip.name: str = name
 
         trip_parameters: Box = scenario.trips[name]
-        trip.legs: ty.List[str] = trip_parameters.legs
-        trip.time_between_legs: ty.List[float] = (
+        trip.legs: list[str] = trip_parameters.legs
+        trip.time_between_legs: list[float] = (
             trip_parameters.time_between_legs
         )
         trip.percentage_station_users: float = (
             trip_parameters.percentage_station_users
         )
 
-        trip.start_probabilities: ty.List[float] = (
+        trip.start_probabilities: list[float] = (
             trip_parameters.start_probabilities
         )
-        trip.repeated_sequence: ty.List[str] = (
+        trip.repeated_sequence: list[str] = (
             trip_parameters.repeated_sequence
         )
-        trip.repetition_amounts: ty.List[int] = (
+        trip.repetition_amounts: list[int] = (
             trip_parameters.repetition_amounts
         )
-        trip.time_between_repetitions: ty.List[float] = (
+        trip.time_between_repetitions: list[float] = (
             trip_parameters.time_between_repetitions
         )
 
         trip.day_start_hour: int = scenario.mobility_module.day_start_hour
-        trip.leg_driving_times: ty.List[float] = [
+        trip.leg_driving_times: list[float] = [
             scenario.legs[leg_name].duration for leg_name in trip.legs
         ]
 
-        trip_legs_store: ty.List[str] = trip.legs.copy()
+        trip_legs_store: list[str] = trip.legs.copy()
 
-        time_between_legs_store: ty.List[float] = trip.time_between_legs.copy()
-        leg_driving_times_store: ty.List[float] = trip.leg_driving_times.copy()
+        time_between_legs_store: list[float] = trip.time_between_legs.copy()
+        leg_driving_times_store: list[float] = trip.leg_driving_times.copy()
         if len(trip.repeated_sequence) > 0:
             trip.legs = []
             trip.time_between_legs = []
@@ -856,13 +856,13 @@ class Trip:
 
                     repetition_iteration_index += 1
 
-        trip.start_locations_of_legs: ty.List[str] = [
+        trip.start_locations_of_legs: list[str] = [
             scenario.legs[leg_name].locations.start for leg_name in trip.legs
         ]
-        trip.end_locations_of_legs: ty.List[str] = [
+        trip.end_locations_of_legs: list[str] = [
             scenario.legs[leg_name].locations.end for leg_name in trip.legs
         ]
-        trip.location_names: ty.List[str] = sorted(
+        trip.location_names: list[str] = sorted(
             list(
                 set(trip.start_locations_of_legs + trip.end_locations_of_legs)
             )
@@ -872,11 +872,11 @@ class Trip:
             trip.location_names = [stay_put_location]
         # sorted so that the order is always the same
 
-        trip.leg_distances: ty.List[float] = [
+        trip.leg_distances: list[float] = [
             scenario.legs[leg_name].distance for leg_name in trip.legs
         ]
 
-        trip.weighted_leg_distances: ty.List[float] = []
+        trip.weighted_leg_distances: list[float] = []
         for leg_name in trip.legs:
             road_type_mix: np.ndarray = np.array(
                 scenario.legs[leg_name].road_type_mix.mix
@@ -891,22 +891,22 @@ class Trip:
             leg_weighted_distance: float = leg_distance * road_type_factor
             trip.weighted_leg_distances.append(leg_weighted_distance)
 
-        trip.unique_leg_distances: ty.List[float] = list(
+        trip.unique_leg_distances: list[float] = list(
             set(trip.leg_distances)
         )
-        trip.unique_weighted_leg_distances: ty.List[float] = list(
+        trip.unique_weighted_leg_distances: list[float] = list(
             set(trip.weighted_leg_distances)
         )
         vehicle_electricity_consumption: float = (
             scenario.vehicle.base_consumption_per_km.electricity_kWh
         )
 
-        trip.unique_leg_consumptions: ty.List[float] = [
+        trip.unique_leg_consumptions: list[float] = [
             unique_distance * vehicle_electricity_consumption
             for unique_distance in trip.unique_leg_distances
         ]
 
-        trip.unique_weighted_leg_consumptions: ty.List[float] = [
+        trip.unique_weighted_leg_consumptions: list[float] = [
             unique_distance * vehicle_electricity_consumption
             for unique_distance in trip.unique_weighted_leg_distances
         ]
@@ -917,12 +917,12 @@ class Trip:
         # each with amounts, distances, weighted distances)
         HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
         parameters_of_legs: Box = scenario.legs
-        unique_legs: ty.List[str] = []
+        unique_legs: list[str] = []
         for trip_leg in trip.legs:
             if trip_leg not in unique_legs:
                 unique_legs.append(trip_leg)
 
-        leg_tuples: ty.List[ty.Tuple[str, str]] = [
+        leg_tuples: list[tuple[str, str]] = [
             (
                 parameters_of_legs[trip_leg].locations.start,
                 parameters_of_legs[trip_leg].locations.end,
@@ -931,7 +931,7 @@ class Trip:
         ]
 
         # We only want the start and end locations that are in the legs
-        mobility_index_tuples: ty.List[ty.Tuple[str, str, int]] = [
+        mobility_index_tuples: list[tuple[str, str, int]] = [
             (leg_tuple[0], leg_tuple[1], hour_number)
             for leg_tuple in leg_tuples
             for hour_number in range(HOURS_IN_A_DAY)
@@ -941,7 +941,7 @@ class Trip:
             mobility_index_tuples,
             names=['From', 'To', 'Hour number (from day start)'],
         )
-        mobility_quantities: ty.List[str] = (
+        mobility_quantities: list[str] = (
             scenario.mobility_module.mobility_quantities
         )
 
@@ -1024,8 +1024,8 @@ class Trip:
         trip.battery_space_shifts_arrivals_impact_weighted = (
             trip.battery_space_shifts_arrivals_impact_weighted.sort_index()
         )
-        trip.battery_space_shifts: ty.Dict[
-            ty.Tuple[str, str], pd.DataFrame
+        trip.battery_space_shifts: dict[
+            tuple[str, str], pd.DataFrame
         ] = {}
         trip.battery_space_shifts[('Departures', 'Amount')] = (
             trip.battery_space_shifts_departures
@@ -1174,10 +1174,10 @@ class Trip:
         # This dummy value is added so that we can iterate through a
         # zip of driving times and times between legs that have the
         # same length as the amount of legs
-        time_between_legs_used: ty.List[float] = trip.time_between_legs.copy()
+        time_between_legs_used: list[float] = trip.time_between_legs.copy()
         time_between_legs_used.append(dummy_time_between_legs)
 
-        trip.charging_sessions: ty.List[TripChargingSession] = (
+        trip.charging_sessions: list[TripChargingSession] = (
             get_trip_charging_sessions(
                 trip.end_locations_of_legs,
                 trip.start_probabilities,
@@ -1196,15 +1196,15 @@ class Trip:
         )[0]
 
         # We only want the start and end locations that are in the legs
-        run_mobility_index_tuples: ty.List[
-            ty.Tuple[str, str, datetime.datetime]
+        run_mobility_index_tuples: list[
+            tuple[str, str, datetime.datetime]
         ] = [
             (leg_tuple[0], leg_tuple[1], time_tag)
             for leg_tuple in leg_tuples
             for time_tag in run_time_tags
         ]
 
-        mobility_index_names: ty.List[str] = (
+        mobility_index_names: list[str] = (
             scenario.mobility_module.mobility_index_names
         )
         run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
@@ -1414,7 +1414,7 @@ class Trip:
             end_location = leg_parameters.locations.end
 
             if leg_index == 0:
-                previous_leg_arrivals_amount: ty.List[float] = []
+                previous_leg_arrivals_amount: list[float] = []
                 for hour_index in range(HOURS_IN_A_DAY - 1):
                     # We skip the last time slot, as this should wrap the trip
                     # and we are not looking into the next day
@@ -1667,7 +1667,7 @@ class TripChargingSession:
 
 def declare_class_instances(
     ChosenClass: ty.Type, scenario: Box, general_parameters: Box
-) -> ty.List[ty.Type]:
+) -> list[ty.Type]:
     '''
     This function creates the instances of a class (ChosenClass),
     based on a scenario file name where the instances and their properties
@@ -1676,9 +1676,9 @@ def declare_class_instances(
     scenario_vehicle: str = scenario.vehicle.name
     class_name: str = ChosenClass.class_name
 
-    class_instances: ty.List[str] = scenario[class_name]
+    class_instances: list[str] = scenario[class_name]
 
-    instances: ty.List[ty.Type] = []
+    instances: list[ty.Type] = []
 
     for class_instance in class_instances:
         append_instance: bool = True
@@ -1706,8 +1706,8 @@ def declare_class_instances(
 # @cook.function_timer
 def declare_all_instances(
     scenario: Box, case_name: str, general_parameters: Box
-) -> ty.Tuple[
-    pd.DataFrame, ty.List[ty.Type], ty.List[ty.Type], ty.List[ty.Type]
+) -> tuple[
+    pd.DataFrame, list[ty.Type], list[ty.Type], list[ty.Type]
 ]:
     '''
     This declares all instances of the various objects
@@ -1716,19 +1716,19 @@ def declare_all_instances(
     scenario_name: str = scenario.name
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
-    locations: ty.List[ty.Type] = declare_class_instances(
+    locations: list[ty.Type] = declare_class_instances(
         Location, scenario, general_parameters
     )
 
-    legs: ty.List[ty.Type] = declare_class_instances(
+    legs: list[ty.Type] = declare_class_instances(
         Leg, scenario, general_parameters
     )
 
     # We want to get the location connections
-    location_connections_headers: ty.List[str] = (
+    location_connections_headers: list[str] = (
         scenario.mobility_module.location_connections_headers
     )
-    location_connections_index_tuples: ty.List[ty.Tuple[str, str]] = [
+    location_connections_index_tuples: list[tuple[str, str]] = [
         (start_location.name, end_location.name)
         for start_location in locations
         for end_location in locations
@@ -1744,7 +1744,7 @@ def declare_all_instances(
     )
     for leg in legs:
         road_type_factor: float = sum(leg.road_type_mix * road_type_weights)
-        fill_values: ty.List[float] = [
+        fill_values: list[float] = [
             leg.duration,
             leg.distance,
             road_type_factor * leg.distance,
@@ -1762,7 +1762,7 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_location_connections.pkl'
         )
 
-    trips: ty.List[ty.Type] = declare_class_instances(
+    trips: list[ty.Type] = declare_class_instances(
         Trip, scenario, general_parameters
     )
 
@@ -2039,7 +2039,7 @@ def declare_all_instances(
                 f'run_battery_space_shifts_arrivals_impact_weighted'
                 f'.pkl'
             )
-            charging_sessions_headers: ty.List[str] = (
+            charging_sessions_headers: list[str] = (
                 general_parameters.sessions_dataframe.dataframe_headers
             )
 
@@ -2061,15 +2061,15 @@ def declare_all_instances(
 
 
 def get_charging_sessions_dataframe(
-    charging_sessions: ty.List,
+    charging_sessions: list,
     general_parameters: Box,
-    chosen_headers: ty.List[str],
+    chosen_headers: list[str],
 ) -> pd.DataFrame:
     charging_sessions_dataframe: pd.DataFrame = pd.DataFrame(
         index=range(len(charging_sessions))
     )
 
-    charging_sessions_properties: ty.List[str] = (
+    charging_sessions_properties: list[str] = (
         general_parameters.sessions_dataframe.properties
     )
     for session_index, session in enumerate(charging_sessions):

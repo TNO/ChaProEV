@@ -48,7 +48,6 @@ correction factor (source data versus interpolation)of electric vehicles.
 import datetime
 import os
 import sqlite3
-import typing as ty
 
 import bs4
 import cdsapi
@@ -63,9 +62,9 @@ def download_cds_weather_quantity(
     quantity: str,
     year: str,
     month: str,
-    days: ty.List[str],
-    hours: ty.List[str],
-    area: ty.List[float],
+    days: list[str],
+    hours: list[str],
+    area: list[float],
     download_folder: str,
 ) -> None:
     '''
@@ -102,7 +101,7 @@ def download_cds_weather_quantity(
 
 
 def download_all_cds_weather_data(
-    scenario: ty.Dict, general_parameters: ty.Dict
+    scenario: dict, general_parameters: dict
 ) -> None:
     '''
     Downloads all the necessary CDS ERA-5 weather data.
@@ -112,26 +111,26 @@ def download_all_cds_weather_data(
     or if you want to gather other quantities, or look at other years.
     '''
 
-    time_parameters: ty.Dict = general_parameters['time']
+    time_parameters: dict = general_parameters['time']
     HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
     MONTHS_IN_A_YEAR: int = time_parameters['MONTHS_IN_A_YEAR']
     MAX_DAYS_IN_A_MONTH: int = time_parameters['MAX_DAYS_IN_A_MONTH']
-    source_data_parameters: ty.Dict = scenario['weather']['source_data']
+    source_data_parameters: dict = scenario['weather']['source_data']
     start_year: int = source_data_parameters['start_year']
     end_year: int = source_data_parameters['end_year']
 
-    years: ty.List[str] = [
+    years: list[str] = [
         str(year) for year in range(start_year, end_year + 1)
     ]
-    months: ty.List[str] = [
+    months: list[str] = [
         f'{month_number:02d}'
         for month_number in range(1, MONTHS_IN_A_YEAR + 1)
     ]
-    days: ty.List[str] = [
+    days: list[str] = [
         f'{day_number:02d}' for day_number in range(1, MAX_DAYS_IN_A_MONTH + 1)
     ]
-    quantities: ty.List[str] = source_data_parameters['quantities']
-    hours: ty.List[str] = [
+    quantities: list[str] = source_data_parameters['quantities']
+    hours: list[str] = [
         f'{hour_number:02d}:00' for hour_number in range(HOURS_IN_A_DAY)
     ]
     latitude_min: float = source_data_parameters['latitude_min']
@@ -139,7 +138,7 @@ def download_all_cds_weather_data(
     longitude_min: float = source_data_parameters['longitude_min']
     longitude_max: float = source_data_parameters['longitude_max']
     raw_data_folder: str = source_data_parameters['raw_data_folder']
-    area: ty.List[float] = [
+    area: list[float] = [
         latitude_min,
         longitude_min,
         latitude_max,
@@ -160,7 +159,7 @@ def make_weather_dataframe(
     quantity: str,
     quantity_tag: str,
     quantity_name: str,
-    scenario: ty.Dict,
+    scenario: dict,
 ) -> pd.DataFrame:
     '''
     This function makes a weather DataFrame into one we can use by
@@ -178,7 +177,7 @@ def make_weather_dataframe(
     their own latitudes and longitudes).
     '''
 
-    weather_parameters: ty.Dict = scenario['weather']['processed_data']
+    weather_parameters: dict = scenario['weather']['processed_data']
     latitude_min: float = weather_parameters['latitude_min']
     latitude_max: float = weather_parameters['latitude_max']
     longitude_min: float = weather_parameters['longitude_min']
@@ -187,13 +186,13 @@ def make_weather_dataframe(
     # We round the coordinates to the first decimal,
     # as this is the data resolution (but with trailing digits).
     # (See general module exaplanation).
-    latitudes: ty.List[float] = [
+    latitudes: list[float] = [
         np.round(latitude, 1)
         for latitude in np.arange(
             latitude_min, latitude_max + coordinate_step, coordinate_step
         )
     ]
-    longitudes: ty.List[float] = [
+    longitudes: list[float] = [
         np.round(longitude, 1)
         for longitude in np.arange(
             longitude_min, longitude_max + coordinate_step, coordinate_step
@@ -201,10 +200,10 @@ def make_weather_dataframe(
     ]
     KELVIN_TO_CELSIUS: float = weather_parameters['KELVIN_TO_CELSIUS']
 
-    temperature_quantities: ty.List[str] = weather_parameters[
+    temperature_quantities: list[str] = weather_parameters[
         'temperature_quantities'
     ]
-    processed_index_tags: ty.List[str] = weather_parameters[
+    processed_index_tags: list[str] = weather_parameters[
         'processed_index_tags'
     ]
 
@@ -271,7 +270,7 @@ def make_weather_dataframe(
     return processed_weather_dataframe
 
 
-def write_weather_database(scenario: ty.Dict) -> None:
+def write_weather_database(scenario: dict) -> None:
     '''
     This function writes the weather database.
     It iterates over desired quantities, processes
@@ -279,15 +278,15 @@ def write_weather_database(scenario: ty.Dict) -> None:
     (including some processing), and writes them to a database.
     '''
 
-    weather_parameters: ty.Dict = scenario['weather']['processed_data']
+    weather_parameters: dict = scenario['weather']['processed_data']
     raw_data_folder: str = weather_parameters['raw_data_folder']
     processed_folder: str = weather_parameters['processed_folder']
     weather_database_file_name: str = weather_parameters[
         'weather_database_file_name'
     ]
-    quantities: ty.List[str] = weather_parameters['quantities']
-    quantity_tags: ty.List[str] = weather_parameters['quantity_tags']
-    quantity_processed_names: ty.List[str] = weather_parameters[
+    quantities: list[str] = weather_parameters['quantities']
+    quantity_tags: list[str] = weather_parameters['quantity_tags']
+    quantity_processed_names: list[str] = weather_parameters[
         'quantity_processed_names'
     ]
     chunk_size: int = weather_parameters['chunk_size']
@@ -339,14 +338,14 @@ def get_hourly_values(
     quantity_dataframe: pd.DataFrame,
     quantity: str,
     quantity_name: str,
-    scenario: ty.Dict,
+    scenario: dict,
 ) -> pd.DataFrame:
     '''
     This function takes a Dataframe for a give weather quantity.
     If this is a cumulative quantity, it adds hourly values to it.
     '''
-    weather_parameters: ty.Dict = scenario['weather']['processed_data']
-    cumulative_quantities: ty.List[str] = weather_parameters[
+    weather_parameters: dict = scenario['weather']['processed_data']
+    cumulative_quantities: list[str] = weather_parameters[
         'cumulative_quantities'
     ]
 
@@ -377,7 +376,7 @@ def get_hourly_values(
                         latitude, longitude
                     ]
 
-                    cumulative_values: ty.List[float] = location_dataframe[
+                    cumulative_values: list[float] = location_dataframe[
                         quantity_name
                     ].values
                     shifted_cumulative_values: np.ndarray = np.roll(
@@ -421,18 +420,18 @@ def get_hourly_values(
     return quantity_dataframe
 
 
-def get_all_hourly_values(scenario: ty.Dict) -> None:
+def get_all_hourly_values(scenario: dict) -> None:
     '''
     This functions adds hourly values to cumulative quantities
     in the weather database.
     '''
-    weather_parameters: ty.Dict = scenario['weather']['processed_data']
+    weather_parameters: dict = scenario['weather']['processed_data']
 
-    quantities: ty.List[str] = weather_parameters['quantities']
-    cumulative_quantities: ty.List[str] = weather_parameters[
+    quantities: list[str] = weather_parameters['quantities']
+    cumulative_quantities: list[str] = weather_parameters[
         'cumulative_quantities'
     ]
-    processed_index_tags: ty.List[str] = weather_parameters[
+    processed_index_tags: list[str] = weather_parameters[
         'processed_index_tags'
     ]
     processed_folder: str = weather_parameters['processed_folder']
@@ -440,15 +439,15 @@ def get_all_hourly_values(scenario: ty.Dict) -> None:
         'weather_database_file_name'
     ]
     weather_database: str = f'{processed_folder}/{weather_database_file_name}'
-    quantity_names: ty.List[str] = weather_parameters[
+    quantity_names: list[str] = weather_parameters[
         'quantity_processed_names'
     ]
     chunk_size: int = weather_parameters['chunk_size']
-    queries_for_cumulative_quantities: ty.List[str] = weather_parameters[
+    queries_for_cumulative_quantities: list[str] = weather_parameters[
         'queries_for_cumulative_quantities'
     ]
 
-    query_dictionary: ty.Dict[str, str] = dict(
+    query_dictionary: dict[str, str] = dict(
         zip(cumulative_quantities, queries_for_cumulative_quantities)
     )
 
@@ -480,14 +479,14 @@ def get_all_hourly_values(scenario: ty.Dict) -> None:
             )
 
 
-def get_EV_tool_data(scenario: ty.Dict) -> None:
+def get_EV_tool_data(scenario: dict) -> None:
     '''
     This gets the temperature efficiency data from the EV tool made
     by geotab.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
     '''
 
-    EV_tool_parameters: ty.Dict = scenario['weather']['EV_tool']
+    EV_tool_parameters: dict = scenario['weather']['EV_tool']
 
     EV_tool_url: str = EV_tool_parameters['EV_tool_url']
     user_agent: str = EV_tool_parameters['user_agent']
@@ -499,7 +498,7 @@ def get_EV_tool_data(scenario: ty.Dict) -> None:
         EV_tool_html_content, 'html.parser'
     )
 
-    EV_tool_scripts: ty.List[bs4.Script] = []
+    EV_tool_scripts: list[bs4.Script] = []
     for script in EV_tool_soup.find_all('script'):
         EV_tool_scripts.append(script)
 
@@ -511,15 +510,15 @@ def get_EV_tool_data(scenario: ty.Dict) -> None:
     ]
     efficiency_curve_script_text: str = efficiency_curve_script.get_text()
     data_splitter: str = EV_tool_parameters['data_splitter']
-    efficiency_curve_script_data: ty.List[str] = (
+    efficiency_curve_script_data: list[str] = (
         efficiency_curve_script_text.split(data_splitter)
     )
 
-    temperatures: ty.List[float] = []
-    efficiency_factors: ty.List[float] = []
+    temperatures: list[float] = []
+    efficiency_factors: list[float] = []
 
     for data_point in efficiency_curve_script_data:
-        data_values: ty.List[str] = data_point.split(',')
+        data_values: list[str] = data_point.split(',')
         if len(data_values) > 1:
             # Some entries are not actual data entries and are empty
             temperature: float = float(data_values[0].strip(" '"))
@@ -549,7 +548,7 @@ def get_EV_tool_data(scenario: ty.Dict) -> None:
 
 
 def temperature_efficiency_factor(
-    temperature: float, scenario: ty.Dict
+    temperature: float, scenario: dict
 ) -> float:
     '''
     This function returns the temperature efficiency factor that corrects
@@ -561,9 +560,9 @@ def temperature_efficiency_factor(
     3) Consistency between the temparatures in and out of data range.
     '''
 
-    EV_tool_parameters: ty.Dict = scenario['weather']['EV_tool']
+    EV_tool_parameters: dict = scenario['weather']['EV_tool']
 
-    vehicle_temperature_efficiencies_parameters: ty.Dict = scenario['weather'][
+    vehicle_temperature_efficiencies_parameters: dict = scenario['weather'][
         'vehicle_temperature_efficiencies'
     ]
 
@@ -593,18 +592,18 @@ def temperature_efficiency_factor(
     return efficiency_factor
 
 
-def plot_temperature_efficiency(scenario: ty.Dict) -> None:
+def plot_temperature_efficiency(scenario: dict) -> None:
     '''
     Plots the temperature efficiency correction factor
     (source data versus interpolation)
     of electric vehicles.
     '''
 
-    EV_tool_parameters: ty.Dict = scenario['weather']['EV_tool']
+    EV_tool_parameters: dict = scenario['weather']['EV_tool']
 
     plot_colors: pd.DataFrame = cook.get_extra_colors(scenario)
 
-    plot_parameters: ty.Dict = scenario['plots'][
+    plot_parameters: dict = scenario['plots'][
         'vehicle_temperature_efficiency'
     ]
     plot_style: str = plot_parameters['style']
@@ -626,7 +625,7 @@ def plot_temperature_efficiency(scenario: ty.Dict) -> None:
     geotab_data_efficiencies: pd.api.extensions.ExtensionArray | np.ndarray = (
         source_data[values_header].values
     )
-    fitted_efficiencies: ty.List[float] = [
+    fitted_efficiencies: list[float] = [
         temperature_efficiency_factor(temperature, scenario)
         for temperature in temperatures
     ]
@@ -674,7 +673,7 @@ def get_scenario_location_weather_quantity(
     run_end: datetime.datetime,
     source_table: str,
     weather_quantity: str,
-    scenario: ty.Dict,
+    scenario: dict,
 ) -> pd.DataFrame:
     '''
     Returns a chosen weather quantity for a given location and a given
@@ -685,7 +684,7 @@ def get_scenario_location_weather_quantity(
     such as the solar radiation downwards)
     '''
 
-    processed_data_parameters: ty.Dict = scenario['weather']['processed_data']
+    processed_data_parameters: dict = scenario['weather']['processed_data']
     processed_folder: str = processed_data_parameters['processed_folder']
     weather_database_file_name: str = processed_data_parameters[
         'weather_database_file_name'
@@ -701,7 +700,7 @@ def get_scenario_location_weather_quantity(
     run_start_text: str = f'"{run_start}"'
     run_end_text: str = f'"{run_end}"'
 
-    list_columns_to_fetch: ty.List[str] = [
+    list_columns_to_fetch: list[str] = [
         'Latitude',
         'Longitude',
         'Timetag',
@@ -710,13 +709,13 @@ def get_scenario_location_weather_quantity(
     # We need to convert this into a string for a query
     columns_to_fetch: str = ','.join(list_columns_to_fetch)
 
-    query_filter_quantities: ty.List[str] = [
+    query_filter_quantities: list[str] = [
         'Latitude',
         'Longitude',
         'Timetag',
     ]
-    query_filter_types: ty.List[str] = ['=', '=', 'between']
-    query_filter_values: ty.List = [
+    query_filter_types: list[str] = ['=', '=', 'between']
+    query_filter_values: list = [
         str(location_latitude),
         str(location_longitude),
         [run_start_text, run_end_text],
@@ -742,7 +741,7 @@ def get_scenario_location_weather_quantity(
 
 
 def get_scenario_weather_data(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    scenario: dict, case_name: str, general_parameters: dict
 ) -> pd.DataFrame:
     '''
     Fetches the weather data and efficiency factors and puts it into
@@ -759,25 +758,25 @@ def get_scenario_weather_data(
         f'{scenario_name}_{weather_factors_table_root_name}'
     )
 
-    file_parameters: ty.Dict = general_parameters['files']
+    file_parameters: dict = general_parameters['files']
     output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
     groupfile_root: str = file_parameters['groupfile_root']
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
-    weather_processed_data_parameters: ty.Dict = scenario['weather'][
+    weather_processed_data_parameters: dict = scenario['weather'][
         'processed_data'
     ]
-    quantity_processed_names: ty.List[str] = weather_processed_data_parameters[
+    quantity_processed_names: list[str] = weather_processed_data_parameters[
         'quantity_processed_names'
     ]
 
-    cumulative_quantity_processed_names: ty.List[str] = (
+    cumulative_quantity_processed_names: list[str] = (
         weather_processed_data_parameters[
             'cumulative_quantity_processed_names'
         ]
     )
 
-    run_parameters: ty.Dict = scenario['run']
+    run_parameters: dict = scenario['run']
     run_start: datetime.datetime = datetime.datetime(
         run_parameters['start']['year'],
         run_parameters['start']['month'],
@@ -793,7 +792,7 @@ def get_scenario_weather_data(
         run_parameters['end']['minute'],
     )
 
-    location_parameters: ty.Dict = scenario['locations']
+    location_parameters: dict = scenario['locations']
 
     for location in location_parameters:
         location_weather_dataframe: pd.DataFrame = pd.DataFrame()
@@ -889,7 +888,7 @@ def solar_panels_efficiency_factor(temperature: float) -> float:
 
 
 def setup_weather(
-    scenario: ty.Dict, case_name: str, general_parameters: ty.Dict
+    scenario: dict, case_name: str, general_parameters: dict
 ) -> None:
     '''
     This runs all the functions necessary to get the scenario weather factors
@@ -902,7 +901,7 @@ def setup_weather(
     downloads).
     '''
 
-    get_extra_downloads: ty.Dict[str, bool] = scenario['run'][
+    get_extra_downloads: dict[str, bool] = scenario['run'][
         'get_extra_downloads'
     ]
     download_weather_data: bool = get_extra_downloads['download_weather_data']
@@ -951,14 +950,14 @@ def get_location_weather_quantity(
     timetag: datetime.datetime,
     source_table: str,
     weather_quantity: str,
-    scenario: ty.Dict,
+    scenario: dict,
 ) -> float:
     '''
     Returns the value a a chosen weather quantity for a given location and
     time tag.
     '''
 
-    processed_data_parameters: ty.Dict = scenario['weather']['processed_data']
+    processed_data_parameters: dict = scenario['weather']['processed_data']
     processed_folder: str = processed_data_parameters['processed_folder']
     weather_database_file_name: str = processed_data_parameters[
         'weather_database_file_name'
@@ -972,7 +971,7 @@ def get_location_weather_quantity(
     weather_quantity = f'"{weather_quantity}"'
     timetag_text: str = f'"{timetag}"'
 
-    list_columns_to_fetch: ty.List[str] = [
+    list_columns_to_fetch: list[str] = [
         'Latitude',
         'Longitude',
         'Timetag',
@@ -981,13 +980,13 @@ def get_location_weather_quantity(
     # We need to convert this into a string for a query
     columns_to_fetch: str = ','.join(list_columns_to_fetch)
 
-    query_filter_quantities: ty.List[str] = [
+    query_filter_quantities: list[str] = [
         'Latitude',
         'Longitude',
         'Timetag',
     ]
-    query_filter_types: ty.List[str] = ['=', '=', '=']
-    query_filter_values: ty.List = [
+    query_filter_types: list[str] = ['=', '=', '=']
+    query_filter_values: list = [
         location_latitude,
         location_longitude,
         timetag_text,
@@ -1016,7 +1015,7 @@ def get_location_weather_quantity(
 
 if __name__ == '__main__':
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
+    general_parameters: dict = cook.parameters_from_TOML(
         general_parameters_file_name
     )
     case_name = 'local_impact_BEVs'
@@ -1024,7 +1023,7 @@ if __name__ == '__main__':
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: ty.Dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario: dict = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
     plot_temperature_efficiency(scenario)
     setup_weather(scenario, case_name, general_parameters)

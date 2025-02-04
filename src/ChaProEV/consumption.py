@@ -2,8 +2,6 @@
 This module creates consumption tables
 '''
 
-import typing as ty
-
 import numpy as np
 import pandas as pd
 from box import Box
@@ -139,10 +137,10 @@ def create_consumption_tables(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
 
-    consumption_tables_frequencies: ty.List[str] = (
+    consumption_tables_frequencies: list[str] = (
         general_parameters.interim_files.consumption_tables_frequencies
     )
-    save_consumption_table: ty.List[bool] = (
+    save_consumption_table: list[bool] = (
         general_parameters.interim_files.save_consumption_table
     )
     is_consumption_table_saved: Box = Box(

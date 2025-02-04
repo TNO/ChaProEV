@@ -15,7 +15,6 @@ for the whole run
 '''
 
 import datetime
-import typing as ty
 
 import numpy as np
 import pandas as pd
@@ -155,19 +154,20 @@ class NextDayStartChargingSession:
 
 
 def get_run_charging_sessions(
-    trips: ty.List[define.Trip],
+    trips: list[define.Trip],
     trip_probabilities_per_day_type: pd.DataFrame,
     scenario: Box,
     general_parameters: Box,
-) -> ty.List[ChargingSession]:
-    day_start_location_split: pd.DataFrame = get_day_type_start_location_split(
-        scenario, general_parameters
-    )
-    vehicle_consumption: float = (
-        scenario.vehicle.base_consumption_per_km.electricity_kWh
-    )
-    charging_sessions: ty.List = []
-    time_tags_and_types: ty.List[ty.Tuple[datetime.datetime, str]] = (
+) -> list[ChargingSession]:
+    # day_start_location_split: pd.DataFrame = (
+    # get_day_type_start_location_split(
+    #     scenario, general_parameters
+    # ))
+    # vehicle_consumption: float = (
+    #     scenario.vehicle.base_consumption_per_km.electricity_kWh
+    # )
+    charging_sessions: list = []
+    time_tags_and_types: list[tuple[datetime.datetime, str]] = (
         run_time.get_day_start_time_tags_and_types(
             scenario, general_parameters
         )
@@ -199,7 +199,7 @@ def get_run_charging_sessions(
                 # # (but this can change later, as the last session might
                 # # spillover into the next day, which will be managed
                 # # in the charging module)
-                # next_day_start_sessions: ty.List[
+                # next_day_start_sessions: list[
                 #     NextDayStartChargingSession
                 # ] = []
                 # if len(trip.end_locations_of_legs) > 0:
@@ -250,14 +250,16 @@ def get_run_charging_sessions(
                 #                     next_day_trip.location_names[0]
                 #                     == end_location
                 #                 ):
-                #                     next_day_session_end: datetime.datetime = (
+                #                     next_day_session_end: datetime.datetime =
+                #                       (
                 #                         next_day_session_start
                 #                         + datetime.timedelta(days=1)
                 #                     )
                 #                     group_size: float = amount_for_that_trip
                 #                     next_leg_distance: float = 0
                 #                     next_leg_consumption: float = (
-                #                         vehicle_consumption * next_leg_distance
+                #                         vehicle_consumption
+                #                         * next_leg_distance
                 #                     )
                 #                     next_day_start_sessions.append(
                 #                         NextDayStartChargingSession(
@@ -338,9 +340,9 @@ def get_run_charging_sessions(
 
 
 def get_run_mobility_matrix(
-    trips: ty.List[define.Trip],
+    trips: list[define.Trip],
     location_connections: pd.DataFrame,
-    matrix_columns: ty.List,
+    matrix_columns: list,
     run_trip_probabilities: pd.DataFrame,
     scenario: Box,
     case_name: str,
@@ -355,16 +357,16 @@ def get_run_mobility_matrix(
         scenario, general_parameters
     )[0]
 
-    location_tuples: ty.List[ty.Tuple[str, str]] = (
-        get_mobility_location_tuples(scenario)
+    location_tuples: list[tuple[str, str]] = get_mobility_location_tuples(
+        scenario
     )
-    run_index_tuples: ty.List[ty.Tuple[str, str, datetime.datetime]] = [
+    run_index_tuples: list[tuple[str, str, datetime.datetime]] = [
         (location_tuple[0], location_tuple[1], time_tag)
         for location_tuple in location_tuples
         for time_tag in run_time_tags
     ]
 
-    mobility_index_names: ty.List[str] = scenario.mobility_module[
+    mobility_index_names: list[str] = scenario.mobility_module[
         'mobility_index_names'
     ]
     run_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
@@ -382,16 +384,16 @@ def get_run_mobility_matrix(
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
 
     for trip in trips:
-        unique_trip_legs: ty.List[str] = list(set(trip.legs))
+        unique_trip_legs: list[str] = list(set(trip.legs))
 
         if len(unique_trip_legs) > 0:
 
-            trip_location_tuples: ty.List[ty.Tuple[str, str]] = []
+            trip_location_tuples: list[tuple[str, str]] = []
 
             for trip_leg in unique_trip_legs:
                 leg_start: str = scenario.legs[trip_leg].locations.start
                 leg_end: str = scenario.legs[trip_leg].locations.end
-                leg_tuple: ty.Tuple[str, str] = (leg_start, leg_end)
+                leg_tuple: tuple[str, str] = (leg_start, leg_end)
                 # We wante to only have unique tuples
                 if leg_tuple not in trip_location_tuples:
                     trip_location_tuples.append(leg_tuple)
@@ -400,7 +402,7 @@ def get_run_mobility_matrix(
                 run_trip_probabilities[trip.name]
             )
 
-            location_connections_headers: ty.List[str] = (
+            location_connections_headers: list[str] = (
                 scenario.mobility_module.location_connections_headers
             )
 
@@ -465,24 +467,24 @@ def get_run_mobility_matrix(
 
 def get_possible_destinations_and_origins(
     scenario: Box,
-) -> ty.Tuple[ty.Dict[str, ty.List[str]], ty.Dict[str, ty.List[str]]]:
+) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
     '''
     For each location, this gets the possible destinations
     '''
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
     ]
-    possible_destinations: ty.Dict[str, ty.List[str]] = {}
-    possible_origins: ty.Dict[str, ty.List[str]] = {}
+    possible_destinations: dict[str, list[str]] = {}
+    possible_origins: dict[str, list[str]] = {}
     for location_name in location_names:
         possible_destinations[location_name] = []
         possible_origins[location_name] = []
-    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
+    mobility_location_tuples: list[tuple[str, str]] = (
         get_mobility_location_tuples(scenario)
     )
     for mobility_location_tuple in mobility_location_tuples:
@@ -498,20 +500,20 @@ def get_possible_destinations_and_origins(
 
 def get_mobility_location_tuples(
     scenario: Box,
-) -> ty.List[ty.Tuple[str, str]]:
+) -> list[tuple[str, str]]:
     '''
     This creates a list of tuples. These tuples are all the possible
     start and end locations of trips. This is done to avoid creating too
     large mobility matrices (with all possible combinations of locations).
     '''
     scenario_vehicle: str = scenario.vehicle.name
-    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = []
+    mobility_location_tuples: list[tuple[str, str]] = []
     leg_parameters: Box = scenario.legs
 
     for leg_name in leg_parameters.keys():
         leg_vehicle: str = leg_parameters[leg_name].vehicle
         if leg_vehicle == scenario_vehicle:
-            leg_tuple: ty.Tuple[str, str] = (
+            leg_tuple: tuple[str, str] = (
                 leg_parameters[leg_name].locations.start,
                 leg_parameters[leg_name].locations.end,
             )
@@ -550,8 +552,8 @@ def get_trip_probabilities_per_day_type_other_vehicles(
     '''
     scenario_vehicle: str = scenario.vehicle.name
     mobility_module_parameters = scenario.mobility_module
-    day_types: ty.List[str] = mobility_module_parameters.day_types
-    trip_list: ty.List[str] = []
+    day_types: list[str] = mobility_module_parameters.day_types
+    trip_list: list[str] = []
     for trip_to_add in list(scenario.trips.keys()):
         trip_vehicle = scenario.trips[trip_to_add].vehicle
         if trip_vehicle == scenario_vehicle:
@@ -563,7 +565,7 @@ def get_trip_probabilities_per_day_type_other_vehicles(
     )
     trip_probabilities_per_day_type.index.name = 'Trip'
 
-    trips_per_day_type: ty.List[str] = (
+    trips_per_day_type: list[str] = (
         mobility_module_parameters.trips_per_day_type[scenario_vehicle]
     )
 
@@ -586,7 +588,7 @@ def get_car_trip_probabilities_per_day_type(
         get_day_type_start_location_split(scenario, general_parameters)
     )
     scenario_vehicle: str = scenario.vehicle.name
-    trip_list: ty.List[str] = []
+    trip_list: list[str] = []
     for trip_to_add in list(scenario.trips.keys()):
         trip_vehicle = scenario.trips[trip_to_add].vehicle
         if trip_vehicle == scenario_vehicle:
@@ -599,7 +601,7 @@ def get_car_trip_probabilities_per_day_type(
     DAYS_IN_A_YEAR: float = time_parameters.DAYS_IN_A_YEAR
     DAYS_IN_A_WEEK: int = time_parameters.DAYS_IN_A_WEEK
     weeks_in_a_year: float = DAYS_IN_A_YEAR / DAYS_IN_A_WEEK
-    weekend_day_numbers: ty.List[int] = time_parameters.weekend_day_numbers
+    weekend_day_numbers: list[int] = time_parameters.weekend_day_numbers
     number_weekdays: int = DAYS_IN_A_WEEK - len(weekend_day_numbers)
 
     mobility_module_parameters: Box = scenario.mobility_module
@@ -611,7 +613,7 @@ def get_car_trip_probabilities_per_day_type(
         mobility_module_parameters.work_hours_in_a_work_day
     )
 
-    day_types: ty.List[str] = mobility_module_parameters.day_types
+    day_types: list[str] = mobility_module_parameters.day_types
     percentage_working_on_a_work_week: float = (
         mobility_module_parameters.percentage_working_on_a_work_week
     )
@@ -659,13 +661,13 @@ def get_car_trip_probabilities_per_day_type(
         weekday_proportion * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     )
 
-    holiday_departures_in_weekend_week_numbers: ty.List[int] = (
+    holiday_departures_in_weekend_week_numbers: list[int] = (
         scenario.mobility_module.holiday_departures_in_weekend_week_numbers
     )
     number_of_holiday_departure_weekends: int = len(
         holiday_departures_in_weekend_week_numbers
     )
-    holiday_returns_in_weekend_week_numbers: ty.List[int] = (
+    holiday_returns_in_weekend_week_numbers: list[int] = (
         scenario.mobility_module.holiday_returns_in_weekend_week_numbers
     )
     number_of_holiday_return_weekends: int = len(
@@ -1255,29 +1257,29 @@ def car_holiday_departures_returns_corrections(
     HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
     day_start_hour_filter: pd.Series[bool] = run_range.hour == day_start_hour
 
-    departure_saturdays_starts: ty.List[datetime.datetime] = run_range[
+    departure_saturdays_starts: list[datetime.datetime] = run_range[
         departures_filter & saturday_filter & day_start_hour_filter
     ]
 
-    departure_saturdays: ty.List[pd.DatetimeIndex] = [
+    departure_saturdays: list[pd.DatetimeIndex] = [
         pd.date_range(
             start=departure_saturdays_start, periods=HOURS_IN_A_DAY, freq='h'
         )
         for departure_saturdays_start in departure_saturdays_starts
     ]
 
-    departure_sundays_starts: ty.List[datetime.datetime] = run_range[
+    departure_sundays_starts: list[datetime.datetime] = run_range[
         departures_filter & sunday_filter & day_start_hour_filter
     ]
 
-    departure_sundays: ty.List[pd.DatetimeIndex] = [
+    departure_sundays: list[pd.DatetimeIndex] = [
         pd.date_range(
             start=departure_sundays_start, periods=HOURS_IN_A_DAY, freq='h'
         )
         for departure_sundays_start in departure_sundays_starts
     ]
 
-    departure_shift_values: ty.List[float] = [
+    departure_shift_values: list[float] = [
         float(
             run_trip_probabilities.loc[departure_saturdays_start][
                 'stay_put_holiday'
@@ -1327,29 +1329,29 @@ def car_holiday_departures_returns_corrections(
             + departure_shift_value
         )
 
-    return_saturdays_starts: ty.List[datetime.datetime] = run_range[
+    return_saturdays_starts: list[datetime.datetime] = run_range[
         returns_filter & saturday_filter & day_start_hour_filter
     ]
 
-    return_saturdays: ty.List[pd.DatetimeIndex] = [
+    return_saturdays: list[pd.DatetimeIndex] = [
         pd.date_range(
             start=return_saturdays_start, periods=HOURS_IN_A_DAY, freq='h'
         )
         for return_saturdays_start in return_saturdays_starts
     ]
 
-    return_sundays_starts: ty.List[datetime.datetime] = run_range[
+    return_sundays_starts: list[datetime.datetime] = run_range[
         returns_filter & sunday_filter & day_start_hour_filter
     ]
 
-    return_sundays: ty.List[pd.DatetimeIndex] = [
+    return_sundays: list[pd.DatetimeIndex] = [
         pd.date_range(
             start=return_sundays_start, periods=HOURS_IN_A_DAY, freq='h'
         )
         for return_sundays_start in return_sundays_starts
     ]
 
-    return_shift_values: ty.List[float] = [
+    return_shift_values: list[float] = [
         float(
             run_trip_probabilities.loc[return_saturdays_start][
                 'stay_put_holiday'
@@ -1400,7 +1402,7 @@ def car_holiday_departures_returns_corrections(
 
 
 def get_run_trip_probabilities(
-    trips: ty.List[define.Trip],
+    trips: list[define.Trip],
     scenario: Box,
     case_name: str,
     general_parameters: Box,
@@ -1410,9 +1412,9 @@ def get_run_trip_probabilities(
     '''
 
     # moo = datetime.datetime.now()
-    day_types: ty.List[str] = scenario.mobility_module.day_types
+    day_types: list[str] = scenario.mobility_module.day_types
     scenario_vehicle: str = scenario.vehicle.name
-    trip_list: ty.List[str] = []
+    trip_list: list[str] = []
     for trip_to_add in list(scenario.trips.keys()):
         trip_vehicle = scenario.trips[trip_to_add].vehicle
         if trip_vehicle == scenario_vehicle:
@@ -1480,17 +1482,17 @@ def get_day_type_start_location_split(
     mobility_module_parameters: Box = scenario.mobility_module
     holiday_trips_taken: float = mobility_module_parameters.holiday_trips_taken
 
-    holiday_departures_in_weekend_week_numbers: ty.List[int] = (
+    holiday_departures_in_weekend_week_numbers: list[int] = (
         mobility_module_parameters.holiday_departures_in_weekend_week_numbers
     )
     number_of_holiday_departure_weekends: int = len(
         holiday_departures_in_weekend_week_numbers
     )
-    day_types: ty.List[str] = mobility_module_parameters.day_types
+    day_types: list[str] = mobility_module_parameters.day_types
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -1506,7 +1508,7 @@ def get_day_type_start_location_split(
     if vehicle_name == 'car':
 
         # Outside holidays, the vehicles start at home
-        day_types_outside_holidays: ty.List[str] = [
+        day_types_outside_holidays: list[str] = [
             'weekday_in_work_week',
             'weekend_in_work_week',
         ]
@@ -1520,7 +1522,7 @@ def get_day_type_start_location_split(
             holiday_trips_taken / number_of_holiday_departure_weekends
         )
 
-        non_travelling_holiday_day_types: ty.List[str] = [
+        non_travelling_holiday_day_types: list[str] = [
             'weekday_in_holiday_week',
             'weekend_in_holiday_week',
         ]
@@ -1536,10 +1538,10 @@ def get_day_type_start_location_split(
         # the weekend days (note that this is an approximation, as
         # we ideally should split the weekend in two, but that would make
         # the model complexer)
-        weekend_day_numbers: ty.List[int] = general_parameters.time[
+        weekend_day_numbers: list[int] = general_parameters.time[
             'weekend_day_numbers'
         ]
-        travelling_weekend_day_types: ty.List[str] = [
+        travelling_weekend_day_types: list[str] = [
             'weekend_holiday_departures',
             'weekend_holiday_returns',
             'holiday_overlap_weekend',
@@ -1561,12 +1563,12 @@ def get_day_type_start_location_split(
 
 
 def get_location_split(
-    trips: ty.List[define.Trip],
+    trips: list[define.Trip],
     run_trip_probabilities: pd.DataFrame,
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> ty.Tuple[
+) -> tuple[
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
@@ -1578,7 +1580,7 @@ def get_location_split(
     '''
     Produces the location split of the vehicles for the whole run
     '''
-    loop_timer: ty.List[datetime.datetime] = [datetime.datetime.now()]
+    loop_timer: list[datetime.datetime] = [datetime.datetime.now()]
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1586,7 +1588,7 @@ def get_location_split(
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
 
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in scenario.locations.keys()
         if scenario.locations[location_name].vehicle == vehicle_name
@@ -1809,7 +1811,7 @@ def get_starting_location_split(
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -1820,7 +1822,7 @@ def get_starting_location_split(
     )
 
     if compute_start_location_split:
-        run_range: ty.List[datetime.datetime] = run_time.get_time_range(
+        run_range: list[datetime.datetime] = run_time.get_time_range(
             scenario, general_parameters
         )[0]
         run_start_time_tag: datetime.datetime = run_range[0]
@@ -1849,12 +1851,12 @@ def get_starting_location_split(
 
 
 def get_kilometers_for_next_leg(
-    trips: ty.List[define.Trip],
+    trips: list[define.Trip],
     run_trip_probabilities: pd.DataFrame,
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> ty.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
@@ -1862,7 +1864,7 @@ def get_kilometers_for_next_leg(
     vehicle_name: str = vehicle_parameters.name
 
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -1980,7 +1982,7 @@ def make_mobility_data(
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> ty.Tuple[
+) -> tuple[
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
@@ -1993,7 +1995,7 @@ def make_mobility_data(
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
-    ty.List[ChargingSession],
+    list[ChargingSession],
     pd.DataFrame,
 ]:
 
@@ -2006,9 +2008,7 @@ def make_mobility_data(
         )
     )
 
-    mobility_quantities: ty.List = scenario.mobility_module[
-        'mobility_quantities'
-    ]
+    mobility_quantities: list = scenario.mobility_module['mobility_quantities']
 
     run_mobility_matrix: pd.DataFrame = get_run_mobility_matrix(
         trips,
@@ -2020,7 +2020,7 @@ def make_mobility_data(
         general_parameters,
     )
 
-    leg_weighted_consumptions: ty.List[float] = []
+    leg_weighted_consumptions: list[float] = []
     for leg in scenario.legs:
         if scenario.legs[leg].vehicle == scenario.vehicle.name:
             leg_distance: float = scenario.legs[leg].distance
@@ -2064,17 +2064,15 @@ def make_mobility_data(
         case_name,
         general_parameters,
     )
-    run_charging_sessions: ty.List[ChargingSession] = (
-        get_run_charging_sessions(
-            trips,
-            trip_probabilities_per_day_type,
-            scenario,
-            general_parameters,
-        )
+    run_charging_sessions: list[ChargingSession] = get_run_charging_sessions(
+        trips,
+        trip_probabilities_per_day_type,
+        scenario,
+        general_parameters,
     )
     pickle_interim_files: bool = general_parameters.interim_files.pickle
 
-    charging_sessions_headers: ty.List[str] = (
+    charging_sessions_headers: list[str] = (
         general_parameters.sessions_dataframe.run_dataframe_headers
     )
 

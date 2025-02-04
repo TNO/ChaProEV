@@ -3,8 +3,6 @@ Author: Omar Usmani (Omar.Usmani@TNO.nl)
 Functions for profiles and car splits
 '''
 
-import typing as ty
-
 import numpy as np
 import pandas as pd
 from box import Box
@@ -33,8 +31,8 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
         f'{input_folder}/{percentages_file_name}'
     ).set_index(home_type_parameters.index_name)
 
-    profiles_index: ty.List[str] = home_type_parameters.profiles_index
-    sessions_index: ty.List[str] = home_type_parameters.sessions_index
+    profiles_index: list[str] = home_type_parameters.profiles_index
+    sessions_index: list[str] = home_type_parameters.sessions_index
     own_driveway_name: str = home_type_parameters.own_driveway_name
     on_street_name: str = home_type_parameters.on_street_name
 
@@ -47,7 +45,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
         general_parameters.variants.use_years_in_profiles
     )
 
-    variant_names: ty.List[str] = list(car_drivewway_percentages.index)
+    variant_names: list[str] = list(car_drivewway_percentages.index)
     for variant_name in variant_names:
         own_driveway_percentage: float = float(
             car_drivewway_percentages.loc[variant_name][
@@ -174,7 +172,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
                 + (1 - own_driveway_percentage)
                 * on_street_values_from_network_from_sessions[quantity]
             )
-        sessions_values_columns: ty.List[str] = (
+        sessions_values_columns: list[str] = (
             home_type_parameters.sessions_values_columns
         )
         for quantity in sessions_values_columns:
@@ -238,19 +236,19 @@ def fleet_profiles(
     distance_header: str = consumption_parameters.distance_header
     fleet_distance_header: str = consumption_parameters.fleet_distance_header
 
-    energy_carriers_consumption_names: ty.List[str] = (
+    energy_carriers_consumption_names: list[str] = (
         consumption_parameters.energy_carriers_consumption_names
     )
 
-    fleet_energy_carriers_consumption_names: ty.List[str] = (
+    fleet_energy_carriers_consumption_names: list[str] = (
         consumption_parameters.fleet_energy_carriers_consumption_names
     )
-    energy_carriers: ty.List[str] = consumption_parameters.energy_carriers
+    energy_carriers: list[str] = consumption_parameters.energy_carriers
     output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
-    profiles_index: ty.List[str] = home_type_parameters.profiles_index
-    profile_headers: ty.List = general_parameters.profile_dataframe.headers
-    fleet_headers: ty.List = general_parameters.profile_dataframe.fleet_headers
+    profiles_index: list[str] = home_type_parameters.profiles_index
+    profile_headers: list = general_parameters.profile_dataframe.headers
+    fleet_headers: list = general_parameters.profile_dataframe.fleet_headers
 
     input_root: str = general_parameters.files.input_root
     input_folder: str = f'{input_root}/{case_name}'
@@ -340,7 +338,7 @@ def fleet_profiles(
                 sessions_dataframe_params: Box = (
                     general_parameters.sessions_dataframe
                 )
-                fleet_display_dataframe_headers: ty.List[str] = (
+                fleet_display_dataframe_headers: list[str] = (
                     sessions_dataframe_params.fleet_display_dataframe_headers
                 )
                 fleet_sessions: pd.DataFrame = pd.DataFrame(
@@ -423,7 +421,7 @@ def make_profile_display_dataframe(
         state_of_charge_dataframe * connectivities
     )
 
-    dataframes_for_profile: ty.List[pd.DataFrame] = [
+    dataframes_for_profile: list[pd.DataFrame] = [
         charge_drawn_from_network,
         connected_total_battery_space_per_location,
         connected_state_of_charge_dataframe,
@@ -443,7 +441,7 @@ def make_profile_display_dataframe(
     output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
 
-    profile_dataframe_headers: ty.List[str] = (
+    profile_dataframe_headers: list[str] = (
         general_parameters.profile_dataframe.headers
     )
     profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
@@ -493,10 +491,10 @@ def make_sessions_display_dataframes(
             .between(display_range[0], display_range[-1])
         ]
     )
-    display_session_headers: ty.List[str] = (
+    display_session_headers: list[str] = (
         general_parameters.sessions_dataframe.display_dataframe_headers
     )
-    display_session_index: ty.List[str] = (
+    display_session_index: list[str] = (
         general_parameters.sessions_dataframe.display_dataframe_index
     )
 
@@ -538,7 +536,7 @@ def make_display_totals(
     scenario: Box,
     general_parameters: Box,
     case_name: str,
-) -> ty.Tuple[pd.Series, pd.Series]:
+) -> tuple[pd.Series, pd.Series]:
     display_range: pd.DatetimeIndex = run_time.get_time_range(
         scenario, general_parameters
     )[2]

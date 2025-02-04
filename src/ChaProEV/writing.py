@@ -28,20 +28,20 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
     output_folder: str = f'{output_root}/{case_name}'
     groupfile_root: str = general_parameters.files.groupfile_root
     groupfile_name: str = f'{groupfile_root}_{case_name}'
-    output_files: ty.List[str] = os.listdir(output_folder)
-    output_pickle_files: ty.List[str] = [
+    output_files: list[str] = os.listdir(output_folder)
+    output_pickle_files: list[str] = [
         output_file
         for output_file in output_files
         if output_file.split('.')[1] == 'pkl'
     ]
-    tables_to_save: ty.List[pd.DataFrame] = [
+    tables_to_save: list[pd.DataFrame] = [
         pd.DataFrame(  # Because some of these are Series
             pd.read_pickle(f'{output_root}/{case_name}/{output_pickle_file}')
         )
         for output_pickle_file in output_pickle_files
     ]
 
-    output_table_names: ty.List[str] = [
+    output_table_names: list[str] = [
         output_pickle_file.split('.')[0]
         for output_pickle_file in output_pickle_files
     ]
@@ -56,7 +56,7 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
             general_parameters.parallel_processing.amount_for_pickle_saves
         )
     saving_pool_inputs: (
-        ty.Iterator[ty.Tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
+        ty.Iterator[tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
     ) = zip(
         tables_to_save,
         output_table_names,
@@ -90,7 +90,7 @@ def write_scenario_parameters(
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
     '''
-    scenario_parameter_categories: ty.List[str] = (
+    scenario_parameter_categories: list[str] = (
         scenario.scenario_parameter_categories
     )
 

@@ -17,8 +17,6 @@ the whole run.
 
 import datetime
 import math
-import typing as ty
-
 import numpy as np
 import pandas as pd
 from box import Box
@@ -27,7 +25,7 @@ from ETS_CookBook import ETS_CookBook as cook
 
 def get_run_duration(
     scenario: Box, general_parameters: Box
-) -> ty.Tuple[float, float]:
+) -> tuple[float, float]:
     '''
     Gets the run duration (in seconds and years)
     '''
@@ -53,7 +51,7 @@ def get_run_duration(
 
 def get_time_range(
     scenario: Box, general_parameters: Box
-) -> ty.Tuple[pd.DatetimeIndex, ty.List[int], pd.DatetimeIndex]:
+) -> tuple[pd.DatetimeIndex, list[int], pd.DatetimeIndex]:
     '''
     This function returns the time range of the run, and the
     associated hour numbers, based on values found in the
@@ -177,7 +175,7 @@ def get_time_range(
     SECONDS_PER_HOUR: int = time_parameters.SECONDS_PER_HOUR
     first_hour_number: int = time_parameters.first_hour_number
 
-    run_hour_numbers: ty.List[int] = [
+    run_hour_numbers: list[int] = [
         first_hour_number
         + int(
             (
@@ -218,7 +216,7 @@ def get_time_stamped_dataframe(
 
     day_start_hour: int = int(scenario.mobility_module.day_start_hour)
     HOURS_IN_A_DAY = general_parameters.time.HOURS_IN_A_DAY
-    hour_in_day: ty.List[int] = [
+    hour_in_day: list[int] = [
         (
             timestamp.hour - day_start_hour
             if timestamp.hour >= day_start_hour
@@ -232,7 +230,7 @@ def get_time_stamped_dataframe(
     if locations_as_columns:
         vehicle: str = scenario.vehicle.name
         location_parameters: Box = scenario.locations
-        locations: ty.List[str] = [
+        locations: list[str] = [
             location_name
             for location_name in location_parameters.keys()
             if location_parameters[location_name].vehicle == vehicle
@@ -252,10 +250,10 @@ def get_day_type(
     Tells us the date type of a given time_tag.
     '''
 
-    weekend_day_numbers: ty.List[int] = general_parameters.time[
+    weekend_day_numbers: list[int] = general_parameters.time[
         'weekend_day_numbers'
     ]
-    holiday_weeks: ty.List[int] = scenario.mobility_module.holiday_weeks
+    holiday_weeks: list[int] = scenario.mobility_module.holiday_weeks
     if time_tag.isoweekday() in weekend_day_numbers:
         day_type: str = 'weekend'
     else:
@@ -268,13 +266,13 @@ def get_day_type(
 
     day_name: str = f'{day_type}_in_{week_type}_week'
 
-    holiday_departures_in_weekend_week_numbers: ty.List[int] = (
+    holiday_departures_in_weekend_week_numbers: list[int] = (
         scenario.mobility_module.holiday_departures_in_weekend_week_numbers
     )
-    holiday_returns_in_weekend_week_numbers: ty.List[int] = (
+    holiday_returns_in_weekend_week_numbers: list[int] = (
         scenario.mobility_module.holiday_returns_in_weekend_week_numbers
     )
-    holiday_overlap_weekend_week_numbers: ty.List[int] = list(
+    holiday_overlap_weekend_week_numbers: list[int] = list(
         set(holiday_departures_in_weekend_week_numbers).intersection(
             holiday_returns_in_weekend_week_numbers
         )
@@ -305,7 +303,7 @@ def add_day_type_to_time_stamped_dataframe(
     to a time-stamped_dataframe
     '''
     day_start_hour: int = int(scenario.mobility_module.day_start_hour)
-    day_types: ty.List[str] = [
+    day_types: list[str] = [
         get_day_type(
             time_tag - datetime.timedelta(hours=day_start_hour),
             scenario,
@@ -320,8 +318,8 @@ def add_day_type_to_time_stamped_dataframe(
 
 def get_day_start_time_tags_and_types(
     scenario: Box, general_parameters: Box
-) -> ty.List[ty.Tuple[datetime.datetime, str]]:
-    time_tags_and_types: ty.List[ty.Tuple[datetime.datetime, str]] = []
+) -> list[tuple[datetime.datetime, str]]:
+    time_tags_and_types: list[tuple[datetime.datetime, str]] = []
 
     run_start_year: int = int(scenario.run.start.year)
     run_start_month: int = int(scenario.run.start.month)
@@ -367,7 +365,7 @@ def from_day_to_run(
     '''
 
     # We need to roll the values so that they start at midnight
-    rolled_values: ty.List[np.ndarray] = [
+    rolled_values: list[np.ndarray] = [
         np.roll(dataframe_to_clone[column], day_start_hour)
         for column in dataframe_to_clone.columns
     ]

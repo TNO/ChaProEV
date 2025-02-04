@@ -80,7 +80,7 @@ def run_ChaProEV(case_name: str) -> None:
         csv_version: bool = variant_parameters.csv_version
         make_variants.make_variants(case_name, csv_version)
 
-    scenarios: ty.List[Box] = scenarios_module.load_scenarios(case_name)
+    scenarios: list[Box] = scenarios_module.load_scenarios(case_name)
 
     set_amount_of_processes: bool = (
         general_parameters.parallel_processing.set_amount_of_processes
@@ -92,7 +92,7 @@ def run_ChaProEV(case_name: str) -> None:
             general_parameters.parallel_processing.amount_for_scenarios
         )
 
-    pool_inputs: ty.Iterator[ty.Tuple[Box, str, Box]] | ty.Any = zip(
+    pool_inputs: ty.Iterator[tuple[Box, str, Box]] | ty.Any = zip(
         scenarios, repeat(case_name), repeat(general_parameters)
     )
     # the ty.Any alternative is there because transforming it with the

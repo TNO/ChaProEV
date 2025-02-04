@@ -4,7 +4,6 @@ This is where you run the model
 '''
 
 import os
-import typing as ty
 
 import pandas as pd
 from box import Box
@@ -212,18 +211,18 @@ def run_scenario(
 
 
 # @cook.function_timer
-def load_scenarios(case_name: str) -> ty.List[Box]:
-    scenario_folder_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
-    scenario_files: ty.List[str] = [
+def load_scenarios(case_name: str) -> list[Box]:
+    scenario_folder_files: list[str] = os.listdir(f'scenarios/{case_name}')
+    scenario_files: list[str] = [
         scenario_folder_file
         for scenario_folder_file in scenario_folder_files
         if scenario_folder_file.split('.')[1] == 'toml'
     ]
-    scenario_file_paths: ty.List[str] = [
+    scenario_file_paths: list[str] = [
         f'scenarios/{case_name}/{scenario_file}'
         for scenario_file in scenario_files
     ]
-    scenarios: ty.List[Box] = [
+    scenarios: list[Box] = [
         Box(cook.parameters_from_TOML(scenario_file_path))
         for scenario_file_path in scenario_file_paths
     ]

@@ -1,5 +1,4 @@
 import os
-import typing as ty
 
 import pandas as pd
 import toml
@@ -25,7 +24,7 @@ def make_csv_variants(case_name: str) -> None:
     '''
 
     variant_files_folder: str = f'variants/{case_name}/'
-    variant_files: ty.List[str] = os.listdir(variant_files_folder)
+    variant_files: list[str] = os.listdir(variant_files_folder)
     for variant_file in variant_files:
 
         reference_scenario_name: str = variant_file.split('.')[0]
@@ -33,7 +32,7 @@ def make_csv_variants(case_name: str) -> None:
         # Here we use a dict for the reference scenario
         # instead of a Box because we want to use functions
         # that use dicts to write a new scenario
-        reference_scenario: ty.Dict = cook.parameters_from_TOML(
+        reference_scenario: dict = cook.parameters_from_TOML(
             f'scenarios/{case_name}/{reference_scenario_name}.toml'
         )
 
@@ -41,11 +40,11 @@ def make_csv_variants(case_name: str) -> None:
             f'{variant_files_folder}/{variant_file}'
         ).set_index('Variant name')
 
-        variant_names: ty.List[str] = list(variant_data.index)
+        variant_names: list[str] = list(variant_data.index)
 
         for variant_name in variant_names:
 
-            variant_scenario: ty.Dict = reference_scenario.copy()
+            variant_scenario: dict = reference_scenario.copy()
 
             for quantity_string in variant_data.columns:
 
@@ -75,7 +74,7 @@ def make_csv_variants(case_name: str) -> None:
 
 
 def make_toml_variants(case_name: str) -> None:
-    variant_configuration: ty.Dict = cook.parameters_from_TOML(
+    variant_configuration: dict = cook.parameters_from_TOML(
         f'variants/{case_name}.toml'
     )
 
@@ -85,26 +84,26 @@ def make_toml_variants(case_name: str) -> None:
         # Here we use a dict for the reference scenario
         # instead of a Box because we want to use functions
         # that use dicts to write a new scenario
-        reference_scenario: ty.Dict = cook.parameters_from_TOML(
+        reference_scenario: dict = cook.parameters_from_TOML(
             f'scenarios/{case_name}/{reference_scenario_name}.toml'
         )
 
-        variant_names: ty.List[str] = variant_configuration[
+        variant_names: list[str] = variant_configuration[
             'reference_scenarios'
         ][reference_scenario_name]['variants']
 
-        variant_scenarios: ty.Dict[str, ty.Dict] = {}
+        variant_scenarios: dict[str, dict] = {}
         for variant_name in variant_names:
             variant_scenarios[variant_name] = reference_scenario.copy()
 
-        modified_parameters: ty.Dict = variant_configuration[
+        modified_parameters: dict = variant_configuration[
             'reference_scenarios'
         ][reference_scenario_name]['modified_parameters']
 
-        modified_parameters_names: ty.List[ty.List[str]] = []
+        modified_parameters_names: list[list[str]] = []
 
         for modified_parameter in modified_parameters:
-            this_modification_names: ty.List[str] = [modified_parameter]
+            this_modification_names: list[str] = [modified_parameter]
             next_step_in_modification = modified_parameters[modified_parameter]
             next_level: str = list(next_step_in_modification.keys())[0]
             while next_level not in variant_names:
@@ -121,9 +120,9 @@ def make_toml_variants(case_name: str) -> None:
             for variant_name in variant_names:
                 variant_scenario = variant_scenarios[variant_name]
 
-                variant_nested_keys: ty.List[str] = (
-                    modified_parameter_names + [variant_name]
-                )
+                variant_nested_keys: list[str] = modified_parameter_names + [
+                    variant_name
+                ]
                 modified_value = cook.get_nested_value(
                     modified_parameters, variant_nested_keys
                 )

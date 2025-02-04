@@ -43,7 +43,7 @@ def get_time_modulation(
         index=run_range,
     )
     for location in scenario.locations:
-        time_modulation_factors: ty.List[float] = scenario.locations[
+        time_modulation_factors: list[float] = scenario.locations[
             location
         ].time_modulation_factors
         for hour_index, time_modulation_factor in enumerate(
@@ -66,7 +66,7 @@ def get_charging_modulation(
         run_range, scenario, general_parameters
     )
 
-    location_prices: ty.List[float] = [
+    location_prices: list[float] = [
         scenario.locations[location_tested].charging_price
         for location_tested in scenario.locations
     ]
@@ -89,7 +89,7 @@ def get_charging_modulation(
             np.ones(len(scenario.locations)), index=scenario.locations
         )
 
-    location_desirabilities: ty.List[float] = [
+    location_desirabilities: list[float] = [
         scenario.locations[location_tested].charging_desirability
         for location_tested in scenario.locations
     ]
@@ -125,8 +125,8 @@ def get_charging_framework(
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> ty.Tuple[
-    ty.Dict[str, pd.DataFrame],
+) -> tuple[
+    dict[str, pd.DataFrame],
     pd.DatetimeIndex,
     pd.DataFrame,
     pd.DataFrame,
@@ -150,7 +150,7 @@ def get_charging_framework(
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -175,7 +175,7 @@ def get_charging_framework(
     # at each charging location (i.e. percent of vehicles with
     # a given battery space per location) (locations are keys and
     # battery space dataframes are dictionary entries)
-    battery_spaces: ty.Dict[str, pd.DataFrame] = {}
+    battery_spaces: dict[str, pd.DataFrame] = {}
     for location_name in location_names:
         battery_spaces[location_name] = pd.DataFrame(
             run_range, columns=['Time Tag']
@@ -226,7 +226,7 @@ def get_charging_framework(
     )
     charge_drawn_from_network.index.name = 'Time Tag'
 
-    mobility_location_tuples: ty.List[ty.Tuple[str, str]] = (
+    mobility_location_tuples: list[tuple[str, str]] = (
         mobility.get_mobility_location_tuples(scenario)
     )
     mobility_locations_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
@@ -260,14 +260,14 @@ def get_charging_framework(
 def impact_of_departures(
     scenario: Box,
     time_tag: datetime.datetime,
-    battery_spaces: ty.Dict[str, pd.DataFrame],
+    battery_spaces: dict[str, pd.DataFrame],
     start_location: str,
     end_location: str,
     run_departures_impact: pd.Series,
     travelling_battery_spaces,  # it's a DataFarame but MyPy gives an error,
     zero_threshold: float,
     run_mobility_matrix,  # it's a DataFarame but MyPy gives an error,
-) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, float]:
+) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, float]:
 
     time_tag_departures_impact: float = run_departures_impact.loc[
         start_location, end_location, time_tag
@@ -285,7 +285,7 @@ def impact_of_departures(
         # and sort them. The lowest battery spaces will be first.
         # These are the ones we assume are more likely to leave,
         # as others might want to charge first.
-        departing_battery_spaces: ty.List[float] = sorted(
+        departing_battery_spaces: list[float] = sorted(
             battery_spaces[start_location].columns.values
         )
 
@@ -390,14 +390,14 @@ def impact_of_departures(
 
 def impact_of_arrivals(
     time_tag: datetime.datetime,
-    battery_spaces: ty.Dict[str, pd.DataFrame],
+    battery_spaces: dict[str, pd.DataFrame],
     start_location: str,
     end_location: str,
     run_arrivals_impact: pd.Series,
     travelling_battery_spaces,  #: It's a DataFrame, but MyPy gives an error (
     # due to the MultiIndex)
     zero_threshold: float,
-) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, float]:
+) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, float]:
 
     time_tag_arrivals_impact: float = run_arrivals_impact.loc[
         start_location, end_location, time_tag
@@ -419,7 +419,7 @@ def impact_of_arrivals(
         # location. We sort them by size, as the ones with a lower
         # battery space are more likely to have left their origin first
 
-        arriving_battery_spaces: ty.List[float] = sorted(
+        arriving_battery_spaces: list[float] = sorted(
             travelling_battery_spaces.loc[start_location, end_location].index
         )
 
@@ -493,15 +493,15 @@ def impact_of_arrivals(
 
 def travel_space_occupation(
     scenario: Box,
-    battery_spaces: ty.Dict[str, pd.DataFrame],
+    battery_spaces: dict[str, pd.DataFrame],
     time_tag: datetime.datetime,
     time_tag_index: int,
     run_mobility_matrix,  # This is a DataFrame, but MyPy has issues with it
     # These issues might have to do with MultiIndex,
     zero_threshold: float,
-    location_names: ty.List[str],
-    possible_destinations: ty.Dict[str, ty.List[str]],
-    possible_origins: ty.Dict[str, ty.List[str]],
+    location_names: list[str],
+    possible_destinations: dict[str, list[str]],
+    possible_origins: dict[str, list[str]],
     use_day_types_in_charge_computing: bool,
     day_start_hour: int,
     location_split: pd.DataFrame,
@@ -512,7 +512,7 @@ def travel_space_occupation(
     run_range: pd.DatetimeIndex,
     travelling_battery_spaces: pd.DataFrame,
     use_spillover: bool = False,
-) -> ty.Dict[str, pd.DataFrame]:
+) -> dict[str, pd.DataFrame]:
 
     for location_to_compute in location_names:
 
@@ -631,15 +631,15 @@ def travel_space_occupation(
 
 
 def compute_charging_events(
-    battery_spaces: ty.Dict[str, pd.DataFrame],
+    battery_spaces: dict[str, pd.DataFrame],
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
     time_tag: datetime.datetime,
     scenario: Box,
     general_parameters: Box,
-    location_names: ty.List[str],
+    location_names: list[str],
     charging_modulation: pd.DataFrame,
-) -> ty.Tuple[ty.Dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
 
     zero_threshold: float = general_parameters.numbers.zero_threshold
     location_parameters: Box = scenario.locations
@@ -764,14 +764,14 @@ def copy_day_type_profiles_to_whole_run(
     scenario: Box,
     case_name: str,
     run_range: pd.DatetimeIndex,
-    reference_day_type_time_tags: ty.Dict[str, ty.List[datetime.datetime]],
+    reference_day_type_time_tags: dict[str, list[datetime.datetime]],
     location_split: pd.DataFrame,
     run_mobility_matrix: pd.DataFrame,
-    battery_spaces: ty.Dict[str, pd.DataFrame],
+    battery_spaces: dict[str, pd.DataFrame],
     day_end_hour: int,
     zero_threshold: float,
-    possible_destinations: ty.Dict[str, ty.List[str]],
-    possible_origins: ty.Dict[str, ty.List[str]],
+    possible_destinations: dict[str, list[str]],
+    possible_origins: dict[str, list[str]],
     use_day_types_in_charge_computing: bool,
     general_parameters: Box,
     charge_drawn_by_vehicles: pd.DataFrame,
@@ -783,12 +783,12 @@ def copy_day_type_profiles_to_whole_run(
 
     day_start_hour: int = scenario.mobility_module.day_start_hour
     HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
-    run_hours_from_day_start: ty.List[int] = [
+    run_hours_from_day_start: list[int] = [
         (time_tag.hour - day_start_hour) % HOURS_IN_A_DAY
         for time_tag in run_range
     ]
 
-    run_day_types: ty.List[str] = [
+    run_day_types: list[str] = [
         run_time.get_day_type(
             time_tag - datetime.timedelta(hours=day_start_hour),
             scenario,
@@ -801,7 +801,7 @@ def copy_day_type_profiles_to_whole_run(
     vehicle_name: str = vehicle_parameters.name
 
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -836,7 +836,7 @@ def copy_day_type_profiles_to_whole_run(
     filter_for_battery_spaces['Hours from day start'] = (
         run_hours_from_day_start
     )
-    day_types: ty.List[str] = scenario.mobility_module.day_types
+    day_types: list[str] = scenario.mobility_module.day_types
 
     for day_type in day_types:
         for hour_index in range(HOURS_IN_A_DAY):
@@ -917,7 +917,7 @@ def copy_day_type_profiles_to_whole_run(
 
     # We first get all the days (day end time tags) that end with a spillover
     # at each of the locations
-    day_ends_with_spillover_battery_spaces: ty.Dict = {}
+    day_ends_with_spillover_battery_spaces: dict = {}
     for location_name in location_names:
 
         day_end_battery_spaces: pd.DataFrame = battery_spaces[
@@ -977,7 +977,7 @@ def copy_day_type_profiles_to_whole_run(
                     ]
                     - amount_in_spillover
                 )
-                occupied_spillover_battery_spaces: ty.List[float] = []
+                occupied_spillover_battery_spaces: list[float] = []
                 for (
                     test_battery_space
                 ) in spillover_amounts_per_battery_space.index:
@@ -1164,7 +1164,7 @@ def copy_day_type_profiles_to_whole_run(
 
 
 def write_output(
-    battery_spaces: ty.Dict[str, pd.DataFrame],
+    battery_spaces: dict[str, pd.DataFrame],
     total_battery_space_per_location: pd.DataFrame,
     charge_drawn_by_vehicles: pd.DataFrame,
     charge_drawn_from_network: pd.DataFrame,
@@ -1183,13 +1183,13 @@ def write_output(
         scenario, general_parameters
     )
     pickle_interim_files: bool = general_parameters.interim_files.pickle
-    SPINE_hour_numbers: ty.List[str] = [
+    SPINE_hour_numbers: list[str] = [
         f't{hour_number:04}' for hour_number in run_hour_numbers
     ]
     vehicle_parameters: Box = scenario.vehicle
     vehicle_name: str = vehicle_parameters.name
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -1353,8 +1353,8 @@ def get_charging_profile(
     scenario: Box,
     case_name: str,
     general_parameters: Box,
-) -> ty.Tuple[
-    ty.Dict[str, pd.DataFrame],
+) -> tuple[
+    dict[str, pd.DataFrame],
     pd.DataFrame,
     pd.DataFrame,
     pd.DataFrame,
@@ -1389,23 +1389,23 @@ def get_charging_profile(
     # We want to either compute charging for the whole run, or only
     # do it per day type (to compute faster by avoiding repeats)
     compute_charge: bool = True
-    day_types: ty.List[str] = scenario.mobility_module.day_types
+    day_types: list[str] = scenario.mobility_module.day_types
     use_day_types_in_charge_computing: bool = scenario.run[
         'use_day_types_in_charge_computing'
     ]
 
     if use_day_types_in_charge_computing:
         compute_charge = False
-        day_types_to_compute: ty.List[str] = day_types.copy()
-        reference_day_type_time_tags: ty.Dict[
-            str, ty.List[datetime.datetime]
+        day_types_to_compute: list[str] = day_types.copy()
+        reference_day_type_time_tags: dict[
+            str, list[datetime.datetime]
         ] = {}
-        time_tags_of_day_type: ty.List[datetime.datetime] = []
+        time_tags_of_day_type: list[datetime.datetime] = []
 
     day_start_hour: int = scenario.mobility_module.day_start_hour
     HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
     day_end_hour: int = (day_start_hour - 1) % HOURS_IN_A_DAY
-    run_day_types: ty.List[str] = [
+    run_day_types: list[str] = [
         run_time.get_day_type(
             time_tag - datetime.timedelta(hours=day_start_hour),
             scenario,
@@ -1419,7 +1419,7 @@ def get_charging_profile(
     vehicle_name: str = vehicle_parameters.name
 
     location_parameters: Box = scenario.locations
-    location_names: ty.List[str] = [
+    location_names: list[str] = [
         location_name
         for location_name in location_parameters
         if location_parameters[location_name].vehicle == vehicle_name
@@ -1703,14 +1703,14 @@ def charging_amounts_in_charging_sessions(
             'Charge deficit (kWh)'
         ].sum()
 
-    charging_sessions_locations: ty.List[str] = list(
+    charging_sessions_locations: list[str] = list(
         set(charging_sessions_with_charged_amounts['Location'])
     )
-    location_charger_loss_factors: ty.List[float] = [
+    location_charger_loss_factors: list[float] = [
         1 / scenario.locations[session_location].charger_efficiency
         for session_location in charging_sessions_locations
     ]
-    location_loss_factors_dict: ty.Dict[str, float] = dict(
+    location_loss_factors_dict: dict[str, float] = dict(
         zip(charging_sessions_locations, location_charger_loss_factors)
     )
 
@@ -1762,7 +1762,7 @@ def get_profile_from_sessions(
     scenario: Box,
     general_parameters: Box,
     case_name: str,
-) -> ty.Tuple[pd.DataFrame, pd.DataFrame]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     charging_profile_from_sessions: pd.DataFrame = (
         run_time.get_time_stamped_dataframe(scenario, general_parameters)
     ).fillna(0)
@@ -1773,7 +1773,7 @@ def get_profile_from_sessions(
         run_time.get_time_stamped_dataframe(scenario, general_parameters)
     ).fillna(0)
 
-    sessions_charging_slots: ty.List = [
+    sessions_charging_slots: list = [
         pd.date_range(
             start=session_start.replace(second=0, microsecond=0, minute=0),
             end=session_end.replace(second=0, microsecond=0, minute=0),
@@ -1793,13 +1793,13 @@ def get_profile_from_sessions(
         sessions['Charging Power from Network (kW)']
         * sessions['Modulation factor']
     )
-    sessions_charging_slots_charge_factors_to_vehicle: ty.List[np.ndarray] = [
+    sessions_charging_slots_charge_factors_to_vehicle: list[np.ndarray] = [
         used_power * np.ones(len(session_charging_slots))
         for session_charging_slots, used_power in zip(
             sessions_charging_slots, used_powers_to_vehicle
         )
     ]
-    sessions_charging_slots_charge_factors_from_network: ty.List[
+    sessions_charging_slots_charge_factors_from_network: list[
         np.ndarray
     ] = [
         used_power * np.ones(len(session_charging_slots))
