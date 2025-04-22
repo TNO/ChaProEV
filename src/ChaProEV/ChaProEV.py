@@ -124,7 +124,7 @@ def run_ChaProEV(case_name: str) -> None:
 if __name__ == '__main__':
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
-    case_name = 'Mopo'
+    case_name = 'bus_test'
 
     run_ChaProEV(case_name)
 

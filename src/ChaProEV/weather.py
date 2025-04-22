@@ -119,9 +119,7 @@ def download_all_cds_weather_data(
     start_year: int = source_data_parameters['start_year']
     end_year: int = source_data_parameters['end_year']
 
-    years: list[str] = [
-        str(year) for year in range(start_year, end_year + 1)
-    ]
+    years: list[str] = [str(year) for year in range(start_year, end_year + 1)]
     months: list[str] = [
         f'{month_number:02d}'
         for month_number in range(1, MONTHS_IN_A_YEAR + 1)
@@ -439,9 +437,7 @@ def get_all_hourly_values(scenario: dict) -> None:
         'weather_database_file_name'
     ]
     weather_database: str = f'{processed_folder}/{weather_database_file_name}'
-    quantity_names: list[str] = weather_parameters[
-        'quantity_processed_names'
-    ]
+    quantity_names: list[str] = weather_parameters['quantity_processed_names']
     chunk_size: int = weather_parameters['chunk_size']
     queries_for_cumulative_quantities: list[str] = weather_parameters[
         'queries_for_cumulative_quantities'
@@ -547,9 +543,7 @@ def get_EV_tool_data(scenario: dict) -> None:
     )
 
 
-def temperature_efficiency_factor(
-    temperature: float, scenario: dict
-) -> float:
+def temperature_efficiency_factor(temperature: float, scenario: dict) -> float:
     '''
     This function returns the temperature efficiency factor that corrects
     the baseline vehicle efficiency. It uses a data file (extracted from
@@ -603,9 +597,7 @@ def plot_temperature_efficiency(scenario: dict) -> None:
 
     plot_colors: pd.DataFrame = cook.get_extra_colors(scenario)
 
-    plot_parameters: dict = scenario['plots'][
-        'vehicle_temperature_efficiency'
-    ]
+    plot_parameters: dict = scenario['plots']['vehicle_temperature_efficiency']
     plot_style: str = plot_parameters['style']
     geotab_data_color: str = plot_colors.loc[
         plot_parameters['geotab_data_color']

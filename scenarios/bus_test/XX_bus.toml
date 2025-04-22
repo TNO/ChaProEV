@@ -1,0 +1,572 @@
+# Created by Omar Usmai (Omar.Usmani@TNO.nl).
+# This file contains configuration parameters for running a
+# ChaProEV scenario. To add a new scenario, copy one of the existing files
+# in a folder with the name of your case/rub inside the
+# scenarios folder, and add/remove/modify paramters as
+# required.
+
+
+
+# Run parameters
+[run]
+use_day_types_in_charge_computing = true
+[run.start]
+year = 2017
+month = 12
+day = 31
+hour = 5
+minute = 0
+[run.end]  # This is is not included in the run time
+year = 2019
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_start]
+year = 2018
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_end]  # This is is not included in the display time
+year = 2019
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.frequency]
+size = 1  # Put the size of the interval here
+type = 'h'  # 'min'
+# Put the interval type here, use 'H' for hours, 'min' for minutes,
+# 'S' for seconds, 'D' for days. For more info and other types, see here:
+# https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
+[run.display_frequency]
+size = 1  # Put the size of the interval here
+type = 'h'  # 'min'
+# Put the interval type here, use 'H' for hours, 'min' for minutes,
+# 'S' for seconds, 'D' for days. For more info and other types, see here:
+# https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases
+[run.get_extra_downloads]
+download_weather_data = false
+# Put true if you want to download the weather data. In principle,
+# you only to do this once, unless you add years and/or areas
+make_weather_database = false
+# Put true if you want to remake the weather database. In principle,
+# you only to do this once, unless you add years and/or areas. Note
+# that this refers to other years ans areas than the weather download.
+download_EV_tool_data = false
+# Put true if you want to download the data from the EV tool by geootab
+# This should only be needed once and is independentr of the case
+
+
+[locations]
+# Add locations following the syntax below:
+# [location.code] <--use the the code/alias you want for the location
+# and put the desired properties below
+[locations.bus_depot]
+vehicle = 'bus'
+connectivity = 1
+charging_power = 600  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 1
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+vehicle_discharge_power = 400 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.bus_route_start]
+vehicle = 'bus'
+connectivity = 1
+charging_power = 600  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 1
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+vehicle_discharge_power = 0 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.bus_route_end]
+vehicle = 'bus'
+connectivity = 1
+charging_power = 600  # kW
+charger_efficiency = 0.85
+latitude = 52
+longitude = 6.2
+charging_price = 0.25  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+percentage_in_location_at_run_start = 1
+# If filling it directly instead of computing it (controlled by
+# compute_start_location_split in mobility_module below)
+vehicle_discharge_power = 0 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+
+[legs]
+# You can add legs here by copying existing legs,
+# changing the name of the leg (in [legs.go_to_work], go_to_work is
+# the name of the leg) and changing the relevant values
+# Note that you need to change the leg name in all parts where it occurs
+# (i.e. also in [legs.go_to_work.locations],[legs.go_to_work.road_types],
+# etc.
+
+[legs.bus_from_depot_to_route_start]
+vehicle = 'bus'
+distance = 4  # km
+duration = 0.1  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.bus_from_depot_to_route_start.locations]
+start = 'bus_depot'
+end = 'bus_route_start'
+[legs.bus_from_depot_to_route_start.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
+
+
+[legs.bus_from_route_start_to_depot]
+vehicle = 'bus'
+distance = 4  # km
+duration = 0.1  # hours
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.bus_from_route_start_to_depot.locations]
+start = 'bus_route_start'
+end = 'bus_depot'
+[legs.bus_from_route_start_to_depot.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
+
+[legs.bus_from_route_start_to_route_end]
+vehicle = 'bus'
+distance = 13  # km
+duration = 0.66  # hours
+# Bus 28 in The Hague has a 40 minute route that is about 10-15 km (value chosen to be close to 90_000 kilometers per year)
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.bus_from_route_start_to_route_end.locations]
+start = 'bus_route_start'
+end = 'bus_route_end'
+[legs.bus_from_route_start_to_route_end.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
+
+
+[legs.bus_from_route_end_to_route_start]
+vehicle = 'bus'
+distance = 13  # km
+duration = 0.66  # hours
+# Bus 28 in The Hague has a 40 minute route that is about 10-15 km (value chosen to be close to 90_000 kilometers per year)
+# This factor adds a correction to the vehicle consumption that depends
+# on the hour in day (the first is for 00:00 to 00:59,
+# the last for 23:00 to 23:59). Note that these are actual hours,
+# not hours in the user day (which can start and end at other moments than
+# midnight). This is used to take into account things like traffic jams.
+# The default value is 1.
+hour_in_day_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1.2, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1
+]
+[legs.bus_from_route_end_to_route_start.locations]
+start = 'bus_route_end'
+end = 'bus_route_start'
+[legs.bus_from_route_end_to_route_start.road_type_mix]
+# Give the road type mix
+# We need a value for each of the road_types (see above in [transport_factors])
+# If the road type does not occur in the leg, simply put 0
+# Note that the total should be 1 (there are not checks to ensure this,
+# so you need to make sure you do this correctly)
+# road_types = ['highway', 'city']
+mix = [0.8, 0.2]
+
+
+
+
+[vehicle]
+name = 'bus'
+base_location = 'bus_depot' # not relevant for cars
+yearly_kilometrage = 90_000
+# https://www.ebusco.com/wp-content/uploads/Website_Brochure_NL_V1-4.pdf
+# Not relevant for cars, as it is built bottom-up
+kilometers_column_for_consumption = 'Arrivals'
+use_weighted = false
+battery_capacity = 500  # kWh
+# https://www.ebusco.com/wp-content/uploads/Website_Brochure_NL_V1-4.pdf
+solar_panel_size_kWp = 0  # kWp
+[vehicle.base_consumption_per_km]
+electricity_kWh = 0.76
+# https://www.ebusco.com/wp-content/uploads/Website_Brochure_NL_V1-4.pdf
+# Others scaled accroding to cars
+gasoline_litres = 0.3399
+diesel_litres = 0.2917
+hydrogen_kg = 0.0398
+CNG_kg = 0.2415
+LNG_kg = 0.2415
+
+[trips]
+
+[trips.bus_weekday_in_workweek]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.1, 0]
+
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0.5, 0.5, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [9]
+time_between_repetitions = [0.1] # hours
+
+[trips.bus_weekend_in_workweek]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.1, 0]
+
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [7]
+time_between_repetitions = [0.1] # hours
+
+
+[trips.bus_weekday_in_holiday_week]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.1, 0]
+
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0.25, 0.75, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [8]
+time_between_repetitions = [0.1] # hours
+
+[trips.bus_weekend_in_holiday_week]
+vehicle = 'bus'
+legs = [
+    'bus_from_depot_to_route_start',
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start',
+    'bus_from_route_start_to_depot',
+]
+time_between_legs = [0, 0.1, 0]
+
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+start_probabilities = [
+    0, 0.25, 0.5, 0.25, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+]  # Start at day start hour
+repeated_sequence = [
+    'bus_from_route_start_to_route_end',
+    'bus_from_route_end_to_route_start'
+    ]
+repetition_amounts = [7]
+time_between_repetitions = [0.1] # hours
+
+
+# These parameters are used for the ChaProEV mobility module
+[mobility_module]
+day_start_hour = 5
+# Chosen so that no travel occurs in the first hour
+compute_start_location_split = true
+day_types = [
+    'weekday_in_work_week', 'weekend_in_work_week',
+    'weekday_in_holiday_week', 'weekend_in_holiday_week',
+    'weekend_holiday_departures', 'weekend_holiday_returns',
+    'holiday_overlap_weekend'
+]
+
+mobility_quantities = [
+    'Departures amount', 'Departures kilometers',
+    'Departures weighted kilometers', 'Departures impact',
+    'Departures impact kilometers', 'Departures impact weighted kilometers',
+    'Arrivals amount', 'Arrivals kilometers',
+    'Arrivals weighted kilometers',
+    'Arrivals impact', 'Arrivals impact kilometers', 
+    'Arrivals impact weighted kilometers',
+    # 'Duration (hours)', 'Distance (km)', 'Weighted distance (km)'
+]
+
+battery_space_shift_quantities = [
+    'departures', 'departures_weighted',
+    'departures_impact', 'departures_impact_weighted',
+    'arrivals', 'arrivals_weighted',
+    'arrivals_impact', 'arrivals_impact_weighted',
+]
+location_connections_headers = [
+    'Duration (hours)', 'Distance (km)', 'Weighted distance (km)']
+
+mobility_index_names = ['From', 'To', 'Time Tag']
+kilometers_driven_headers = [
+    'Proportion at base',
+    'Proportion idle en route',
+    'Proportion driving',
+    'Proportion of run time driving',
+    'Driven kilometers (km)'
+]
+
+
+
+holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53]
+# We need to provide the number of holliday weeks seprately,
+# as counting the elements of the list above might not work, such as
+# when the above list contains weeks 1 and 53 (which just represent
+# the fact that years don't necessarily start and/or end at the start/end
+# of a week).
+number_of_holiday_weeks = 10
+holiday_departures_in_weekend_week_numbers = [7, 17, 27, 30, 41, 50]
+holiday_returns_in_weekend_week_numbers = [1, 8, 18, 30, 33, 42]
+
+work_hours_in_a_work_day = 8  # hours
+hours_worked_per_work_week = 31	  # hours
+hours_in_a_standard_work_week = 40  # hours
+percentage_working_on_a_work_week = 1
+worked_hours_per_year = 1434  # hours
+
+leisure_trips_per_weekend = 1
+leisure_trips_per_week_outside_weekends = 2
+maximal_fill_percentage_leisure_trips_on_non_work_weekdays = 1
+weekday_leisure_trips = 2
+percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
+
+weekend_trips_per_year = 12
+
+
+holiday_trips_taken = 1
+time_spent_at_holiday_destination = 14  # days
+# percentage_of_outward_holiday_trips_on_weekends = 0.75
+# percentage_of_back_holiday_trips_on_weekends = 0.75
+[mobility_module.trips_per_day_type]
+bus = [ # for vehicles other than cars
+    'bus_weekday_in_workweek', 'bus_weekend_in_workweek',
+    'bus_weekday_in_holiday_week', 'bus_weekend_in_holiday_week',
+    'bus_weekend_in_holiday_week', 'bus_weekend_in_holiday_week',
+    'bus_weekend_in_holiday_week'
+]
+
+truck = [ # for vehicles other than cars
+    'truck_weekday', 'truck_weekend',
+    'truck_weekday', 'truck_weekend',
+    'truck_weekend', 'truck_weekend',
+    'truck_weekend',
+]
+
+van = [ # for vehicles other than cars
+    'van_weekday', 'van_weekend',
+    'van_weekday', 'van_weekend',
+    'van_weekend', 'van_weekend',
+    'van_weekend',
+]
+
+[transport_factors]
+road_types = ['highway', 'city']
+weights = [0.66, 1.6]
+
+# Weather-related parameters
+[weather]
+weather_factors_table_root_name = 'weather_factors'
+# These parameters define what we want to get from the source
+# (CDS ERA-5)
+[weather.source_data]
+start_year = 2020
+end_year = 2022
+quantities = [
+    '2m_temperature',
+    'skin_temperature',
+    'surface_solar_radiation_downwards',
+    'total_precipitation',
+]
+raw_data_folder = 'input/cds_weather_data'
+# The following define the area over which the raw weather data will be
+# downloaded. The corresponding in the processed weather database is below.
+latitude_min = 36
+latitude_max = 68
+longitude_min = -11
+longitude_max = 60
+
+# Those parameters are used to processed the raw weather data into
+# data useful for the model.
+[weather.processed_data]
+raw_data_folder = 'input/cds_weather_data'
+processed_folder = 'input/processed_weather_data'
+weather_database_file_name = 'weather.sqlite3'
+# This parameter is there to avoid issues when writing a too large DataFrame
+# at once (instead, we split it into chunks).
+chunk_size = 100000
+quantities = [
+    '2m_temperature',
+    'skin_temperature',
+    'surface_solar_radiation_downwards',
+    'total_precipitation',
+]
+
+
+KELVIN_TO_CELSIUS = -273.15
+quantity_tags = ['t2m', 'skt', 'ssrd', 'tp']
+
+quantity_processed_names = [
+    'Temperature at 2 meters (°C)',
+    'Skin temperature (°C)',
+    'Surface solar radiation downwards (J/m2)',
+    'Total precipitation (m)'
+]
+
+cumulative_quantity_processed_names = [
+    'Surface solar radiation downwards (J/m2)',
+    'Total precipitation (m)'
+]
+
+cumulative_quantities = [
+    'surface_solar_radiation_downwards',
+    'total_precipitation',
+]
+
+queries_for_cumulative_quantities = [
+    "SELECT * FROM 'Surface solar radiation downwards (J/m2)';",
+    "SELECT * FROM 'Total precipitation (m)';"
+]
+
+temperature_quantities = ['2m_temperature', 'skin_temperature']
+
+processed_index_tags = ['Timetag', 'Latitude', 'Longitude']
+# These define the area of the processed data in the weather database
+latitude_min = 50.6
+latitude_max = 53.5
+longitude_min = 3.4
+longitude_max = 7.2
+coordinate_step = 0.1
+
+# Parameters for the EV tool data from geotab
+[weather.EV_tool]
+EV_tool_url = 'https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html'
+user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.57'
+efficiency_curve_script_index = 2
+data_splitter = 'Temp:'
+file_name = 'vehicle_temperature_efficiencies'
+groupfile_name = 'vehicle_temperature_efficiencies'
+folder = 'input'
+efficiency_factor_column_name = 'Vehicle Relative efficiency factor'
+
+# Temperature efficiency fit factors
+[weather.vehicle_temperature_efficiencies]
+folder = 'input'
+file_name = 'vehicle_temperature_efficiencies.pkl'
+fitting_polynomial_order = 6
+
+
+
+
+[charging]
+price_reaction_exponent = 0 # 0.5
+desirability_reaction_exponent = 0 # 1
+
+[charging_sessions]
+resolution = 1 # subdivisions from main unit of time

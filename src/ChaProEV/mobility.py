@@ -647,7 +647,8 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
-        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+        mobility_module_parameters.
+        maximal_fill_percentage_leisure_trips_on_non_work_weekdays
     )
 
     # Some useful quantities telling us how many of which day type there are
@@ -2113,8 +2114,8 @@ def make_mobility_data(
 
 if __name__ == '__main__':
     start_time: datetime.datetime = datetime.datetime.now()
-    case_name = 'Mopo'
-    scenario_name: str = 'XX_car'
+    case_name = 'bus_test'
+    scenario_name: str = 'XX_bus'
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
     scenario.name = scenario_name

@@ -2100,5 +2100,11 @@ if __name__ == '__main__':
     location_connecions, legs, locations, trips = declare_all_instances(
         scenario, case_name, general_parameters
     )
+    for trip in trips:
+        print(trip.name)
+        print(trip.mobility_matrix)
+        trip.mobility_matrix.to_csv(f'test_bus_moility_matrices/{trip.name}.csv')
+        print(trip.next_leg_kilometers)
+        exit()
 
     print((datetime.datetime.now() - start_).total_seconds())
