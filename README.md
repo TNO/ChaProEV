@@ -54,7 +54,16 @@ if __name__ == '__main__':
     case_name: str = 'Mopo'
     ChaProEV.run_ChaProEV(case_name)
 ```
-For examples of running ChaProEV,
+If you installed ChaProEV with pip, then the requirements
+should be installed as well (see requirements.txt file if you have issues
+or use the contact below).
+To run the model, you need to put a ChaProEV.toml configuration
+in the folder where you run your model. You also need to have at least one scenario in your scenario/case_name (e.g. scenario/Mopo) folder. A
+If you want to create varaints, then you need to add a case.toml (e.g. Mopo.toml) file in the variants folder and put a variant file in the variants/case (e.g. variants/Mopo) folder. 
+If you want to compute fleet-level values and/or do a car owndriveway/street charging split, you need to put some files in the input/case (e.g. input/Mopo) folder.
+You can use the examples provided in this repository.
+
+For examples of running ChaProEV and more configuration files,
 you can visit the [ChaProEV runs repository](https://github.com/TNO/ChaProEV_runs).
 
 ## General approach and structure
@@ -113,6 +122,7 @@ Applied Energy 360 (2024) 122695
 2. S. Johanndeiter, N. Helistö, J. Kiviluoma, V. Bertsch,  [Price formation
 and intersectoral distributional eects in a fully decarbonised european
 electricity market](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=48874423)
+3. Sanchez Jimenez, Ingrid and Johanndeiter, Silke and de Vries, Laurens, Capacity Remuneration Mechanisms for Power Systems in Transition. Available at SSRN: https://ssrn.com/abstract=5196543 or http://dx.doi.org/10.2139/ssrn.5196543
 
 
 #### **Future**

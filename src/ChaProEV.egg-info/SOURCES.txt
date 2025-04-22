@@ -14,6 +14,7 @@ eu-emblem-low-res.jpg
 mkdocs.yml
 pyproject.toml
 requirements.txt
+requirements_obsolete.txt
 todo.txt
 .vscode/ltex.dictionary.en-US.txt
 .vscode/settings.json
@@ -64,6 +65,7 @@ scenarios/Mopo/XX_bus.toml
 scenarios/Mopo/XX_car.toml
 scenarios/Mopo/XX_truck.toml
 scenarios/Mopo/XX_van.toml
+scenarios/bus_test/XX_bus.toml
 scenarios/local_impact_BEVs/baseline.toml
 src/ChaProEV/ChaProEV.py
 src/ChaProEV/__init__.py
@@ -89,6 +91,10 @@ src/ChaProEV.egg-info/requires-PC-28624-2.txt
 src/ChaProEV.egg-info/requires-PC-28624.txt
 src/ChaProEV.egg-info/requires.txt
 src/ChaProEV.egg-info/top_level.txt
+test_bus_moility_matrices/bus_weekday_in_holiday_week.csv
+test_bus_moility_matrices/bus_weekday_in_workweek.csv
+test_bus_moility_matrices/bus_weekend_in_holiday_week.csv
+test_bus_moility_matrices/bus_weekend_in_workweek.csv
 tests/test_battery_space.py
 tests/test_charge_and_consumption.py
 tests/test_empty_values.py

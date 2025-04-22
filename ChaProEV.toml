@@ -44,7 +44,7 @@ fleet_headers = [
     'Discharge Power to Network (MW)',
 
 ]
-do_fleet_tables =  true
+do_fleet_tables =  false
 fleet_file_name = 'fleets.csv'
 
 [sessions_dataframe]

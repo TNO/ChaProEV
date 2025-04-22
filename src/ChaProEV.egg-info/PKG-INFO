@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ChaProEV
-Version: 1.2.5
+Version: 1.2.6
 Summary: ChaProEV: Charging Profiles of Electric Vehicles
 Author-email: Omar Usmani <Omar.Usmani@TNO.nl>
 Project-URL: Homepage, https://github.com/TNO/ChaProEV
@@ -12,7 +12,7 @@ Description-Content-Type: text/markdown
 License-File: LICENCE
 Requires-Dist: bs4>=0.0.2
 Requires-Dist: cdsapi>=0.7.4
-Requires-Dist: ETS_CookBook>=1.1.1
+Requires-Dist: ETS_CookBook>=1.1.2
 Requires-Dist: matplotlib>=3.9.2
 Requires-Dist: numpy>=2.1.3
 Requires-Dist: pandas>=2.2.3
@@ -78,7 +78,16 @@ if __name__ == '__main__':
     case_name: str = 'Mopo'
     ChaProEV.run_ChaProEV(case_name)
 ```
-For examples of running ChaProEV,
+If you installed ChaProEV with pip, then the requirements
+should be installed as well (see requirements.txt file if you have issues
+or use the contact below).
+To run the model, you need to put a ChaProEV.toml configuration
+in the folder where you run your model. You also need to have at least one scenario in your scenario/case_name (e.g. scenario/Mopo) folder. A
+If you want to create varaints, then you need to add a case.toml (e.g. Mopo.toml) file in the variants folder and put a variant file in the variants/case (e.g. variants/Mopo) folder. 
+If you want to compute fleet-level values and/or do a car owndriveway/street charging split, you need to put some files in the input/case (e.g. input/Mopo) folder.
+You can use the examples provided in this repository.
+
+For examples of running ChaProEV and more configuration files,
 you can visit the [ChaProEV runs repository](https://github.com/TNO/ChaProEV_runs).
 
 ## General approach and structure
@@ -137,6 +146,7 @@ Applied Energy 360 (2024) 122695
 2. S. Johanndeiter, N. Helistö, J. Kiviluoma, V. Bertsch,  [Price formation
 and intersectoral distributional eects in a fully decarbonised european
 electricity market](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=48874423)
+3. Sanchez Jimenez, Ingrid and Johanndeiter, Silke and de Vries, Laurens, Capacity Remuneration Mechanisms for Power Systems in Transition. Available at SSRN: https://ssrn.com/abstract=5196543 or http://dx.doi.org/10.2139/ssrn.5196543
 
 
 #### **Future**
