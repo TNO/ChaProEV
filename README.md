@@ -61,7 +61,18 @@ To run the model, you need to put a ChaProEV.toml configuration
 in the folder where you run your model. You also need to have at least one scenario in your scenario/case_name (e.g. scenario/Mopo) folder. A
 If you want to create varaints, then you need to add a case.toml (e.g. Mopo.toml) file in the variants folder and put a variant file in the variants/case (e.g. variants/Mopo) folder. 
 If you want to compute fleet-level values and/or do a car owndriveway/street charging split, you need to put some files in the input/case (e.g. input/Mopo) folder.
-You can use the examples provided in this repository.
+You can use the examples provided in this repository. You can also
+unzip [this file](https://github.com/TNO/ChaProEV/blob/main/ChaProEV_test_case_configuration_files.zip)
+into your working folder and use 'test_case'  as your case name:
+```python
+from ChaProEV import ChaProEV
+
+if __name__ == '__main__':
+    case_name: str = 'test_case'
+    ChaProEV.run_ChaProEV(case_name)
+```
+
+
 
 For examples of running ChaProEV and more configuration files,
 you can visit the [ChaProEV runs repository](https://github.com/TNO/ChaProEV_runs).
