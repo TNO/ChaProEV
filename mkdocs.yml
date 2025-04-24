@@ -1,14 +1,23 @@
 site_name: ChaProEV
 nav:
   - Home: index.md
-  - How to use: using.md
-  - The scenario file: scenario.md
+  - User guide:
+    - How to use: using.md
+    - General parameters: general_parameters.md
+    - The scenario file: scenario.md
+    - Variants: variants.md
+    - Inputs:
+      - Own driveway percentages: car_home_own_driveway.md
   - Modules: 
     - Weather: weather.md
     - Run time: run_time.md
     - Define: define.md
     - Charging: charging.md
     - Consumption: consumption.md
+    - Variants: make_variants.md
+    - Running model: running_model.md
+    - Multiprocessing: multiprocessing.md
+    - Writing: writing.md
 
 theme: 
   name: readthedocs
