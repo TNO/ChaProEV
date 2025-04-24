@@ -51,6 +51,24 @@
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">The scenario file</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#run">run</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#use_day_types_in_charge_computing">use_day_types_in_charge_computing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#start">start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#end">end</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#display_start">display_start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#display_end">display_end</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#frequency">frequency</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#display-frequency">display frequency</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#extra_downloads">extra_downloads</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#locations">locations</a>
     </li>
@@ -148,6 +166,37 @@
                 <h1 id="scenario-file-description">Scenario file description</h1>
 <p>This page describes the elements of the scenario file</p>
 <h2 id="run">run</h2>
+<p>Run parameters give the elements to produce the time tags of the run range.</p>
+<h3 id="use_day_types_in_charge_computing">use_day_types_in_charge_computing</h3>
+<p>If set to true, the charging computations will be done per day type rather
+than for all days of the run, which fastens the computations.</p>
+<h3 id="start">start</h3>
+<p>This part gives the year, month, day, hour, and minute of the start of the
+computations. It is best to set this to a day hour start for consistency
+and then cut off the start for display (see below). For example,
+start on 31/12/2019 at 05:00 if your day start hour is 05:00 and if you want
+to show results starting on 1/1/2020 at 00:00.</p>
+<h3 id="end">end</h3>
+<p>This part gives the year, month, day, hour, and minute of the end of the
+computations. Note that the end time tag is not included in the run,
+so put 1/1/2021 at 00:00 if you want to compute for 2020.</p>
+<h3 id="display_start">display_start</h3>
+<p>This is the first time tag you want to show in your end results.</p>
+<h3 id="display_end">display_end</h3>
+<p>This is the first time tag that does not appear in your displayed results.</p>
+<h3 id="frequency">frequency</h3>
+<p>The time frequency of the run (size and type).
+For the type, use 'H' for hours, 'min' for minutes,
+'S' for seconds, 'D' for days. For more info and other types, see 
+<a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases">here</a>.
+The current model uses  hourly (so 1 and 'h'). Changing that might require
+some adjustments in the code.</p>
+<h3 id="display-frequency">display frequency</h3>
+<p>The frequency of the displayed values can be different than the frequency of the compuatations.
+In the current version, this needs to be the same or less frequent than the computation frequencey above.</p>
+<h3 id="extra_downloads">extra_downloads</h3>
+<p>This is to decide if you want to dowload some files (note that this concerns the
+currently inactive weather module).</p>
 <h2 id="locations">locations</h2>
 <h2 id="legs">legs</h2>
 <h3 id="mix">mix</h3>

@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>How to use - ChaProEV</title>
+    <title>Purpose - ChaProEV</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "How to use";
-        var mkdocs_page_input_path = "using.md";
+        var mkdocs_page_name = "Purpose";
+        var mkdocs_page_input_path = "general_parameters.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -43,10 +43,8 @@
                 <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
                 </li>
               </ul>
-              <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="#">How to use</a>
-    <ul class="current">
-    </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
                 </li>
               </ul>
               <ul>
@@ -80,7 +78,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">How to use</li>
+      <li class="breadcrumb-item active">Purpose</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -89,35 +87,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="installation">Installation</h1>
-<pre><code>pip install ChaProEV
-</code></pre>
-<h1 id="running">Running</h1>
-<p>The standard way of running the model is to run a case with a code such as
-the following:</p>
-<pre><code class="language-python">from ChaProEV import ChaProEV
-
-if __name__ == '__main__':
-    case_name: str = 'my_case'
-    ChaProEV.run_ChaProEV(case_name)
-</code></pre>
-<p>where you need to give a name to your case ('my_case') in the example above.</p>
-<p>To run your case, you need to provide general parameters,
-scenario parameters, variant parameters, and (optional) inputs.</p>
-<p>## General parameters
-The file containing the general parameters (common for all acenarios) is
-in your root working folder as is called 
-<a href="../general_parameters/">ChaProEV.toml</a> (click on link for details).
- ## Scenarios</p>
-<p>## Variants</p>
-<p>## Inputs</p>
+                <h1 id="purpose">Purpose</h1>
+<p>The purpose of the ChaProEV.toml file is to set parameters
+that are common for all your scenarios.
+This page describes the various parameters.</p>
+<h1 id="variants">variants</h1>
+<p>The variants section of the configuration file sets parameters
+to create scenario <a href="../variants/">variants</a> (see that page for
+details).
+1.  <strong>use_variants"</strong> Setting the use_variants parameters to true creates variants,
+while setting it to false skips variant creation althogether.
+2. <strong>csv_version:</strong> Setting the csv_version to true parameters makes you use csv files
+to define your variants (in a folder within the variants folder: this
+folder needs to have the same name as your case). Setting it to false makes you use a toml file in the variants folder (case_name.toml).
+3. <strong>use_years_in_profiles:</strong> This is used to create different variants per year when doing 
+<a href="../car_home_own_driveway_splits/">car home own driveway and street parking splits</a></p>
+<h1 id="parallel_processing">parallel_processing</h1>
+<p>This parallel processing section of the configuration file sets parameters to manage the <a href="multiprocessing.md">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).
+[parallel_processing]
+1. <strong>set_amount_of_processes:</strong> set this as false if you want the amount of parallel processes to be determined by the model (via the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing standard library of Python</a>). Set this to true if you want to set the amount of processes yourself.
+2. <strong>amount_for_scenarios:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to run scenarios in parallel.
+3. <strong>amount_for_pickle_saves:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to save the pickle output saves to other formats in parallel (see <a href="../writing/">writing module</a> for details).</p>
+<h1 id="interim_files">interim_files</h1>
+<p>This concerns parameters for saving intermediary results to files.
+1. <strong>pickle:</strong> Set this to true to save interim results to pickle files.
+Set this to false not to do this.
+2. <strong>consumption_tables_frequencies:</strong> Provide a list of consumption
+tables frequencies (see <a href="../consumption/">consumption module</a>). The default is the following list ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
+<strong>save_consumption_table:</strong>  Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</p>
               
             </div>
           </div><footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../scenario/" class="btn btn-neutral float-right" title="The scenario file">Next <span class="icon icon-circle-arrow-right"></span></a>
-    </div>
 
   <hr/>
 
@@ -139,10 +139,6 @@ in your root working folder as is called
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
-    
-    
-      <span><a href="../scenario/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
