@@ -123,18 +123,21 @@ folder needs to have the same name as your case). Setting it to false makes you 
 3. <strong>use_years_in_profiles:</strong> This is used to create different variants per year when doing 
 <a href="../car_home_own_driveway_splits/">car home own driveway and street parking splits</a></p>
 <h1 id="parallel_processing">parallel_processing</h1>
-<p>This parallel processing section of the configuration file sets parameters to manage the <a href="multiprocessing.md">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).
-[parallel_processing]
-1. <strong>set_amount_of_processes:</strong> set this as false if you want the amount of parallel processes to be determined by the model (via the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing standard library of Python</a>). Set this to true if you want to set the amount of processes yourself.
-2. <strong>amount_for_scenarios:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to run scenarios in parallel.
-3. <strong>amount_for_pickle_saves:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to save the pickle output saves to other formats in parallel (see <a href="../writing/">writing module</a> for details).</p>
+<p>This parallel processing section of the configuration file sets parameters to manage the <a href="multiprocessing.md">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).</p>
+<ol>
+<li><strong>set_amount_of_processes:</strong> set this as false if you want the amount of parallel processes to be determined by the model (via the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing standard library of Python</a>). Set this to true if you want to set the amount of processes yourself.</li>
+<li><strong>amount_for_scenarios:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to run scenarios in parallel.</li>
+<li><strong>amount_for_pickle_saves:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to save the pickle output saves to other formats in parallel (see <a href="../writing/">writing module</a> for details).</li>
+</ol>
 <h1 id="interim_files">interim_files</h1>
-<p>This concerns parameters for saving intermediary results to files.
-1. <strong>pickle:</strong> Set this to true to save interim results to pickle files.
-Set this to false not to do this.
-2. <strong>consumption_tables_frequencies:</strong> Provide a list of consumption
-tables frequencies (see <a href="../consumption/">consumption module</a>). The default is the following list ['hourly', 'daily', 'weekly', 'monthly', 'yearly']
-<strong>save_consumption_table:</strong>  Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</p>
+<p>This concerns parameters for saving intermediary results to files.</p>
+<ol>
+<li><strong>pickle:</strong> Set this to true to save interim results to pickle files.
+Set this to false not to do this.</li>
+<li><strong>consumption_tables_frequencies:</strong> Provide a list of consumption
+tables frequencies (see <a href="../consumption/">consumption module</a>). The default is the following list ['hourly', 'daily', 'weekly', 'monthly', 'yearly']</li>
+<li><strong>save_consumption_table:</strong>  Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</li>
+</ol>
               
             </div>
           </div><footer>
