@@ -5,14 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>The scenario file - ChaProEV</title>
+    <title>Creating scenarios - ChaProEV</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "The scenario file";
+        var mkdocs_page_name = "Creating scenarios";
         var mkdocs_page_input_path = "scenario.md";
         var mkdocs_page_url = null;
       </script>
@@ -47,9 +47,7 @@
               <ul class="current">
                   <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
-                  </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">The scenario file</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Creating scenarios</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#run">run</a>
         <ul>
@@ -72,60 +70,64 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#locations">locations</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#vehicle">vehicle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#connectivity">connectivity</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#charging_power">charging_power</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#charger_efficiency">charger_efficiency</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#latitude">latitude</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#longitude">longitude</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#charging_price">charging_price</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#charging_desirability">charging_desirability</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#percentage_in_location_at_run_start">percentage_in_location_at_run_start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#vehicle_discharge_power">vehicle_discharge_power</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#proportion_of_discharge_to_network">proportion_of_discharge_to_network</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#time_modulation_factors">time_modulation_factors</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#legs">legs</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#vehicle_1">vehicle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#distance">distance</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#duration">duration</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#hour_in_day_factors">hour_in_day_factors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#locations_1">locations</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#road_type_mix">road_type_mix</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#mix">mix</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#vehicle">vehicle</a>
+    <li class="toctree-l2"><a class="reference internal" href="#vehicle_2">vehicle</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#vehicle-name">vehicle name</a>
+    <li class="toctree-l3"><a class="reference internal" href="#name">name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#base_location">base_location</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#yearly_kilometrage-90_000">yearly_kilometrage = 90_000</a>
     </li>
         </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#trips">trips</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#mobility_module">mobility_module</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#day_start_hour">day_start_hour</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#day_types">day_types</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#trips_per_day_type">trips_per_day_type</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#transport_factors">transport_factors</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#road_types">road_types</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#weights">weights</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#weather">weather</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#charging">charging</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#plots">plots</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#files">files</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#maps">maps</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#colors">colors</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#color_bars">color_bars</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#unit_conversion">unit_conversion</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#time">time</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#numbers">numbers</a>
     </li>
     </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
                   </li>
@@ -134,6 +136,11 @@
                 <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
                 </li>
     </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Approach</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="" href="../outputs.md">Outputs</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Modules</span></p>
@@ -172,7 +179,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
           <li class="breadcrumb-item">User guide</li>
-      <li class="breadcrumb-item active">The scenario file</li>
+      <li class="breadcrumb-item active">Creating scenarios</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -182,7 +189,10 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="scenario-file-description">Scenario file description</h1>
-<p>This page describes the elements of the scenario file</p>
+<p>The models runs through a series of scenarios. For each scenario,
+you need to create a scenario file in the scenarios/your_case
+folder (or use a <a href="../variants/">variant</a>).
+This page describes the elements of the scenario file (your_scenario.toml).</p>
 <h2 id="run">run</h2>
 <p>Run parameters give the elements to produce the time tags of the run range.</p>
 <h3 id="use_day_types_in_charge_computing">use_day_types_in_charge_computing</h3>
@@ -216,15 +226,74 @@ In the current version, this needs to be the same or less frequent than the comp
 <p>This is to decide if you want to dowload some files (note that this concerns the
 currently inactive weather module).</p>
 <h2 id="locations">locations</h2>
+<h3 id="vehicle">vehicle</h3>
+<h3 id="connectivity">connectivity</h3>
+<h3 id="charging_power">charging_power</h3>
+<h3 id="charger_efficiency">charger_efficiency</h3>
+<h3 id="latitude">latitude</h3>
+<h3 id="longitude">longitude</h3>
+<h3 id="charging_price">charging_price</h3>
+<h3 id="charging_desirability">charging_desirability</h3>
+<p>An indicator (0-1) of how much people like to charge at this location</p>
+<h3 id="percentage_in_location_at_run_start">percentage_in_location_at_run_start</h3>
+<p>If filling it directly instead of computing it (controlled by
+compute_start_location_split in mobility_module below)</p>
+<h3 id="vehicle_discharge_power">vehicle_discharge_power</h3>
+<h3 id="proportion_of_discharge_to_network">proportion_of_discharge_to_network</h3>
+<h3 id="time_modulation_factors">time_modulation_factors</h3>
+<p>Starts at midinight</p>
 <h2 id="legs">legs</h2>
+<h3 id="vehicle_1">vehicle</h3>
+<h3 id="distance">distance</h3>
+<h3 id="duration">duration</h3>
+<h3 id="hour_in_day_factors">hour_in_day_factors</h3>
+<p>This factor adds a correction to the vehicle consumption that depends
+on the hour in day (the first is for 00:00 to 00:59,
+the last for 23:00 to 23:59). Note that these are actual hours,
+not hours in the user day (which can start and end at other moments than
+midnight). This is used to take into account things like traffic jams.
+The default value is 1.</p>
+<h3 id="locations_1">locations</h3>
+<h3 id="road_type_mix">road_type_mix</h3>
+<p>Give the road type mix
+We need a value for each of the road_types (see above in [transport_factors])
+If the road type does not occur in the leg, simply put 0
+Note that the total should be 1 (there are not checks to ensure this,
+so you need to make sure you do this correctly)
+road_types = ['highway', 'city']</p>
 <h3 id="mix">mix</h3>
-<h2 id="vehicle">vehicle</h2>
+<h2 id="vehicle_2">vehicle</h2>
 <p>These parameters define the scenario's vehicle. If you want profiles
 for several vehicles, run separate scenarios.</p>
-<h3 id="vehicle-name">vehicle name</h3>
+<h3 id="name">name</h3>
 <p>This is the name of the vehicle, which will be checked to see if trips
 and locations are actually declared.</p>
+<h3 id="base_location">base_location</h3>
+<p>not relevant for cars</p>
+<h3 id="yearly_kilometrage-90_000">yearly_kilometrage = 90_000</h3>
+<h1 id="not-relevant-for-cars-as-it-is-built-bottom-up">Not relevant for cars, as it is built bottom-up</h1>
+<h3 id="kilometers_column_for_consumption">kilometers_column_for_consumption</h3>
+<h3 id="use_weighted">use_weighted</h3>
+<h3 id="battery_capacity">battery_capacity</h3>
+<h3 id="solar_panel_size_kwp">solar_panel_size_kWp</h3>
+<h3 id="base_consumption_per_km">base_consumption_per_km</h3>
+<p>electricity_kWh = 0.76
+gasoline_litres = 0.3399
+diesel_litres = 0.2917
+hydrogen_kg = 0.0398
+CNG_kg = 0.2415
+LNG_kg = 0.2415</p>
 <h2 id="trips">trips</h2>
+<h3 id="vehicle_3">vehicle</h3>
+<h3 id="legs_1">legs</h3>
+<h3 id="time_between_legs">time_between_legs</h3>
+<p>This is the time spent at each interim location (same units as used
+general)</p>
+<h3 id="percentage_station_users">percentage_station_users</h3>
+<h3 id="start_probabilities">start_probabilities</h3>
+<h3 id="repeated_sequence">repeated_sequence</h3>
+<h3 id="repetition_amounts">repetition_amounts</h3>
+<h3 id="time_between_repetitions">time_between_repetitions</h3>
 <h2 id="mobility_module">mobility_module</h2>
 <h3 id="day_start_hour">day_start_hour</h3>
 <p>This parameter defines the start of the day for the scenario. It is chosen
@@ -236,7 +305,35 @@ for the users/matches their patterns. This is connected to the
 For example, the hours between 00:00 and 05:00 on a Saturday belong to
 the Thursday before and are as such on a week day 
 (as opposed to a weekend day).</p>
+<h3 id="compute_start_location_split">compute_start_location_split</h3>
 <h3 id="day_types">day_types</h3>
+<h3 id="mobility_quantities">mobility_quantities</h3>
+<h3 id="battery_space_shift_quantities">battery_space_shift_quantities</h3>
+<h3 id="location_connections_headers">location_connections_headers</h3>
+<h3 id="mobility_index_names">mobility_index_names</h3>
+<h3 id="kilometers_driven_headers">kilometers_driven_headers</h3>
+<h3 id="holiday_weeks">holiday_weeks</h3>
+<h3 id="number_of_holiday_weeks">number_of_holiday_weeks</h3>
+<p>We need to provide the number of holliday weeks seprately,
+as counting the elements of the list above might not work, such as
+when the above list contains weeks 1 and 53 (which just represent
+the fact that years don't necessarily start and/or end at the start/end
+of a week).</p>
+<h3 id="holiday_departures_in_weekend_week_numbers">holiday_departures_in_weekend_week_numbers</h3>
+<h3 id="holiday_returns_in_weekend_week_numbers">holiday_returns_in_weekend_week_numbers</h3>
+<h3 id="work_hours_in_a_work_day">work_hours_in_a_work_day</h3>
+<h3 id="hours_worked_per_work_week">hours_worked_per_work_week</h3>
+<h3 id="hours_in_a_standard_work_week">hours_in_a_standard_work_week</h3>
+<h3 id="percentage_working_on_a_work_week">percentage_working_on_a_work_week</h3>
+<h3 id="worked_hours_per_year">worked_hours_per_year</h3>
+<h3 id="leisure_trips_per_weekend">leisure_trips_per_weekend</h3>
+<h3 id="leisure_trips_per_week_outside_weekends">leisure_trips_per_week_outside_weekends</h3>
+<h3 id="maximal_fill_percentage_leisure_trips_on_non_work_weekdays">maximal_fill_percentage_leisure_trips_on_non_work_weekdays</h3>
+<h3 id="weekday_leisure_trips">weekday_leisure_trips</h3>
+<h3 id="percentage_of_weekday_leisure_trips_on_a_work_day">percentage_of_weekday_leisure_trips_on_a_work_day</h3>
+<h3 id="weekend_trips_per_year">weekend_trips_per_year</h3>
+<h3 id="holiday_trips_taken">holiday_trips_taken</h3>
+<h3 id="time_spent_at_holiday_destination">time_spent_at_holiday_destination</h3>
 <h3 id="trips_per_day_type">trips_per_day_type</h3>
 <p>For vehicles other than cars, we assume that there is one trip per day type.
 This is where we match the trips to their day type</p>
@@ -244,21 +341,61 @@ This is where we match the trips to their day type</p>
 <h3 id="road_types">road_types</h3>
 <h3 id="weights">weights</h3>
 <h2 id="weather">weather</h2>
+<h3 id="weather_factors_table_root_name">weather_factors_table_root_name</h3>
+<h3 id="source_data">source_data</h3>
+<h4 id="start_year">start_year</h4>
+<h4 id="end_year">end_year</h4>
+<h4 id="quantities">quantities</h4>
+<h4 id="raw_data_folder">raw_data_folder</h4>
+<p>The following define the area over which the raw weather data will be
+downloaded. The corresponding in the processed weather database is below.</p>
+<h4 id="latitude_min">latitude_min</h4>
+<h4 id="latitude_max">latitude_max</h4>
+<h4 id="longitude_min">longitude_min</h4>
+<h4 id="longitude_max">longitude_max</h4>
+<h3 id="processed_data">processed_data</h3>
+<h4 id="raw_data_folder_1">raw_data_folder</h4>
+<h4 id="processed_folder">processed_folder</h4>
+<h4 id="weather_database_file_name">weather_database_file_name</h4>
+<h4 id="chunk_size">chunk_size</h4>
+<p>This parameter is there to avoid issues when writing a too large DataFrame
+at once (instead, we split it into chunks).</p>
+<h4 id="quantities_1">quantities</h4>
+<h4 id="kelvin_to_celsius">KELVIN_TO_CELSIUS</h4>
+<h4 id="quantity_tags">quantity_tags</h4>
+<h4 id="quantity_processed_names">quantity_processed_names</h4>
+<h4 id="cumulative_quantity_processed_names">cumulative_quantity_processed_names</h4>
+<h4 id="cumulative_quantities">cumulative_quantities</h4>
+<h4 id="queries_for_cumulative_quantities">queries_for_cumulative_quantities</h4>
+<h4 id="temperature_quantities">temperature_quantities</h4>
+<h4 id="processed_index_tags">processed_index_tags</h4>
+<p>These define the area of the processed data in the weather database</p>
+<h4 id="latitude_min_1">latitude_min</h4>
+<h4 id="latitude_max_1">latitude_max</h4>
+<h4 id="longitude_min_1">longitude_min</h4>
+<h4 id="longitude_max_1">longitude_max</h4>
+<h4 id="coordinate_step">coordinate_step</h4>
+<h3 id="ev_tool">EV_tool</h3>
+<p>Parameters for the EV tool data from geotab</p>
+<h4 id="ev_tool_url">EV_tool_url</h4>
+<h4 id="user_agent">user_agent</h4>
+<h4 id="efficiency_curve_script_index">efficiency_curve_script_index</h4>
+<h4 id="data_splitter">data_splitter</h4>
+<h4 id="file_name">file_name</h4>
+<h4 id="groupfile_name">groupfile_name</h4>
+<h4 id="folder">folder</h4>
+<h4 id="efficiency_factor_column_name">efficiency_factor_column_name</h4>
 <h2 id="charging">charging</h2>
-<h2 id="plots">plots</h2>
-<h2 id="files">files</h2>
-<h2 id="maps">maps</h2>
-<h2 id="colors">colors</h2>
-<h2 id="color_bars">color_bars</h2>
-<h2 id="unit_conversion">unit_conversion</h2>
-<h2 id="time">time</h2>
-<h2 id="numbers">numbers</h2>
+<h3 id="price_reaction_exponent">price_reaction_exponent</h3>
+<h3 id="desirability_reaction_exponent">desirability_reaction_exponent</h3>
+<h2 id="charging_sessions">charging_sessions</h2>
+<h3 id="resolution">resolution</h3>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../general_parameters/" class="btn btn-neutral float-left" title="General parameters"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../variants/" class="btn btn-neutral float-right" title="Variants">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../using/" class="btn btn-neutral float-left" title="How to use"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../general_parameters/" class="btn btn-neutral float-right" title="General parameters">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -281,10 +418,10 @@ This is where we match the trips to their day type</p>
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../general_parameters/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../using/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../variants/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../general_parameters/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
