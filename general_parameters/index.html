@@ -50,10 +50,34 @@
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">General parameters</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#variants">variants</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#use_variants">use_variants</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#csv_version">csv_version</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#use_years_in_profiles">use_years_in_profiles</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#parallel_processing">parallel_processing</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#set_amount_of_processes">set_amount_of_processes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#amount_for_scenarios">amount_for_scenarios</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#amount_for_pickle_saves">amount_for_pickle_saves</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#interim_files">interim_files</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pickle">pickle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#consumption_tables_frequencies">consumption_tables_frequencies</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#save_consumption_table">save_consumption_table</a>
+    </li>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -121,31 +145,34 @@ This page describes the various parameters.</p>
 <p>The variants section of the configuration file sets parameters
 to create scenario <a href="../variants/">variants</a> (see that page for
 details).</p>
-<ol>
-<li><strong>use_variants"</strong> Setting the use_variants parameters to true creates variants,
-while setting it to false skips variant creation althogether.</li>
-<li><strong>csv_version:</strong> Setting the csv_version to true parameters makes you use csv files
+<h3 id="use_variants">use_variants</h3>
+<p>Setting the use_variants parameters to true creates variants,
+while setting it to false skips variant creation althogether.</p>
+<h3 id="csv_version">csv_version</h3>
+<p>Setting the csv_version to true parameters makes you use csv files
 to define your variants (in a folder within the variants folder: this
-folder needs to have the same name as your case). Setting it to false makes you use a toml file in the variants folder (case_name.toml).</li>
-<li><strong>use_years_in_profiles:</strong> This is used to create different variants per year when doing 
-<a href="../car_home_own_driveway_splits/">car home own driveway and street parking splits</a></li>
-</ol>
+folder needs to have the same name as your case). Setting it to false makes you use a toml file in the variants folder (case_name.toml).</p>
+<h3 id="use_years_in_profiles">use_years_in_profiles</h3>
+<p>This is used to create different variants per year when doing 
+<a href="../car_home_own_driveway_splits/">car home own driveway and street parking splits</a></p>
 <h2 id="parallel_processing">parallel_processing</h2>
 <p>This parallel processing section of the configuration file sets parameters to manage the <a href="multiprocessing.md">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).</p>
-<ol>
-<li><strong>set_amount_of_processes:</strong> set this as false if you want the amount of parallel processes to be determined by the model (via the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing standard library of Python</a>). Set this to true if you want to set the amount of processes yourself.</li>
-<li><strong>amount_for_scenarios:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to run scenarios in parallel.</li>
-<li><strong>amount_for_pickle_saves:</strong> If you put true in set_amount_of_processes, provide a number of parallel processes here to save the pickle output saves to other formats in parallel (see <a href="../writing/">writing module</a> for details).</li>
-</ol>
+<h3 id="set_amount_of_processes">set_amount_of_processes</h3>
+<p>Set this as false if you want the amount of parallel processes to be determined by the model (via the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing standard library of Python</a>). Set this to true if you want to set the amount of processes yourself.</p>
+<h3 id="amount_for_scenarios">amount_for_scenarios</h3>
+<p>If you put true in set_amount_of_processes, provide a number of parallel processes here to run scenarios in parallel.</p>
+<h3 id="amount_for_pickle_saves">amount_for_pickle_saves</h3>
+<p>If you put true in set_amount_of_processes, provide a number of parallel processes here to save the pickle output saves to other formats in parallel (see <a href="../writing/">writing module</a> for details).</p>
 <h2 id="interim_files">interim_files</h2>
 <p>This concerns parameters for saving intermediary results to files.</p>
-<ol>
-<li><strong>pickle:</strong> Set this to true to save interim results to pickle files.
-Set this to false not to do this.</li>
-<li><strong>consumption_tables_frequencies:</strong> Provide a list of consumption
-tables frequencies (see <a href="../consumption/">consumption module</a>). The default is the following list ['hourly', 'daily', 'weekly', 'monthly', 'yearly']</li>
-<li><strong>save_consumption_table:</strong>  Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</li>
-</ol>
+<h3 id="pickle">pickle</h3>
+<p>Set this to true to save interim results to pickle files.
+Set this to false not to do this.</p>
+<h3 id="consumption_tables_frequencies">consumption_tables_frequencies</h3>
+<p>Provide a list of consumption
+tables frequencies (see <a href="../consumption/">consumption module</a>). The default is the following list ['hourly', 'daily', 'weekly', 'monthly', 'yearly']</p>
+<h3 id="save_consumption_table">save_consumption_table</h3>
+<p>Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</p>
               
             </div>
           </div><footer>
