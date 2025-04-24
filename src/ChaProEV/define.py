@@ -750,9 +750,7 @@ class Trip:
 
         trip_parameters: Box = scenario.trips[name]
         trip.legs: list[str] = trip_parameters.legs
-        trip.time_between_legs: list[float] = (
-            trip_parameters.time_between_legs
-        )
+        trip.time_between_legs: list[float] = trip_parameters.time_between_legs
         trip.percentage_station_users: float = (
             trip_parameters.percentage_station_users
         )
@@ -760,12 +758,8 @@ class Trip:
         trip.start_probabilities: list[float] = (
             trip_parameters.start_probabilities
         )
-        trip.repeated_sequence: list[str] = (
-            trip_parameters.repeated_sequence
-        )
-        trip.repetition_amounts: list[int] = (
-            trip_parameters.repetition_amounts
-        )
+        trip.repeated_sequence: list[str] = trip_parameters.repeated_sequence
+        trip.repetition_amounts: list[int] = trip_parameters.repetition_amounts
         trip.time_between_repetitions: list[float] = (
             trip_parameters.time_between_repetitions
         )
@@ -891,9 +885,7 @@ class Trip:
             leg_weighted_distance: float = leg_distance * road_type_factor
             trip.weighted_leg_distances.append(leg_weighted_distance)
 
-        trip.unique_leg_distances: list[float] = list(
-            set(trip.leg_distances)
-        )
+        trip.unique_leg_distances: list[float] = list(set(trip.leg_distances))
         trip.unique_weighted_leg_distances: list[float] = list(
             set(trip.weighted_leg_distances)
         )
@@ -1024,9 +1016,7 @@ class Trip:
         trip.battery_space_shifts_arrivals_impact_weighted = (
             trip.battery_space_shifts_arrivals_impact_weighted.sort_index()
         )
-        trip.battery_space_shifts: dict[
-            tuple[str, str], pd.DataFrame
-        ] = {}
+        trip.battery_space_shifts: dict[tuple[str, str], pd.DataFrame] = {}
         trip.battery_space_shifts[('Departures', 'Amount')] = (
             trip.battery_space_shifts_departures
         )
@@ -1196,9 +1186,7 @@ class Trip:
         )[0]
 
         # We only want the start and end locations that are in the legs
-        run_mobility_index_tuples: list[
-            tuple[str, str, datetime.datetime]
-        ] = [
+        run_mobility_index_tuples: list[tuple[str, str, datetime.datetime]] = [
             (leg_tuple[0], leg_tuple[1], time_tag)
             for leg_tuple in leg_tuples
             for time_tag in run_time_tags
@@ -1706,9 +1694,7 @@ def declare_class_instances(
 # @cook.function_timer
 def declare_all_instances(
     scenario: Box, case_name: str, general_parameters: Box
-) -> tuple[
-    pd.DataFrame, list[ty.Type], list[ty.Type], list[ty.Type]
-]:
+) -> tuple[pd.DataFrame, list[ty.Type], list[ty.Type], list[ty.Type]]:
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
@@ -2103,7 +2089,9 @@ if __name__ == '__main__':
     for trip in trips:
         print(trip.name)
         print(trip.mobility_matrix)
-        trip.mobility_matrix.to_csv(f'test_bus_moility_matrices/{trip.name}.csv')
+        trip.mobility_matrix.to_csv(
+            f'test_bus_moility_matrices/{trip.name}.csv'
+        )
         print(trip.next_leg_kilometers)
         exit()
 

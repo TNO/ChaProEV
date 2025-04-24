@@ -57,3 +57,97 @@ Provide a list of booleans (true or false) to save a given frequency to file (th
 
 
 
+## profile_dataframe
+
+### headers
+### fleet_headers
+### do_fleet_tables
+### fleet_file_name
+
+## sessions_dataframe
+
+### properties
+### dataframe_headers
+### run_dataframe_headers
+### display_dataframe_headers
+### display_dataframe_index
+### fleet_display_dataframe_headers
+
+## plots
+### vehicle_temperature_efficiency
+#### style
+#### source_data_folder
+#### source_data_file 
+#### fit_color 
+#### fit_line_size
+#### geotab_data_color 
+#### geotab_data_size
+#### title_size 
+
+## files
+### input_root
+### output_root
+### groupfile_root
+
+### figures
+#### dpi
+#### outputs
+
+### dataframe_outputs
+
+
+## maps
+## map_data_folder
+## area_data_file_name
+## general_exclusion_codes
+## border_data_file_prefix
+## border_data_file_suffix
+## points_data_file_prefix
+## points_data_file_suffix
+## country_code_header
+## country_code_header_in_map_data
+## heat_bar_map
+
+## colors
+
+## color_bars
+
+## unit_conversions
+
+## numbers
+
+## consumption
+### energy_carriers
+### consumption_table_name
+### time_header
+### distance_header
+### fleet_distance_header
+### energy_carriers_consumption_names
+### fleet_energy_carriers_consumption_names
+
+
+## home_type
+### do_car_home_type_split
+### percentages_file
+### index_name
+### own_driveway_name
+### on_street_name
+### profiles_index
+### sessions_index
+### sessions_values_columns
+
+## sessions
+### produce
+### generate_profiles
+## standard_profiles
+### produce
+
+## progress_bars
+### display_scenario_run
+### scenario_run_description
+### display_saving_pool_run
+### saving_pool_run_description
+
+## discharge
+### no_discharge_efficiency_output
+### no_charge_efficiency_output

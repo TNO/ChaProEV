@@ -3,11 +3,13 @@ nav:
   - Home: index.md
   - User guide:
     - How to use: using.md
+    - Creating scenarios: scenario.md
     - General parameters: general_parameters.md
-    - The scenario file: scenario.md
     - Variants: variants.md
     - Inputs:
       - Own driveway percentages: car_home_own_driveway.md
+  - Approach:
+    - Outputs: outputs.md
   - Modules: 
     - Weather: weather.md
     - Run time: run_time.md
