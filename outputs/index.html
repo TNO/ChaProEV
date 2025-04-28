@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>How to use - ChaProEV</title>
+    <title>Outputs - ChaProEV</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "How to use";
-        var mkdocs_page_input_path = "using.md";
+        var mkdocs_page_name = "Outputs";
+        var mkdocs_page_input_path = "outputs.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -44,10 +44,8 @@
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">User guide</span></p>
-              <ul class="current">
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">How to use</a>
-    <ul class="current">
-    </ul>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
                   </li>
@@ -59,8 +57,8 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Approach</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Outputs</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Modules</span></p>
@@ -104,8 +102,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">User guide</li>
-      <li class="breadcrumb-item active">How to use</li>
+          <li class="breadcrumb-item">Approach</li>
+      <li class="breadcrumb-item active">Outputs</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -114,34 +112,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="installation">Installation</h1>
-<pre><code>pip install ChaProEV
-</code></pre>
-<h1 id="running">Running</h1>
-<p>The standard way of running the model is to run a case with a code such as
-the following:</p>
-<pre><code class="language-python">from ChaProEV import ChaProEV
-
-if __name__ == '__main__':
-    case_name: str = 'my_case'
-    ChaProEV.run_ChaProEV(case_name)
-</code></pre>
-<p>where you need to give a name to your case ('my_case') in the example above.</p>
-<p>To run your case, you need to provide general parameters,
-scenario parameters, variant parameters, and (optional) inputs.</p>
-<p>## General parameters
-The file containing the general parameters (common for all acenarios) is
-in your root working folder as is called 
-<a href="../general_parameters/">ChaProEV.toml</a> (click on link for details).
- ## Scenarios</p>
-<p>## Variants</p>
-<p>## Inputs</p>
+                
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../scenario/" class="btn btn-neutral float-right" title="Creating scenarios">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../general_parameters/" class="btn btn-neutral float-left" title="General parameters"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../weather/" class="btn btn-neutral float-right" title="Weather">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -164,10 +141,10 @@ in your root working folder as is called
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../general_parameters/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../scenario/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../weather/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

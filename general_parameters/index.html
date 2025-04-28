@@ -51,11 +51,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
-    <ul>
-                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
-                </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../input/">Inputs</a>
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">General parameters</a>
     <ul class="current">
@@ -268,16 +264,18 @@
               </ul>
               <p class="caption"><span class="caption-text">Approach</span></p>
               <ul>
-                  <li class="toctree-l1"><a class="" href="../outputs.md">Outputs</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Modules</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
                   </li>
-                  <li class="toctree-l1"><a class="" href="../run_time.md">Run time</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
                   </li>
@@ -287,9 +285,13 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../running_model/">Running model</a>
                   </li>
-                  <li class="toctree-l1"><a class="" href="../multiprocessing.md">Multiprocessing</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../multiprocessing/">Multiprocessing</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../writing/">Writing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
                   </li>
               </ul>
       </div>
@@ -336,9 +338,9 @@ to define your variants (in a folder within the variants folder: this
 folder needs to have the same name as your case). Setting it to false makes you use a toml file in the variants folder (case_name.toml).</p>
 <h3 id="use_years_in_profiles">use_years_in_profiles</h3>
 <p>This is used to create different variants per year when doing 
-<a href="../car_home_own_driveway_splits/">car home own driveway and street parking splits</a></p>
+<a href="../profiles/#home-type-split">car home own driveway and street parking splits</a></p>
 <h2 id="parallel_processing">parallel_processing</h2>
-<p>This parallel processing section of the configuration file sets parameters to manage the <a href="multiprocessing.md">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).</p>
+<p>This parallel processing section of the configuration file sets parameters to manage the <a href="../multiprocessing/">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).</p>
 <h3 id="set_amount_of_processes">set_amount_of_processes</h3>
 <p>Set this as false if you want the amount of parallel processes to be determined by the model (via the <a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing standard library of Python</a>). Set this to true if you want to set the amount of processes yourself.</p>
 <h3 id="amount_for_scenarios">amount_for_scenarios</h3>
@@ -366,7 +368,7 @@ tables frequencies (see <a href="../consumption/">consumption module</a>). The d
 <h3 id="fleet_file_name">fleet_file_name</h3>
 <p>The file name (has to be a csv inside the input/your_case folder)
 containing the fleet characteristics.
-See <a href="inputs.md#Fleets">here</a> for details about this file.</p>
+See <a href="../input/#fleets">here</a> for details about this file.</p>
 <h2 id="sessions_dataframe">sessions_dataframe</h2>
 <p>This is to create the session dataframes.</p>
 <h3 id="properties">properties</h3>
@@ -385,7 +387,7 @@ level.</p>
 <h2 id="plots">plots</h2>
 <p>This contains parameters for output plots (colors, styles, sizes, etc.).</p>
 <h3 id="vehicle_temperature_efficiency">vehicle_temperature_efficiency</h3>
-<p>This set of parameters is for the <a href="temparature.md">range-temperature</a> plot.</p>
+<p>This set of parameters is for the <a href="../weather/#range-and-temperature">range-temperature</a> plot.</p>
 <h4 id="style">style</h4>
 <p>This is a string with one of the <a href="https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html">available Matplotlib styles</a>.</p>
 <h4 id="source_data_folder">source_data_folder</h4>
@@ -474,34 +476,57 @@ the <a href="../consumption/">connusmption</a> tables.</p>
 <h3 id="fleet_energy_carriers_consumption_names">fleet_energy_carriers_consumption_names</h3>
 <p>The headers for each emergy carrier in the fleet consumption table.</p>
 <h2 id="home_type">home_type</h2>
-<p>These are parametrers related to the <a href="../profiles/#home-type-split">home type split</a></p>
+<p>These are parametrers related to the <a href="../profiles/#home-type-split">home type split</a> (split for cars between cars with their own driveway and street parking).</p>
 <h3 id="do_car_home_type_split">do_car_home_type_split</h3>
+<p>Set this to true to compute the split. Set it to false not to do it.</p>
 <h3 id="percentages_file">percentages_file</h3>
+<p>The file name (has to be a csv inside the input/your_case folder)
+containing the spli.
+See <a href="../input/#car-own-driveway-percentage">here</a> for details about this file.</p>
 <h3 id="index_name">index_name</h3>
+<p>The index header in the source file.</p>
 <h3 id="own_driveway_name">own_driveway_name</h3>
+<p>The header for the own driveway percentage. Also used for the output profile file names.</p>
 <h3 id="on_street_name">on_street_name</h3>
+<p>The header for the street parking percentage. Used for the output profile file names.</p>
 <h3 id="profiles_index">profiles_index</h3>
+<p>The index for the profile outputs.</p>
 <h3 id="sessions_index">sessions_index</h3>
+<p>The index for the sessions outputs.</p>
 <h3 id="sessions_values_columns">sessions_values_columns</h3>
+<p>The columns of the sessions dataframes.</p>
 <h2 id="sessions">sessions</h2>
+<p>Parameters used for the <a href="../profiles/#sessions">sessions</a>.</p>
 <h3 id="produce">produce</h3>
+<p>Set to true if you want to create  <a href="../profiles/#sessions">sessions</a>, to
+false if you don't.</p>
 <h3 id="generate_profiles">generate_profiles</h3>
+<p>Set to true if you want to [generate profiles from sessions][scenarios_module.md#Generate-profiles-from-sessions], to false if you don't.</p>
 <h2 id="standard_profiles">standard_profiles</h2>
 <h3 id="produce_1">produce</h3>
+<p>Set to true if you want to produce <a href="../profiles/#standard-profiles">standard charging profiles</a>, false if you don't.</p>
 <h2 id="progress_bars">progress_bars</h2>
+<p>Parameters related to displaying progress bars.</p>
 <h3 id="display_scenario_run">display_scenario_run</h3>
+<p>Set to true to show a progress bar for the computing of scenarios, false if you don't.</p>
 <h3 id="scenario_run_description">scenario_run_description</h3>
+<p>Text to display for the scenarios progress bar.</p>
 <h3 id="display_saving_pool_run">display_saving_pool_run</h3>
+<p>Set to true to show a progress bar for the saving of output files, false if you don't.</p>
 <h3 id="saving_pool_run_description">saving_pool_run_description</h3>
+<p>Text to display for the output file saving progress bar.</p>
 <h2 id="discharge">discharge</h2>
+<p>Parameters related to vehicle discharge.</p>
 <h3 id="no_discharge_efficiency_output">no_discharge_efficiency_output</h3>
+<p>Message to display if the discharge efficiencncy value is empty.</p>
 <h3 id="no_charge_efficiency_output">no_charge_efficiency_output</h3>
+<p>Message to display if the charge efficiencncy value is empty.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../variants/" class="btn btn-neutral float-left" title="Variants"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../weather/" class="btn btn-neutral float-right" title="Weather">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../input/" class="btn btn-neutral float-left" title="Inputs"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../outputs/" class="btn btn-neutral float-right" title="Outputs">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -524,10 +549,10 @@ the <a href="../consumption/">connusmption</a> tables.</p>
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../variants/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../input/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../weather/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../outputs/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
