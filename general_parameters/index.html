@@ -355,48 +355,97 @@ tables frequencies (see <a href="../consumption/">consumption module</a>). The d
 <h3 id="save_consumption_table">save_consumption_table</h3>
 <p>Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</p>
 <h2 id="profile_dataframe">profile_dataframe</h2>
+<p>These are the headers that appear in output dataframes.</p>
 <h3 id="headers">headers</h3>
+<p>This one is for profiles (at one-vehicle scale).</p>
 <h3 id="fleet_headers">fleet_headers</h3>
+<p>This one is for the fleet-level dataframes.</p>
 <h3 id="do_fleet_tables">do_fleet_tables</h3>
+<p>Set this to true to create fleet-level tables.</p>
 <h3 id="fleet_file_name">fleet_file_name</h3>
+<p>The file name (has to be a csv inside the input/your_case folder)
+containing the fleet characteristics.
+See <a href="inputs.md#Fleets">here</a> for details about this file.</p>
 <h2 id="sessions_dataframe">sessions_dataframe</h2>
+<p>This is to create the session dataframes.</p>
 <h3 id="properties">properties</h3>
+<p>Those are the quantities we want to put in the session dataframes.</p>
 <h3 id="dataframe_headers">dataframe_headers</h3>
+<p>Those are the headers of the session dataframes at the day level.</p>
 <h3 id="run_dataframe_headers">run_dataframe_headers</h3>
+<p>Those are the headers of the session dataframes for the whole run.</p>
 <h3 id="display_dataframe_headers">display_dataframe_headers</h3>
+<p>These are the headers of the display/final output dataframe headers at vehicle level.</p>
 <h3 id="display_dataframe_index">display_dataframe_index</h3>
+<p>These give the index of the display/final output dataframe headers.</p>
 <h3 id="fleet_display_dataframe_headers">fleet_display_dataframe_headers</h3>
+<p>These are the headers of the display/final output dataframe headers at fleet
+level.</p>
 <h2 id="plots">plots</h2>
+<p>This contains parameters for output plots (colors, styles, sizes, etc.).</p>
 <h3 id="vehicle_temperature_efficiency">vehicle_temperature_efficiency</h3>
+<p>This set of parameters is for the <a href="temparature.md">range-temperature</a> plot.</p>
 <h4 id="style">style</h4>
+<p>This is a string with one of the <a href="https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html">available Matplotlib styles</a>.</p>
 <h4 id="source_data_folder">source_data_folder</h4>
+<p>Folder where the data to plot is.</p>
 <h4 id="source_data_file">source_data_file</h4>
+<p>File containg the data to plot.</p>
 <h4 id="fit_color">fit_color</h4>
+<p>The color name of fit line.</p>
 <h4 id="fit_line_size">fit_line_size</h4>
+<p>The size of the fir line.</p>
 <h4 id="geotab_data_color">geotab_data_color</h4>
+<p>The color of the data points. </p>
 <h4 id="geotab_data_size">geotab_data_size</h4>
+<p>The size of the data points.</p>
 <h4 id="title_size">title_size</h4>
+<p>The size of the plot title.</p>
 <h2 id="files">files</h2>
+<p>General file parameters.</p>
 <h3 id="input_root">input_root</h3>
+<p>The name of the folder where your input data goes (it goes to a subfolder of this with the name of your case).</p>
 <h3 id="output_root">output_root</h3>
+<p>The name of the folder where your output data goes (it goes to a subfolder of this with the name of your case).</p>
 <h3 id="groupfile_root">groupfile_root</h3>
+<p>This is for files that group data (such as (sqlite) databases or Excel workbooks) and will be the name of that grouping file.</p>
 <h3 id="figures">figures</h3>
+<p>Parameters for plots/figures.</p>
 <h4 id="dpi">dpi</h4>
+<p>Change this to change the resolution of the output figures.</p>
 <h4 id="outputs">outputs</h4>
+<p>Indicate  if you want to save your (Matplotlib) figures (true if you do, false if you don't) in various formats.</p>
 <h3 id="dataframe_outputs">dataframe_outputs</h3>
+<p>Indicate if you want to save your Pandas DataFrames in the
+listed formats (put a true if you want to do so, false if you don't).
+Clipboard saves to the local clipboard, not a file.</p>
 <h2 id="maps">maps</h2>
+<p>Parameters for making maps.</p>
 <h2 id="map_data_folder">map_data_folder</h2>
+<p>The folder where the map data is.</p>
 <h2 id="area_data_file_name">area_data_file_name</h2>
+<p>The file containing map areas.</p>
 <h2 id="general_exclusion_codes">general_exclusion_codes</h2>
+<p>Excluded map codes.</p>
 <h2 id="border_data_file_prefix">border_data_file_prefix</h2>
+<p>The prefix of the border data file.</p>
 <h2 id="border_data_file_suffix">border_data_file_suffix</h2>
+<p>The suffix of the border data file.</p>
 <h2 id="points_data_file_prefix">points_data_file_prefix</h2>
+<p>The prefix of the points data file.</p>
 <h2 id="points_data_file_suffix">points_data_file_suffix</h2>
+<p>The suffix of the points data file.</p>
 <h2 id="country_code_header">country_code_header</h2>
+<p>The header we use for country codes.</p>
 <h2 id="country_code_header_in_map_data">country_code_header_in_map_data</h2>
+<p>The country code header in tnhe source data.</p>
 <h2 id="heat_bar_map">heat_bar_map</h2>
+<p>The heat bar map/scale we want to use for maps (is the name of a 
+<a href="##color_bars">color bar</a>).</p>
 <h2 id="colors">colors</h2>
+<p>Definitions of custom colors (with RGB values, from 0 to 255).</p>
 <h2 id="color_bars">color_bars</h2>
+<p>You can deine color bars here, by listing the colors they use (in order).</p>
 <h2 id="unit_conversions">unit_conversions</h2>
 <h2 id="numbers">numbers</h2>
 <h2 id="consumption">consumption</h2>
