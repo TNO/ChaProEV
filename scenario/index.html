@@ -66,6 +66,14 @@
     <li class="toctree-l3"><a class="reference internal" href="#display-frequency">display frequency</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#extra_downloads">extra_downloads</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#download_weather_data">download_weather_data</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#make_weather_database">make_weather_database</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#download_ev_tool_data">download_EV_tool_data</a>
+    </li>
+        </ul>
     </li>
         </ul>
     </li>
@@ -393,7 +401,8 @@ This page describes the elements of the scenario file (your_scenario.toml).</p>
 <p>Run parameters give the elements to produce the time tags of the run range.</p>
 <h3 id="use_day_types_in_charge_computing">use_day_types_in_charge_computing</h3>
 <p>If set to true, the charging computations will be done per day type rather
-than for all days of the run, which fastens the computations.</p>
+than for all days of the run, which fastens the computations.
+If set to false, the model will compute each day separately, which is considerably slower.</p>
 <h3 id="start">start</h3>
 <p>This part gives the year, month, day, hour, and minute of the start of the
 computations. It is best to set this to a day hour start for consistency
@@ -416,28 +425,67 @@ For the type, use 'H' for hours, 'min' for minutes,
 The current model uses  hourly (so 1 and 'h'). Changing that might require
 some adjustments in the code.</p>
 <h3 id="display-frequency">display frequency</h3>
-<p>The frequency of the displayed values can be different than the frequency of the compuatations.
-In the current version, this needs to be the same or less frequent than the computation frequencey above.</p>
+<p>The frequency of the displayed values can be different than the frequency of the computations.
+In the current version, this needs to be the same or less frequent than the computation frequency above.</p>
 <h3 id="extra_downloads">extra_downloads</h3>
-<p>This is to decide if you want to dowload some files (note that this concerns the
-currently inactive weather module).</p>
+<p>This is to decide if you want to dowload some files (note that this concerns the currently inactive weather module).</p>
+<h4 id="download_weather_data">download_weather_data</h4>
+<p>Put true if you want to download the weather data. In principle,
+you only to do this once, unless you add years and/or areas</p>
+<h4 id="make_weather_database">make_weather_database</h4>
+<p>Put true if you want to remake the weather database. In principle,
+you only to do this once, unless you add years and/or areas. Note
+that this refers to other years ans areas than the weather download.</p>
+<h4 id="download_ev_tool_data">download_EV_tool_data</h4>
+<p>Put true if you want to download the data from the EV tool by geootab
+This should only be needed once and is independentr of the case.</p>
 <h2 id="locations">locations</h2>
+<p>You can modify existing locations or create new ones by copying
+exisiting ones (copy everything under '[locations.code]', where
+code is the name of your location). You need to have all the elements below.</p>
 <h3 id="vehicle">vehicle</h3>
+<p>This is the name of the vehicle that goes to that location.
+This name needs to match the scenario's vehicle name (in <a href="#vehicle">vehicle</a>) 
+for the location to
+<a href="../define/#declare_class_instances">be included</a> in the scenario.
+he reason for this check is to avoid including unnecessary locations (a user
+could put all locations for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter locations
+by hand). 
+If a location is used by different vehicles, simply create one location per
+vehicle (e.g. stadium_car and stadium_bus).</p>
 <h3 id="connectivity">connectivity</h3>
+<p>This is a (float) number between 0 and 1 that gives us the probability
+that a vehicle is connected to a charger when it is at this location (essentially,
+it is the ratio between parking places with a charger and the total amount of parkin places).</p>
 <h3 id="charging_power">charging_power</h3>
+<p>The available charging power (in kW).</p>
 <h3 id="charger_efficiency">charger_efficiency</h3>
+<p>This is a (float) number between 0 and 1 that gives us the charger efficiency.
+Essentially, it is the ratio between the power received by the vehicle and the
+power drwan from the network.</p>
 <h3 id="latitude">latitude</h3>
+<p>The location's latitude, used for <a href="../weather/">weather-related</a> computations (currenly inactive).</p>
 <h3 id="longitude">longitude</h3>
+<p>The location's longitude, used for <a href="../weather/">weather-related</a> computations (currenly inactive).</p>
 <h3 id="charging_price">charging_price</h3>
+<p>The standard charging price (in €/kWh), currently inactive.</p>
 <h3 id="charging_desirability">charging_desirability</h3>
-<p>An indicator (0-1) of how much people like to charge at this location</p>
+<p>An indicator (0-1) of how much people like to charge at this location. Currently inactive.</p>
 <h3 id="percentage_in_location_at_run_start">percentage_in_location_at_run_start</h3>
-<p>If filling it directly instead of computing it (controlled by
-compute_start_location_split in mobility_module below)</p>
+<p>If filling it directly instead of computing it (see 
+<a href="../mobility/#compute_start_location_split">this function</a>), you can put a probability
+(float between 0 and 1) that the vehicle is at that location at the start of the run.</p>
 <h3 id="vehicle_discharge_power">vehicle_discharge_power</h3>
+<p>The available discharging power (in kW).</p>
 <h3 id="proportion_of_discharge_to_network">proportion_of_discharge_to_network</h3>
+<p>This is a (float) number between 0 and 1 that gives us the discharging.
+Essentially, it is the ratio between the power going to the network and the power
+discharged by the vehicle.</p>
 <h3 id="time_modulation_factors">time_modulation_factors</h3>
-<p>Starts at midinight</p>
+<p>For each hour (starting at midnight), a factor between 0 and 1 that tells us
+how much oof the charging power is available (1 means that it is fully available,
+and 0 that the charger is entirely shut down during that hour).</p>
 <h2 id="legs">legs</h2>
 <h3 id="vehicle_1">vehicle</h3>
 <h3 id="distance">distance</h3>
