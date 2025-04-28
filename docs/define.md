@@ -181,3 +181,6 @@ Have one trip per day type for non-cars
 
 Reference to day start hour
 cross-links with scenario
+
+
+## declare_class_instances

@@ -11,6 +11,7 @@ Run parameters give the elements to produce the time tags of the run range.
 ### use_day_types_in_charge_computing 
 If set to true, the charging computations will be done per day type rather
 than for all days of the run, which fastens the computations.
+If set to false, the model will compute each day separately, which is considerably slower.
 ### start
 This part gives the year, month, day, hour, and minute of the start of the
 computations. It is best to set this to a day hour start for consistency
@@ -33,33 +34,79 @@ For the type, use 'H' for hours, 'min' for minutes,
 The current model uses  hourly (so 1 and 'h'). Changing that might require
 some adjustments in the code.
 ### display frequency
-The frequency of the displayed values can be different than the frequency of the compuatations.
-In the current version, this needs to be the same or less frequent than the computation frequencey above.
+The frequency of the displayed values can be different than the frequency of the computations.
+In the current version, this needs to be the same or less frequent than the computation frequency above.
 ### extra_downloads
-This is to decide if you want to dowload some files (note that this concerns the
-currently inactive weather module).
-## locations
+This is to decide if you want to dowload some files (note that this concerns the currently inactive weather module).
 
+
+#### download_weather_data
+Put true if you want to download the weather data. In principle,
+you only to do this once, unless you add years and/or areas
+#### make_weather_database
+Put true if you want to remake the weather database. In principle,
+you only to do this once, unless you add years and/or areas. Note
+that this refers to other years ans areas than the weather download.
+
+#### download_EV_tool_data
+Put true if you want to download the data from the EV tool by geootab
+This should only be needed once and is independentr of the case.
+
+
+
+
+## locations
+You can modify existing locations or create new ones by copying
+exisiting ones (copy everything under '[locations.code]', where
+code is the name of your location). You need to have all the elements below.
 
 ### vehicle
+This is the name of the vehicle that goes to that location.
+This name needs to match the scenario's vehicle name (in [vehicle](#vehicle)) 
+for the location to
+[be included](define.md#declare_class_instances) in the scenario.
+he reason for this check is to avoid including unnecessary locations (a user
+could put all locations for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter locations
+by hand). 
+If a location is used by different vehicles, simply create one location per
+vehicle (e.g. stadium_car and stadium_bus).
+
 ### connectivity
+This is a (float) number between 0 and 1 that gives us the probability
+that a vehicle is connected to a charger when it is at this location (essentially,
+it is the ratio between parking places with a charger and the total amount of parkin places).
 ### charging_power
+The available charging power (in kW).
 ### charger_efficiency
+This is a (float) number between 0 and 1 that gives us the charger efficiency.
+Essentially, it is the ratio between the power received by the vehicle and the
+power drwan from the network.
 ### latitude
+The location's latitude, used for [weather-related](weather.md) computations (currenly inactive).
 ### longitude
+The location's longitude, used for [weather-related](weather.md) computations (currenly inactive).
 ### charging_price
+The standard charging price (in €/kWh), currently inactive.
 ### charging_desirability 
-An indicator (0-1) of how much people like to charge at this location
+An indicator (0-1) of how much people like to charge at this location. Currently inactive.
 ### percentage_in_location_at_run_start
-If filling it directly instead of computing it (controlled by
-compute_start_location_split in mobility_module below)
+If filling it directly instead of computing it (see 
+[this function](mobility.md#compute_start_location_split)), you can put a probability
+(float between 0 and 1) that the vehicle is at that location at the start of the run.
 
 ### vehicle_discharge_power
+The available discharging power (in kW).
+
 ### proportion_of_discharge_to_network
+This is a (float) number between 0 and 1 that gives us the discharging.
+Essentially, it is the ratio between the power going to the network and the power
+discharged by the vehicle.
 ### time_modulation_factors
+For each hour (starting at midnight), a factor between 0 and 1 that tells us
+how much oof the charging power is available (1 means that it is fully available,
+and 0 that the charger is entirely shut down during that hour).
 
-
-Starts at midinight
 
 ## legs
 
