@@ -157,7 +157,7 @@ Note that the total should be 1 (there are no checks to ensure this,
 so you need to make sure you do this correctly). 
 The list provided in mix needs to correspond to the road types in
 [transport_factors](#transport_factors).
-This will be used in [computing weighted quantities][#mobility.md#weighted_quantities].
+This will be used in [computing weighted quantities](#mobility.md#weighted_quantities).
 Note that these weighted quantities are partly inactive (in the sense that they
 are not the focus of current runs/have not been tested).
 
@@ -395,10 +395,13 @@ This is where we match the trips to their day type.
 This is used [here](mobility.md#get_trip_probabilities_per_day_type_other_vehicles).
 
 ## transport_factors
-
+These are the factors used if we [use weighted](#mobility.md#weighted_quantities) 
+consumptions per road type
+[in legs](#road_type_mix).
 ### road_types
-
+Provide a list of names for theroad types you want to use.
 ### weights
+Provide one weight/energy use correction factor for each road type.
 
 ## weather
 
