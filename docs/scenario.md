@@ -160,7 +160,7 @@ Note that the total should be 1 (there are no checks to ensure this,
 so you need to make sure you do this correctly). 
 The list provided in mix needs to correspond to the road types in
 [transport_factors](#transport_factors).
-This will be used in [computing weighted quantities](#mobility.md#weighted_quantities).
+This will be used in [computing weighted quantities](mobility.md#make_mobility_data).
 Note that these weighted quantities are partly inactive (in the sense that they
 are not the focus of current runs/have not been tested).
 
@@ -398,7 +398,7 @@ This is where we match the trips to their day type.
 This is used [here](mobility.md#get_trip_probabilities_per_day_type_other_vehicles).
 
 ## transport_factors
-These are the factors used if we [use weighted](#mobility.md#weighted_quantities) 
+These are the factors used if we [use weighted](#use_weighted) 
 consumptions per road type
 [in legs](#road_type_mix), reflecting the fact that vehicles might have different
 energy consumptions for different road types.
@@ -408,30 +408,41 @@ Provide a list of names for theroad types you want to use.
 Provide one weight/energy use correction factor for each road type.
 
 ## weather
+Parameters related to [weather computations](weather.md), which
+is currently inactive/not integrated in the model itself.
 
 ### weather_factors_table_root_name
-
+A root for [saving weather factors](weather.md#get_scenario_weather_data)
+for each scenario (the scenario name will be mixed with this when saving the data).
 ### source_data
-
+Parameters about the source data ([CDS ERA-5](https://cds.climate.copernicus.eu/)) for the [cdsapi library](https://cds.climate.copernicus.eu/how-to-api).
 
 #### start_year
+The first year for which you want to get data.
 #### end_year
+The last year for which you want to get data.
 #### quantities
+A list of the quantities you want to extract.
+
 #### raw_data_folder
-The following define the area over which the raw weather data will be
-downloaded. The corresponding in the processed weather database is below.
-#### latitude_min
-#### latitude_max
-#### longitude_min
-#### longitude_max
+The folder where you want to put your raw data.
+
+#### raw data area
+These define the area over which the raw weather data will be
+downloaded. The corresponding in the processed weather database is [below](#processed-data-area)
+(you need to provide the minimal and maximal longitudes and latitudes of the area).
+
 
 
 ### processed_data
-
-
+This is data that you will use in your model/run. It is a subpart of the raw data
+(for example: you might want all Europe in your raw data, but just one country in the processed data).
 #### raw_data_folder
+The folder where you can find your raw data.
 #### processed_folder
-#### weather_database_file_name 
+The folder where you want to store your data.
+#### weather_database_file_name
+The database file name where you want to store you processed weather data (in the folder above).
 
 #### chunk_size
 
@@ -439,30 +450,38 @@ This parameter is there to avoid issues when writing a too large DataFrame
 at once (instead, we split it into chunks).
 
 
-#### quantities
-
+#### quantities processed
+The quantities in your processed weather data. It has to be a subset of [what](#quantities) you can in your raw wether data.
 
 #### KELVIN_TO_CELSIUS
+A factor to convert Kelvin to Celsius.
 #### quantity_tags
+Tags corresponding to the [quantities](#quantities-processed) you want.
 
 #### quantity_processed_names
+Output table display names corresponding to the [quantities](#quantities-processed) you want.
 
 #### cumulative_quantity_processed_names
+The display names of quantities from [all quantities](#quantity_processed_names) that are cumulative.
 
 #### cumulative_quantities
+The quantities from [all quantities](#quantity_processed_names) that are cumulative.
+
 
 #### queries_for_cumulative_quantities
+The SQL queries to get the [cumulative quantities](#cumulative_quantities).
 #### temperature_quantities
+The quantities from [all quantities](#quantity_processed_names) that are related to temperatures.
 
-#### processed_index_tags 
 
+#### processed_index_tags
+The index name tags for the processed data tables.
 
-These define the area of the processed data in the weather database
-#### latitude_min
-#### latitude_max
-#### longitude_min
-#### longitude_max
-#### coordinate_step
+#### Processed data area
+This is the area for the processed data that you will use in the model.
+It is a subpart of the [raw data area](#raw-data-area).
+You need to provide the minimal and maximal longitudes and latitudes of the area.
+
 
 ### EV_tool
 Parameters for the EV tool data from geotab
