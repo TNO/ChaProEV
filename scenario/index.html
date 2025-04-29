@@ -123,8 +123,6 @@
     </li>
         </ul>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#mix_1">mix</a>
-    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#vehicle_2">vehicle</a>
@@ -535,17 +533,21 @@ The list provided in mix needs to correspond to the road types in
 This will be used in [computing weighted quantities][#mobility.md#weighted_quantities].
 Note that these weighted quantities are partly inactive (in the sense that they
 are not the focus of current runs/have not been tested).</p>
-<h3 id="mix_1">mix</h3>
 <h2 id="vehicle_2">vehicle</h2>
 <p>These parameters define the scenario's vehicle. If you want profiles
 for several vehicles, run separate scenarios.</p>
 <h3 id="name">name</h3>
-<p>This is the name of the vehicle, which will be checked to see if trips
+<p>This is the name of the vehicle, which will be
+<a href="../define/#declare_class_instances">checked</a> to see if legs, trips,
 and locations are actually declared.</p>
 <h3 id="base_location">base_location</h3>
-<p>not relevant for cars</p>
+<p>Choose one of the [locations][#locations] as a base location (at day start).
+This is not relevant for cars, as they can be split between different locations
+at day start (say home and holiday), as seen in the <a href="../mobility/#get_day_type_start_location_split">computation of location at
+day start</a>.</p>
 <h3 id="yearly_kilometrage">yearly_kilometrage</h3>
-<p>Not relevant for cars, as it is built bottom-up</p>
+<p>Provide the yearly kilometrage for this vehicle. This could be used for
+checking/testing purposes, but is currently not used/inactive.</p>
 <h3 id="kilometers_column_for_consumption">kilometers_column_for_consumption</h3>
 <h3 id="use_weighted">use_weighted</h3>
 <h3 id="battery_capacity">battery_capacity</h3>
