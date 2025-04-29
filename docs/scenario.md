@@ -109,7 +109,7 @@ and 0 that the charger is entirely shut down during that hour).
 
 
 ## legs
-Legs are vehicle movements between two locations .You can modify existing 
+Legs are vehicle movements between two locations. You can modify existing 
 legs or create new ones by copying
 exisiting ones (copy everything under '[legs.code]', where
 code is the name of your leg). You need to have all the elements below.
@@ -120,12 +120,12 @@ This is the name of the vehicle that performs that leg.
 This name needs to match the scenario's vehicle name (in [vehicle](#vehicle)) 
 for the leg to
 [be included](define.md#declare_class_instances) in the scenario.
-The reason for this check is to avoid including unnecessary locations (a user
+The reason for this check is to avoid including unnecessary legs (a user
 could put all legs for all vehicles in their scenario files so that they
 could copy the whole list between scenarios without having to filter legs
 by hand). 
 If a le is used by different vehicles, simply create one leg per
-vehicle (e.g. fom_stadium_to_home_car and from_stadium_to_home_bus).
+vehicle (e.g. from_stadium_to_home_car and from_stadium_to_home_bus).
 ### distance
 The distance between the start and and end of the loation (in kilometers).
 ### duration
@@ -203,21 +203,56 @@ is typically sold.
 
 
 ## trips
-
+Trips are collections of [legs](#legs) on a given day.
+You can modify existing 
+trips or create new ones by copying
+exisiting ones (copy everything under '[trips.code]', where
+code is the name of your trip). You need to have all the elements below.
 ### vehicle
+This is the name of the vehicle that performs that trip.
+This name needs to match the scenario's vehicle name (in [vehicle](#vehicle)) 
+for the trip to
+[be included](define.md#declare_class_instances) in the scenario.
+The reason for this check is to avoid including unnecessary trips (a user
+could put all trips for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter trips
+by hand). 
+If a le is used by different vehicles, simply create one leg per
+vehicle (e.g. weekend_trip_car and weekend_trip_bus).
 ### legs
+A list of [legs](#legs) that constitute the trip (in order they are performed).
 ### time_between_legs
 
 This is the time spent at each interim location (same units as used
-general)
+in general (hours in the current version of the model)).
+You need one value less than the amount of legs, even if the vehicle
+doesn't stay there (in that case, set the value to 0).
 
 
 
 ### percentage_station_users
+This is a placeholder for future management of fast-charging stations users
+and is currently inactive.
 ### start_probabilities
+This is a list of start probabilities (sum has to add up to one), with
+enough values to cover a whole day (24 in the current implementation, as the
+base unit is an hour). The first value is for the [day start hour](#day_start_hour).
 ### repeated_sequence
+This is used to repeat a sequence of two legs, whic you provide here as a leg
+(put an empty list if no legs repeat). This is for example used for busses that
+go between the start and the end of a route. 
 ### repetition_amounts
+This is the amount of times the sequence is repeated.
+If the sequence of two legs
+appear several times in the trip, you need to provide one value per appearance
+of the sequence (even if that repetition amount is 1). Using the same sequence
+repeatedlly can be used in cases where a van performs legs between two locations
+in clusters (something like before morning peak, morning peak, between peaks, 
+evening peak, after evening peak) and tell how often per cluster the van travels.
 ### time_between_repetitions
+This is the time between repetitions (in your standard time units, hours in the current version).
+Similarly to the amounts, you need to provide one value (even if it is zero) per
+appearance of the sequence.
 
 ## mobility_module
 ### day_start_hour
