@@ -485,7 +485,7 @@ You need to provide the minimal and maximal longitudes and latitudes of the area
 
 ### EV_tool
 Parameters for the EV tool data from geotab.
-The data is obtained with [this function](weather.md#get_EV_tool_data) and
+The data is obtained with [this function](weather.md#get_ev_tool_data) and
 used in the determination of [capacity changes with temperature](weather.md#range-and-temperature).
 
 
@@ -494,10 +494,10 @@ The source URL of the data.
 #### user_agent
 A string to provide a user agent
 #### efficiency_curve_script_index
-The [script to get data](weather.md#get_EV_tool_data) produces a list of scripts.
+The [script to get data](weather.md#get_ev_tool_data) produces a list of scripts.
 This is the list index that we need.
 #### data_splitter
-A splitting string needed in the [script to get data](weather.md#get_EV_tool_data).
+A splitting string needed in the [script to get data](weather.md#get_ev_tool_data).
 #### file_name
 The file where we store the temperature efficiency data.
 #### groupfile_name
