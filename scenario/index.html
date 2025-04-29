@@ -549,8 +549,16 @@ day start</a>.</p>
 <p>Provide the yearly kilometrage for this vehicle. This could be used for
 checking/testing purposes, but is currently not used/inactive.</p>
 <h3 id="kilometers_column_for_consumption">kilometers_column_for_consumption</h3>
+<p>Tells which column from the <a href="../mobility/#get_run_mobility_matrix">run mobility matrix</a>
+is used when <a href="../consumption/#create_consumption_tables">creating consumption tables</a>
+(it should be 'Arrivals' or 'Departures', with the current default being 'Arrivals').</p>
 <h3 id="use_weighted">use_weighted</h3>
+<p>Set it to true if you want to <a href="../consumption/#create_consumption_tables">use</a>
+[weights][#weights] for [road types][#road_types] for your <a href="#road_type_mix">legs</a>.</p>
 <h3 id="battery_capacity">battery_capacity</h3>
+<p>The standard/nominal capacity of the vehicle's battery. Note that the battery
+<a href="../weather/#range-and-temperature">capacity changes with temperature</a>,
+but that the impact of this is inactove/not modelled yet.</p>
 <h3 id="solar_panel_size_kwp">solar_panel_size_kWp</h3>
 <h3 id="base_consumption_per_km">base_consumption_per_km</h3>
 <p>electricity_kWh = 0.76
