@@ -65,7 +65,7 @@ This is the name of the vehicle that goes to that location.
 This name needs to match the scenario's vehicle name (in [vehicle](#vehicle)) 
 for the location to
 [be included](define.md#declare_class_instances) in the scenario.
-he reason for this check is to avoid including unnecessary locations (a user
+The reason for this check is to avoid including unnecessary locations (a user
 could put all locations for all vehicles in their scenario files so that they
 could copy the whole list between scenarios without having to filter locations
 by hand). 
@@ -109,11 +109,28 @@ and 0 that the charger is entirely shut down during that hour).
 
 
 ## legs
+Legs are vehicle movements between two locations .You can modify existing 
+legs or create new ones by copying
+exisiting ones (copy everything under '[legs.code]', where
+code is the name of your leg). You need to have all the elements below.
 
 
 ### vehicle
+This is the name of the vehicle that performs that leg.
+This name needs to match the scenario's vehicle name (in [vehicle](#vehicle)) 
+for the leg to
+[be included](define.md#declare_class_instances) in the scenario.
+The reason for this check is to avoid including unnecessary locations (a user
+could put all legs for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter legs
+by hand). 
+If a le is used by different vehicles, simply create one leg per
+vehicle (e.g. fom_stadium_to_home_car and from_stadium_to_home_bus).
 ### distance
+The distance between the start and and end of the loation (in kilometers).
 ### duration
+Hoe long ot takes for the vehicle to perform the leg
+(in hours: 30 minutes= 0.5 hours).
 
 ### hour_in_day_factors
 
@@ -123,46 +140,67 @@ the last for 23:00 to 23:59). Note that these are actual hours,
 not hours in the user day (which can start and end at other moments than
 midnight). This is used to take into account things like traffic jams.
 The default value is 1.
-
+(Note that this is currently inactive/not used in the model).
 
 
 ### locations
+Provide the names of the start and end locations (which need to be among
+the [locations](#locations) provided above).
 ### road_type_mix
+#### mix
 Give the road type mix
-We need a value for each of the road_types (see above in [transport_factors])
+We need a value for each of the road_types 
+(see [transport_factors](#transport_factors))
 If the road type does not occur in the leg, simply put 0
-Note that the total should be 1 (there are not checks to ensure this,
-so you need to make sure you do this correctly)
-road_types = ['highway', 'city']
+Note that the total should be 1 (there are no checks to ensure this,
+so you need to make sure you do this correctly). 
+The list provided in mix needs to correspond to the road types in
+[transport_factors](#transport_factors).
+This will be used in [computing weighted quantities][#mobility.md#weighted_quantities].
+Note that these weighted quantities are partly inactive (in the sense that they
+are not the focus of current runs/have not been tested).
 
 
 
-### mix
+
 
 ## vehicle
 These parameters define the scenario's vehicle. If you want profiles
 for several vehicles, run separate scenarios.
 ### name
-This is the name of the vehicle, which will be checked to see if trips
+This is the name of the vehicle, which will be
+[checked](define.md#declare_class_instances) to see if legs, trips,
 and locations are actually declared.
 
 ### base_location
-not relevant for cars
+Choose one of the [locations][#locations] as a base location (at day start).
+This is not relevant for cars, as they can be split between different locations
+at day start (say home and holiday), as seen in the [computation of location at
+day start](mobility.md#get_day_type_start_location_split).
 ### yearly_kilometrage
-
-Not relevant for cars, as it is built bottom-up
+Provide the yearly kilometrage for this vehicle. This could be used for
+checking/testing purposes, but is currently not used/inactive.
 ### kilometers_column_for_consumption
+Tells which column from the [run mobility matrix](mobility.md#get_run_mobility_matrix)
+is used when [creating consumption tables](consumption.md#create_consumption_tables)
+(it should be 'Arrivals' or 'Departures', with the current default being 'Arrivals').
 ### use_weighted
+Set it to true if you want to [use](consumption.md#create_consumption_tables)
+[weights][#weights] for [road types][#road_types] for your [legs](#road_type_mix).
+
 ### battery_capacity
+The standard/nominal capacity of the vehicle's battery. Note that the battery
+[capacity changes with temperature](weather.md#range-and-temperature),
+but that the impact of this is inactove/not modelled yet.
 
 ### solar_panel_size_kWp
+The capacity (kWp) of the solar panels on the vehicle (currently inactive/not implemented).
 ### base_consumption_per_km
-electricity_kWh = 0.76
-gasoline_litres = 0.3399
-diesel_litres = 0.2917
-hydrogen_kg = 0.0398
-CNG_kg = 0.2415
-LNG_kg = 0.2415
+A set of vehicle base consumptions (reference values that can be modified
+by using [weights][#use_weighted]).
+They are all in values per kilometer, in units in which the energy carrier
+is typically sold.
+
 
 ## trips
 
