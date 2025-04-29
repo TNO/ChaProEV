@@ -397,7 +397,8 @@ This is used [here](mobility.md#get_trip_probabilities_per_day_type_other_vehicl
 ## transport_factors
 These are the factors used if we [use weighted](#mobility.md#weighted_quantities) 
 consumptions per road type
-[in legs](#road_type_mix).
+[in legs](#road_type_mix), reflecting the fact that vehicles might have different
+energy consumptions for different road types.
 ### road_types
 Provide a list of names for theroad types you want to use.
 ### weights
