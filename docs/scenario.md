@@ -148,8 +148,11 @@ The default value is 1.
 Provide the names of the start and end locations (which need to be among
 the [locations](#locations) provided above).
 ### road_type_mix
+This is to put a road type mix for the leg.
+The reason for this is that we might want to reflect the fact that vehicles might have different
+energy consumptions for different road types.
 #### mix
-Give the road type mix
+Give the road type mix.
 We need a value for each of the road_types 
 (see [transport_factors](#transport_factors))
 If the road type does not occur in the leg, simply put 0
