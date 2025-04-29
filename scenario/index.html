@@ -239,13 +239,7 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#raw_data_folder">raw_data_folder</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#latitude_min">latitude_min</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#latitude_max">latitude_max</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#longitude_min">longitude_min</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#longitude_max">longitude_max</a>
+    <li class="toctree-l4"><a class="reference internal" href="#raw-data-area">raw data area</a>
     </li>
         </ul>
     </li>
@@ -259,7 +253,7 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#chunk_size">chunk_size</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#quantities_1">quantities</a>
+    <li class="toctree-l4"><a class="reference internal" href="#quantities-processed">quantities processed</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#kelvin_to_celsius">KELVIN_TO_CELSIUS</a>
     </li>
@@ -277,15 +271,7 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#processed_index_tags">processed_index_tags</a>
     </li>
-    <li class="toctree-l4"><a class="reference internal" href="#latitude_min_1">latitude_min</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#latitude_max_1">latitude_max</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#longitude_min_1">longitude_min</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#longitude_max_1">longitude_max</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#coordinate_step">coordinate_step</a>
+    <li class="toctree-l4"><a class="reference internal" href="#processed-data-area">Processed data area</a>
     </li>
         </ul>
     </li>
@@ -517,8 +503,11 @@ The default value is 1.
 <p>Provide the names of the start and end locations (which need to be among
 the <a href="#locations">locations</a> provided above).</p>
 <h3 id="road_type_mix">road_type_mix</h3>
+<p>This is to put a road type mix for the leg.
+The reason for this is that we might want to reflect the fact that vehicles might have different
+energy consumptions for different road types.</p>
 <h4 id="mix">mix</h4>
-<p>Give the road type mix
+<p>Give the road type mix.
 We need a value for each of the road_types 
 (see <a href="#transport_factors">transport_factors</a>)
 If the road type does not occur in the leg, simply put 0
@@ -526,7 +515,7 @@ Note that the total should be 1 (there are no checks to ensure this,
 so you need to make sure you do this correctly). 
 The list provided in mix needs to correspond to the road types in
 <a href="#transport_factors">transport_factors</a>.
-This will be used in <a href="#mobility.md#weighted_quantities">computing weighted quantities</a>.
+This will be used in <a href="../mobility/#make_mobility_data">computing weighted quantities</a>.
 Note that these weighted quantities are partly inactive (in the sense that they
 are not the focus of current runs/have not been tested).</p>
 <h2 id="vehicle_2">vehicle</h2>
@@ -719,48 +708,68 @@ As such, this is only relevant for cars in the current implementation of the mod
 This is where we match the trips to their day type.
 This is used <a href="../mobility/#get_trip_probabilities_per_day_type_other_vehicles">here</a>.</p>
 <h2 id="transport_factors">transport_factors</h2>
-<p>These are the factors used if we <a href="#mobility.md#weighted_quantities">use weighted</a> 
+<p>These are the factors used if we <a href="#use_weighted">use weighted</a> 
 consumptions per road type
-<a href="#road_type_mix">in legs</a>.</p>
+<a href="#road_type_mix">in legs</a>, reflecting the fact that vehicles might have different
+energy consumptions for different road types.</p>
 <h3 id="road_types">road_types</h3>
 <p>Provide a list of names for theroad types you want to use.</p>
 <h3 id="weights">weights</h3>
 <p>Provide one weight/energy use correction factor for each road type.</p>
 <h2 id="weather">weather</h2>
+<p>Parameters related to <a href="../weather/">weather computations</a>, which
+is currently inactive/not integrated in the model itself.</p>
 <h3 id="weather_factors_table_root_name">weather_factors_table_root_name</h3>
+<p>A root for <a href="../weather/#get_scenario_weather_data">saving weather factors</a>
+for each scenario (the scenario name will be mixed with this when saving the data).</p>
 <h3 id="source_data">source_data</h3>
+<p>Parameters about the source data (<a href="https://cds.climate.copernicus.eu/">CDS ERA-5</a>) for the <a href="https://cds.climate.copernicus.eu/how-to-api">cdsapi library</a>.</p>
 <h4 id="start_year">start_year</h4>
+<p>The first year for which you want to get data.</p>
 <h4 id="end_year">end_year</h4>
+<p>The last year for which you want to get data.</p>
 <h4 id="quantities">quantities</h4>
+<p>A list of the quantities you want to extract.</p>
 <h4 id="raw_data_folder">raw_data_folder</h4>
-<p>The following define the area over which the raw weather data will be
-downloaded. The corresponding in the processed weather database is below.</p>
-<h4 id="latitude_min">latitude_min</h4>
-<h4 id="latitude_max">latitude_max</h4>
-<h4 id="longitude_min">longitude_min</h4>
-<h4 id="longitude_max">longitude_max</h4>
+<p>The folder where you want to put your raw data.</p>
+<h4 id="raw-data-area">raw data area</h4>
+<p>These define the area over which the raw weather data will be
+downloaded. The corresponding in the processed weather database is <a href="#processed-data-area">below</a>
+(you need to provide the minimal and maximal longitudes and latitudes of the area).</p>
 <h3 id="processed_data">processed_data</h3>
+<p>This is data that you will use in your model/run. It is a subpart of the raw data
+(for example: you might want all Europe in your raw data, but just one country in the processed data).</p>
 <h4 id="raw_data_folder_1">raw_data_folder</h4>
+<p>The folder where you can find your raw data.</p>
 <h4 id="processed_folder">processed_folder</h4>
+<p>The folder where you want to store your data.</p>
 <h4 id="weather_database_file_name">weather_database_file_name</h4>
+<p>The database file name where you want to store you processed weather data (in the folder above).</p>
 <h4 id="chunk_size">chunk_size</h4>
 <p>This parameter is there to avoid issues when writing a too large DataFrame
 at once (instead, we split it into chunks).</p>
-<h4 id="quantities_1">quantities</h4>
+<h4 id="quantities-processed">quantities processed</h4>
+<p>The quantities in your processed weather data. It has to be a subset of <a href="#quantities">what</a> you can in your raw wether data.</p>
 <h4 id="kelvin_to_celsius">KELVIN_TO_CELSIUS</h4>
+<p>A factor to convert Kelvin to Celsius.</p>
 <h4 id="quantity_tags">quantity_tags</h4>
+<p>Tags corresponding to the <a href="#quantities-processed">quantities</a> you want.</p>
 <h4 id="quantity_processed_names">quantity_processed_names</h4>
+<p>Output table display names corresponding to the <a href="#quantities-processed">quantities</a> you want.</p>
 <h4 id="cumulative_quantity_processed_names">cumulative_quantity_processed_names</h4>
+<p>The display names of quantities from <a href="#quantity_processed_names">all quantities</a> that are cumulative.</p>
 <h4 id="cumulative_quantities">cumulative_quantities</h4>
+<p>The quantities from <a href="#quantity_processed_names">all quantities</a> that are cumulative.</p>
 <h4 id="queries_for_cumulative_quantities">queries_for_cumulative_quantities</h4>
+<p>The SQL queries to get the <a href="#cumulative_quantities">cumulative quantities</a>.</p>
 <h4 id="temperature_quantities">temperature_quantities</h4>
+<p>The quantities from <a href="#quantity_processed_names">all quantities</a> that are related to temperatures.</p>
 <h4 id="processed_index_tags">processed_index_tags</h4>
-<p>These define the area of the processed data in the weather database</p>
-<h4 id="latitude_min_1">latitude_min</h4>
-<h4 id="latitude_max_1">latitude_max</h4>
-<h4 id="longitude_min_1">longitude_min</h4>
-<h4 id="longitude_max_1">longitude_max</h4>
-<h4 id="coordinate_step">coordinate_step</h4>
+<p>The index name tags for the processed data tables.</p>
+<h4 id="processed-data-area">Processed data area</h4>
+<p>This is the area for the processed data that you will use in the model.
+It is a subpart of the <a href="#raw-data-area">raw data area</a>.
+You need to provide the minimal and maximal longitudes and latitudes of the area.</p>
 <h3 id="ev_tool">EV_tool</h3>
 <p>Parameters for the EV tool data from geotab</p>
 <h4 id="ev_tool_url">EV_tool_url</h4>
