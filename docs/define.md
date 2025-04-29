@@ -187,3 +187,5 @@ cross-links with scenario
 
 
 ## compute_travel_impact
+
+## get_trip_charging_sessions

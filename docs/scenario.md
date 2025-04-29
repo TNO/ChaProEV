@@ -484,21 +484,46 @@ You need to provide the minimal and maximal longitudes and latitudes of the area
 
 
 ### EV_tool
-Parameters for the EV tool data from geotab
+Parameters for the EV tool data from geotab.
+The data is obtained with [this function](weather.md#get_EV_tool_data) and
+used in the determination of [capacity changes with temperature](weather.md#range-and-temperature).
 
 
 #### EV_tool_url
+The source URL of the data.
 #### user_agent
+A string to provide a user agent
 #### efficiency_curve_script_index
+The [script to get data](weather.md#get_EV_tool_data) produces a list of scripts.
+This is the list index that we need.
 #### data_splitter
+A splitting string needed in the [script to get data](weather.md#get_EV_tool_data).
 #### file_name
+The file where we store the temperature efficiency data.
 #### groupfile_name
+The groupfile file (for Excel or SQLite) where we store the temperature efficiency data.
+
 #### folder
+The folder where the data is saved.
 #### efficiency_factor_column_name
+The column name for the efficiency factor.
+
+
+#### vehicle_temperature_efficiencies
+Factors to compute the [capacity changes with temperature](weather.md#range-and-temperature),
+namely the source folder, file name, and the order of the fitting polynomial.
+
+
+
 
 ## charging
+Some parameters related to charging.
 ### price_reaction_exponent
+An exponent factor to compute how users react to a given [charging price](#charging_price) (inactive/not currently implemented).
 ### desirability_reaction_exponent
+An exponent factor to compute how users react to a given [desirability factor](#charging_desirability) (inactive/not currently implemented).
 
 ## charging_sessions
+Parameters for sessions.
 ### resolution
+A resolution factor used when [getting charging sessions](define.md#get_trip_charging_sessions).
