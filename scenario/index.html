@@ -293,6 +293,8 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#efficiency_factor_column_name">efficiency_factor_column_name</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#vehicle_temperature_efficiencies">vehicle_temperature_efficiencies</a>
+    </li>
         </ul>
     </li>
         </ul>
@@ -772,7 +774,8 @@ It is a subpart of the <a href="#raw-data-area">raw data area</a>.
 You need to provide the minimal and maximal longitudes and latitudes of the area.</p>
 <h3 id="ev_tool">EV_tool</h3>
 <p>Parameters for the EV tool data from geotab.
-The data is obtained with <a href="../weather/#get_EV_tool_data">this function</a></p>
+The data is obtained with <a href="../weather/#get_EV_tool_data">this function</a> and
+used in the determination of <a href="../weather/#range-and-temperature">capacity changes with temperature</a>.</p>
 <h4 id="ev_tool_url">EV_tool_url</h4>
 <p>The source URL of the data.</p>
 <h4 id="user_agent">user_agent</h4>
@@ -783,14 +786,26 @@ This is the list index that we need.</p>
 <h4 id="data_splitter">data_splitter</h4>
 <p>A splitting string needed in the <a href="../weather/#get_EV_tool_data">script to get data</a>.</p>
 <h4 id="file_name">file_name</h4>
+<p>The file where we store the temperature efficiency data.</p>
 <h4 id="groupfile_name">groupfile_name</h4>
+<p>The groupfile file (for Excel or SQLite) where we store the temperature efficiency data.</p>
 <h4 id="folder">folder</h4>
+<p>The folder where the data is saved.</p>
 <h4 id="efficiency_factor_column_name">efficiency_factor_column_name</h4>
+<p>The column name for the efficiency factor.</p>
+<h4 id="vehicle_temperature_efficiencies">vehicle_temperature_efficiencies</h4>
+<p>Factors to compute the <a href="../weather/#range-and-temperature">capacity changes with temperature</a>,
+namely the source folder, file name, and the order of the fitting polynomial.</p>
 <h2 id="charging">charging</h2>
+<p>Some parameters related to charging.</p>
 <h3 id="price_reaction_exponent">price_reaction_exponent</h3>
+<p>An exponent factor to compute how users react to a given <a href="#charging_price">charging price</a> (inactive/not currently implemented).</p>
 <h3 id="desirability_reaction_exponent">desirability_reaction_exponent</h3>
+<p>An exponent factor to compute how users react to a given <a href="#charging_desirability">desirability factor</a> (inactive/not currently implemented).</p>
 <h2 id="charging_sessions">charging_sessions</h2>
+<p>Parameters for sessions.</p>
 <h3 id="resolution">resolution</h3>
+<p>A resolution factor used when <a href="../define/#get_trip_charging_sessions">getting charging sessions</a>.</p>
               
             </div>
           </div><footer>
