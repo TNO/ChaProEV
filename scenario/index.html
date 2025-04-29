@@ -526,7 +526,7 @@ Note that the total should be 1 (there are no checks to ensure this,
 so you need to make sure you do this correctly). 
 The list provided in mix needs to correspond to the road types in
 <a href="#transport_factors">transport_factors</a>.
-This will be used in [computing weighted quantities][#mobility.md#weighted_quantities].
+This will be used in <a href="#mobility.md#weighted_quantities">computing weighted quantities</a>.
 Note that these weighted quantities are partly inactive (in the sense that they
 are not the focus of current runs/have not been tested).</p>
 <h2 id="vehicle_2">vehicle</h2>
@@ -719,8 +719,13 @@ As such, this is only relevant for cars in the current implementation of the mod
 This is where we match the trips to their day type.
 This is used <a href="../mobility/#get_trip_probabilities_per_day_type_other_vehicles">here</a>.</p>
 <h2 id="transport_factors">transport_factors</h2>
+<p>These are the factors used if we <a href="#mobility.md#weighted_quantities">use weighted</a> 
+consumptions per road type
+<a href="#road_type_mix">in legs</a>.</p>
 <h3 id="road_types">road_types</h3>
+<p>Provide a list of names for theroad types you want to use.</p>
 <h3 id="weights">weights</h3>
+<p>Provide one weight/energy use correction factor for each road type.</p>
 <h2 id="weather">weather</h2>
 <h3 id="weather_factors_table_root_name">weather_factors_table_root_name</h3>
 <h3 id="source_data">source_data</h3>
