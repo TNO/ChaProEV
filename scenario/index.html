@@ -560,13 +560,12 @@ is used when <a href="../consumption/#create_consumption_tables">creating consum
 <a href="../weather/#range-and-temperature">capacity changes with temperature</a>,
 but that the impact of this is inactove/not modelled yet.</p>
 <h3 id="solar_panel_size_kwp">solar_panel_size_kWp</h3>
+<p>The capacity (kWp) of the solar panels on the vehicle (currently inactive/not implemented).</p>
 <h3 id="base_consumption_per_km">base_consumption_per_km</h3>
-<p>electricity_kWh = 0.76
-gasoline_litres = 0.3399
-diesel_litres = 0.2917
-hydrogen_kg = 0.0398
-CNG_kg = 0.2415
-LNG_kg = 0.2415</p>
+<p>A set of vehicle base consumptions (reference values that can be modified
+by using [weights][#use_weighted]).
+They are all in values per kilometer, in units in which the energy carrier
+is typically sold.</p>
 <h2 id="trips">trips</h2>
 <h3 id="vehicle_3">vehicle</h3>
 <h3 id="legs_1">legs</h3>
