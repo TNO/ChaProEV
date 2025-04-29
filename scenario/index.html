@@ -402,8 +402,8 @@ This page describes the elements of the scenario file (your_scenario.toml).</p>
 <h2 id="run">run</h2>
 <p>Run parameters give the elements to produce the time tags of the run range.</p>
 <h3 id="use_day_types_in_charge_computing">use_day_types_in_charge_computing</h3>
-<p>If set to true, the charging computations will be done per day type rather
-than for all days of the run, which fastens the computations.
+<p>If set to true, the charging computations will be done per <a href="#day_types">day type</a> rather
+than for all days of the run, which fastens the computations in the <a href="../charging/">charging module</a>.
 If set to false, the model will compute each day separately, which is considerably slower.</p>
 <h3 id="start">start</h3>
 <p>This part gives the year, month, day, hour, and minute of the start of the
@@ -475,7 +475,7 @@ power drwan from the network.</p>
 <h3 id="charging_desirability">charging_desirability</h3>
 <p>An indicator (0-1) of how much people like to charge at this location. Currently inactive.</p>
 <h3 id="percentage_in_location_at_run_start">percentage_in_location_at_run_start</h3>
-<p>If filling it directly instead of computing it (see 
+<p>If filling it directly instead of <a href="#compute_start_location_split">computing it</a> (see 
 <a href="../mobility/#compute_start_location_split">this function</a>), you can put a probability
 (float between 0 and 1) that the vehicle is at that location at the start of the run.</p>
 <h3 id="vehicle_discharge_power">vehicle_discharge_power</h3>
@@ -614,6 +614,7 @@ evening peak, after evening peak) and tell how often per cluster the van travels
 Similarly to the amounts, you need to provide one value (even if it is zero) per
 appearance of the sequence.</p>
 <h2 id="mobility_module">mobility_module</h2>
+<p>These parameters are mostly used in the <a href="../mobility/">mobility module</a>.</p>
 <h3 id="day_start_hour">day_start_hour</h3>
 <p>This parameter defines the start of the day for the scenario. It is chosen
 so that there are no movements during that hour number. It represents the
@@ -625,8 +626,18 @@ For example, the hours between 00:00 and 05:00 on a Saturday belong to
 the Thursday before and are as such on a week day 
 (as opposed to a weekend day).</p>
 <h3 id="compute_start_location_split">compute_start_location_split</h3>
+<p>Set to false if  <a href="#percentage_in_location_at_run_start">filling it directly</a>, 
+true if computing it (see 
+<a href="../mobility/#compute_start_location_split">this function</a>).</p>
 <h3 id="day_types">day_types</h3>
+<p>A list of day types (i.e. days where mobility patterns repeat, thus where
+the same trips occur (either a single one or a mix with given probabilites)).
+Thius is used in mobility computations, to compute <a href="../mobility/#get_trip_probabilities_per_day_type">trip probabilities per day type</a>
+You can decide to make <a href="#use_day_types_in_charge_computing">charge computations at the day type level</a>
+in the <a href="../charging/">charging module</a>.
+to save computation time.</p>
 <h3 id="mobility_quantities">mobility_quantities</h3>
+<p>These are the headers of the <a href="../mobility/#get_run_mobility_matrix">run mobility matrix</a>.</p>
 <h3 id="battery_space_shift_quantities">battery_space_shift_quantities</h3>
 <h3 id="location_connections_headers">location_connections_headers</h3>
 <h3 id="mobility_index_names">mobility_index_names</h3>
