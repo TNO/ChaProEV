@@ -3,6 +3,10 @@
 
 ## Module parameters
 
+## get_trip_probabilities_per_day_type
+
+### get_trip_probabilities_per_day_type_other_vehicles
+### get_car_trip_probabilities_per_day_type
 
 ## compute_start_location_split
 

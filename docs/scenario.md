@@ -9,8 +9,8 @@ This page describes the elements of the scenario file (your_scenario.toml).
 Run parameters give the elements to produce the time tags of the run range.
 
 ### use_day_types_in_charge_computing 
-If set to true, the charging computations will be done per day type rather
-than for all days of the run, which fastens the computations.
+If set to true, the charging computations will be done per [day type](#day_types) rather
+than for all days of the run, which fastens the computations in the [charging module](charging.md).
 If set to false, the model will compute each day separately, which is considerably slower.
 ### start
 This part gives the year, month, day, hour, and minute of the start of the
@@ -91,7 +91,8 @@ The standard charging price (in €/kWh), currently inactive.
 ### charging_desirability 
 An indicator (0-1) of how much people like to charge at this location. Currently inactive.
 ### percentage_in_location_at_run_start
-If filling it directly instead of computing it (see 
+
+If filling it directly instead of [computing it](#compute_start_location_split) (see 
 [this function](mobility.md#compute_start_location_split)), you can put a probability
 (float between 0 and 1) that the vehicle is at that location at the start of the run.
 
@@ -255,6 +256,7 @@ Similarly to the amounts, you need to provide one value (even if it is zero) per
 appearance of the sequence.
 
 ## mobility_module
+These parameters are mostly used in the [mobility module](mobility.md).
 ### day_start_hour
 This parameter defines the start of the day for the scenario. It is chosen
 so that there are no movements during that hour number. It represents the
@@ -269,15 +271,38 @@ the Thursday before and are as such on a week day
 
 ### compute_start_location_split
 
-### day_types
+Set to false if  [filling it directly](#percentage_in_location_at_run_start), 
+true if computing it (see 
+[this function](mobility.md#compute_start_location_split)).
 
+
+### day_types
+A list of day types (i.e. days where mobility patterns repeat, thus where
+the same trips occur (either a single one or a mix with given probabilites)).
+Thius is used in mobility computations, to compute [trip probabilities per day type](mobility.md#get_trip_probabilities_per_day_type)
+You can decide to make [charge computations at the day type level](#use_day_types_in_charge_computing)
+in the [charging module](charging.md).
+to save computation time.
 ### mobility_quantities
+These are the headers of the [run mobility matrix](mobility.md#get_run_mobility_matrix).
+You can change these if you want to change the formulation of the headers.
 
 ### battery_space_shift_quantities
+These correspond to the quantities computed [here](define.md#compute_travel_impact),
+though this list is currently not in use/inactive.
 ### location_connections_headers
+These headers are used in the [run moblity matrix](mobility.md#get_run_mobility_matrix).
+You can change these if you want to change the formulation of the headers.
+
 ### mobility_index_names
+These index names are used in the [run moblity matrix](mobility.md#get_run_mobility_matrix).
+You can change these if you want to change the formulation of the headers.
 ### kilometers_driven_headers
+A  currently inactive/not in use list of matrix headers for a kilometers-based matrix.
 ### holiday_weeks
+A list of week numbers that are holiday weeks, used to compute 
+[car holiday trip probabilities](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
 
 ### number_of_holiday_weeks
 We need to provide the number of holliday weeks seprately,
@@ -288,33 +313,86 @@ of a week).
 
 
 ### holiday_departures_in_weekend_week_numbers
+The week numbers when people go on holidays during the weekend, used to compute 
+[car holiday trip probabilities](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
 
 ### holiday_returns_in_weekend_week_numbers
+The week numbers when people come back from holidays during the weekend, used to compute 
+[car holiday trip probabilities](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
+
 
 ### work_hours_in_a_work_day
+Worked hours per day. This is used in the computations to determine
+the [probability that a car driver goes to work on a given day](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
 
 
 
 ### hours_worked_per_work_week
+Amount of hours worked per week.
+This is used in the computations to determine
+the [probability that a car driver goes to work on a given day](mobility.md#get_car_trip_probabilities_per_day_type), most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.
+
 ### hours_in_a_standard_work_week
+How many hours there are in a standard work week (default is 40).
+This is used in the computations to determine
+the [probability that a car driver goes to work on a given day](mobility.md#get_car_trip_probabilities_per_day_type), most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.
+
+
 ### percentage_working_on_a_work_week
+The probability that a car driver goes to work in a work (i.e. non-holiday) week.
+This is used in the computations to determine
+the [probability that a car driver goes to work on a given day](mobility.md#get_car_trip_probabilities_per_day_type), most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.
+
 ### worked_hours_per_year
+Amount of worked hours per year. 
+This is used in the computations to determine
+the [probability that a car driver goes to work on a given day](mobility.md#get_car_trip_probabilities_per_day_type), most notably for holiday weeks
+(as they are a remainder).
+As such, this is only relevant for cars in the current implementation of the model.
+
 
 ### leisure_trips_per_weekend
+The amount of leisure trips car users perform in a weekend.
+This is used to compute the [probabilities of trips including visits to leisure locations](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
+
 ### leisure_trips_per_week_outside_weekends
+The amount of leisure trips car users perform on non-weekend days.
+This is used to compute the [probabilities of trips including visits to leisure locations](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
+
 ### maximal_fill_percentage_leisure_trips_on_non_work_weekdays
-### weekday_leisure_trips
-### percentage_of_weekday_leisure_trips_on_a_work_day
+A factor that puts a cap on the percentage of trips that include a leisure trip on
+weekdays where the person does not go to work.
+
+This is used to compute the [probabilities of trips including visits to leisure locations](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
 
 ### weekend_trips_per_year
-
+The amount of weekend trips car users take in a year.
+This is used to compute the [probabilities of weeekend trips](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
 
 ### holiday_trips_taken
+The amount of holiday trips car users take in a year.
+This is used to compute the [probabilities of holiday trips](mobility.md#get_car_trip_probabilities_per_day_type).
+As such, this is only relevant for cars in the current implementation of the model.
+
 ### time_spent_at_holiday_destination
+How long car users stay at their holiday  destination.
+This is used to compute the [probabilities of holiday trips](mobility.md#get_car_trip_probabilities_per_day_type), as well as [locations at day start](mobility.md#get_day_type_start_location_split).
+As such, this is only relevant for cars in the current implementation of the model.
 
 ### trips_per_day_type
 For vehicles other than cars, we assume that there is one trip per day type.
-This is where we match the trips to their day type
+This is where we match the trips to their day type.
+This is used [here](mobility.md#get_trip_probabilities_per_day_type_other_vehicles).
 
 ## transport_factors
 
