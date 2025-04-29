@@ -207,10 +207,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#maximal_fill_percentage_leisure_trips_on_non_work_weekdays">maximal_fill_percentage_leisure_trips_on_non_work_weekdays</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#weekday_leisure_trips">weekday_leisure_trips</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#percentage_of_weekday_leisure_trips_on_a_work_day">percentage_of_weekday_leisure_trips_on_a_work_day</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#weekend_trips_per_year">weekend_trips_per_year</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#holiday_trips_taken">holiday_trips_taken</a>
@@ -637,12 +633,23 @@ You can decide to make <a href="#use_day_types_in_charge_computing">charge compu
 in the <a href="../charging/">charging module</a>.
 to save computation time.</p>
 <h3 id="mobility_quantities">mobility_quantities</h3>
-<p>These are the headers of the <a href="../mobility/#get_run_mobility_matrix">run mobility matrix</a>.</p>
+<p>These are the headers of the <a href="../mobility/#get_run_mobility_matrix">run mobility matrix</a>.
+You can change these if you want to change the formulation of the headers.</p>
 <h3 id="battery_space_shift_quantities">battery_space_shift_quantities</h3>
+<p>These correspond to the quantities computed <a href="../define/#compute_travel_impact">here</a>,
+though this list is currently not in use/inactive.</p>
 <h3 id="location_connections_headers">location_connections_headers</h3>
+<p>These headers are used in the <a href="../mobility/#get_run_mobility_matrix">run moblity matrix</a>.
+You can change these if you want to change the formulation of the headers.</p>
 <h3 id="mobility_index_names">mobility_index_names</h3>
+<p>These index names are used in the <a href="../mobility/#get_run_mobility_matrix">run moblity matrix</a>.
+You can change these if you want to change the formulation of the headers.</p>
 <h3 id="kilometers_driven_headers">kilometers_driven_headers</h3>
+<p>A  currently inactive/not in use list of matrix headers for a kilometers-based matrix.</p>
 <h3 id="holiday_weeks">holiday_weeks</h3>
+<p>A list of week numbers that are holiday weeks, used to compute 
+<a href="../mobility/#get_car_trip_probabilities_per_day_type">car holiday trip probabilities</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="number_of_holiday_weeks">number_of_holiday_weeks</h3>
 <p>We need to provide the number of holliday weeks seprately,
 as counting the elements of the list above might not work, such as
@@ -650,23 +657,67 @@ when the above list contains weeks 1 and 53 (which just represent
 the fact that years don't necessarily start and/or end at the start/end
 of a week).</p>
 <h3 id="holiday_departures_in_weekend_week_numbers">holiday_departures_in_weekend_week_numbers</h3>
+<p>The week numbers when people go on holidays during the weekend, used to compute 
+<a href="../mobility/#get_car_trip_probabilities_per_day_type">car holiday trip probabilities</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="holiday_returns_in_weekend_week_numbers">holiday_returns_in_weekend_week_numbers</h3>
+<p>The week numbers when people come back from holidays during the weekend, used to compute 
+<a href="../mobility/#get_car_trip_probabilities_per_day_type">car holiday trip probabilities</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="work_hours_in_a_work_day">work_hours_in_a_work_day</h3>
+<p>Worked hours per day. This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="hours_worked_per_work_week">hours_worked_per_work_week</h3>
+<p>Amount of hours worked per week.
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="hours_in_a_standard_work_week">hours_in_a_standard_work_week</h3>
+<p>How many hours there are in a standard work week (default is 40).
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="percentage_working_on_a_work_week">percentage_working_on_a_work_week</h3>
+<p>The probability that a car driver goes to work in a work (i.e. non-holiday) week.
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="worked_hours_per_year">worked_hours_per_year</h3>
+<p>Amount of worked hours per year. 
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for holiday weeks
+(as they are a remainder).
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="leisure_trips_per_weekend">leisure_trips_per_weekend</h3>
+<p>The amount of leisure trips car users perform in a weekend.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of trips including visits to leisure locations</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="leisure_trips_per_week_outside_weekends">leisure_trips_per_week_outside_weekends</h3>
+<p>The amount of leisure trips car users perform on non-weekend days.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of trips including visits to leisure locations</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="maximal_fill_percentage_leisure_trips_on_non_work_weekdays">maximal_fill_percentage_leisure_trips_on_non_work_weekdays</h3>
-<h3 id="weekday_leisure_trips">weekday_leisure_trips</h3>
-<h3 id="percentage_of_weekday_leisure_trips_on_a_work_day">percentage_of_weekday_leisure_trips_on_a_work_day</h3>
+<p>A factor that puts a cap on the percentage of trips that include a leisure trip on
+weekdays where the person does not go to work.</p>
+<p>This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of trips including visits to leisure locations</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="weekend_trips_per_year">weekend_trips_per_year</h3>
+<p>The amount of weekend trips car users take in a year.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of weeekend trips</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="holiday_trips_taken">holiday_trips_taken</h3>
+<p>The amount of holiday trips car users take in a year.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of holiday trips</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="time_spent_at_holiday_destination">time_spent_at_holiday_destination</h3>
+<p>How long car users stay at their holiday  destination.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of holiday trips</a>, as well as <a href="../mobility/#get_day_type_start_location_split">locations at day start</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
 <h3 id="trips_per_day_type">trips_per_day_type</h3>
 <p>For vehicles other than cars, we assume that there is one trip per day type.
-This is where we match the trips to their day type</p>
+This is where we match the trips to their day type.
+This is used <a href="../mobility/#get_trip_probabilities_per_day_type_other_vehicles">here</a>.</p>
 <h2 id="transport_factors">transport_factors</h2>
 <h3 id="road_types">road_types</h3>
 <h3 id="weights">weights</h3>
