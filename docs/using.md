@@ -18,15 +18,5 @@ if __name__ == '__main__':
 
 where you need to give a name to your case ('my_case') in the example above.
 
-To run your case, you need to provide general parameters,
-scenario parameters, variant parameters, and (optional) inputs.
- 
- ## General parameters
-The file containing the general parameters (common for all acenarios) is
-in your root working folder as is called 
-[ChaProEV.toml](general_parameters.md) (click on link for details).
- ## Scenarios
-
- ## Variants
-
- ## Inputs
+To run your case, you need to provide
+[scenario parameters](scenario.md), [(optional) variant parameters](variants.md),  [(optional) inputs](input.md), and [general parameters](general_parameters.md) (that should not change much from case to case).
