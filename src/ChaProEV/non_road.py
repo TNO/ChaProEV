@@ -21,7 +21,10 @@ def get_profile(
     profile_parameters: box.Box,
 ) -> pd.Series:
 
-    run_demand_profile: pd.Series = pd.Series()
+    run_range: pd.DatetimeIndex = pd.date_range(
+        start=run_start, end=run_end, freq=frequency, inclusive='left'
+    )
+    run_demand_profile: pd.Series = pd.Series(run_demand, index=run_range)
 
     return run_demand_profile
 
@@ -60,3 +63,4 @@ if __name__ == '__main__':
     )
 
     print(run_demand_profile)
+    print('First/last week inclusion issues')
