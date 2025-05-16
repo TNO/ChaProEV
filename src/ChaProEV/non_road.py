@@ -35,11 +35,25 @@ if __name__ == '__main__':
         cook.parameters_from_TOML(non_road_parametrs_file)
     )
     run_demand: float = 1000
-    run_start: datetime.datetime = datetime.datetime(2018, 1, 1, 0)
-    run_end: datetime.datetime = datetime.datetime(2018, 1, 1, 0)
-    frequency: str = 'w'
+
     profile_name: str = 'NL_air_2050'
     profile_parameters: box.Box = non_road_parameters[profile_name]
+
+    run_start_parameters: box.Box = profile_parameters.run_start
+    run_start: datetime.datetime = datetime.datetime(
+        run_start_parameters.year,
+        run_start_parameters.month,
+        run_start_parameters.day,
+        run_start_parameters.hour,
+    )
+    run_end_parameters: box.Box = profile_parameters.run_end
+    run_end: datetime.datetime = datetime.datetime(
+        run_end_parameters.year,
+        run_end_parameters.month,
+        run_end_parameters.day,
+        run_end_parameters.hour,
+    )
+    frequency: str = profile_parameters.frequency
 
     run_demand_profile: pd.Series = get_profile(
         run_demand, run_start, run_end, frequency, profile_parameters

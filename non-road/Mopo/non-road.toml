@@ -1,3 +1,14 @@
 
 
 [NL_air_2050]
+frequency = 'w'
+[NL_air_2050.run_start]
+year = 2018
+month = 1
+day = 1
+hour = 0
+[NL_air_2050.run_end]
+year = 2019
+month = 1
+day = 1
+hour = 0
