@@ -28,7 +28,9 @@ def get_profile(
 
 if __name__ == '__main__':
 
-    non_road_parametrs_file: str = 'non_road.toml'
+    case_name: str = 'Mopo'
+
+    non_road_parametrs_file: str = f'non-road/{case_name}/non-road.toml'
     non_road_parameters: box.Box = box.Box(
         cook.parameters_from_TOML(non_road_parametrs_file)
     )
