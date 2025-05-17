@@ -7,7 +7,7 @@ import typing as ty
 from itertools import repeat
 from multiprocessing import Pool
 
-import tqdm
+from tqdm.rich import tqdm
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -103,7 +103,7 @@ def run_ChaProEV(case_name: str) -> None:
         progress_bars_parameters.scenario_run_description
     )
     if display_scenario_run:
-        pool_inputs = tqdm.tqdm(
+        pool_inputs = tqdm(
             pool_inputs,
             desc=scenario_run_description,
             total=len(scenarios),
