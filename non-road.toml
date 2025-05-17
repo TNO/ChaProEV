@@ -1,6 +1,10 @@
 
 
 source_folder = 'non-road'
+[progress_bars]
+display_scenario_run = true
+scenario_run_description =  'Scenarios started'
+
 
 [parallel_processing]
 set_amount_of_processes = false

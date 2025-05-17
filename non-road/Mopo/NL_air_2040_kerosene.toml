@@ -1,5 +1,5 @@
 
-run_demand = 1000
+run_demand = 500
 frequency = 'W-MON'
 [run_start]
 year = 2018

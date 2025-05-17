@@ -4,6 +4,7 @@ Functions for non-road transport modes
 
 import datetime
 import os
+import typing as ty
 from itertools import repeat
 from multiprocessing import Pool
 
@@ -39,7 +40,7 @@ def get_profile(
         start=run_start, end=run_end, freq=frequency, inclusive='left'
     )
     run_demand_profile: pd.Series = pd.Series(run_demand, index=run_range)
-
+    print(run_demand_profile)
     return run_demand_profile
 
 
@@ -75,12 +76,39 @@ if __name__ == '__main__':
         cook.parameters_from_TOML(non_road_parametrs_file)
     )
 
+    set_amount_of_processes: bool = (
+        non_road_parameters.parallel_processing.set_amount_of_processes
+    )
+    if set_amount_of_processes:
+        amount_of_parallel_processes: int | None = None
+    else:
+        amount_of_parallel_processes = (
+            non_road_parameters.parallel_processing.amount_of_processes
+        )
+
     scenarios: list[box.Box] = load_scenarios(
         non_road_parameters.source_folder, case_name
     )
 
-    for scenario in scenarios:
-        run_demand_profile: pd.Series = get_profile(scenario)
+    progress_bars_parameters: box.Box = non_road_parameters.progress_bars
 
-    print(run_demand_profile)
+    display_scenario_run: bool = progress_bars_parameters.display_scenario_run
+    scenario_run_description: str = (
+        progress_bars_parameters.scenario_run_description
+    )
+    if display_scenario_run:
+        pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = (
+            tqdm.tqdm(
+                scenarios,
+                desc=scenario_run_description,
+                total=len(scenarios),
+            )
+        )
+
+    with Pool(amount_of_parallel_processes) as scenarios_pool:
+        scenarios_pool.map(get_profile, pool_inputs)
+
     print('First/last week inclusion issues')
+    print(
+        'Group all outputs in one file (and use starmap for multiple arguments)'
+    )
