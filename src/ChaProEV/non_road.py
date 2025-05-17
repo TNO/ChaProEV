@@ -10,9 +10,9 @@ from multiprocessing import Pool
 
 import box
 import pandas as pd
-import tqdm
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
+from tqdm.rich import tqdm
 
 
 def get_profile(
@@ -99,12 +99,10 @@ if __name__ == '__main__':
         progress_bars_parameters.scenario_run_description
     )
     if display_scenario_run:
-        pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = (
-            tqdm.tqdm(
-                scenarios,
-                desc=scenario_run_description,
-                total=len(scenarios),
-            )
+        pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = tqdm(
+            scenarios,
+            desc=scenario_run_description,
+            total=len(scenarios),
         )
 
     with Pool(amount_of_parallel_processes) as scenarios_pool:
@@ -112,5 +110,5 @@ if __name__ == '__main__':
             scenarios_pool.map(get_profile, pool_inputs)
         )
 
-    print(output_profiles['NL_air_2050_kerosene'][26])
+    print(output_profiles['NL_air_2050_kerosene'])
     print('First/last week inclusion issues')
