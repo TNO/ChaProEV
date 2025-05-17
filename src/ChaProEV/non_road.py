@@ -17,7 +17,7 @@ from tqdm.rich import tqdm
 
 def get_profile(
     scenario: box.Box,
-) -> tuple[str, pd.Series]:
+) -> tuple[str, pd.DataFrame]:
 
     run_demand: float = scenario.run_demand
     run_start_parameters: box.Box = scenario.run_start
@@ -42,8 +42,8 @@ def get_profile(
     run_demand_profile: pd.Series = pd.Series(
         run_demand, index=run_range, name=scenario.name
     )
-
-    return scenario.name, run_demand_profile
+    run_demand_dataframe: pd.DataFrame = pd.DataFrame(run_demand_profile)
+    return scenario.name, run_demand_dataframe
 
 
 def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         )
 
     with Pool(amount_of_parallel_processes) as scenarios_pool:
-        output_profiles: dict[str, pd.Series] = dict(
+        output_profiles: dict[str, pd.DataFrame] = dict(
             scenarios_pool.map(get_profile, pool_inputs)
         )
 
