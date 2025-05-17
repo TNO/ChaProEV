@@ -17,7 +17,7 @@ from rich import print
 
 def get_profile(
     scenario: box.Box,
-) -> pd.Series:
+) -> tuple[str, pd.Series]:
 
     run_demand: float = scenario.run_demand
     run_start_parameters: box.Box = scenario.run_start
@@ -39,9 +39,11 @@ def get_profile(
     run_range: pd.DatetimeIndex = pd.date_range(
         start=run_start, end=run_end, freq=frequency, inclusive='left'
     )
-    run_demand_profile: pd.Series = pd.Series(run_demand, index=run_range)
-    print(run_demand_profile)
-    return run_demand_profile
+    run_demand_profile: pd.Series = pd.Series(
+        run_demand, index=run_range, name=scenario.name
+    )
+
+    return scenario.name, run_demand_profile
 
 
 def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
@@ -106,9 +108,9 @@ if __name__ == '__main__':
         )
 
     with Pool(amount_of_parallel_processes) as scenarios_pool:
-        scenarios_pool.map(get_profile, pool_inputs)
+        output_profiles: dict[str, pd.Series] = dict(
+            scenarios_pool.map(get_profile, pool_inputs)
+        )
 
+    print(output_profiles['NL_air_2050_kerosene'][26])
     print('First/last week inclusion issues')
-    print(
-        'Group all outputs in one file (and use starmap for multiple arguments)'
-    )
