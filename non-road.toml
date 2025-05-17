@@ -1,0 +1,7 @@
+
+
+source_folder = 'non-road'
+
+[parallel_processing]
+set_amount_of_processes = false
+amount_of_processes = 4
