@@ -1,9 +1,12 @@
 
 
 source_folder = 'non-road'
+output_folder = 'non-road-output'
 demand_file = 'scenario_demands.csv'
 demand_index = ['Country Code', 'Mode', 'Year', 'Carrier']
 demand_header = ['Demand_PJ']
+
+
 [progress_bars]
 display_scenario_run = true
 scenario_run_description =  'Scenarios started'
@@ -12,3 +15,21 @@ scenario_run_description =  'Scenarios started'
 [parallel_processing]
 set_amount_of_processes = false
 amount_of_processes = 4
+
+[files]
+# Indicate below if you want to save your Pandas DataFrames in the
+# listed formats (put a true if you want to do so, false if you don't)
+[files.dataframe_outputs]
+csv = true
+json = false
+html = false
+latex = false
+xml = false
+clipboard = false  # This saves the file to the local clipboard
+excel = false
+hdf = false
+feather = false
+parquet = false
+stata = false
+pickle = true
+sql = true

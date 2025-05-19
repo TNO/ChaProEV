@@ -207,7 +207,16 @@ if __name__ == '__main__':
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
         case_name, non_road_parameters
     )
-    print(output_profiles['NL_air_2050_kerosene'])
-    print(sum(output_profiles['NL_air_2050_kerosene'].values))
+
+    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+    for output_profile in output_profiles:
+        cook.save_dataframe(
+            dataframe=output_profiles[output_profile],
+            dataframe_name=output_profile,
+            groupfile_name=case_name,
+            output_folder=output_folder,
+            parameters=non_road_parameters,
+        )
+
     print('First/last week inclusion issues')
     print('Zero-one shift explanation')
