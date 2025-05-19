@@ -9,6 +9,7 @@ from itertools import repeat
 from multiprocessing import Pool
 
 import box
+import numpy as np
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
@@ -46,8 +47,15 @@ def get_profile_weights(
     scenario: box.Box, run_range=pd.DatetimeIndex
 ) -> pd.Series:
 
+    uniform_split: bool = scenario.uniform_split
+    if uniform_split:
+        weight_factors: np.ndarray = np.ones(len(run_range)) / len(run_range)
+    else:
+        weight_factors = np.ones(len(run_range))
+        print('Create a procedure!')
+
     run_profile_weights: pd.Series = pd.Series(
-        0.42, index=run_range, name=scenario.name
+        weight_factors, index=run_range, name=scenario.name
     )
     return run_profile_weights
 

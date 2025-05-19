@@ -1,5 +1,6 @@
 
 name = 'NL_air_2050_kerosene'
+uniform_split = true
 frequency = 'W-MON'
 [run_start]
 year = 2018
