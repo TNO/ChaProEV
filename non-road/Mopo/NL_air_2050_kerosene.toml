@@ -1,5 +1,4 @@
 
-run_demand = 1000
 name = 'NL_air_2050_kerosene'
 frequency = 'W-MON'
 [run_start]

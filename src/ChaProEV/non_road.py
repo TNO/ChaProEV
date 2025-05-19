@@ -15,11 +15,40 @@ from rich import print
 from tqdm.rich import tqdm
 
 
+def get_run_demand(
+    scenario_name: str, case_name: str, general_parameters: box.Box
+) -> float:
+
+    scenario_elements_list: list[str] = scenario_name.split('_')
+
+    country_code: str = scenario_elements_list[0]
+    mode: str = scenario_elements_list[1]
+    year: int = int(scenario_elements_list[2])
+    carrier: str = scenario_elements_list[3]
+
+    source_folder: str = general_parameters.source_folder
+    demand_file: str = general_parameters.demand_file
+    demand_index: str = general_parameters.demand_index
+    demand_header: str = general_parameters.demand_header
+
+    scenario_demand_elements: pd.DataFrame = pd.read_csv(
+        f'{source_folder}/{case_name}/{demand_file}'
+    ).set_index(demand_index)
+
+    run_demand: float = scenario_demand_elements.loc[
+        country_code, mode, year, carrier
+    ][demand_header][0]
+
+    return run_demand
+
+
 def get_profile(
-    scenario: box.Box,
+    scenario: box.Box, case_name: str, general_parameters: box.Box
 ) -> tuple[str, pd.DataFrame]:
 
-    run_demand: float = scenario.run_demand
+    run_demand: float = get_run_demand(
+        scenario.name, case_name, general_parameters
+    )
     run_start_parameters: box.Box = scenario.run_start
     run_start: datetime.datetime = datetime.datetime(
         run_start_parameters.year,
@@ -92,6 +121,12 @@ if __name__ == '__main__':
         non_road_parameters.source_folder, case_name
     )
 
+    pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = zip(
+        scenarios, repeat(case_name), repeat(non_road_parameters)
+    )
+    # the ty.Any alternative is there because transforming it with the
+    # progress bar makes mypy think it change is type
+
     progress_bars_parameters: box.Box = non_road_parameters.progress_bars
 
     display_scenario_run: bool = progress_bars_parameters.display_scenario_run
@@ -99,15 +134,15 @@ if __name__ == '__main__':
         progress_bars_parameters.scenario_run_description
     )
     if display_scenario_run:
-        pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = tqdm(
-            scenarios,
+        pool_inputs = tqdm(
+            pool_inputs,
             desc=scenario_run_description,
             total=len(scenarios),
         )
 
     with Pool(amount_of_parallel_processes) as scenarios_pool:
         output_profiles: dict[str, pd.DataFrame] = dict(
-            scenarios_pool.map(get_profile, pool_inputs)
+            scenarios_pool.starmap(get_profile, pool_inputs)
         )
 
     print(output_profiles['NL_air_2050_kerosene'])

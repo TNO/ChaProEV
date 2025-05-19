@@ -1,6 +1,9 @@
 
 
 source_folder = 'non-road'
+demand_file = 'scenario_demands.csv'
+demand_index = ['Country Code', 'Mode', 'Year', 'Carrier']
+demand_header = ['Demand_PJ']
 [progress_bars]
 display_scenario_run = true
 scenario_run_description =  'Scenarios started'

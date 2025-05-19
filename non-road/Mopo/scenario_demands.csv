@@ -1,0 +1,7 @@
+Country Code,Mode,Year,Carrier,Demand_PJ
+NL,air,2030,kerosene,1602
+NL,air,2040,kerosene,1977
+NL,air,2050,kerosene,1989
+CH,NRMM,2030,diesel,26
+CH,rail,2040,electricity,42
+CH,sea,2050,HFO,89
