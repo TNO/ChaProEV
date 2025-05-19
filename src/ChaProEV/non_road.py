@@ -92,6 +92,7 @@ def get_profile_weights(
     return run_profile_weights
 
 
+@cook.function_timer
 def get_profile(
     scenario: box.Box, case_name: str, general_parameters: box.Box
 ) -> tuple[str, pd.DataFrame]:
@@ -149,15 +150,10 @@ def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
     return scenarios
 
 
-if __name__ == '__main__':
-
-    case_name: str = 'Mopo'
-    non_road_parameters_general_file: str = 'non-road.toml'
-
-    non_road_parametrs_file: str = 'non-road.toml'
-    non_road_parameters: box.Box = box.Box(
-        cook.parameters_from_TOML(non_road_parametrs_file)
-    )
+@cook.function_timer
+def get_non_road_profiles(
+    case_name: str, non_road_parameters: box.Box
+) -> dict[str, pd.DataFrame]:
 
     set_amount_of_processes: bool = (
         non_road_parameters.parallel_processing.set_amount_of_processes
@@ -196,9 +192,22 @@ if __name__ == '__main__':
         output_profiles: dict[str, pd.DataFrame] = dict(
             scenarios_pool.starmap(get_profile, pool_inputs)
         )
+    return output_profiles
 
+
+if __name__ == '__main__':
+
+    case_name: str = 'Mopo'
+
+    non_road_parametrs_file: str = 'non-road.toml'
+    non_road_parameters: box.Box = box.Box(
+        cook.parameters_from_TOML(non_road_parametrs_file)
+    )
+
+    output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
+        case_name, non_road_parameters
+    )
     print(output_profiles['NL_air_2050_kerosene'])
     print(sum(output_profiles['NL_air_2050_kerosene'].values))
     print('First/last week inclusion issues')
-    print('Modulo thing')
     print('Zero-one shift explanation')
