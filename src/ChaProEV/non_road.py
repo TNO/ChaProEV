@@ -47,12 +47,14 @@ def get_profile_weights(
     scenario: box.Box, run_range=pd.DatetimeIndex
 ) -> pd.Series:
 
-    uniform_split: bool = scenario.uniform_split
-    if uniform_split:
-        weight_factors: np.ndarray = np.ones(len(run_range)) / len(run_range)
-    else:
-        weight_factors = np.ones(len(run_range))
-        print('Create a procedure!')
+    weight_factors: np.ndarray = np.ones(len(run_range))
+
+    for modified_instance, modification_factor in zip(
+        scenario.modified_instances, scenario.modification_factors
+    ):
+        weight_factors[modified_instance] = modification_factor
+
+    weight_factors /= sum(weight_factors)
 
     run_profile_weights: pd.Series = pd.Series(
         weight_factors, index=run_range, name=scenario.name
@@ -166,4 +168,7 @@ if __name__ == '__main__':
         )
 
     print(output_profiles['NL_air_2050_kerosene'])
+    print(sum(output_profiles['NL_air_2050_kerosene'].values))
     print('First/last week inclusion issues')
+    print('Modulo thing')
+    print('Zero-one shift explanation')
