@@ -42,6 +42,16 @@ def get_run_demand(
     return run_demand
 
 
+def get_profile_weights(
+    scenario: box.Box, run_range=pd.DatetimeIndex
+) -> pd.Series:
+
+    run_profile_weights: pd.Series = pd.Series(
+        0.42, index=run_range, name=scenario.name
+    )
+    return run_profile_weights
+
+
 def get_profile(
     scenario: box.Box, case_name: str, general_parameters: box.Box
 ) -> tuple[str, pd.DataFrame]:
@@ -68,8 +78,10 @@ def get_profile(
     run_range: pd.DatetimeIndex = pd.date_range(
         start=run_start, end=run_end, freq=frequency, inclusive='left'
     )
+
+    run_profile_weights: pd.Series = get_profile_weights(scenario, run_range)
     run_demand_profile: pd.Series = pd.Series(
-        run_demand, index=run_range, name=scenario.name
+        run_demand * run_profile_weights, index=run_range, name=scenario.name
     )
     run_demand_dataframe: pd.DataFrame = pd.DataFrame(run_demand_profile)
     return scenario.name, run_demand_dataframe
