@@ -3,6 +3,10 @@ name = 'NL_air_2040_kerosene'
 frequency = 'W-MON'
 modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
 modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = []
+recurring_modifications = []
+recurrences_steps = []
+amounts_of_recurrences = [] # If set to zero, repeats for whole run
 [run_start]
 year = 2018
 month = 1

@@ -52,7 +52,37 @@ def get_profile_weights(
     for modified_instance, modification_factor in zip(
         scenario.modified_instances, scenario.modification_factors
     ):
-        weight_factors[modified_instance] = modification_factor
+        weight_factors[modified_instance] *= modification_factor
+
+    recurring_modifications_starts: list[int] = (
+        scenario.recurring_modifications_starts
+    )
+    recurring_modifications: list[float] = scenario.recurring_modifications
+    recurrences_steps: list[int] = scenario.recurrences_steps
+    amounts_of_recurrences: list[int] = scenario.amounts_of_recurrences
+
+    for (
+        recurring_start,
+        recurring_modification,
+        recurrence_step,
+        amount_of_recurrences,
+    ) in zip(
+        recurring_modifications_starts,
+        recurring_modifications,
+        recurrences_steps,
+        amounts_of_recurrences,
+    ):
+        recurring: bool = True
+        run_index: int = recurring_start
+        elapsed_recurrences: int = 0
+        while recurring:
+            weight_factors[run_index] *= recurring_modification
+            elapsed_recurrences += 1
+
+            run_index += recurrence_step
+            recurring = run_index < len(run_range)
+            if amount_of_recurrences > 0:
+                recurring = elapsed_recurrences > amount_of_recurrences
 
     weight_factors /= sum(weight_factors)
 
