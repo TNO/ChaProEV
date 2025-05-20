@@ -9,8 +9,8 @@ demand_index = ['Country Code', 'Mode', 'Year', 'Carrier']
 demand_header = ['Demand_PJ']
 
 historical_year = 2020
-countries = ['Japan', 'Andorra', 'Kiribati']
-country_codes = ['JAP', 'AND', 'KIR']
+countries = ['Netehrlands', 'Andorra', 'Kiribati']
+country_codes = ['NL', 'AND', 'KIR']
 [mode_energy_carriers]
 air = ['kerosene', 'gasoline']
 sea = ['heavy fuel oil', 'olive oil']

@@ -24,6 +24,35 @@ def get_run_demand(
 
     country_code: str = scenario_elements_list[0]
     mode: str = scenario_elements_list[1]
+    year: int = general_parameters.historical_year
+    carrier: str = scenario_elements_list[3]
+
+    demand_index: str = general_parameters.demand_index
+    demand_header: str = general_parameters.demand_header
+
+    source_table: str = general_parameters.historical_dataframe_name
+    database_folder: str = f'{general_parameters.output_folder}/{case_name}'
+    database_file: str = f'{database_folder}/{case_name}.sqlite3'
+
+    historical_values: pd.DataFrame = cook.read_table_from_database(
+        source_table, database_file
+    ).set_index(demand_index)
+
+    run_demand: float = historical_values.loc[
+        country_code, mode, year, carrier
+    ][demand_header][0]
+
+    return run_demand
+
+
+def get_run_demand2(
+    scenario_name: str, case_name: str, general_parameters: box.Box
+) -> float:
+
+    scenario_elements_list: list[str] = scenario_name.split('_')
+
+    country_code: str = scenario_elements_list[0]
+    mode: str = scenario_elements_list[1]
     year: int = int(scenario_elements_list[2])
     carrier: str = scenario_elements_list[3]
 
@@ -266,8 +295,6 @@ if __name__ == '__main__':
     historical_values: pd.DataFrame = fetch_historical_values(
         non_road_parameters
     )
-    print(historical_values)
-    exit()
 
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
         case_name, non_road_parameters
@@ -282,7 +309,7 @@ if __name__ == '__main__':
             output_folder=output_folder,
             parameters=non_road_parameters,
         )
-
+    print('Get historical valuea from new source')
     print('First/last week inclusion issues')
     print('Zero-one shift explanation')
     print('Current values, 2030, 2040, 2050 growth factors')
