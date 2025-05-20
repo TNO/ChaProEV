@@ -30,17 +30,17 @@ def get_run_demand(
     demand_index: str = general_parameters.demand_index
     demand_header: str = general_parameters.demand_header
 
-    source_table: str = general_parameters.historical_dataframe_name
+    source_table: str = general_parameters.demand_dataframe_name
     database_folder: str = f'{general_parameters.output_folder}/{case_name}'
     database_file: str = f'{database_folder}/{case_name}.sqlite3'
 
-    historical_values: pd.DataFrame = cook.read_table_from_database(
+    demand_values: pd.DataFrame = cook.read_table_from_database(
         source_table, database_file
     ).set_index(demand_index)
 
-    run_demand: float = historical_values.loc[
-        country_code, mode, year, carrier
-    ][demand_header][0]
+    run_demand: float = demand_values.loc[country_code, mode, year, carrier][
+        demand_header
+    ][0]
 
     return run_demand
 
@@ -181,7 +181,9 @@ def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
 
 @cook.function_timer
 def get_non_road_profiles(
-    case_name: str, non_road_parameters: box.Box
+    case_name: str,
+    demand_values: pd.DataFrame,
+    non_road_parameters: box.Box,
 ) -> dict[str, pd.DataFrame]:
 
     set_amount_of_processes: bool = (
@@ -254,6 +256,7 @@ def fetch_historical_values(
     historical_values_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
         historical_values_index_tuples
     )
+
     historical_values: pd.DataFrame = pd.DataFrame(
         columns=general_parameters.demand_header, index=historical_values_index
     )
@@ -272,6 +275,8 @@ def fetch_historical_values(
 
     output_folder: str = f'{general_parameters.output_folder}/{case_name}'
 
+    historical_values = historical_values.sort_index()
+
     cook.save_dataframe(
         dataframe=historical_values,
         dataframe_name=general_parameters.historical_dataframe_name,
@@ -281,6 +286,50 @@ def fetch_historical_values(
     )
 
     return historical_values
+
+
+def get_demand_values(
+    historical_values: pd.DataFrame,
+    non_road_parameters: box.Box,
+    case_name: str,
+) -> pd.DataFrame:
+
+    demand_values: pd.DataFrame = historical_values.copy()
+
+    scenarios: list[box.Box] = load_scenarios(
+        non_road_parameters.source_folder, case_name
+    )
+    historical_year: int = non_road_parameters.historical_year
+
+    for scenario in scenarios:
+        country_code: str = scenario.name.split('_')[0]
+        mode: str = scenario.name.split('_')[1]
+        year: int = int(scenario.name.split('_')[2])
+        energy_carrier: str = scenario.name.split('_')[3]
+
+        historical_value: float = historical_values.loc[
+            country_code, mode, historical_year, energy_carrier
+        ][non_road_parameters.demand_header]
+
+        scenario_value: float = scenario.growth * historical_value
+
+        demand_values.loc[
+            (country_code, mode, year, energy_carrier),
+            non_road_parameters.demand_header,
+        ] = scenario_value
+
+    demand_values = demand_values.sort_index()
+    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+
+    cook.save_dataframe(
+        dataframe=demand_values,
+        dataframe_name=non_road_parameters.demand_dataframe_name,
+        groupfile_name=case_name,
+        output_folder=output_folder,
+        parameters=non_road_parameters,
+    )
+
+    return demand_values
 
 
 if __name__ == '__main__':
@@ -296,8 +345,12 @@ if __name__ == '__main__':
         non_road_parameters
     )
 
+    demand_values: pd.DataFrame = get_demand_values(
+        historical_values, non_road_parameters, case_name
+    )
+
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
-        case_name, non_road_parameters
+        case_name, demand_values, non_road_parameters
     )
 
     output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
@@ -309,8 +362,7 @@ if __name__ == '__main__':
             output_folder=output_folder,
             parameters=non_road_parameters,
         )
-    print('Get historical valuea from new source')
+    print('Do growth in a function')
     print('First/last week inclusion issues')
     print('Zero-one shift explanation')
-    print('Current values, 2030, 2040, 2050 growth factors')
-    print('Automate current from EUrostat API?')
+    print('Connect to Eurostat API')
