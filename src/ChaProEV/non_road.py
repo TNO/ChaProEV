@@ -195,6 +195,55 @@ def get_non_road_profiles(
     return output_profiles
 
 
+def fetch_historical_value(
+    country: str, mode: str, year: int, energy_carrier: str
+) -> float:
+    consumption: float = np.random.rand()
+    return consumption
+
+
+def fetch_historical_values(
+    general_parameters: box.Box,
+) -> pd.DataFrame:
+
+    year: int = general_parameters.historical_year
+    countries: list[str] = general_parameters.countries
+    country_codes: list[str] = general_parameters.country_codes
+    energy_carriers: box.Box = general_parameters.mode_energy_carriers
+    modes: list[str] = energy_carriers.keys()
+    historical_values_index_tuples: list[tuple[str, str, int, str]] = [
+        (
+            country_code,
+            mode,
+            year,
+            energy_carrier,
+        )
+        for country, country_code in zip(countries, country_codes)
+        for mode in modes
+        for energy_carrier in energy_carriers[mode]
+    ]
+    historical_values_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
+        historical_values_index_tuples
+    )
+    historical_values: pd.DataFrame = pd.DataFrame(
+        columns=general_parameters.demand_header, index=historical_values_index
+    )
+
+    historical_values.index.names = general_parameters.demand_index
+    for country, country_code in zip(countries, country_codes):
+        for mode in modes:
+            for energy_carrier in energy_carriers[mode]:
+                historical_value: float = fetch_historical_value(
+                    country, mode, year, energy_carrier
+                )
+                historical_values.loc[
+                    (country_code, mode, year, energy_carrier),
+                    general_parameters.demand_header,
+                ] = historical_value
+
+    return historical_values
+
+
 if __name__ == '__main__':
 
     case_name: str = 'Mopo'
@@ -203,6 +252,12 @@ if __name__ == '__main__':
     non_road_parameters: box.Box = box.Box(
         cook.parameters_from_TOML(non_road_parametrs_file)
     )
+
+    historical_values: pd.DataFrame = fetch_historical_values(
+        non_road_parameters
+    )
+    print(historical_values)
+    exit()
 
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
         case_name, non_road_parameters
@@ -220,3 +275,5 @@ if __name__ == '__main__':
 
     print('First/last week inclusion issues')
     print('Zero-one shift explanation')
+    print('Current values, 2030, 2040, 2050 growth factors')
+    print('Automate current from EUrostat API?')
