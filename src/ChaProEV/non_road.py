@@ -241,6 +241,16 @@ def fetch_historical_values(
                     general_parameters.demand_header,
                 ] = historical_value
 
+    output_folder: str = f'{general_parameters.output_folder}/{case_name}'
+
+    cook.save_dataframe(
+        dataframe=historical_values,
+        dataframe_name=general_parameters.historical_dataframe_name,
+        groupfile_name=case_name,
+        output_folder=output_folder,
+        parameters=general_parameters,
+    )
+
     return historical_values
 
 
