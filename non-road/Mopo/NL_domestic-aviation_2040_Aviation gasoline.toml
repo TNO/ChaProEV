@@ -1,5 +1,5 @@
 
-name = 'NL_air_2040_kerosene'
+name = 'NL_dometsic-aviation_2040_Aviation gasoline'
 growth = 1.1
 frequency = 'W-MON'
 modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]

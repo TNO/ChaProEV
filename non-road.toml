@@ -15,7 +15,7 @@ historical_year = 2023
 countries = ['Netherlands', 'Andorra', 'Kiribati']
 country_codes = ['NL', 'AND', 'KIR']
 [modes]
-[modes.domestic_aviation]
+[modes.domestic-aviation]
 code = 'FC_TRA_DAVI_E'
 energy_carriers = [
     'Kerosene-type jet fuel (excluding biofuel portion)',
@@ -23,12 +23,45 @@ energy_carriers = [
     'Aviation gasoline',
 ]
 
-[modes.international_aviation]
+[modes.international-aviation]
 code = 'INTAVI'
 energy_carriers = [
     'Kerosene-type jet fuel (excluding biofuel portion)',
     'Blended bio jet kerosene',
     'Aviation gasoline',
+]
+
+
+[modes.international-maritime-bunkers]
+code = 'INTMARB'
+energy_carriers = [
+    'Natural gas',
+    'Motor gasoline (excluding biofuel portion)',
+    'Kerosene-type jet fuel (excluding biofuel portion)',
+    'Gas oil and diesel oil (excluding biofuel portion)',
+    'Fuel oil',
+    'Lubricants',
+    'Other oil products n.e.c.',
+    'Blended biodiesels',
+    'Pure biodiesels',
+    'Other liquid biofuels'
+
+]
+
+[modes.domestic-navigation]
+code = 'FC_TRA_DNAVI_E'
+energy_carriers = [
+    'Natural gas',
+    'Motor gasoline (excluding biofuel portion)',
+    'Kerosene-type jet fuel (excluding biofuel portion)',
+    'Gas oil and diesel oil (excluding biofuel portion)',
+    'Fuel oil',
+    'Lubricants',
+    'Other oil products n.e.c.',
+    'Blended biodiesels',
+    'Pure biodiesels',
+    'Other liquid biofuels'
+
 ]
 
 [mode_energy_carriers]

@@ -36,7 +36,7 @@ def get_run_demand(
     database_file: str = f'{database_folder}/{case_name}.sqlite3'
 
     demand_values: pd.DataFrame = cook.read_table_from_database(
-        source_table, 1
+        source_table, database_file
     ).set_index(demand_index)
 
     run_demand: float = demand_values.loc[country_code, mode, year, carrier][
@@ -103,6 +103,7 @@ def get_profile(
     run_demand: float = get_run_demand(
         scenario.name, case_name, general_parameters
     )
+
     run_start_parameters: box.Box = scenario.run_start
     run_start: datetime.datetime = datetime.datetime(
         run_start_parameters.year,
@@ -200,63 +201,36 @@ def get_non_road_profiles(
     return output_profiles
 
 
-def fetch_historical_value(
-    country: str, mode: str, year: int, energy_carrier: str
-) -> float:
-    consumption: float = np.random.rand()
-    return consumption
-
-
 def fetch_historical_values(
-    general_parameters: box.Box,
+    non_road_parameters: box.Box,
 ) -> pd.DataFrame:
 
-    year: int = general_parameters.historical_year
-    countries: list[str] = general_parameters.countries
-    country_codes: list[str] = general_parameters.country_codes
-    energy_carriers: box.Box = general_parameters.mode_energy_carriers
-    modes: list[str] = energy_carriers.keys()
-    historical_values_index_tuples: list[tuple[str, str, int, str]] = [
-        (
-            country_code,
-            mode,
-            year,
-            energy_carrier,
+    historical_values: pd.DataFrame = pd.DataFrame()
+
+    modes: list[str] = list(non_road_parameters.modes.keys())
+
+    for mode in modes:
+        mode_historical_values: pd.DataFrame = get_mode_historical_values(
+            mode, non_road_parameters
+        ).reset_index()
+        historical_values = pd.concat(
+            [historical_values, mode_historical_values], ignore_index=False
         )
-        for country, country_code in zip(countries, country_codes)
-        for mode in modes
-        for energy_carrier in energy_carriers[mode]
-    ]
-    historical_values_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
-        historical_values_index_tuples
+
+    historical_values = historical_values.set_index(
+        non_road_parameters.demand_index
     )
 
-    historical_values: pd.DataFrame = pd.DataFrame(
-        columns=general_parameters.demand_header, index=historical_values_index
-    )
-
-    historical_values.index.names = general_parameters.demand_index
-    for country, country_code in zip(countries, country_codes):
-        for mode in modes:
-            for energy_carrier in energy_carriers[mode]:
-                historical_value: float = fetch_historical_value(
-                    country, mode, year, energy_carrier
-                )
-                historical_values.loc[
-                    (country_code, mode, year, energy_carrier),
-                    general_parameters.demand_header,
-                ] = historical_value
-
-    output_folder: str = f'{general_parameters.output_folder}/{case_name}'
+    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
 
     historical_values = historical_values.sort_index()
 
     cook.save_dataframe(
         dataframe=historical_values,
-        dataframe_name=general_parameters.historical_dataframe_name,
+        dataframe_name=non_road_parameters.historical_dataframe_name,
         groupfile_name=case_name,
         output_folder=output_folder,
-        parameters=general_parameters,
+        parameters=non_road_parameters,
     )
 
     return historical_values
@@ -427,13 +401,6 @@ if __name__ == '__main__':
     if non_road_parameters.Eurostat.fetch:
         get_Eurostat_balances(non_road_parameters, case_name)
 
-    mode_historical_values: pd.DataFrame = get_mode_historical_values(
-        'domestic_aviation', non_road_parameters
-    )
-
-    print(mode_historical_values.loc['FI'])
-    exit()
-
     historical_values: pd.DataFrame = fetch_historical_values(
         non_road_parameters
     )
@@ -455,6 +422,7 @@ if __name__ == '__main__':
             output_folder=output_folder,
             parameters=non_road_parameters,
         )
+    print('Remove names from scenarios')
     print('Do growth in a function')
     print('First/last week inclusion issues')
     print('Zero-one shift explanation')
