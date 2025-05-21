@@ -426,4 +426,7 @@ if __name__ == '__main__':
     print('Do growth in a function')
     print('First/last week inclusion issues')
     print('Zero-one shift explanation')
-    print('Connect to Eurostat API')
+    print('Transport other/nec, pipelines?')
+    print('NRMM: is that other/nec?')
+    print('CH (and others?) missing')
+    print('Tram/metro?')

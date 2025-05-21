@@ -64,6 +64,19 @@ energy_carriers = [
 
 ]
 
+[modes.rail]
+code = 'FC_TRA_RAIL_E'
+energy_carriers = [
+    'Solid fossil fuels',
+    'Other bituminous coal',
+    'Liquefied petroleum gases',
+    'Gas oil and diesel oil (excluding biofuel portion)',
+    'Primary solid biofuels',
+    'Pure biodiesels',
+    'Blended biodiesels',
+    'Electricity'
+]
+
 [mode_energy_carriers]
 air = [
     'Kerosene-type jet fuel (excluding biofuel portion)',
