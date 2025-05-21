@@ -8,16 +8,35 @@ demand_dataframe_name = 'Demand data'
 source_folder = 'non-road'
 output_folder = 'non-road-output'
 demand_file = 'scenario_demands.csv'
-demand_index = ['Country Code', 'Mode', 'Year', 'Carrier']
+demand_index = ['Country Code', 'Mode', 'Year', 'Energy carrier']
 demand_header = ['Demand_PJ']
 
 historical_year = 2023
-countries = ['Netehrlands', 'Andorra', 'Kiribati']
+countries = ['Netherlands', 'Andorra', 'Kiribati']
 country_codes = ['NL', 'AND', 'KIR']
+[modes]
+[modes.domestic_aviation]
+code = 'FC_TRA_DAVI_E'
+energy_carriers = [
+    'Kerosene-type jet fuel (excluding biofuel portion)',
+    'Blended bio jet kerosene',
+    'Aviation gasoline',
+]
+
+[modes.international_aviation]
+code = 'INTAVI'
+energy_carriers = [
+    'Kerosene-type jet fuel (excluding biofuel portion)',
+    'Blended bio jet kerosene',
+    'Aviation gasoline',
+]
+
 [mode_energy_carriers]
 air = [
     'Kerosene-type jet fuel (excluding biofuel portion)',
-    'gasoline'
+    'Blended bio jet kerosene',
+    'Aviation gasoline',
+    'Total'
 ]
 sea = ['heavy fuel oil', 'olive oil']
 
@@ -53,8 +72,11 @@ sql = true
 fetch = false
 table_code = 'nrg_bal_c'
 table_name = 'Eurostat complete energy balances'
+index_headers = ['nrg_bal', 'siec', 'unit', 'geo\TIME_PERIOD']
+unit_to_use = 'TJ'
 
 [Energy_carriers]
 code_file = 'input/siec.csv'
 code_column ='Notation'
 name_column = 'Label'
+status_column = 'Status'
