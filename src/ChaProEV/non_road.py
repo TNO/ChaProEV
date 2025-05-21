@@ -9,6 +9,7 @@ from itertools import repeat
 from multiprocessing import Pool
 
 import box
+import eurostat
 import numpy as np
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
@@ -332,6 +333,23 @@ def get_demand_values(
     return demand_values
 
 
+def get_Eurostat_balances(general_parameters: box.Box, case_name: str) -> None:
+
+    Eurostat_balances_dataframe: pd.DataFrame = eurostat.get_data_df(
+        general_parameters.Eurostat.table_code
+    )
+
+    output_folder: str = f'{general_parameters.output_folder}/{case_name}'
+
+    cook.save_dataframe(
+        dataframe=Eurostat_balances_dataframe,
+        dataframe_name=general_parameters.Eurostat.table_name,
+        groupfile_name=case_name,
+        output_folder=output_folder,
+        parameters=general_parameters,
+    )
+
+
 if __name__ == '__main__':
 
     case_name: str = 'Mopo'
@@ -340,6 +358,8 @@ if __name__ == '__main__':
     non_road_parameters: box.Box = box.Box(
         cook.parameters_from_TOML(non_road_parametrs_file)
     )
+    if non_road_parameters.Eurostat.fetch:
+        get_Eurostat_balances(non_road_parameters, case_name)
 
     historical_values: pd.DataFrame = fetch_historical_values(
         non_road_parameters
