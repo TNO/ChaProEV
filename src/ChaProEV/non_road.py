@@ -46,33 +46,6 @@ def get_run_demand(
     return run_demand
 
 
-def get_run_demand2(
-    scenario_name: str, case_name: str, general_parameters: box.Box
-) -> float:
-
-    scenario_elements_list: list[str] = scenario_name.split('_')
-
-    country_code: str = scenario_elements_list[0]
-    mode: str = scenario_elements_list[1]
-    year: int = int(scenario_elements_list[2])
-    carrier: str = scenario_elements_list[3]
-
-    source_folder: str = general_parameters.source_folder
-    demand_file: str = general_parameters.demand_file
-    demand_index: str = general_parameters.demand_index
-    demand_header: str = general_parameters.demand_header
-
-    scenario_demand_elements: pd.DataFrame = pd.read_csv(
-        f'{source_folder}/{case_name}/{demand_file}'
-    ).set_index(demand_index)
-
-    run_demand: float = scenario_demand_elements.loc[
-        country_code, mode, year, carrier
-    ][demand_header][0]
-
-    return run_demand
-
-
 def get_profile_weights(
     scenario: box.Box, run_range=pd.DatetimeIndex
 ) -> pd.Series:
