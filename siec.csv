@@ -1,0 +1,286 @@
+﻿URI,Label,Definition,Notation,Status,AcceptedDate
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/TOTAL,Total,,TOTAL,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/CF,Combustible fuels,,CF,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/CF_R,Combustible fuels - renewable,,CF_R,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/CF_NR,Combustible fuels - non-renewable,,CF_NR,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/CF_NR_OTH,Combustible fuels - non-renewable - other,,CF_NR_OTH,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0000,Coal and manufactured gases,,C0000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0000X0350-0370,Solid fossil fuels,,C0000X0350-0370,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0100,Hard coal,,C0100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0110,Anthracite,,C0110,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0120,Bituminous coal,,C0120,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0121,Coking coal,,C0121,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0129,Other bituminous coal,,C0129,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0200,Brown coal,,C0200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0210,Sub-bituminous coal,,C0210,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0220,Lignite,,C0220,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0300,Coal products,,C0300,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0310,Coal coke,,C0310,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0311,Coke oven coke,,C0311,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0312,Gas coke,,C0312,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0313,Coke breeze,,C0313,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0314,Semi cokes,,C0314,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0320,Patent fuel,,C0320,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0330,Brown coal briquettes,,C0330,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0340,Coal tar,,C0340,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0350-0370,Manufactured gases,,C0350-0370,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0350,Coke oven gas,,C0350,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0360,Gas works gas,,C0360,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0370,Recovered gases,,C0370,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0371,Blast furnace gas,,C0371,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0372,Basic oxygen steel furnace gas,,C0372,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0379,Other recovered gases,,C0379,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/C0390,Other coal products,,C0390,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1000,Peat and peat products,,P1000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1100,Peat,,P1100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1110,Sod peat,,P1110,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1120,Milled peat,,P1120,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1200,Peat products,,P1200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1210,Peat briquettes,,P1210,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/P1290,Other peat products,,P1290,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/S2000,Oil shale and oil sands,,S2000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/SFF_OTH,Other solid fossil fuels,,SFF_OTH,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/G3000,Natural gas,,G3000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/G3100,Compressed natural gas,,G3100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/G3200,Liquefied natural gas,,G3200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4000,Oil and petroleum products,,O4000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4100_TOT_4200-4500,"Crude oil, NGL, refinery feedstocks, additives and oxygenates and other hydrocarbons",,O4100_TOT_4200-4500,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4100_TOT,Crude oil,,O4100_TOT,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4100-4500,"Crude oil, NGL, feedstocks and other hydrocarbons",,O4100-4500,invalid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4100_NO4100,Crude oil,,O4100_NO4100,invalid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4100,Conventional crude oil,,O4100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/NO4100,Unconventional crude oil,,NO4100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4200,Natural gas liquids,,O4200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4300,Refinery feedstocks,,O4300,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4400XO4410,Additives and oxygenates (excluding biofuel portion),,O4400XO4410,invalid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4400X4410,Additives and oxygenates (excluding biofuel portion),,O4400X4410,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4400,Additives and oxygenates,,O4400,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4410,Biofuels for blending,,O4410,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4500,Other hydrocarbons,,O4500,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4110_4300-4500,Other primary oil products,,O4110_4300-4500,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4200-4500,Other primary oil,,O4200-4500,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4600,Oil products,,O4600,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4610,Refinery gas,,O4610,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4620,Ethane,,O4620,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4630,Liquefied petroleum gases,,O4630,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4640,Naphtha,,O4640,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4650,Gasolines,,O4650,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4651,Aviation gasoline,,O4651,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4652,Motor gasoline,,O4652,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4652XR5210B,Motor gasoline (excluding biofuel portion),,O4652XR5210B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4652XR5212,Motor gasoline (excluding biofuel portion),,O4652XR5212,invalid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4653,Gasoline-type jet fuel,,O4653,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4660,Kerosenes,,O4660,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4661,Kerosene-type jet fuel,,O4661,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4661XR5230B,Kerosene-type jet fuel (excluding biofuel portion),,O4661XR5230B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4661XR5232,Kerosene-type jet fuel (excluding biofuel portion),,O4661XR5232,invalid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4669,Other kerosene,,O4669,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4670,Gas oil and diesel oil and heavy gas oil,,O4670,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4671,Gas oil and diesel oil,,O4671,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4671XR5220B,Gas oil and diesel oil (excluding biofuel portion),,O4671XR5220B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4671XR5222,Gas oil and diesel oil (excluding biofuel portion),,O4671XR5222,invalid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O46711,Road diesel,,O46711,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O46712,Heating and other gasoil,,O46712,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4672,Heavy gas oil,,O4672,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4680,Fuel oil,,O4680,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4681,Fuel oil (low sulphur <1%),,O4681,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4682,Fuel oil (high sulphur >=1%),,O4682,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4690,Other oil products,,O4690,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4691,White spirit and special boiling point industrial spirits,,O4691,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4692,Lubricants,,O4692,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4693,Paraffin waxes,,O4693,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4694,Petroleum coke,,O4694,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4695,Bitumen,,O4695,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4699,Other oil products n.e.c.,,O4699,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/PP_OTH,Other petroleum products,,PP_OTH,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA000,Renewables and biofuels,,RA000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA100,Hydro,,RA100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA110,Pure hydro power,,RA110,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA110ROR,Run-of-river hydro power,,RA110ROR,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA120,Mixed hydro power,,RA120,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA120P,Mixed hydro power - pumping,,RA120P,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA130,Pumped hydro power,,RA130,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA200,Geothermal,,RA200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA300,Wind,,RA300,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA310,Wind on shore,,RA310,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA320,Wind off shore,,RA320,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA400,Solar,,RA400,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA410,Solar thermal,,RA410,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420,Solar photovoltaic,,RA420,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT20,Solar photovoltaic (< 20 kW),,RA420KW_LT20,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW20-1000,Solar photovoltaic (20 kW - 1000 kW),,RA420KW20-1000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420MW_GT1,Solar photovoltaic (1+ MW),,RA420MW_GT1,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420OG,Solar photovoltaic (Off grid),,RA420OG,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA500,"Tide, wave, ocean",,RA500,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA600,Ambient heat (heat pumps),,RA600,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5000,Biofuels,,R5000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5100,Solid biofuels,,R5100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5100F,Solid biofuels - co-firing,,R5100F,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5110-5150_W6000RI,Primary solid biofuels,,R5110-5150_W6000RI,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5110,"Fuelwood, wood residues and byproducts",,R5110,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5111,Wood pellets,,R5111,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5119,"Other fuelwood, wood residues and byproducts",,R5119,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5120,Bagasse,,R5120,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5130,Animal waste,,R5130,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5140,Black liquor,,R5140,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5150,Other vegetal material and residues,,R5150,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6000RI,Renewable fraction of industrial waste,,W6000RI,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5160,Charcoal,,R5160,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5200,Liquid biofuels,,R5200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5210,Biogasoline,,R5210,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5210P,Pure biogasoline,,R5210P,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5210B,Blended biogasoline,,R5210B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5210E,Bioethanol,,R5210E,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5220,Biodiesels,,R5220,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5220P,Pure biodiesels,,R5220P,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5220B,Blended biodiesels,,R5220B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5230,Bio jet kerosene,,R5230,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5230P,Pure bio jet kerosene,,R5230P,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5230B,Blended bio jet kerosene,,R5230B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5290,Other liquid biofuels,,R5290,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5300,Biogases,,R5300,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5300B,Blended biogases,,R5300B,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5310,Biogases from anaerobic fermentation,,R5310,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5311,Landfill gas,,R5311,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5312,Sewage sludge gas,,R5312,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5319,Other biogases from anaerobic fermentation,,R5319,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5320,Biogases from thermal processes,,R5320,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA500_5160,Other renewable energies,,RA500_5160,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6000,Waste,,W6000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6100,Industrial waste (non-renewable),,W6100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6100F,Industrial waste (non-renewable) - co-firing,,W6100F,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6200,Municipal waste,,W6200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6200F,Municipal waste - co-firing,,W6200F,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6210,Renewable municipal waste,,W6210,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6210F,Renewable municipal waste - co-firing,,W6210F,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6220,Non-renewable municipal waste,,W6220,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6220F,Non-renewable municipal waste - co-firing,,W6220F,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6100_6220,Non-renewable waste,,W6100_6220,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/E7000,Electricity,,E7000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/H8000,Heat,,H8000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/N9000,Nuclear fuels and other fuels n.e.c.,,N9000,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/N900H,Nuclear heat,,N900H,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/N9100,"Uranium, plutonium and thorium",,N9100,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/N9110,Uranium and thorium ores,,N9110,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/N9190,"Other uranium, plutonium and thorium",,N9190,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/N9200,Other nuclear fuels,,N9200,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/X9900,Other fuels n.e.c.,,X9900,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/X9900R,Other fuels n.e.c. - renewable,,X9900R,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/X9900NR,Other fuels n.e.c. - non-renewable,,X9900NR,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/X9900H,Other fuels n.e.c. - heat from chemical sources,,X9900H,valid,07/12/2018
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/SFF_P1000,Solid fossil fuels and peat,,SFF_P1000,valid,28/01/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/G3000_C0350-370,Gas,,G3000_C0350-370,valid,28/01/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4000XBIO,Oil and petroleum products (excluding biofuel portion),,O4000XBIO,valid,28/01/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4100_TOT_4200-4500XBIO,"Crude oil, NGL, refinery feedstocks, additives and oxygenates and other hydrocarbons (excluding biofuel portion)",,O4100_TOT_4200-4500XBIO,valid,28/01/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4600XBIO,Oil products (excluding biofuel portion),,O4600XBIO,valid,28/01/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/FF,Fossil fuels,,FF,valid,08/08/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/SFF_P1000_S2000,"Solid fossil fuels, peat, peat products, oil shale and oil sands",,SFF_P1000_S2000,valid,24/09/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/ROIL,Refined oil products,,ROIL,valid,11/12/2019
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/BIOE,Bioenergy,,BIOE,valid,27/03/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/FE,Fossil energy,,FE,valid,20/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5250S,Sustainable biofuels,,R5250S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5251S,Sustainable biofuels Annex IX,,R5251S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5252S,"Sustainable biofuels Annex IX, Part A",,R5252S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5253S,"Sustainable biofuels Annex IX, Part A (a) - from algae",,R5253S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5254S,"Sustainable biofuels Annex IX, Part A (b) - from biomass in mixed municipal waste",,R5254S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5255S,"Sustainable biofuels Annex IX, Part A (c) - from biowaste",,R5255S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5256S,"Sustainable biofuels Annex IX, Part A (d) - from biomass in industrial waste",,R5256S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5257S,"Sustainable biofuels Annex IX, Part A (e) - from straw",,R5257S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5258S,"Sustainable biofuels Annex IX, Part A (f) - from animal manure and sewage sludge",,R5258S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5259S,"Sustainable biofuels Annex IX, Part A (g) - from palm oil effluent and empty palm fruit bunches",,R5259S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5260S,"Sustainable biofuels Annex IX, Part A (h) - from tall oil pitch",,R5260S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5261S,"Sustainable biofuels Annex IX, Part A (i) - from crude glycerine",,R5261S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5262S,"Sustainable biofuels Annex IX, Part A (j) - from bagasse",,R5262S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5263S,"Sustainable biofuels Annex IX, Part A (k) - from grape marcs and wine lees",,R5263S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5264S,"Sustainable biofuels Annex IX, Part A (l) - from nut shells",,R5264S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5265S,"Sustainable biofuels Annex IX, Part A (m) - from husks",,R5265S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5266S,"Sustainable biofuels Annex IX, Part A (n) - from cobs cleaned of kernels of corn",,R5266S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5267S,"Sustainable biofuels Annex IX, Part A (o) - from biomass fraction of wastes and residues from forestry and forest-based industries",,R5267S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5268S,"Sustainable biofuels Annex IX, Part A (p) - from other non-food cellulosic material - article 2 second paragraph point (s)",,R5268S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5269S,"Sustainable biofuels Annex IX, Part A (q) - from other ligno-cellulosic material - article 2 second paragraph point (r) except saw logs and veneer logs",,R5269S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5270S,"Sustainable biofuels Annex IX, Part A (r) - from renewable liquid and gaseous transport fuels of non-biological origin",,R5270S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5271S,"Sustainable biofuels Annex IX, Part A (s) - from carbon capture and utilisation for transport purposes, if the energy source is renewable - article 2 second paragraph point (a)",,R5271S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5272S,"Sustainable biofuels Annex IX, Part A (t) - from bacteria, if the energy source is renewable - article 2 second paragraph point (a)",,R5272S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5273S,"Sustainable biofuels Annex IX, Part B",,R5273S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5274S,"Sustainable biofuels Annex IX, Part B (a) - from used cooking oil",,R5274S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5275S,"Sustainable biofuels Annex IX, Part B (b) - from animal fats classified as categories 1 and 2 (Regulation (EC) No 1069/2009)",,R5275S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5276S,"Sustainable biofuels 3(4)d first paragraph - from cereal and other starch-rich crops, sugars and oil crops and from crops grown as main crops primarily for energy purposes on agricultural land",,R5276S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5277S,"Sustainable biofuels 3(4)d third paragraph, subsection (i) and (ii)",,R5277S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5278S,Sustainable biofuels - other,,R5278S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5279S,Grandfathered biofuels,,R5279S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5292,Bioliquids,,R5292,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5292P,Pure bioliquids,,R5292P,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5292B,Blended bioliquids (only bio-part),,R5292B,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5292S,Sustainable bioliquids,,R5292S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5292SP,Sustainable pure bioliquids,,R5292SP,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5292SB,Sustainable blended bioliquids (only bio-part),,R5292SB,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5293S,Sustainable bioliquids from non-food sources,,R5293S,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5293SP,Sustainable pure bioliquids from non-food sources,,R5293SP,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5293SB,Sustainable blended bioliquids (only bio-part) from non-food sources,,R5293SB,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/E7100,Electricity - renewable,,E7100,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/E7200,Electricity - non-renewable,,E7200,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RHYD,Hydrogen of renewable origin,,RHYD,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RSYNF,Synthetic fuels of renewable origin,,RSYNF,valid,29/04/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/O4690XO4694,Other oil products (excluding petroleum coke portion),,O4690XO4694,valid,04/05/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/G3000_C0360,Natural gas and gas work gas,,G3000_C0360,valid,22/10/2020
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA010,"Renewables and biofuels - statistical transfers, joint projects and joint support schemes - added amount",,RA010,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA020,"Renewables and biofuels - statistical transfers, joint projects and joint support schemes - deduced amount",,RA020,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA610,Geothermal heat pumps,,RA610,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA620,Aerothermal and hydrothermal heat pumps,,RA620,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA700,Renewable cooling,,RA700,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5101,Primary biomass - from forest,,R5101,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5102,Branches and tree tops,,R5102,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5103,Stumps,,R5103,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5104,Roundwood,,R5104,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5105,Industrial roundwood,,R5105,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5106,Fuelwood,,R5106,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5107,Forest-based industry co-products,,R5107,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5108,Bark,,R5108,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5109,"Chips, sawdust and other wood particles",,R5109,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5110-5150_W6000RIS,Sustainable primary solid biofuels,,R5110-5150_W6000RIS,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5112,Post-consumer wood,,R5112,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5113,"Processed wood-based fuel, produced - from feedstocks",,R5113,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5151,Agricultural biomass,,R5151,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5152,Energy crops for electricity or heat (including short rotation coppice),,R5152,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5153,Energy crops for electricity or heat - from food and feed feedstocks,,R5153,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5154,Agricultural crop residues for electricity or heat,,R5154,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5280S,Sustainable biofuels from food and feed crops,,R5280S,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5281S,Sustainable biofuels from food and feed crops - non-high indirect land use change-risk,,R5281S,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5294S,Sustainable bioliquids from food and feed crops,,R5294S,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5294SP,Sustainable pure bioliquids from food and feed crops,,R5294SP,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5294SB,Sustainable blended bioliquids (only bio-part) from food and feed crops,,R5294SB,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5295S,Sustainable bioliquids from food and feed crops - from non-high indirect land use change-risk,,R5295S,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5295SP,Sustainable pure bioliquids from food and feed crops - from non-high indirect land use change-risk,,R5295SP,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5295SB,Sustainable blended bioliquids (only bio-part) from food and feed crops - from non-high indirect land use change-risk,,R5295SB,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5300S,Sustainable biogases,,R5300S,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5300SB,Sustainable blended biogases,,R5300SB,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5301SB,Biogases in the grid allocated based on sustainability certificates,,R5301SB,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6205,Organic waste biomass,,W6205,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/W6230,Waste sludges,,W6230,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/H8200,Waste heat and cold,,H8200,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RCF,Recycled carbon fuels,,RCF,valid,08/08/2022
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/BA100,Batteries,,BA100,valid,19/06/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/BA100MWH_LT1,Batteries (< 1 MWh),,BA100MWH_LT1,valid,19/06/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/BA100MWH1-10,Batteries (1 MWh - 10 MWh),,BA100MWH1-10,valid,19/06/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/BA100MWH10-100,Batteries (10 MWh - 100 MWh),,BA100MWH10-100,valid,19/06/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/BA100MWH_GT100,Batteries (100 +MWh),,BA100MWH_GT100,valid,19/06/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/AMM,Ammonia (NH3),,AMM,valid,04/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/HYD,Hydrogen (H2),,HYD,valid,04/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/EFUEL,E-fuels,,EFUEL,valid,04/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT10,Solar photovoltaic (< 10 kW),,RA420KW_LT10,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT10_RT,"Solar photovoltaic (< 10 kW, roof top)",,RA420KW_LT10_RT,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT10_OG,"Solar photovoltaic (< 10 kW, Off grid)",,RA420KW_LT10_OG,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT30,Solar photovoltaic (< 30 kW),,RA420KW_LT30,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT30_RT,"Solar photovoltaic (< 30 kW, roof top)",,RA420KW_LT30_RT,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW_LT30_OG,"Solar photovoltaic (< 30 kW, Off grid)",,RA420KW_LT30_OG,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW30-1000,Solar photovoltaic (30 kW - 1000 kW),,RA420KW30-1000,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW30-1000_RT,"Solar photovoltaic (30 kW - 1000 kW, roof top)",,RA420KW30-1000_RT,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420KW30-1000_OG,"Solar photovoltaic (30 kW - 1000 kW, Off grid)",,RA420KW30-1000_OG,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420MW_GT1_RT,"Solar photovoltaic (1+ MW, roof top)",,RA420MW_GT1_RT,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/RA420MW_GT1_OG,"Solar photovoltaic (1+ MW, Off grid)",,RA420MW_GT1_OG,valid,12/07/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/H8000D,Derived heat and district heating,,H8000D,valid,28/08/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5140_5141,Black liquor and crude tall oil,,R5140_5141,valid,11/09/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5141,Crude tall oil,,R5141,valid,11/09/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/R5159,Other agricultural biomass,,R5159,valid,11/09/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/E7101,Electricity - renewable - direct connection line,,E7101,valid,23/11/2023
+http://dd.eionet.europa.eu/vocabulary/eurostat/siec/E7102,Electricity - renewable - grid,,E7102,valid,23/11/2023

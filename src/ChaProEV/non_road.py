@@ -323,6 +323,19 @@ def get_Eurostat_balances(general_parameters: box.Box, case_name: str) -> None:
     )
 
 
+def get_siec_code(energy_carier: str, carrier_parameters: box.Box) -> str:
+
+    code_file: str = carrier_parameters.code_file
+    code_data: pd.DataFrame = pd.read_csv(code_file)
+    codes: list[str] = list(code_data[carrier_parameters.code_column])
+    carriers: list[str] = list(code_data[carrier_parameters.name_column])
+    carrier_dict: dict[str, str] = dict(zip(carriers, codes))
+
+    carrier_code: str = carrier_dict[energy_carier]
+
+    return carrier_code
+
+
 if __name__ == '__main__':
 
     case_name: str = 'Mopo'
@@ -331,6 +344,12 @@ if __name__ == '__main__':
     non_road_parameters: box.Box = box.Box(
         cook.parameters_from_TOML(non_road_parametrs_file)
     )
+
+    siec_code = get_siec_code(
+        'Natural gas', non_road_parameters.Energy_carriers
+    )
+    print(siec_code)
+    exit()
     if non_road_parameters.Eurostat.fetch:
         get_Eurostat_balances(non_road_parameters, case_name)
 

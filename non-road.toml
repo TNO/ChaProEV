@@ -11,11 +11,14 @@ demand_file = 'scenario_demands.csv'
 demand_index = ['Country Code', 'Mode', 'Year', 'Carrier']
 demand_header = ['Demand_PJ']
 
-historical_year = 2020
+historical_year = 2023
 countries = ['Netehrlands', 'Andorra', 'Kiribati']
 country_codes = ['NL', 'AND', 'KIR']
 [mode_energy_carriers]
-air = ['kerosene', 'gasoline']
+air = [
+    'Kerosene-type jet fuel (excluding biofuel portion)',
+    'gasoline'
+]
 sea = ['heavy fuel oil', 'olive oil']
 
 [progress_bars]
@@ -50,3 +53,8 @@ sql = true
 fetch = false
 table_code = 'nrg_bal_c'
 table_name = 'Eurostat complete energy balances'
+
+[Energy_carriers]
+code_file = 'input/siec.csv'
+code_column ='Notation'
+name_column = 'Label'
