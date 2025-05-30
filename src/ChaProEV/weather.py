@@ -55,6 +55,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 
@@ -101,7 +102,7 @@ def download_cds_weather_quantity(
 
 
 def download_all_cds_weather_data(
-    scenario: dict, general_parameters: dict
+    scenario: Box, general_parameters: Box
 ) -> None:
     '''
     Downloads all the necessary CDS ERA-5 weather data.
@@ -111,13 +112,13 @@ def download_all_cds_weather_data(
     or if you want to gather other quantities, or look at other years.
     '''
 
-    time_parameters: dict = general_parameters['time']
-    HOURS_IN_A_DAY: int = time_parameters['HOURS_IN_A_DAY']
-    MONTHS_IN_A_YEAR: int = time_parameters['MONTHS_IN_A_YEAR']
-    MAX_DAYS_IN_A_MONTH: int = time_parameters['MAX_DAYS_IN_A_MONTH']
-    source_data_parameters: dict = scenario['weather']['source_data']
-    start_year: int = source_data_parameters['start_year']
-    end_year: int = source_data_parameters['end_year']
+    time_parameters: Box = general_parameters.time
+    HOURS_IN_A_DAY: int = time_parameters.HOURS_IN_A_DAY
+    MONTHS_IN_A_YEAR: int = time_parameters.MONTHS_IN_A_YEAR
+    MAX_DAYS_IN_A_MONTH: int = time_parameters.MAX_DAYS_IN_A_MONTH
+    source_data_parameters: Box = scenario.weather.source_data
+    start_year: int = source_data_parameters.start_year
+    end_year: int = source_data_parameters.end_year
 
     years: list[str] = [str(year) for year in range(start_year, end_year + 1)]
     months: list[str] = [
@@ -127,15 +128,15 @@ def download_all_cds_weather_data(
     days: list[str] = [
         f'{day_number:02d}' for day_number in range(1, MAX_DAYS_IN_A_MONTH + 1)
     ]
-    quantities: list[str] = source_data_parameters['quantities']
+    quantities: list[str] = source_data_parameters.quantities
     hours: list[str] = [
         f'{hour_number:02d}:00' for hour_number in range(HOURS_IN_A_DAY)
     ]
-    latitude_min: float = source_data_parameters['latitude_min']
-    latitude_max: float = source_data_parameters['latitude_max']
-    longitude_min: float = source_data_parameters['longitude_min']
-    longitude_max: float = source_data_parameters['longitude_max']
-    raw_data_folder: str = source_data_parameters['raw_data_folder']
+    latitude_min: float = source_data_parameters.latitude_min
+    latitude_max: float = source_data_parameters.latitude_max
+    longitude_min: float = source_data_parameters.longitude_min
+    longitude_max: float = source_data_parameters.longitude_max
+    raw_data_folder: str = source_data_parameters.raw_data_folder
     area: list[float] = [
         latitude_min,
         longitude_min,
@@ -157,7 +158,7 @@ def make_weather_dataframe(
     quantity: str,
     quantity_tag: str,
     quantity_name: str,
-    scenario: dict,
+    scenario: Box,
 ) -> pd.DataFrame:
     '''
     This function makes a weather DataFrame into one we can use by
@@ -175,12 +176,12 @@ def make_weather_dataframe(
     their own latitudes and longitudes).
     '''
 
-    weather_parameters: dict = scenario['weather']['processed_data']
-    latitude_min: float = weather_parameters['latitude_min']
-    latitude_max: float = weather_parameters['latitude_max']
-    longitude_min: float = weather_parameters['longitude_min']
-    longitude_max: float = weather_parameters['longitude_max']
-    coordinate_step: float = weather_parameters['coordinate_step']
+    weather_parameters: Box = scenario.weather.processed_data
+    latitude_min: float = weather_parameters.latitude_min
+    latitude_max: float = weather_parameters.latitude_max
+    longitude_min: float = weather_parameters.longitude_min
+    longitude_max: float = weather_parameters.longitude_max
+    coordinate_step: float = weather_parameters.coordinate_step
     # We round the coordinates to the first decimal,
     # as this is the data resolution (but with trailing digits).
     # (See general module exaplanation).
@@ -196,14 +197,13 @@ def make_weather_dataframe(
             longitude_min, longitude_max + coordinate_step, coordinate_step
         )
     ]
-    KELVIN_TO_CELSIUS: float = weather_parameters['KELVIN_TO_CELSIUS']
+    KELVIN_TO_CELSIUS: float = weather_parameters.KELVIN_TO_CELSIUS
 
-    temperature_quantities: list[str] = weather_parameters[
-        'temperature_quantities'
-    ]
-    processed_index_tags: list[str] = weather_parameters[
-        'processed_index_tags'
-    ]
+    temperature_quantities: list[str] = (
+        weather_parameters.temperature_quantities
+    )
+
+    processed_index_tags: list[str] = weather_parameters.processed_index_tags
 
     # We slice the latitudes and longitudes
     # Note that we round the values to the first decimal,
@@ -268,7 +268,7 @@ def make_weather_dataframe(
     return processed_weather_dataframe
 
 
-def write_weather_database(scenario: dict) -> None:
+def write_weather_database(scenario: Box) -> None:
     '''
     This function writes the weather database.
     It iterates over desired quantities, processes
@@ -276,18 +276,18 @@ def write_weather_database(scenario: dict) -> None:
     (including some processing), and writes them to a database.
     '''
 
-    weather_parameters: dict = scenario['weather']['processed_data']
-    raw_data_folder: str = weather_parameters['raw_data_folder']
-    processed_folder: str = weather_parameters['processed_folder']
-    weather_database_file_name: str = weather_parameters[
-        'weather_database_file_name'
-    ]
-    quantities: list[str] = weather_parameters['quantities']
-    quantity_tags: list[str] = weather_parameters['quantity_tags']
-    quantity_processed_names: list[str] = weather_parameters[
-        'quantity_processed_names'
-    ]
-    chunk_size: int = weather_parameters['chunk_size']
+    weather_parameters: Box = scenario.weather.processed_data
+    raw_data_folder: str = weather_parameters.raw_data_folder
+    processed_folder: str = weather_parameters.processed_folder
+    weather_database_file_name: str = (
+        weather_parameters.weather_database_file_name
+    )
+    quantities: list[str] = weather_parameters.quantities
+    quantity_tags: list[str] = weather_parameters.quantity_tags
+    quantity_processed_names: list[str] = (
+        weather_parameters.quantity_processed_names
+    )
+    chunk_size: int = weather_parameters.chunk_size
     cook.check_if_folder_exists(processed_folder)
     weather_database_file: str = (
         f'{processed_folder}/{weather_database_file_name}'
@@ -336,16 +336,14 @@ def get_hourly_values(
     quantity_dataframe: pd.DataFrame,
     quantity: str,
     quantity_name: str,
-    scenario: dict,
+    scenario: Box,
 ) -> pd.DataFrame:
     '''
     This function takes a Dataframe for a give weather quantity.
     If this is a cumulative quantity, it adds hourly values to it.
     '''
-    weather_parameters: dict = scenario['weather']['processed_data']
-    cumulative_quantities: list[str] = weather_parameters[
-        'cumulative_quantities'
-    ]
+    weather_parameters: Box = scenario.weather.processed_data
+    cumulative_quantities: list[str] = weather_parameters.cumulative_quantities
 
     latitudes: np.ndarray = np.unique(
         quantity_dataframe.index.get_level_values('Latitude')
@@ -418,30 +416,28 @@ def get_hourly_values(
     return quantity_dataframe
 
 
-def get_all_hourly_values(scenario: dict) -> None:
+def get_all_hourly_values(scenario: Box) -> None:
     '''
     This functions adds hourly values to cumulative quantities
     in the weather database.
     '''
-    weather_parameters: dict = scenario['weather']['processed_data']
+    weather_parameters: Box = scenario.weather.processed_data
 
-    quantities: list[str] = weather_parameters['quantities']
-    cumulative_quantities: list[str] = weather_parameters[
-        'cumulative_quantities'
-    ]
-    processed_index_tags: list[str] = weather_parameters[
-        'processed_index_tags'
-    ]
-    processed_folder: str = weather_parameters['processed_folder']
-    weather_database_file_name: str = weather_parameters[
-        'weather_database_file_name'
-    ]
+    quantities: list[str] = weather_parameters.quantities
+    cumulative_quantities: list[str] = weather_parameters.cumulative_quantities
+
+    processed_index_tags: list[str] = weather_parameters.processed_index_tags
+
+    processed_folder: str = weather_parameters.processed_folder
+    weather_database_file_name: str = (
+        weather_parameters.weather_database_file_name
+    )
     weather_database: str = f'{processed_folder}/{weather_database_file_name}'
     quantity_names: list[str] = weather_parameters['quantity_processed_names']
-    chunk_size: int = weather_parameters['chunk_size']
-    queries_for_cumulative_quantities: list[str] = weather_parameters[
-        'queries_for_cumulative_quantities'
-    ]
+    chunk_size: int = weather_parameters.chunk_size
+    queries_for_cumulative_quantities: list[str] = (
+        weather_parameters.queries_for_cumulative_quantities
+    )
 
     query_dictionary: dict[str, str] = dict(
         zip(cumulative_quantities, queries_for_cumulative_quantities)
@@ -475,17 +471,17 @@ def get_all_hourly_values(scenario: dict) -> None:
             )
 
 
-def get_EV_tool_data(scenario: dict) -> None:
+def get_EV_tool_data(scenario: Box, general_parameters: Box) -> None:
     '''
     This gets the temperature efficiency data from the EV tool made
     by geotab.
     https://www.geotab.com/CMS-GeneralFiles-production/NA/EV/EVTOOL.html
     '''
 
-    EV_tool_parameters: dict = scenario['weather']['EV_tool']
+    EV_tool_parameters: Box = scenario.weather.EV_tool
 
-    EV_tool_url: str = EV_tool_parameters['EV_tool_url']
-    user_agent: str = EV_tool_parameters['user_agent']
+    EV_tool_url: str = EV_tool_parameters.EV_tool_url
+    user_agent: str = EV_tool_parameters.user_agent
 
     EV_tool_session: requests.Session = requests.Session()
     EV_tool_session.headers['User-Agent'] = user_agent
@@ -535,15 +531,19 @@ def get_EV_tool_data(scenario: dict) -> None:
     # This tag (the ° symbol, probably) creates issues with xml files
     # (and a warning with stata), so we need to remove the xml output
     # (or change things).
-    file_name: str = EV_tool_parameters['file_name']
-    groupfile_name: str = EV_tool_parameters['groupfile_name']
-    folder: str = EV_tool_parameters['folder']
+    file_name: str = EV_tool_parameters.file_name
+    groupfile_name: str = EV_tool_parameters.groupfile_name
+    folder: str = EV_tool_parameters.folder
     cook.save_dataframe(
-        temperature_efficiencies, file_name, groupfile_name, folder, scenario
+        temperature_efficiencies,
+        file_name,
+        groupfile_name,
+        folder,
+        general_parameters.files.dataframe_outputs,
     )
 
 
-def temperature_efficiency_factor(temperature: float, scenario: dict) -> float:
+def temperature_efficiency_factor(temperature: float, scenario: Box) -> float:
     '''
     This function returns the temperature efficiency factor that corrects
     the baseline vehicle efficiency. It uses a data file (extracted from
@@ -554,15 +554,15 @@ def temperature_efficiency_factor(temperature: float, scenario: dict) -> float:
     3) Consistency between the temparatures in and out of data range.
     '''
 
-    EV_tool_parameters: dict = scenario['weather']['EV_tool']
+    EV_tool_parameters: Box = scenario.weather.EV_tool
 
-    vehicle_temperature_efficiencies_parameters: dict = scenario['weather'][
-        'vehicle_temperature_efficiencies'
-    ]
+    vehicle_temperature_efficiencies_parameters: Box = (
+        scenario.weather.vehicle_temperature_efficiencies
+    )
 
-    source_folder: str = vehicle_temperature_efficiencies_parameters['folder']
-    source_file: str = vehicle_temperature_efficiencies_parameters['file_name']
-    values_header: str = EV_tool_parameters['efficiency_factor_column_name']
+    source_folder: str = vehicle_temperature_efficiencies_parameters.folder
+    source_file: str = vehicle_temperature_efficiencies_parameters.file_name
+    values_header: str = EV_tool_parameters.efficiency_factor_column_name
     fitting_polynomial_order: int = (
         vehicle_temperature_efficiencies_parameters['fitting_polynomial_order']
     )
@@ -586,34 +586,38 @@ def temperature_efficiency_factor(temperature: float, scenario: dict) -> float:
     return efficiency_factor
 
 
-def plot_temperature_efficiency(scenario: dict) -> None:
+def plot_temperature_efficiency(
+    scenario: Box, general_parameters: Box
+) -> None:
     '''
     Plots the temperature efficiency correction factor
     (source data versus interpolation)
     of electric vehicles.
     '''
 
-    EV_tool_parameters: dict = scenario['weather']['EV_tool']
+    EV_tool_parameters: Box = scenario.weather.EV_tool
 
-    plot_colors: pd.DataFrame = cook.get_extra_colors(scenario)
+    plot_colors: pd.DataFrame = cook.get_extra_colors(
+        general_parameters.colors
+    )
 
-    plot_parameters: dict = scenario['plots']['vehicle_temperature_efficiency']
-    plot_style: str = plot_parameters['style']
+    plot_parameters: Box = scenario.plots.vehicle_temperature_efficiency
+    plot_style: str = plot_parameters.style
     geotab_data_color: str = plot_colors.loc[
         plot_parameters['geotab_data_color']
     ]
-    geotab_data_size: int = plot_parameters['geotab_data_size']
-    fit_color: str = plot_colors.loc[plot_parameters['fit_color']]
-    fit_line_size: int = plot_parameters['fit_line_size']
-    title_size: int = plot_parameters['title_size']
+    geotab_data_size: int = plot_parameters.geotab_data_size
+    fit_color: str = plot_colors.loc[plot_parameters.fit_color]
+    fit_line_size: int = plot_parameters.fit_line_size
+    title_size: int = plot_parameters.title_size
     plt.style.use(plot_style)
-    source_data_folder: str = plot_parameters['source_data_folder']
-    source_data_file: str = plot_parameters['source_data_file']
+    source_data_folder: str = plot_parameters.source_data_folder
+    source_data_file: str = plot_parameters.source_data_file
     source_data: pd.DataFrame = pd.read_pickle(
         f'{source_data_folder}/{source_data_file}'
     )
     temperatures: np.ndarray = source_data.index.values
-    values_header: str = EV_tool_parameters['efficiency_factor_column_name']
+    values_header: str = EV_tool_parameters.efficiency_factor_column_name
     geotab_data_efficiencies: pd.api.extensions.ExtensionArray | np.ndarray = (
         source_data[values_header].values
     )
@@ -654,7 +658,8 @@ def plot_temperature_efficiency(scenario: dict) -> None:
         temeprature_efficiency_figure,
         'Vehicle_Temperature_correction_factor',
         source_data_folder,
-        scenario,
+        general_parameters.files.figures.dpi,
+        general_parameters.files.figures.outputs,
     )
 
 
@@ -665,7 +670,7 @@ def get_scenario_location_weather_quantity(
     run_end: datetime.datetime,
     source_table: str,
     weather_quantity: str,
-    scenario: dict,
+    scenario: Box,
 ) -> pd.DataFrame:
     '''
     Returns a chosen weather quantity for a given location and a given
@@ -676,11 +681,12 @@ def get_scenario_location_weather_quantity(
     such as the solar radiation downwards)
     '''
 
-    processed_data_parameters: dict = scenario['weather']['processed_data']
-    processed_folder: str = processed_data_parameters['processed_folder']
-    weather_database_file_name: str = processed_data_parameters[
-        'weather_database_file_name'
-    ]
+    processed_data_parameters: Box = scenario.weather.processed_data
+    processed_folder: str = processed_data_parameters.processed_folder
+    weather_database_file_name: str = (
+        processed_data_parameters.weather_database_file_name
+    )
+
     weather_database_connection: sqlite3.Connection = sqlite3.connect(
         f'{processed_folder}/{weather_database_file_name}'
     )
@@ -733,7 +739,7 @@ def get_scenario_location_weather_quantity(
 
 
 def get_scenario_weather_data(
-    scenario: dict, case_name: str, general_parameters: dict
+    scenario: Box, case_name: str, general_parameters: Box
 ) -> pd.DataFrame:
     '''
     Fetches the weather data and efficiency factors and puts it into
@@ -741,56 +747,54 @@ def get_scenario_weather_data(
     '''
     weather_dataframe: pd.DataFrame = pd.DataFrame()
 
-    scenario_name: str = scenario['scenario_name']
+    scenario_name: str = scenario.scenario_name
 
-    weather_factors_table_root_name: str = scenario['weather'][
-        'weather_factors_table_root_name'
-    ]
+    weather_factors_table_root_name: str = (
+        scenario.weather.weather_factors_table_root_name
+    )
+
     weather_factors_table_name: str = (
         f'{scenario_name}_{weather_factors_table_root_name}'
     )
 
-    file_parameters: dict = general_parameters['files']
-    output_folder: str = f'{file_parameters["output_root"]}/{case_name}'
-    groupfile_root: str = file_parameters['groupfile_root']
+    file_parameters: Box = general_parameters.files
+    output_folder: str = f'{file_parameters.output_root}/{case_name}'
+    groupfile_root: str = file_parameters.groupfile_root
     groupfile_name: str = f'{groupfile_root}_{case_name}'
 
-    weather_processed_data_parameters: dict = scenario['weather'][
-        'processed_data'
-    ]
-    quantity_processed_names: list[str] = weather_processed_data_parameters[
-        'quantity_processed_names'
-    ]
+    weather_processed_data_parameters: Box = scenario.weather.processed_data
+
+    quantity_processed_names: list[str] = (
+        weather_processed_data_parameters.quantity_processed_names
+    )
 
     cumulative_quantity_processed_names: list[str] = (
-        weather_processed_data_parameters[
-            'cumulative_quantity_processed_names'
-        ]
+        weather_processed_data_parameters.cumulative_quantity_processed_names
     )
 
-    run_parameters: dict = scenario['run']
+    run_parameters: Box = scenario.run
     run_start: datetime.datetime = datetime.datetime(
-        run_parameters['start']['year'],
-        run_parameters['start']['month'],
-        run_parameters['start']['day'],
-        run_parameters['start']['hour'],
-        run_parameters['start']['minute'],
+        run_parameters.start.year,
+        run_parameters.start.month,
+        run_parameters.start.day,
+        run_parameters.start.hour,
+        run_parameters.start.minute,
     )
     run_end: datetime.datetime = datetime.datetime(
-        run_parameters['end']['year'],
-        run_parameters['end']['month'],
-        run_parameters['end']['day'],
-        run_parameters['end']['hour'],
-        run_parameters['end']['minute'],
+        run_parameters.end.year,
+        run_parameters.end.month,
+        run_parameters.end.day,
+        run_parameters.end.hour,
+        run_parameters.end.minute,
     )
 
-    location_parameters: dict = scenario['locations']
+    location_parameters: Box = scenario.locations
 
     for location in location_parameters:
         location_weather_dataframe: pd.DataFrame = pd.DataFrame()
         location_first_quantity: bool = True
-        location_latitude: float = location_parameters[location]['latitude']
-        location_longitude: float = location_parameters[location]['longitude']
+        location_latitude: float = location_parameters[location].latitude
+        location_longitude: float = location_parameters[location].longitude
 
         for quantity in quantity_processed_names:
             source_table: str = quantity
@@ -811,12 +815,10 @@ def get_scenario_weather_data(
                 )
             )
             if location_first_quantity:
-                location_weather_dataframe['Location'] = [location] * len(
+                location_weather_dataframe.Location = [location] * len(
                     weather_values.index
                 )
-                location_weather_dataframe['Timetag'] = weather_values[
-                    'Timetag'
-                ]
+                location_weather_dataframe.Timetag = weather_values['Timetag']
                 location_weather_dataframe = (
                     location_weather_dataframe.set_index(
                         ['Location', 'Timetag']
@@ -842,9 +844,10 @@ def get_scenario_weather_data(
             ].values
         ]
 
-        JOULES_IN_A_KWH: float = general_parameters['unit_conversions'][
-            'JOULES_IN_A_KWH'
-        ]
+        JOULES_IN_A_KWH: float = (
+            general_parameters.unit_conversions.JOULES_IN_A_KWH
+        )
+
         weather_dataframe['Vehicle solar panels production (kWhe/m2)'] = [
             weather_dataframe[
                 'Hourly Surface solar radiation downwards (J/m2)'
@@ -861,7 +864,7 @@ def get_scenario_weather_data(
         weather_factors_table_name,
         groupfile_name,
         output_folder,
-        scenario,
+        general_parameters.files.dataframe_outputs,
     )
 
     return weather_dataframe
@@ -880,7 +883,7 @@ def solar_panels_efficiency_factor(temperature: float) -> float:
 
 
 def setup_weather(
-    scenario: dict, case_name: str, general_parameters: dict
+    scenario: Box, case_name: str, general_parameters: Box
 ) -> None:
     '''
     This runs all the functions necessary to get the scenario weather factors
@@ -893,18 +896,17 @@ def setup_weather(
     downloads).
     '''
 
-    get_extra_downloads: dict[str, bool] = scenario['run'][
-        'get_extra_downloads'
-    ]
-    download_weather_data: bool = get_extra_downloads['download_weather_data']
-    download_EV_tool_data: bool = get_extra_downloads['download_EV_tool_data']
-    make_weather_database: bool = get_extra_downloads['make_weather_database']
+    get_extra_downloads: Box = scenario.run.get_extra_downloads
+
+    download_weather_data: bool = get_extra_downloads.download_weather_data
+    download_EV_tool_data: bool = get_extra_downloads.download_EV_tool_data
+    make_weather_database: bool = get_extra_downloads.make_weather_database
 
     if download_weather_data:
         download_all_cds_weather_data(scenario, general_parameters)
     if download_EV_tool_data:
-        get_EV_tool_data(scenario)
-        plot_temperature_efficiency(scenario)
+        get_EV_tool_data(scenario, general_parameters)
+        plot_temperature_efficiency(scenario, general_parameters)
     if make_weather_database:
         try:
             write_weather_database(scenario)
@@ -942,18 +944,18 @@ def get_location_weather_quantity(
     timetag: datetime.datetime,
     source_table: str,
     weather_quantity: str,
-    scenario: dict,
+    scenario: Box,
 ) -> float:
     '''
     Returns the value a a chosen weather quantity for a given location and
     time tag.
     '''
 
-    processed_data_parameters: dict = scenario['weather']['processed_data']
-    processed_folder: str = processed_data_parameters['processed_folder']
-    weather_database_file_name: str = processed_data_parameters[
-        'weather_database_file_name'
-    ]
+    processed_data_parameters: Box = scenario.weather.processed_data
+    processed_folder: str = processed_data_parameters.processed_folder
+    weather_database_file_name: str = (
+        processed_data_parameters.weather_database_file_name
+    )
     weather_database_connection: sqlite3.Connection = sqlite3.connect(
         f'{processed_folder}/{weather_database_file_name}'
     )
@@ -1007,7 +1009,7 @@ def get_location_weather_quantity(
 
 if __name__ == '__main__':
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: dict = cook.parameters_from_TOML(
+    general_parameters: Box = cook.parameters_from_TOML(
         general_parameters_file_name
     )
     case_name = 'local_impact_BEVs'
@@ -1015,9 +1017,9 @@ if __name__ == '__main__':
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: dict = cook.parameters_from_TOML(scenario_file_name)
+    scenario: Box = cook.parameters_from_TOML(scenario_file_name)
     scenario['scenario_name'] = test_scenario_name
-    plot_temperature_efficiency(scenario)
+    plot_temperature_efficiency(scenario, general_parameters)
     setup_weather(scenario, case_name, general_parameters)
     print(
         get_location_weather_quantity(

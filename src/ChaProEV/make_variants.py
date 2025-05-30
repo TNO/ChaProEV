@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import toml
+from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
 
@@ -32,7 +33,7 @@ def make_csv_variants(case_name: str) -> None:
         # Here we use a dict for the reference scenario
         # instead of a Box because we want to use functions
         # that use dicts to write a new scenario
-        reference_scenario: dict = cook.parameters_from_TOML(
+        reference_scenario: Box = cook.parameters_from_TOML(
             f'scenarios/{case_name}/{reference_scenario_name}.toml'
         )
 
@@ -44,7 +45,7 @@ def make_csv_variants(case_name: str) -> None:
 
         for variant_name in variant_names:
 
-            variant_scenario: dict = reference_scenario.copy()
+            variant_scenario: Box = reference_scenario.copy()
 
             for quantity_string in variant_data.columns:
 
@@ -74,31 +75,29 @@ def make_csv_variants(case_name: str) -> None:
 
 
 def make_toml_variants(case_name: str) -> None:
-    variant_configuration: dict = cook.parameters_from_TOML(
+    variant_configuration: Box = cook.parameters_from_TOML(
         f'variants/{case_name}.toml'
     )
 
-    for reference_scenario_name in variant_configuration[
-        'reference_scenarios'
-    ]:
+    for reference_scenario_name in variant_configuration.reference_scenarios:
         # Here we use a dict for the reference scenario
         # instead of a Box because we want to use functions
         # that use dicts to write a new scenario
-        reference_scenario: dict = cook.parameters_from_TOML(
+        reference_scenario: Box = cook.parameters_from_TOML(
             f'scenarios/{case_name}/{reference_scenario_name}.toml'
         )
 
-        variant_names: list[str] = variant_configuration[
-            'reference_scenarios'
-        ][reference_scenario_name]['variants']
+        variant_names: list[str] = variant_configuration.reference_scenarios[
+            reference_scenario_name
+        ].variants
 
-        variant_scenarios: dict[str, dict] = {}
+        variant_scenarios: Box = Box({})
         for variant_name in variant_names:
             variant_scenarios[variant_name] = reference_scenario.copy()
 
-        modified_parameters: dict = variant_configuration[
-            'reference_scenarios'
-        ][reference_scenario_name]['modified_parameters']
+        modified_parameters: dict = variant_configuration.reference_scenarios[
+            reference_scenario_name
+        ].modified_parameters
 
         modified_parameters_names: list[list[str]] = []
 

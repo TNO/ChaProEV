@@ -62,7 +62,7 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         output_table_names,
         repeat(groupfile_name),
         repeat(output_folder),
-        repeat(general_parameters),
+        repeat(general_parameters.files.dataframe_outputs),
     )
     # the ty.Any alternative is there because transforming it with the
     # progress bar makes mypy think it change is type
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     # test_scenario_name: str = 'baseline'
     start_time: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = Box(
+    general_parameters: Box = (
         cook.parameters_from_TOML(general_parameters_file_name)
     )
 

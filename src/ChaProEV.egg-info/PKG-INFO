@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ChaProEV
-Version: 1.2.6
+Version: 1.2.7
 Summary: ChaProEV: Charging Profiles of Electric Vehicles
 Author-email: Omar Usmani <Omar.Usmani@TNO.nl>
 Project-URL: Homepage, https://github.com/TNO/ChaProEV
@@ -37,7 +37,8 @@ This repository contains the ChaProEV (Charging Profiles of Electric Vehicles)
 model.
 
 ## Status
-The ChaProEV model is under construction and not yet ready for use.
+The ChaProEV model is currently released and useable. This version
+has been used in projects and can be used in future projects.
 Please contact the authors below if you have questions or requests to get
 model runs at some point.
 
@@ -85,7 +86,18 @@ To run the model, you need to put a ChaProEV.toml configuration
 in the folder where you run your model. You also need to have at least one scenario in your scenario/case_name (e.g. scenario/Mopo) folder. A
 If you want to create varaints, then you need to add a case.toml (e.g. Mopo.toml) file in the variants folder and put a variant file in the variants/case (e.g. variants/Mopo) folder. 
 If you want to compute fleet-level values and/or do a car owndriveway/street charging split, you need to put some files in the input/case (e.g. input/Mopo) folder.
-You can use the examples provided in this repository.
+You can use the examples provided in this repository. You can also
+unzip [this file](https://github.com/TNO/ChaProEV/blob/main/ChaProEV_test_case_configuration_files.zip)
+into your working folder and use 'test_case'  as your case name:
+```python
+from ChaProEV import ChaProEV
+
+if __name__ == '__main__':
+    case_name: str = 'test_case'
+    ChaProEV.run_ChaProEV(case_name)
+```
+
+
 
 For examples of running ChaProEV and more configuration files,
 you can visit the [ChaProEV runs repository](https://github.com/TNO/ChaProEV_runs).

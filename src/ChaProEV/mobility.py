@@ -2117,10 +2117,10 @@ if __name__ == '__main__':
     case_name = 'bus_test'
     scenario_name: str = 'XX_bus'
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
-    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario: Box = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = Box(
+    general_parameters: Box = (
         cook.parameters_from_TOML(general_parameters_file_name)
     )
 

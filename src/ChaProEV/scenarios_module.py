@@ -223,7 +223,7 @@ def load_scenarios(case_name: str) -> list[Box]:
         for scenario_file in scenario_files
     ]
     scenarios: list[Box] = [
-        Box(cook.parameters_from_TOML(scenario_file_path))
+        cook.parameters_from_TOML(scenario_file_path)
         for scenario_file_path in scenario_file_paths
     ]
     for scenario, scenario_file in zip(scenarios, scenario_files):

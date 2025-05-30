@@ -434,10 +434,10 @@ if __name__ == '__main__':
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
-    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario: Box = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = test_scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = Box(
+    general_parameters: Box = (
         cook.parameters_from_TOML(general_parameters_file_name)
     )
     run_range, run_hour_numbers, display_range = get_time_range(

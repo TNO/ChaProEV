@@ -230,13 +230,13 @@ def get_consumption_data(
 
 if __name__ == '__main__':
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = Box(
+    general_parameters: Box = (
         cook.parameters_from_TOML(general_parameters_file_name)
     )
     case_name = 'Mopo'
     scenario_name: str = 'XX_car'
     scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
-    scenario: Box = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario: Box = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = scenario_name
     output_folder: str = f'{general_parameters.files.output_root}/{case_name}'
     run_mobility_matrix = pd.DataFrame(

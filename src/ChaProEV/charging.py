@@ -1889,8 +1889,8 @@ def get_profile_from_sessions(
 if __name__ == '__main__':
     case_name = 'Mopo'
     # scenario_name = 'XX_car'
-    general_parameters_file_name = 'ChaProEV.toml'
-    general_parameters = Box(
+    general_parameters_file_name: str = 'ChaProEV.toml'
+    general_parameters: Box = (
         cook.parameters_from_TOML(general_parameters_file_name)
     )
     # scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
@@ -1932,9 +1932,9 @@ if __name__ == '__main__':
     # scenario.name = scenario_name
     general_parameters_file_name = 'ChaProEV.toml'
 
-    scenario = Box(cook.parameters_from_TOML(scenario_file_name))
+    scenario = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = scenario_name
-    general_parameters = Box(
+    general_parameters = (
         cook.parameters_from_TOML(general_parameters_file_name)
     )
     file_parameters: Box = general_parameters.files

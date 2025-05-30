@@ -146,7 +146,7 @@ def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
         for scenario_file in scenario_files
     ]
     scenarios: list[box.Box] = [
-        box.Box(cook.parameters_from_TOML(scenario_file_path))
+        cook.parameters_from_TOML(scenario_file_path)
         for scenario_file_path in scenario_file_paths
     ]
     for scenario, scenario_file in zip(scenarios, scenario_files):
@@ -230,7 +230,7 @@ def fetch_historical_values(
         dataframe_name=non_road_parameters.historical_dataframe_name,
         groupfile_name=case_name,
         output_folder=output_folder,
-        parameters=non_road_parameters,
+        dataframe_formats=non_road_parameters.files.dataframe_outputs,
     )
 
     return historical_values
@@ -274,7 +274,7 @@ def get_demand_values(
         dataframe_name=non_road_parameters.demand_dataframe_name,
         groupfile_name=case_name,
         output_folder=output_folder,
-        parameters=non_road_parameters,
+        dataframe_formats=non_road_parameters.files.dataframe_outputs,
     )
 
     return demand_values
@@ -293,7 +293,7 @@ def get_Eurostat_balances(general_parameters: box.Box, case_name: str) -> None:
         dataframe_name=general_parameters.Eurostat.table_name,
         groupfile_name=case_name,
         output_folder=output_folder,
-        parameters=general_parameters,
+        dataframe_formats=non_road_parameters.files.dataframe_outputs,
     )
 
 
@@ -394,7 +394,7 @@ if __name__ == '__main__':
     case_name: str = 'Mopo'
     non_road_parameters_file: str = 'non-road.toml'
 
-    non_road_parameters: box.Box = box.Box(
+    non_road_parameters: box.Box = (
         cook.parameters_from_TOML(non_road_parameters_file)
     )
 
@@ -420,7 +420,7 @@ if __name__ == '__main__':
             dataframe_name=output_profile,
             groupfile_name=case_name,
             output_folder=output_folder,
-            parameters=non_road_parameters,
+            dataframe_formats=non_road_parameters.files.dataframe_outputs,
         )
     print('Remove names from scenarios')
     print('Do growth in a function')
@@ -429,4 +429,4 @@ if __name__ == '__main__':
     print('Transport other/nec, pipelines?')
     print('NRMM: is that other/nec?')
     print('CH (and others?) missing')
-    print('Tram/metro?')
+    print('Tram/metro? nrg_d_traq')
