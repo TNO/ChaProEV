@@ -28,7 +28,9 @@ def get_run_demand(
     year: int = general_parameters.historical_year
     carrier: str = scenario_elements_list[3]
 
-    demand_index: str = general_parameters.demand_index
+    run_index: tuple = country_code, mode, year, carrier
+
+    demand_index: list[str] = list(general_parameters.demand_index)
     demand_header: str = general_parameters.demand_header
 
     source_table: str = general_parameters.demand_dataframe_name
@@ -39,9 +41,7 @@ def get_run_demand(
         source_table, database_file
     ).set_index(demand_index)
 
-    run_demand: float = demand_values.loc[country_code, mode, year, carrier][
-        demand_header
-    ][0]
+    run_demand: float = demand_values.loc[run_index][demand_header][0]
 
     return run_demand
 
@@ -50,7 +50,7 @@ def get_profile_weights(
     scenario: box.Box, run_range=pd.DatetimeIndex
 ) -> pd.Series:
 
-    weight_factors: np.ndarray = np.ones(len(run_range))
+    weight_factors: np.ndarray = np.ones(run_range.size)
 
     for modified_instance, modification_factor in zip(
         scenario.modified_instances, scenario.modification_factors
@@ -83,7 +83,7 @@ def get_profile_weights(
             elapsed_recurrences += 1
 
             run_index += recurrence_step
-            recurring = run_index < len(run_range)
+            recurring = run_index < run_range.size
             if amount_of_recurrences > 0:
                 recurring = elapsed_recurrences > amount_of_recurrences
 
@@ -394,8 +394,8 @@ if __name__ == '__main__':
     case_name: str = 'Mopo'
     non_road_parameters_file: str = 'non-road.toml'
 
-    non_road_parameters: box.Box = (
-        cook.parameters_from_TOML(non_road_parameters_file)
+    non_road_parameters: box.Box = cook.parameters_from_TOML(
+        non_road_parameters_file
     )
 
     if non_road_parameters.Eurostat.fetch:
