@@ -679,22 +679,22 @@ class Leg:
     class_name: str = 'legs'
 
     def __init__(
-        leg, name: str, scenario: Box, general_parameters: Box
+        self, name: str, scenario: Box, general_parameters: Box
     ) -> None:
-        leg.name: str = name
+        self.name: str = name
 
         leg_parameters: Box = scenario.legs[name]
-        leg.vehicle: str = leg_parameters.vehicle
-        leg.distance: float = leg_parameters.distance
-        leg.duration: float = leg_parameters.duration
-        leg.hour_in_day_factors: list[float] = (
+        self.vehicle: str = leg_parameters.vehicle
+        self.distance: float = leg_parameters.distance
+        self.duration: float = leg_parameters.duration
+        self.hour_in_day_factors: list[float] = (
             leg_parameters.hour_in_day_factors
         )
         locations: Box = leg_parameters.locations
-        leg.start_location: str = locations.start
-        leg.end_location: str = locations.end
+        self.start_location: str = locations.start
+        self.end_location: str = locations.end
         road_type_parameters: Box = leg_parameters.road_type_mix
-        leg.road_type_mix: list[float] = road_type_parameters.mix
+        self.road_type_mix: list[float] = road_type_parameters.mix
 
 
 class Location:
@@ -707,22 +707,22 @@ class Location:
     class_name: str = 'locations'
 
     def __init__(
-        location, name: str, scenario: Box, general_parameters: Box
+        self, name: str, scenario: Box, general_parameters: Box
     ) -> None:
-        location.name: str = name
+        self.name: str = name
 
         this_location_parameters: Box = scenario.locations[name]
-        location.vehicle: str = this_location_parameters.vehicle
-        location.connectivity: float = this_location_parameters.connectivity
-        location.charging_power: float = (
+        self.vehicle: str = this_location_parameters.vehicle
+        self.connectivity: float = this_location_parameters.connectivity
+        self.charging_power: float = (
             this_location_parameters.charging_power
         )
-        location.latitude: float = this_location_parameters.latitude
-        location.longitude: float = this_location_parameters.longitude
-        location.charging_price: float = (
+        self.latitude: float = this_location_parameters.latitude
+        self.longitude: float = this_location_parameters.longitude
+        self.charging_price: float = (
             this_location_parameters.charging_price
         )
-        location.charging_desirability: float = (
+        self.charging_desirability: float = (
             this_location_parameters.charging_desirability
         )
 
@@ -744,77 +744,77 @@ class Trip:
     class_name: str = 'trips'
 
     def __init__(
-        trip, name: str, scenario: Box, general_parameters: Box
+        self, name: str, scenario: Box, general_parameters: Box
     ) -> None:
-        trip.name: str = name
+        self.name: str = name
 
         trip_parameters: Box = scenario.trips[name]
-        trip.legs: list[str] = trip_parameters.legs
-        trip.time_between_legs: list[float] = trip_parameters.time_between_legs
-        trip.percentage_station_users: float = (
+        self.legs: list[str] = trip_parameters.legs
+        self.time_between_legs: list[float] = trip_parameters.time_between_legs
+        self.percentage_station_users: float = (
             trip_parameters.percentage_station_users
         )
 
-        trip.start_probabilities: list[float] = (
+        self.start_probabilities: list[float] = (
             trip_parameters.start_probabilities
         )
-        trip.repeated_sequence: list[str] = trip_parameters.repeated_sequence
-        trip.repetition_amounts: list[int] = trip_parameters.repetition_amounts
-        trip.time_between_repetitions: list[float] = (
+        self.repeated_sequence: list[str] = trip_parameters.repeated_sequence
+        self.repetition_amounts: list[int] = trip_parameters.repetition_amounts
+        self.time_between_repetitions: list[float] = (
             trip_parameters.time_between_repetitions
         )
 
-        trip.day_start_hour: int = scenario.mobility_module.day_start_hour
-        trip.leg_driving_times: list[float] = [
-            scenario.legs[leg_name].duration for leg_name in trip.legs
+        self.day_start_hour: int = scenario.mobility_module.day_start_hour
+        self.leg_driving_times: list[float] = [
+            scenario.legs[leg_name].duration for leg_name in self.legs
         ]
 
-        trip_legs_store: list[str] = trip.legs.copy()
+        trip_legs_store: list[str] = self.legs.copy()
 
-        time_between_legs_store: list[float] = trip.time_between_legs.copy()
-        leg_driving_times_store: list[float] = trip.leg_driving_times.copy()
-        if len(trip.repeated_sequence) > 0:
-            trip.legs = []
-            trip.time_between_legs = []
-            trip.leg_driving_times = []
+        time_between_legs_store: list[float] = self.time_between_legs.copy()
+        leg_driving_times_store: list[float] = self.leg_driving_times.copy()
+        if len(self.repeated_sequence) > 0:
+            self.legs = []
+            self.time_between_legs = []
+            self.leg_driving_times = []
             repetition_iteration_index: int = 0
             for leg_index, leg in enumerate(trip_legs_store):
 
-                if leg not in trip.repeated_sequence:
-                    trip.legs.append(leg)
+                if leg not in self.repeated_sequence:
+                    self.legs.append(leg)
                     if leg_index < len(trip_legs_store) - 1:
-                        trip.time_between_legs.append(
+                        self.time_between_legs.append(
                             time_between_legs_store[leg_index]
                         )
-                    trip.leg_driving_times.append(
+                    self.leg_driving_times.append(
                         leg_driving_times_store[leg_index]
                     )
-                elif leg == trip.repeated_sequence[0]:
+                elif leg == self.repeated_sequence[0]:
                     for repetition in range(
-                        trip.repetition_amounts[repetition_iteration_index] + 1
+                        self.repetition_amounts[repetition_iteration_index] + 1
                     ):
                         for leg_to_add_index, leg_to_add in enumerate(
-                            trip.repeated_sequence
+                            self.repeated_sequence
                         ):
-                            trip.legs.append(leg_to_add)
+                            self.legs.append(leg_to_add)
                             if (
                                 leg_to_add_index
-                                < len(trip.repeated_sequence) - 1
+                                < len(self.repeated_sequence) - 1
                             ):
-                                trip.time_between_legs.append(
+                                self.time_between_legs.append(
                                     time_between_legs_store[leg_index]
                                 )
-                            trip.leg_driving_times.append(
+                            self.leg_driving_times.append(
                                 leg_driving_times_store[leg_index]
                             )
                         if (
                             repetition
-                            < trip.repetition_amounts[
+                            < self.repetition_amounts[
                                 repetition_iteration_index
                             ]
                         ):
-                            trip.time_between_legs.append(
-                                trip.time_between_repetitions[
+                            self.time_between_legs.append(
+                                self.time_between_repetitions[
                                     repetition_iteration_index
                                 ]
                             )
@@ -825,12 +825,12 @@ class Trip:
 
                             if leg_index == (
                                 len(trip_legs_store)
-                                - len(trip.repeated_sequence)
+                                - len(self.repeated_sequence)
                             ):
 
                                 if (
                                     trip_legs_store[-1]
-                                    == trip.repeated_sequence[-1]
+                                    == self.repeated_sequence[-1]
                                 ):
                                     add_final_time_between_legs = False
                                     # If the last leg of the trip
@@ -840,38 +840,38 @@ class Trip:
                                     # last leg of the trip).
 
                             if add_final_time_between_legs:
-                                trip.time_between_legs.append(
+                                self.time_between_legs.append(
                                     time_between_legs_store[
                                         leg_index
-                                        + len(trip.repeated_sequence)
+                                        + len(self.repeated_sequence)
                                         - 1
                                     ]
                                 )
 
                     repetition_iteration_index += 1
 
-        trip.start_locations_of_legs: list[str] = [
-            scenario.legs[leg_name].locations.start for leg_name in trip.legs
+        self.start_locations_of_legs: list[str] = [
+            scenario.legs[leg_name].locations.start for leg_name in self.legs
         ]
-        trip.end_locations_of_legs: list[str] = [
-            scenario.legs[leg_name].locations.end for leg_name in trip.legs
+        self.end_locations_of_legs: list[str] = [
+            scenario.legs[leg_name].locations.end for leg_name in self.legs
         ]
-        trip.location_names: list[str] = sorted(
+        self.location_names: list[str] = sorted(
             list(
-                set(trip.start_locations_of_legs + trip.end_locations_of_legs)
+                set(self.start_locations_of_legs + self.end_locations_of_legs)
             )
         )
-        if trip.name.startswith('stay_put_'):
-            stay_put_location: str = trip.name.split('stay_put_')[1]
-            trip.location_names = [stay_put_location]
+        if self.name.startswith('stay_put_'):
+            stay_put_location: str = self.name.split('stay_put_')[1]
+            self.location_names = [stay_put_location]
         # sorted so that the order is always the same
 
-        trip.leg_distances: list[float] = [
-            scenario.legs[leg_name].distance for leg_name in trip.legs
+        self.leg_distances: list[float] = [
+            scenario.legs[leg_name].distance for leg_name in self.legs
         ]
 
-        trip.weighted_leg_distances: list[float] = []
-        for leg_name in trip.legs:
+        self.weighted_leg_distances: list[float] = []
+        for leg_name in self.legs:
             road_type_mix: np.ndarray = np.array(
                 scenario.legs[leg_name].road_type_mix.mix
             )
@@ -883,24 +883,24 @@ class Trip:
             )
             leg_distance: float = scenario.legs[leg_name].distance
             leg_weighted_distance: float = leg_distance * road_type_factor
-            trip.weighted_leg_distances.append(leg_weighted_distance)
+            self.weighted_leg_distances.append(leg_weighted_distance)
 
-        trip.unique_leg_distances: list[float] = list(set(trip.leg_distances))
-        trip.unique_weighted_leg_distances: list[float] = list(
-            set(trip.weighted_leg_distances)
+        self.unique_leg_distances: list[float] = list(set(self.leg_distances))
+        self.unique_weighted_leg_distances: list[float] = list(
+            set(self.weighted_leg_distances)
         )
         vehicle_electricity_consumption: float = (
             scenario.vehicle.base_consumption_per_km.electricity_kWh
         )
 
-        trip.unique_leg_consumptions: list[float] = [
+        self.unique_leg_consumptions: list[float] = [
             unique_distance * vehicle_electricity_consumption
-            for unique_distance in trip.unique_leg_distances
+            for unique_distance in self.unique_leg_distances
         ]
 
-        trip.unique_weighted_leg_consumptions: list[float] = [
+        self.unique_weighted_leg_consumptions: list[float] = [
             unique_distance * vehicle_electricity_consumption
-            for unique_distance in trip.unique_weighted_leg_distances
+            for unique_distance in self.unique_weighted_leg_distances
         ]
 
         # We want to create a mobility matrix for the trip. This matrix will
@@ -910,7 +910,7 @@ class Trip:
         HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
         parameters_of_legs: Box = scenario.legs
         unique_legs: list[str] = []
-        for trip_leg in trip.legs:
+        for trip_leg in self.legs:
             if trip_leg not in unique_legs:
                 unique_legs.append(trip_leg)
 
@@ -937,20 +937,20 @@ class Trip:
             scenario.mobility_module.mobility_quantities
         )
 
-        trip.mobility_matrix: pd.DataFrame = pd.DataFrame(
+        self.mobility_matrix: pd.DataFrame = pd.DataFrame(
             np.zeros((len(mobility_index), len(mobility_quantities))),
             columns=mobility_quantities,
             index=mobility_index,
         )
 
-        trip.mobility_matrix = trip.mobility_matrix.sort_index()
+        self.mobility_matrix = self.mobility_matrix.sort_index()
 
         # We also want to store the battery space shifts true to legs.
         # We track this as departure and arrivals (including a version with
         # impact versions).
         base_dataframe_for_battery_space_shifts: pd.DataFrame = pd.DataFrame(
-            np.zeros((len(mobility_index), len(trip.unique_leg_consumptions))),
-            columns=trip.unique_leg_consumptions,
+            np.zeros((len(mobility_index), len(self.unique_leg_consumptions))),
+            columns=self.unique_leg_consumptions,
             index=mobility_index,
         )
         base_dataframe_for_weighted_battery_space_shifts: pd.DataFrame = (
@@ -958,118 +958,118 @@ class Trip:
                 np.zeros(
                     (
                         len(mobility_index),
-                        len(trip.unique_weighted_leg_consumptions),
+                        len(self.unique_weighted_leg_consumptions),
                     )
                 ),
-                columns=trip.unique_weighted_leg_consumptions,
+                columns=self.unique_weighted_leg_consumptions,
                 index=mobility_index,
             )
         )
         base_dataframe_for_weighted_battery_space_shifts = (
             base_dataframe_for_weighted_battery_space_shifts.sort_index()
         )
-        trip.battery_space_shifts_departures: pd.DataFrame = (
+        self.battery_space_shifts_departures: pd.DataFrame = (
             base_dataframe_for_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_departures = (
-            trip.battery_space_shifts_departures.sort_index()
+        self.battery_space_shifts_departures = (
+            self.battery_space_shifts_departures.sort_index()
         )
-        trip.battery_space_shifts_departures_impact: pd.DataFrame = (
+        self.battery_space_shifts_departures_impact: pd.DataFrame = (
             base_dataframe_for_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_departures_impact = (
-            trip.battery_space_shifts_departures_impact.sort_index()
+        self.battery_space_shifts_departures_impact = (
+            self.battery_space_shifts_departures_impact.sort_index()
         )
-        trip.battery_space_shifts_arrivals: pd.DataFrame = (
+        self.battery_space_shifts_arrivals: pd.DataFrame = (
             base_dataframe_for_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_arrivals = (
-            trip.battery_space_shifts_arrivals.sort_index()
+        self.battery_space_shifts_arrivals = (
+            self.battery_space_shifts_arrivals.sort_index()
         )
-        trip.battery_space_shifts_arrivals_impact: pd.DataFrame = (
+        self.battery_space_shifts_arrivals_impact: pd.DataFrame = (
             base_dataframe_for_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_arrivals_impact = (
-            trip.battery_space_shifts_arrivals_impact.sort_index()
+        self.battery_space_shifts_arrivals_impact = (
+            self.battery_space_shifts_arrivals_impact.sort_index()
         )
-        trip.battery_space_shifts_departures_weighted: pd.DataFrame = (
+        self.battery_space_shifts_departures_weighted: pd.DataFrame = (
             base_dataframe_for_weighted_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_departures_weighted = (
-            trip.battery_space_shifts_departures_weighted.sort_index()
+        self.battery_space_shifts_departures_weighted = (
+            self.battery_space_shifts_departures_weighted.sort_index()
         )
-        trip.battery_space_shifts_departures_impact_weighted: pd.DataFrame = (
+        self.battery_space_shifts_departures_impact_weighted: pd.DataFrame = (
             base_dataframe_for_weighted_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_departures_impact_weighted = (
-            trip.battery_space_shifts_departures_impact_weighted.sort_index()
+        self.battery_space_shifts_departures_impact_weighted = (
+            self.battery_space_shifts_departures_impact_weighted.sort_index()
         )
-        trip.battery_space_shifts_arrivals_weighted: pd.DataFrame = (
+        self.battery_space_shifts_arrivals_weighted: pd.DataFrame = (
             base_dataframe_for_weighted_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_arrivals_weighted = (
-            trip.battery_space_shifts_arrivals_weighted.sort_index()
+        self.battery_space_shifts_arrivals_weighted = (
+            self.battery_space_shifts_arrivals_weighted.sort_index()
         )
-        trip.battery_space_shifts_arrivals_impact_weighted: pd.DataFrame = (
+        self.battery_space_shifts_arrivals_impact_weighted: pd.DataFrame = (
             base_dataframe_for_weighted_battery_space_shifts.copy()
         )
-        trip.battery_space_shifts_arrivals_impact_weighted = (
-            trip.battery_space_shifts_arrivals_impact_weighted.sort_index()
+        self.battery_space_shifts_arrivals_impact_weighted = (
+            self.battery_space_shifts_arrivals_impact_weighted.sort_index()
         )
-        trip.battery_space_shifts: dict[tuple[str, str], pd.DataFrame] = {}
-        trip.battery_space_shifts[('Departures', 'Amount')] = (
-            trip.battery_space_shifts_departures
+        self.battery_space_shifts: dict[tuple[str, str], pd.DataFrame] = {}
+        self.battery_space_shifts[('Departures', 'Amount')] = (
+            self.battery_space_shifts_departures
         )
-        trip.battery_space_shifts[('Departures', 'Impact')] = (
-            trip.battery_space_shifts_departures_impact
+        self.battery_space_shifts[('Departures', 'Impact')] = (
+            self.battery_space_shifts_departures_impact
         )
-        trip.battery_space_shifts[('Departures', 'Amount Weighted')] = (
-            trip.battery_space_shifts_departures_weighted
+        self.battery_space_shifts[('Departures', 'Amount Weighted')] = (
+            self.battery_space_shifts_departures_weighted
         )
-        trip.battery_space_shifts[('Departures', 'Impact Weighted')] = (
-            trip.battery_space_shifts_departures_impact_weighted
+        self.battery_space_shifts[('Departures', 'Impact Weighted')] = (
+            self.battery_space_shifts_departures_impact_weighted
         )
-        trip.battery_space_shifts[('Arrivals', 'Amount')] = (
-            trip.battery_space_shifts_arrivals
+        self.battery_space_shifts[('Arrivals', 'Amount')] = (
+            self.battery_space_shifts_arrivals
         )
-        trip.battery_space_shifts[('Arrivals', 'Impact')] = (
-            trip.battery_space_shifts_arrivals_impact
+        self.battery_space_shifts[('Arrivals', 'Impact')] = (
+            self.battery_space_shifts_arrivals_impact
         )
-        trip.battery_space_shifts[('Arrivals', 'Amount Weighted')] = (
-            trip.battery_space_shifts_arrivals_weighted
+        self.battery_space_shifts[('Arrivals', 'Amount Weighted')] = (
+            self.battery_space_shifts_arrivals_weighted
         )
-        trip.battery_space_shifts[('Arrivals', 'Impact Weighted')] = (
-            trip.battery_space_shifts_arrivals_impact_weighted
+        self.battery_space_shifts[('Arrivals', 'Impact Weighted')] = (
+            self.battery_space_shifts_arrivals_impact_weighted
         )
 
         # We want to track where the vehicle is
-        trip.location_split: pd.DataFrame = pd.DataFrame(
-            np.zeros((HOURS_IN_A_DAY, len(trip.location_names))),
-            columns=trip.location_names,
+        self.location_split: pd.DataFrame = pd.DataFrame(
+            np.zeros((HOURS_IN_A_DAY, len(self.location_names))),
+            columns=self.location_names,
             index=range(HOURS_IN_A_DAY),
         )
-        trip.location_split.index.name = 'Hour in day (from day start)'
+        self.location_split.index.name = 'Hour in day (from day start)'
 
-        if trip.name.startswith('stay_put_'):
-            stay_put_location = trip.name.split('stay_put_')[1]
-            trip.location_split[stay_put_location] = 1
+        if self.name.startswith('stay_put_'):
+            stay_put_location = self.name.split('stay_put_')[1]
+            self.location_split[stay_put_location] = 1
         else:
-            first_leg: str = trip.legs[0]
+            first_leg: str = self.legs[0]
             initial_location: str = scenario.legs[first_leg].locations.start
-            trip.location_split[initial_location] = 1
-        trip.location_split, trip.mobility_matrix = (
+            self.location_split[initial_location] = 1
+        self.location_split, self.mobility_matrix = (
             get_location_split_and_impact_of_departures_and_arrivals(
-                trip.location_names,
-                trip.location_split,
-                trip.mobility_matrix,
-                trip.start_probabilities,
-                trip.time_between_legs,
-                trip.leg_driving_times,
-                trip.start_locations_of_legs,
-                trip.end_locations_of_legs,
-                trip.leg_distances,
-                trip.weighted_leg_distances,
-                trip.battery_space_shifts,
+                self.location_names,
+                self.location_split,
+                self.mobility_matrix,
+                self.start_probabilities,
+                self.time_between_legs,
+                self.leg_driving_times,
+                self.start_locations_of_legs,
+                self.end_locations_of_legs,
+                self.leg_distances,
+                self.weighted_leg_distances,
+                self.battery_space_shifts,
                 vehicle_electricity_consumption,
                 HOURS_IN_A_DAY,
             )
@@ -1077,28 +1077,28 @@ class Trip:
 
         # We can also get the percentage driving
 
-        trip.percentage_driving: pd.Series[float] = (
-            1 - trip.location_split.sum(axis=1)
+        self.percentage_driving: pd.Series[float] = (
+            1 - self.location_split.sum(axis=1)
         )
 
         # We also get the connectivity:
-        trip.connectivity_per_location: pd.DataFrame = (
-            trip.location_split.copy()
+        self.connectivity_per_location: pd.DataFrame = (
+            self.location_split.copy()
         )
-        trip.maximal_delivered_power_per_location: pd.DataFrame = (
-            trip.location_split.copy()
+        self.maximal_delivered_power_per_location: pd.DataFrame = (
+            self.location_split.copy()
         )  # How much the network can discharge
-        trip.maximal_received_power_per_location: pd.DataFrame = (
-            trip.location_split.copy()
+        self.maximal_received_power_per_location: pd.DataFrame = (
+            self.location_split.copy()
         )  # How much of tht the vehicles can receive
-        trip.vehicle_discharge_power_per_location: pd.DataFrame = (
-            trip.location_split.copy()
+        self.vehicle_discharge_power_per_location: pd.DataFrame = (
+            self.location_split.copy()
         )
-        trip.discharge_power_to_network_per_location: pd.DataFrame = (
-            trip.location_split.copy()
+        self.discharge_power_to_network_per_location: pd.DataFrame = (
+            self.location_split.copy()
         )
 
-        for location_name in trip.location_names:
+        for location_name in self.location_names:
             this_location_parameters: Box = scenario.locations[location_name]
             location_connectivity: float = (
                 this_location_parameters.connectivity
@@ -1124,57 +1124,57 @@ class Trip:
                 * this_location_proportion_of_discharge_to_network
             )
 
-            trip.connectivity_per_location[location_name] = (
-                trip.connectivity_per_location[location_name]
+            self.connectivity_per_location[location_name] = (
+                self.connectivity_per_location[location_name]
                 * location_connectivity
             )
-            trip.maximal_delivered_power_per_location[location_name] = (
-                trip.maximal_delivered_power_per_location[location_name]
+            self.maximal_delivered_power_per_location[location_name] = (
+                self.maximal_delivered_power_per_location[location_name]
                 * this_location_maximal_delivered_power
             )
-            trip.maximal_received_power_per_location[location_name] = (
-                trip.maximal_received_power_per_location[location_name]
+            self.maximal_received_power_per_location[location_name] = (
+                self.maximal_received_power_per_location[location_name]
                 * this_location_maximal_received_power
             )
 
-            trip.vehicle_discharge_power_per_location[location_name] = (
-                trip.vehicle_discharge_power_per_location[location_name]
+            self.vehicle_discharge_power_per_location[location_name] = (
+                self.vehicle_discharge_power_per_location[location_name]
                 * this_location_vehicle_discharge_power
             )
-            trip.discharge_power_to_network_per_location[location_name] = (
-                trip.discharge_power_to_network_per_location[location_name]
+            self.discharge_power_to_network_per_location[location_name] = (
+                self.discharge_power_to_network_per_location[location_name]
                 * this_location_discharge_power_to_network
             )
-        trip.connectivity: pd.Series = trip.connectivity_per_location.sum(
+        self.connectivity: pd.Series = self.connectivity_per_location.sum(
             axis=1
         )
-        trip.maximal_delivered_power: pd.Series = (
-            trip.maximal_delivered_power_per_location.sum(axis=1)
+        self.maximal_delivered_power: pd.Series = (
+            self.maximal_delivered_power_per_location.sum(axis=1)
         )
-        trip.maximal_received_power: pd.Series = (
-            trip.maximal_received_power_per_location.sum(axis=1)
+        self.maximal_received_power: pd.Series = (
+            self.maximal_received_power_per_location.sum(axis=1)
         )
-        trip.vehicle_discharge_power: pd.Series = (
-            trip.vehicle_discharge_power_per_location.sum(axis=1)
+        self.vehicle_discharge_power: pd.Series = (
+            self.vehicle_discharge_power_per_location.sum(axis=1)
         )
-        trip.discharge_power_to_network: pd.Series = (
-            trip.discharge_power_to_network_per_location.sum(axis=1)
+        self.discharge_power_to_network: pd.Series = (
+            self.discharge_power_to_network_per_location.sum(axis=1)
         )
         dummy_time_between_legs: float = 0
         # This dummy value is added so that we can iterate through a
         # zip of driving times and times between legs that have the
         # same length as the amount of legs
-        time_between_legs_used: list[float] = trip.time_between_legs.copy()
+        time_between_legs_used: list[float] = self.time_between_legs.copy()
         time_between_legs_used.append(dummy_time_between_legs)
 
-        trip.charging_sessions: list[TripChargingSession] = (
+        self.charging_sessions: list[TripChargingSession] = (
             get_trip_charging_sessions(
-                trip.end_locations_of_legs,
-                trip.start_probabilities,
+                self.end_locations_of_legs,
+                self.start_probabilities,
                 time_between_legs_used,
-                trip.leg_driving_times,
-                trip.leg_distances,
-                trip.weighted_leg_distances,
+                self.leg_driving_times,
+                self.leg_distances,
+                self.weighted_leg_distances,
                 scenario,
                 general_parameters,
             )
@@ -1199,149 +1199,139 @@ class Trip:
             run_mobility_index_tuples, names=mobility_index_names
         )
 
-        trip.run_mobility_matrix: pd.DataFrame = (
+        self.run_mobility_matrix: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.mobility_matrix,
+                self.mobility_matrix,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         ).astype(float)
 
-        trip.run_battery_space_shifts_departures: pd.DataFrame = (
+        self.run_battery_space_shifts_departures: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.battery_space_shifts_departures,
+                self.battery_space_shifts_departures,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_battery_space_shifts_departures_impact: pd.DataFrame = (
+        self.run_battery_space_shifts_departures_impact: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.battery_space_shifts_departures_impact,
+                self.battery_space_shifts_departures_impact,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_battery_space_shifts_arrivals: pd.DataFrame = (
+        self.run_battery_space_shifts_arrivals: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.battery_space_shifts_arrivals,
+                self.battery_space_shifts_arrivals,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_battery_space_shifts_arrivals_impact: pd.DataFrame = (
+        self.run_battery_space_shifts_arrivals_impact: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.battery_space_shifts_arrivals_impact,
+                self.battery_space_shifts_arrivals_impact,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
 
-        trip.run_battery_space_shifts_departures_weighted: pd.DataFrame = (
+        self.run_battery_space_shifts_departures_weighted: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.battery_space_shifts_departures_weighted,
+                self.battery_space_shifts_departures_weighted,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_battery_space_shifts_departures_impact_weighted: (
+        self.run_battery_space_shifts_departures_impact_weighted: (
             pd.DataFrame
         ) = mobility_matrix_to_run_mobility_matrix(
-            trip.battery_space_shifts_departures_impact_weighted,
+            self.battery_space_shifts_departures_impact_weighted,
             leg_tuples,
             run_mobility_index,
             run_time_tags,
-            trip.day_start_hour,
+            self.day_start_hour,
             scenario,
             general_parameters,
         )
-        trip.run_battery_space_shifts_arrivals_weighted: pd.DataFrame = (
+        self.run_battery_space_shifts_arrivals_weighted: pd.DataFrame = (
             mobility_matrix_to_run_mobility_matrix(
-                trip.battery_space_shifts_arrivals_weighted,
+                self.battery_space_shifts_arrivals_weighted,
                 leg_tuples,
                 run_mobility_index,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_battery_space_shifts_arrivals_impact_weighted: (
+        self.run_battery_space_shifts_arrivals_impact_weighted: (
             pd.DataFrame
         ) = mobility_matrix_to_run_mobility_matrix(
-            trip.battery_space_shifts_arrivals_impact_weighted,
+            self.battery_space_shifts_arrivals_impact_weighted,
             leg_tuples,
             run_mobility_index,
             run_time_tags,
-            trip.day_start_hour,
+            self.day_start_hour,
             scenario,
             general_parameters,
         )
 
         # We also do this for some other quantities
         day_start_hour: int = scenario.mobility_module.day_start_hour
-        trip.run_location_split: pd.DataFrame = run_time.from_day_to_run(
-            trip.location_split,
+        self.run_location_split: pd.DataFrame = run_time.from_day_to_run(
+            self.location_split,
             run_time_tags,
             day_start_hour,
             scenario,
             general_parameters,
         )
 
-        trip.run_connectivity_per_location: pd.DataFrame = (
+        self.run_connectivity_per_location: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.connectivity_per_location,
+                self.connectivity_per_location,
                 run_time_tags,
                 day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_maximal_delivered_power_per_location: pd.DataFrame = (
+        self.run_maximal_delivered_power_per_location: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.maximal_delivered_power_per_location,
+                self.maximal_delivered_power_per_location,
                 run_time_tags,
                 day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_maximal_received_power_per_location: pd.DataFrame = (
+        self.run_maximal_received_power_per_location: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.maximal_received_power_per_location,
-                run_time_tags,
-                day_start_hour,
-                scenario,
-                general_parameters,
-            )
-        )
-
-        trip.run_vehicle_discharge_power_per_location: pd.DataFrame = (
-            run_time.from_day_to_run(
-                trip.vehicle_discharge_power_per_location,
+                self.maximal_received_power_per_location,
                 run_time_tags,
                 day_start_hour,
                 scenario,
@@ -1349,9 +1339,9 @@ class Trip:
             )
         )
 
-        trip.run_discharge_power_to_network_per_location: pd.DataFrame = (
+        self.run_vehicle_discharge_power_per_location: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.discharge_power_to_network_per_location,
+                self.vehicle_discharge_power_per_location,
                 run_time_tags,
                 day_start_hour,
                 scenario,
@@ -1359,43 +1349,53 @@ class Trip:
             )
         )
 
-        trip.run_percentage_driving: pd.Series = (
-            1 - trip.run_location_split.sum(axis=1)
+        self.run_discharge_power_to_network_per_location: pd.DataFrame = (
+            run_time.from_day_to_run(
+                self.discharge_power_to_network_per_location,
+                run_time_tags,
+                day_start_hour,
+                scenario,
+                general_parameters,
+            )
         )
 
-        trip.run_connectivity: pd.Series = (
-            trip.run_connectivity_per_location.sum(axis=1)
-        )
-        trip.run_maximal_delivered_power: pd.Series = (
-            trip.run_maximal_delivered_power_per_location.sum(axis=1)
-        )
-        trip.run_maximal_received_power: pd.Series = (
-            trip.run_maximal_received_power_per_location.sum(axis=1)
+        self.run_percentage_driving: pd.Series = (
+            1 - self.run_location_split.sum(axis=1)
         )
 
-        trip.run_vehicle_discharge_power: pd.Series = (
-            trip.run_vehicle_discharge_power_per_location.sum(axis=1)
+        self.run_connectivity: pd.Series = (
+            self.run_connectivity_per_location.sum(axis=1)
+        )
+        self.run_maximal_delivered_power: pd.Series = (
+            self.run_maximal_delivered_power_per_location.sum(axis=1)
+        )
+        self.run_maximal_received_power: pd.Series = (
+            self.run_maximal_received_power_per_location.sum(axis=1)
         )
 
-        trip.run_discharge_power_to_network: pd.Series = (
-            trip.run_discharge_power_to_network_per_location.sum(axis=1)
+        self.run_vehicle_discharge_power: pd.Series = (
+            self.run_vehicle_discharge_power_per_location.sum(axis=1)
         )
 
-        trip.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
-            np.zeros((HOURS_IN_A_DAY, len(trip.location_names))),
-            columns=trip.location_names,
+        self.run_discharge_power_to_network: pd.Series = (
+            self.run_discharge_power_to_network_per_location.sum(axis=1)
+        )
+
+        self.next_leg_kilometers: pd.DataFrame = pd.DataFrame(
+            np.zeros((HOURS_IN_A_DAY, len(self.location_names))),
+            columns=self.location_names,
             index=range(HOURS_IN_A_DAY),
         )
-        trip.next_leg_kilometers.index.name = 'Hour number (from day start)'
+        self.next_leg_kilometers.index.name = 'Hour number (from day start)'
         # The standard version sets the kilometers in the time slot
         # before departure, this second, cumulative, version does so from
         # the moment the vehicles arrive
         # (or day start for the first leg of the trip)
-        trip.next_leg_kilometers_cumulative: pd.DataFrame = (
-            trip.next_leg_kilometers.copy()
+        self.next_leg_kilometers_cumulative: pd.DataFrame = (
+            self.next_leg_kilometers.copy()
         )
 
-        for leg_index, leg_name in enumerate(trip.legs):
+        for leg_index, leg_name in enumerate(self.legs):
 
             leg_parameters = scenario.legs[leg_name]
             start_location = leg_parameters.locations.start
@@ -1410,15 +1410,15 @@ class Trip:
 
                     # For the standard version, we look if the vehicle
                     # is set to depart in the next time
-                    upcoming_departures_kilometers = trip.mobility_matrix.loc[
+                    upcoming_departures_kilometers = self.mobility_matrix.loc[
                         (start_location, end_location, hour_index + 1),
                         'Departures kilometers',
                     ]
 
-                    trip.next_leg_kilometers.loc[
+                    self.next_leg_kilometers.loc[
                         hour_index, start_location
                     ] = (
-                        trip.next_leg_kilometers.loc[hour_index][
+                        self.next_leg_kilometers.loc[hour_index][
                             start_location
                         ]
                         + upcoming_departures_kilometers
@@ -1427,7 +1427,7 @@ class Trip:
                     # For the other version, we look at all future departures
 
                     all_future_departures_kilometers = (
-                        trip.mobility_matrix.loc[
+                        self.mobility_matrix.loc[
                             (
                                 start_location,
                                 end_location,
@@ -1437,10 +1437,10 @@ class Trip:
                         ].sum()
                     )
 
-                    trip.next_leg_kilometers_cumulative.loc[
+                    self.next_leg_kilometers_cumulative.loc[
                         hour_index, start_location
                     ] = (
-                        trip.next_leg_kilometers_cumulative.loc[hour_index][
+                        self.next_leg_kilometers_cumulative.loc[hour_index][
                             start_location
                         ]
                         + all_future_departures_kilometers
@@ -1456,7 +1456,7 @@ class Trip:
                     # to limit that to the vehicles that already have
                     # arrived at the end location
                     upcoming_departures_kilometers_raw: float = (
-                        trip.mobility_matrix['Departures kilometers'].loc[
+                        self.mobility_matrix['Departures kilometers'].loc[
                             start_location, end_location, hour_index + 1
                         ]
                     )
@@ -1469,10 +1469,10 @@ class Trip:
                         * previous_arrivals_to_use
                     )
 
-                    trip.next_leg_kilometers.loc[
+                    self.next_leg_kilometers.loc[
                         hour_index, start_location
                     ] = (
-                        trip.next_leg_kilometers.loc[hour_index][
+                        self.next_leg_kilometers.loc[hour_index][
                             start_location
                         ]
                         + actual_upcoming_departures_kilometers
@@ -1481,7 +1481,7 @@ class Trip:
                     # Once again, the variant applies to all future departures
 
                     all_future_departures_kilometers_raw: float = (
-                        trip.mobility_matrix['Departures kilometers']
+                        self.mobility_matrix['Departures kilometers']
                         .loc[start_location, end_location][
                             list(range(hour_index + 1, HOURS_IN_A_DAY))
                         ]
@@ -1493,33 +1493,33 @@ class Trip:
                         * all_future_departures_kilometers_raw
                     )
 
-                    trip.next_leg_kilometers_cumulative.loc[
+                    self.next_leg_kilometers_cumulative.loc[
                         hour_index, start_location
                     ] = (
-                        trip.next_leg_kilometers_cumulative.loc[hour_index][
+                        self.next_leg_kilometers_cumulative.loc[hour_index][
                             start_location
                         ]
                         + actual_all_future_departures_kilometers
                     )
 
-            previous_leg_arrivals_amount = trip.mobility_matrix[
+            previous_leg_arrivals_amount = self.mobility_matrix[
                 'Arrivals amount'
             ].loc[start_location, end_location]
 
-        trip.next_leg_charge_to_vehicle: pd.DataFrame = (
-            trip.next_leg_kilometers.copy()
+        self.next_leg_charge_to_vehicle: pd.DataFrame = (
+            self.next_leg_kilometers.copy()
         )
-        trip.next_leg_charge_from_network: pd.DataFrame = (
-            trip.next_leg_kilometers.copy()
+        self.next_leg_charge_from_network: pd.DataFrame = (
+            self.next_leg_kilometers.copy()
         )
-        trip.next_leg_charge_to_vehicle_cumulative: pd.DataFrame = (
-            trip.next_leg_kilometers_cumulative.copy()
+        self.next_leg_charge_to_vehicle_cumulative: pd.DataFrame = (
+            self.next_leg_kilometers_cumulative.copy()
         )
-        trip.next_leg_charge_from_network_cumulative: pd.DataFrame = (
-            trip.next_leg_kilometers_cumulative.copy()
+        self.next_leg_charge_from_network_cumulative: pd.DataFrame = (
+            self.next_leg_kilometers_cumulative.copy()
         )
 
-        for location_name in trip.location_names:
+        for location_name in self.location_names:
             vehicle_consumption_per_km: float = (
                 scenario.vehicle.base_consumption_per_km.electricity_kWh
             )
@@ -1530,73 +1530,73 @@ class Trip:
             draw_from_network_per_km: float = (
                 vehicle_consumption_per_km / charger_efficiency
             )
-            trip.next_leg_charge_to_vehicle[location_name] = (
-                trip.next_leg_charge_to_vehicle[location_name]
+            self.next_leg_charge_to_vehicle[location_name] = (
+                self.next_leg_charge_to_vehicle[location_name]
                 * vehicle_consumption_per_km
             )
-            trip.next_leg_charge_to_vehicle_cumulative[location_name] = (
-                trip.next_leg_charge_to_vehicle_cumulative[location_name]
+            self.next_leg_charge_to_vehicle_cumulative[location_name] = (
+                self.next_leg_charge_to_vehicle_cumulative[location_name]
                 * vehicle_consumption_per_km
             )
-            trip.next_leg_charge_from_network[location_name] = (
-                trip.next_leg_charge_from_network[location_name]
+            self.next_leg_charge_from_network[location_name] = (
+                self.next_leg_charge_from_network[location_name]
                 * draw_from_network_per_km
             )
-            trip.next_leg_charge_from_network_cumulative[location_name] = (
-                trip.next_leg_charge_from_network_cumulative[location_name]
+            self.next_leg_charge_from_network_cumulative[location_name] = (
+                self.next_leg_charge_from_network_cumulative[location_name]
                 * draw_from_network_per_km
             )
 
-        trip.run_next_leg_kilometers: pd.DataFrame = run_time.from_day_to_run(
-            trip.next_leg_kilometers,
+        self.run_next_leg_kilometers: pd.DataFrame = run_time.from_day_to_run(
+            self.next_leg_kilometers,
             run_time_tags,
-            trip.day_start_hour,
+            self.day_start_hour,
             scenario,
             general_parameters,
         )
-        trip.run_next_leg_kilometers_cumulative: pd.DataFrame = (
+        self.run_next_leg_kilometers_cumulative: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.next_leg_kilometers_cumulative,
+                self.next_leg_kilometers_cumulative,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
 
-        trip.run_next_leg_charge_to_vehicle: pd.DataFrame = (
+        self.run_next_leg_charge_to_vehicle: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.next_leg_charge_to_vehicle,
+                self.next_leg_charge_to_vehicle,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_next_leg_charge_to_vehicle_cumulative: pd.DataFrame = (
+        self.run_next_leg_charge_to_vehicle_cumulative: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.next_leg_charge_to_vehicle_cumulative,
+                self.next_leg_charge_to_vehicle_cumulative,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
 
-        trip.run_next_leg_charge_from_network: pd.DataFrame = (
+        self.run_next_leg_charge_from_network: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.next_leg_charge_from_network,
+                self.next_leg_charge_from_network,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
         )
-        trip.run_next_leg_charge_from_network_cumulative: pd.DataFrame = (
+        self.run_next_leg_charge_from_network_cumulative: pd.DataFrame = (
             run_time.from_day_to_run(
-                trip.next_leg_charge_from_network_cumulative,
+                self.next_leg_charge_from_network_cumulative,
                 run_time_tags,
-                trip.day_start_hour,
+                self.day_start_hour,
                 scenario,
                 general_parameters,
             )
@@ -1613,7 +1613,7 @@ class TripChargingSession:
     class_name: str = 'trip_charging_session'
 
     def __init__(
-        charging_session,
+        self,
         location_name: str,
         session_size: float,
         session_start: float,
@@ -1627,28 +1627,28 @@ class TripChargingSession:
         location_discharge_power_to_network: float,
     ) -> None:
 
-        charging_session.start_time: float = session_start
-        charging_session.end_time: float = session_end
-        charging_session.location: str = location_name
-        charging_session.previous_leg_consumption: float = (
+        self.start_time: float = session_start
+        self.end_time: float = session_end
+        self.location: str = location_name
+        self.previous_leg_consumption: float = (
             incoming_consumption * session_size
         )
-        charging_session.next_leg_consumption: float = (
+        self.next_leg_consumption: float = (
             outgoing_consumption * session_size
         )
-        charging_session.connectivity: float = (
+        self.connectivity: float = (
             location_connectivity * session_size
         )
-        charging_session.power_to_vehicle: float = (
+        self.power_to_vehicle: float = (
             location_charging_power_to_vehicle * session_size
         )
-        charging_session.power_from_network: float = (
+        self.power_from_network: float = (
             location_charging_power_from_network * session_size
         )
-        charging_session.power_from_vehicle: float = (
+        self.power_from_vehicle: float = (
             location_discharge_power_from_vehicle * session_size
         )
-        charging_session.power_to_network: float = (
+        self.power_to_network: float = (
             location_discharge_power_to_network * session_size
         )
 

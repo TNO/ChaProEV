@@ -33,6 +33,6 @@ pythonpath = ['src/ChaProEV']
 'Homepage' = 'https://github.com/TNO/ChaProEV'
 
 [[tool.mypy.overrides]]
-module = ['geopandas/*', 'plotly/*', 'tomllib/*', 'tomli/*', 'cdsapi/*', 'toml/*']
+module = ['geopandas/*', 'plotly/*', 'tomllib/*', 'tomli/*', 'cdsapi/*', 'toml/*', 'eurostat/*']
 ignore_missing_imports = true
 

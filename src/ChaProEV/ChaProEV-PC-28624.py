@@ -7,9 +7,9 @@ import typing as ty
 from itertools import repeat
 from multiprocessing import Pool
 
-import tqdm
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from tqdm.rich import tqdm
 
 try:
     import writing  # type: ignore
@@ -69,9 +69,10 @@ except ModuleNotFoundError:
 @cook.function_timer
 def run_ChaProEV(case_name: str) -> None:
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = Box(
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
+
     output_root: str = general_parameters.files.output_root
     cook.check_if_folder_exists(f'{output_root}/{case_name}')
     variant_parameters: Box = general_parameters.variants
@@ -103,7 +104,7 @@ def run_ChaProEV(case_name: str) -> None:
         progress_bars_parameters.scenario_run_description
     )
     if display_scenario_run:
-        pool_inputs = tqdm.tqdm(
+        pool_inputs = tqdm(
             pool_inputs,
             desc=scenario_run_description,
             total=len(scenarios),
@@ -124,7 +125,7 @@ def run_ChaProEV(case_name: str) -> None:
 if __name__ == '__main__':
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
-    case_name = 'bus_test'
+    case_name = 'Mopo'
 
     run_ChaProEV(case_name)
 

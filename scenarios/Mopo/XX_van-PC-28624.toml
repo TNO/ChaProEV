@@ -63,8 +63,8 @@ download_EV_tool_data = false
 # Add locations following the syntax below:
 # [location.code] <--use the the code/alias you want for the location
 # and put the desired properties below
-[locations.truck_hub]
-vehicle = 'truck'
+[locations.van_base]
+vehicle = 'van'
 connectivity = 1
 charging_power = 200  # kW
 charger_efficiency = 0.85
@@ -76,15 +76,15 @@ charging_desirability = 1
 percentage_in_location_at_run_start = 1
 # If filling it directly instead of computing it (controlled by
 # compute_start_location_split in mobility_module below)
-vehicle_discharge_power = 150 # kW
+vehicle_discharge_power = 100 # kW
 proportion_of_discharge_to_network = 0.9
 time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
-[locations.truck_customer]
-vehicle = 'truck'
+[locations.van_customer]
+vehicle = 'van'
 connectivity = 0.1
 charging_power = 200  # kW
 charger_efficiency = 0.85
@@ -104,6 +104,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
 
+
 [legs]
 # You can add legs here by copying existing legs,
 # changing the name of the leg (in [legs.go_to_work], go_to_work is
@@ -111,10 +112,10 @@ time_modulation_factors = [
 # Note that you need to change the leg name in all parts where it occurs
 # (i.e. also in [legs.go_to_work.locations],[legs.go_to_work.road_types],
 # etc.
-[legs.truck_to_customer]
-vehicle = 'truck'
-distance = 42  # km # To get to about 91_000 km per year
-duration = 1  # hours
+[legs.van_to_customer]
+vehicle = 'van'
+distance = 2.6  # km # Chosen to match 18_000 km per year
+duration = 0.25  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -126,10 +127,10 @@ hour_in_day_factors = [
     1.2, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1
 ]
-[legs.truck_to_customer.locations]
-start = 'truck_hub'
-end = 'truck_customer'
-[legs.truck_to_customer.road_type_mix]
+[legs.van_to_customer.locations]
+start = 'van_base'
+end = 'van_customer'
+[legs.van_to_customer.road_type_mix]
 # Give the road type mix
 # We need a value for each of the road_types (see above in [transport_factors])
 # If the road type does not occur in the leg, simply put 0
@@ -137,10 +138,10 @@ end = 'truck_customer'
 # so you need to make sure you do this correctly)
 # road_types = ['highway', 'city']
 mix = [0.8, 0.2]
-[legs.truck_to_hub]
-vehicle = 'truck'
-distance = 42 # km # To get to about 91_000 km per year
-duration = 1  # hours
+[legs.van_to_base]
+vehicle = 'van'
+distance = 2.6  # km # Chosen to match 18_000 km per year
+duration = 0.25  # hours
 # This factor adds a correction to the vehicle consumption that depends
 # on the hour in day (the first is for 00:00 to 00:59,
 # the last for 23:00 to 23:59). Note that these are actual hours,
@@ -152,10 +153,10 @@ hour_in_day_factors = [
     1.2, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1
 ]
-[legs.truck_to_hub.locations]
-start = 'truck_customer'
-end = 'truck_hub'
-[legs.truck_to_hub.road_type_mix]
+[legs.van_to_base.locations]
+start = 'van_customer'
+end = 'van_base'
+[legs.van_to_base.road_type_mix]
 # Give the road type mix
 # We need a value for each of the road_types (see above in [transport_factors])
 # If the road type does not occur in the leg, simply put 0
@@ -163,77 +164,91 @@ end = 'truck_hub'
 # so you need to make sure you do this correctly)
 # road_types = ['highway', 'city']
 mix = [0.8, 0.2]
-
 
 [vehicle]
-
-name = 'truck'
-base_location = 'truck_hub' # not relevant for cars
-yearly_kilometrage = 91_250
-# 250 km per day https://www.agendalaadinfrastructuur.nl/ondersteuning+gemeenten/documenten+en+links/documenten+in+bibliotheek/handlerdownloadfiles.ashx?idnv=2547592#:~:text=Op%20dit%20moment%20gebruikt%20een,dieselvrachtwagen%20(Mobilyze%2C%202023).
+name = 'van'
+base_location = 'van_base' # not relevant for cars
+yearly_kilometrage = 18_000
+# https://www.cbs.nl/nl-nl/visualisaties/verkeer-en-vervoer/verkeer/verkeersprestaties-bestelautos
 # Not relevant for cars, as it is built bottom-up
 kilometers_column_for_consumption = 'Arrivals'
 use_weighted = false
-battery_capacity = 540  # kWh
-# https://www.volvotrucks.com/en-en/news-stories/press-releases/2022/jan/volvos-heavy-duty-electric-truck-is-put-to-the-test-excels-in-both-range-and-energy-efficiency.html
+battery_capacity = 80  # kWh
 solar_panel_size_kWp = 0  # kWp
 [vehicle.base_consumption_per_km]
 electricity_kWh = 0.1451
 gasoline_litres = 0.0649
 diesel_litres = 0.0557
 hydrogen_kg = 0.0076
+LPG_litres = 0.092
 CNG_kg = 0.0461
-LNG_kg = 0.0461
 
- 
 [trips]
-
-[trips.truck_weekday]
-vehicle = 'truck'
+[trips.van_weekday]
+vehicle = 'van'
 legs = [
-    'truck_to_customer',
-    'truck_to_hub',
+    'van_to_customer',
+    'van_to_base',
+    'van_to_customer',
+    'van_to_base',
+    'van_to_customer',
+    'van_to_base',
+    'van_to_customer',
+    'van_to_base',
 ]
+# Corresponding to morning peak, day off-peak, eveening peak, evening off-peak
 
-time_between_legs =  [0.8] #[1.5] #  [2] # [0.5]
+time_between_legs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 0.5, 0.5, 0, 0, 0, 0, 0,
+    0, 0.25, 0.75, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = [
-    'truck_to_customer',
-    'truck_to_hub',
+    'van_to_customer',
+    'van_to_base',
     ]
-repetition_amounts = [2]
-time_between_repetitions = [1.7] # [4.5] # [0.5] # [1.5]  # [0.5] # hours
+repetition_amounts = [3, 1, 1, 1]
+time_between_repetitions = [0.1, 1, 0.1, 1] # hours
 
-
-[trips.truck_weekend]
-vehicle = 'truck'
+[trips.van_weekend]
+vehicle = 'van'
 legs = [
-    'truck_to_customer',
-    'truck_to_hub',
+    'van_to_customer',
+    'van_to_base',
+    'van_to_customer',
+    'van_to_base',
+    'van_to_customer',
+    'van_to_base',
+    'van_to_customer',
+    'van_to_base',
 ]
+# Corresponding to morning peak, day off-peak, eveening peak, evening off-peak
 
-time_between_legs =  [1] #[1.5]
+time_between_legs = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5 , 0.5]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
 start_probabilities = [
-    0, 1, 0, 0, 0, 0, 0, 0,
+    0, 0.25, 0.75, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 ]  # Start at day start hour
 repeated_sequence = [
-    'truck_to_customer',
-    'truck_to_hub',
+    'van_to_customer',
+    'van_to_base',
     ]
-repetition_amounts = [2]
-time_between_repetitions = [1] #[1.5] # hours
+repetition_amounts = [1, 1, 1, 1]
+time_between_repetitions = [0.1, 2, 0.1, 2] # hours
+
+
+
+
+
+
 
 
 # These parameters are used for the ChaProEV mobility module
@@ -298,8 +313,8 @@ worked_hours_per_year = 1434  # hours
 leisure_trips_per_weekend = 1
 leisure_trips_per_week_outside_weekends = 2
 maximal_fill_percentage_leisure_trips_on_non_work_weekdays = 1
-weekday_leisure_trips = 2
-percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
+# weekday_leisure_trips = 2
+# percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
 
 weekend_trips_per_year = 12
 
@@ -427,11 +442,11 @@ fitting_polynomial_order = 6
 
 
 
-
 [charging]
 price_reaction_exponent = 0 # 0.5
 desirability_reaction_exponent = 0 # 1
 
 [charging_sessions]
 resolution = 1 # subdivisions from main unit of time
+
 

@@ -654,7 +654,7 @@ def compute_charging_events(
         )
 
         percent_charging: float = charging_location_parameters.connectivity
-        location_charging_power: float = (
+        location_charging_power: float = float(
             charging_location_parameters.charging_power
         )
         location_modulated_charging_power: float = (

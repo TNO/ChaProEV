@@ -12,7 +12,7 @@ The parameters of a leg are:
 
 1. **Name:** The name of the leg
 2. **Vehicle:** The vehicle that runs the leg. If this does not correspond
-to the [scenario vehicle name](scenario.md#vehicle-name), then the leg is not
+to the [scenario vehicle name](scenario.md#name), then the leg is not
 declared.  Note that when running a
 scenario, you select one vehicle, so this is in principle not necessary.
 The reason for having this is to allow the user to copy the baseline file
@@ -40,7 +40,7 @@ The parameters of a location are:
 
 1. **Name**: The name of the location.
 2. **Vehicle:** The vehicle that uses the location. If this does not correspond
-to the [scenario vehicle name](scenario.md#vehicle-name), then the trip is not
+to the [scenario vehicle name](scenario.md#name), then the trip is not
 declared.  Note that when running a
 scenario, you select one vehicle, so this is in principle not necessary.
 The reason for having this is to allow the user to copy the baseline file
@@ -86,7 +86,7 @@ This value is set in the scenario files.
 ### Parameters
 1. **Name**: The name of the trip.
 2. **Vehicle:** The vehicle that does the trip. If this does not correspond
-to the [scenario vehicle name](scenario.md#vehicle-name), then the trip is not
+to the [scenario vehicle name](scenario.md#name), then the trip is not
 declared. Note that when running 
 a scenario, you select one vehicle, so this is in principle not necessary.
 The reason for having this is to allow the user to copy the baseline file
@@ -181,3 +181,11 @@ Have one trip per day type for non-cars
 
 Reference to day start hour
 cross-links with scenario
+
+
+## declare_class_instances
+
+
+## compute_travel_impact
+
+## get_trip_charging_sessions

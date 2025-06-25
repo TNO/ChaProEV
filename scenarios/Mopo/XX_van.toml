@@ -313,8 +313,8 @@ worked_hours_per_year = 1434  # hours
 leisure_trips_per_weekend = 1
 leisure_trips_per_week_outside_weekends = 2
 maximal_fill_percentage_leisure_trips_on_non_work_weekdays = 1
-# weekday_leisure_trips = 2
-# percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
+weekday_leisure_trips = 2
+percentage_of_weekday_leisure_trips_on_a_work_day = 0.5
 
 weekend_trips_per_year = 12
 
