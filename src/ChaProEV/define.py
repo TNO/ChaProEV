@@ -714,14 +714,10 @@ class Location:
         this_location_parameters: Box = scenario.locations[name]
         self.vehicle: str = this_location_parameters.vehicle
         self.connectivity: float = this_location_parameters.connectivity
-        self.charging_power: float = (
-            this_location_parameters.charging_power
-        )
+        self.charging_power: float = this_location_parameters.charging_power
         self.latitude: float = this_location_parameters.latitude
         self.longitude: float = this_location_parameters.longitude
-        self.charging_price: float = (
-            this_location_parameters.charging_price
-        )
+        self.charging_price: float = this_location_parameters.charging_price
         self.charging_desirability: float = (
             this_location_parameters.charging_desirability
         )
@@ -1395,6 +1391,7 @@ class Trip:
             self.next_leg_kilometers.copy()
         )
 
+        previous_leg_arrivals_amount: list[float] = []
         for leg_index, leg_name in enumerate(self.legs):
 
             leg_parameters = scenario.legs[leg_name]
@@ -1402,7 +1399,7 @@ class Trip:
             end_location = leg_parameters.locations.end
 
             if leg_index == 0:
-                previous_leg_arrivals_amount: list[float] = []
+
                 for hour_index in range(HOURS_IN_A_DAY - 1):
                     # We skip the last time slot, as this should wrap the trip
                     # and we are not looking into the next day
@@ -1633,12 +1630,8 @@ class TripChargingSession:
         self.previous_leg_consumption: float = (
             incoming_consumption * session_size
         )
-        self.next_leg_consumption: float = (
-            outgoing_consumption * session_size
-        )
-        self.connectivity: float = (
-            location_connectivity * session_size
-        )
+        self.next_leg_consumption: float = outgoing_consumption * session_size
+        self.connectivity: float = location_connectivity * session_size
         self.power_to_vehicle: float = (
             location_charging_power_to_vehicle * session_size
         )
@@ -2073,8 +2066,8 @@ def get_charging_sessions_dataframe(
 if __name__ == '__main__':
     start_: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
     case_name = 'Mopo'
     test_scenario_name: str = 'XX_bus'
