@@ -72,8 +72,6 @@ def make_csv_variants(case_name: str) -> None:
                 # encoding='utf-8',
             ) as file_to_write:
                 tomli_w.dump(variant_scenario, file_to_write)
-                
-                exit()
 
 
 def make_toml_variants(case_name: str) -> None:

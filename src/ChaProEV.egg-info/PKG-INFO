@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ChaProEV
-Version: 1.2.9
+Version: 1.3.0
 Summary: ChaProEV: Charging Profiles of Electric Vehicles
 Author-email: Omar Usmani <Omar.Usmani@TNO.nl>
 Project-URL: Homepage, https://github.com/TNO/ChaProEV
@@ -18,7 +18,7 @@ Requires-Dist: numpy>=2.1.3
 Requires-Dist: pandas>=2.2.3
 Requires-Dist: python-box>=7.2.0
 Requires-Dist: requests>=2.32.3
-Requires-Dist: toml>=0.10.2
+Requires-Dist: tomli_w>=1.2.0
 Requires-Dist: tqdm>=4.67.0
 Dynamic: license-file
 
