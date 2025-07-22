@@ -1110,7 +1110,8 @@ class Trip:
                 location_connectivity * charging_power
             )
             this_location_vehicle_discharge_power: float = (
-                this_location_parameters.vehicle_discharge_power
+                location_connectivity
+                * this_location_parameters.vehicle_discharge_power
             )
             this_location_proportion_of_discharge_to_network: float = (
                 this_location_parameters.proportion_of_discharge_to_network
@@ -2070,7 +2071,7 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
     case_name = 'Mopo'
-    test_scenario_name: str = 'XX_bus'
+    test_scenario_name: str = 'XX_car_test'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
@@ -2081,11 +2082,16 @@ if __name__ == '__main__':
     )
     for trip in trips:
         print(trip.name)
-        print(trip.mobility_matrix)
-        trip.mobility_matrix.to_csv(
-            f'test_bus_moility_matrices/{trip.name}.csv'
-        )
-        print(trip.next_leg_kilometers)
-        exit()
+        # print(trip.mobility_matrix)
+        print(trip.vehicle_discharge_power_per_location)
+        print(trip.vehicle_discharge_power)
+        print(trip.maximal_received_power_per_location)
+        print(trip.maximal_received_power)
 
+        # trip.mobility_matrix.to_csv(
+        #     f'test_bus_moility_matrices/{trip.name}.csv'
+        # )
+        # print(trip.next_leg_kilometers)
+        input()
+    exit()
     print((datetime.datetime.now() - start_).total_seconds())
