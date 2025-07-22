@@ -1,7 +1,7 @@
 import os
 
 import pandas as pd
-import toml
+import tomli_w
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -68,10 +68,12 @@ def make_csv_variants(case_name: str) -> None:
 
             with open(
                 f'scenarios/{case_name}/{variant_name}.toml',
-                'w',
-                encoding='utf-8',
+                'wb',
+                # encoding='utf-8',
             ) as file_to_write:
-                toml.dump(variant_scenario, file_to_write)
+                tomli_w.dump(variant_scenario, file_to_write)
+                
+                exit()
 
 
 def make_toml_variants(case_name: str) -> None:
