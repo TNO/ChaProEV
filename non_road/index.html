@@ -123,6 +123,28 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#modes">modes</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#progress_bars">progress_bars</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#display_scenario_run">display_scenario_run</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#scenario_run_description">scenario_run_description</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#parallel_processing">parallel_processing</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#set_amount_of_processes">set_amount_of_processes</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#amount_of_processes">amount_of_processes</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#files">files</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#filesdataframe_outputs">files.dataframe_outputs</a>
+    </li>
+        </ul>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#eurostat">Eurostat</a>
         <ul>
     <li class="toctree-l4"><a class="reference internal" href="#fetch">fetch</a>
@@ -246,6 +268,8 @@ It first [loads the scenarios][#load_scenarios] and then runs
 the <a href="#get_profile">profile getting</a> function for each scenario
 (see the <a href="../parallel_processing/">general explanation about this</a> )</p>
 <h3 id="load_scenarios">load_scenarios</h3>
+<p>This loads <a href="#scenarios">scenarios</a> into a list so that they can be used to
+[get profiles][#get_profile].</p>
 <h3 id="get_profile">get_profile</h3>
 <h2 id="configuration-non-roadtoml">Configuration (non-road.toml)</h2>
 <h4 id="historical_dataframe_name">historical_dataframe_name</h4>
@@ -294,6 +318,24 @@ energy_carriers = [
 
 ]
 </code></pre>
+<h3 id="progress_bars">progress_bars</h3>
+<p>Parameters related to displaying progress bars using <a href="https://github.com/tqdm/tqdm">tqdm</a>.</p>
+<h4 id="display_scenario_run">display_scenario_run</h4>
+<p>Set to true if you want to show progress bars</p>
+<h4 id="scenario_run_description">scenario_run_description</h4>
+<p>The text to display together with the progress bars</p>
+<h3 id="parallel_processing">parallel_processing</h3>
+<p>Parameters related to  <a href="../parallel_processing/">parallel processing</a>.</p>
+<h4 id="set_amount_of_processes">set_amount_of_processes</h4>
+<p>Set to true if you want to adjust the amount pof processes by hand.</p>
+<h4 id="amount_of_processes">amount_of_processes</h4>
+<p>The amount of processes if set by hand.</p>
+<h3 id="files">files</h3>
+<h4 id="filesdataframe_outputs">files.dataframe_outputs</h4>
+<p>Indicate below if you want to save your Pandas DataFrames in the
+listed formats (put a true if you want to do so, false if you don't).
+This uses the <a href="https://tno.github.io/ETS_CookBook/save_dataframe/">Save DataFrame</a>
+from the <a href="https://github.com/TNO/ETS_CookBook">ETS CookBook</a>.</p>
 <h3 id="eurostat">Eurostat</h3>
 <p>These are parameters for getting data from the Eurostat API,
 using the <a href="https://pypi.org/project/eurostat/">Eurostat Python Package</a></p>
