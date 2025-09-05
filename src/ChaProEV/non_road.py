@@ -34,7 +34,7 @@ def get_Eurostat_balances(
         )
 
         output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
-        print(Eurostat_balances_dataframe)
+
         cook.save_dataframe(
             dataframe=Eurostat_balances_dataframe,
             dataframe_name=Eurostat_parameters.table_name,
@@ -44,53 +44,13 @@ def get_Eurostat_balances(
         )
 
 
-def process_Eurostat_dataframe(
+def get_reference_year_data(
     non_road_parameters: box.Box,
 ) -> pd.DataFrame:
     '''
     Processes the DataFrame fetched from Eurostat into a DataFrame for the
-    years, modes, energy carriers we want.
+    refrence year, modes, energy carriers we want.
     '''
-
-    historical_values: pd.DataFrame = pd.DataFrame()
-
-    modes: list[str] = list(non_road_parameters.modes.keys())
-
-    for mode in modes:
-        mode_historical_values: pd.DataFrame = get_mode_Eurostat_values(
-            mode, non_road_parameters
-        ).reset_index()
-        historical_values = pd.concat(
-            [historical_values, mode_historical_values], ignore_index=False
-        )
-
-    historical_values = historical_values.set_index(
-        non_road_parameters.demand_index
-    )
-
-    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
-
-    historical_values = historical_values.sort_index()
-
-    cook.save_dataframe(
-        dataframe=historical_values,
-        dataframe_name=non_road_parameters.historical_dataframe_name,
-        groupfile_name=case_name,
-        output_folder=output_folder,
-        dataframe_formats=non_road_parameters.files.dataframe_outputs,
-    )
-
-    return historical_values
-
-
-def get_mode_Eurostat_values(
-    mode: str, non_road_parameters: box.Box
-) -> pd.DataFrame:
-    '''
-    This function get historical data from the Eurostat DataFrame for a
-    given mode.
-    '''
-
     eurostat_table_name: str = non_road_parameters.Eurostat.table_name
     database_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
     database_file: str = f'{database_folder}/{case_name}.sqlite3'
@@ -98,6 +58,42 @@ def get_mode_Eurostat_values(
     eurostat_dataframe: pd.DataFrame = cook.read_table_from_database(
         eurostat_table_name, database_file
     ).set_index(non_road_parameters.Eurostat.index_headers)
+
+    reference_values: pd.DataFrame = pd.DataFrame()
+
+    modes: list[str] = list(non_road_parameters.modes.keys())
+
+    for mode in modes:
+        mode_reference_values: pd.DataFrame = get_mode_reference_values(
+            mode, non_road_parameters, eurostat_dataframe
+        ).reset_index()
+        reference_values = pd.concat(
+            [reference_values, mode_reference_values], ignore_index=False
+        )
+    reference_values = reference_values.set_index(
+        non_road_parameters.demand_index
+    ).sort_index()
+
+    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+
+    cook.save_dataframe(
+        dataframe=reference_values,
+        dataframe_name=non_road_parameters.historical_dataframe_name,
+        groupfile_name=case_name,
+        output_folder=output_folder,
+        dataframe_formats=non_road_parameters.files.dataframe_outputs,
+    )
+
+    return reference_values
+
+
+def get_mode_reference_values(
+    mode: str, non_road_parameters: box.Box, eurostat_dataframe: pd.DataFrame
+) -> pd.DataFrame:
+    '''
+    This function get reference historical data from the Eurostat DataFrame
+    for a given mode.
+    '''
 
     mode_parameters: box.Box = non_road_parameters.modes[mode]
     mode_code: str = mode_parameters.code
@@ -107,42 +103,46 @@ def get_mode_Eurostat_values(
         for energy_carrier in mode_energy_carriers
     ]
 
-    mode_historical_values: pd.DataFrame = (
+    mode_reference_values: pd.DataFrame = (
         eurostat_dataframe.loc[
             mode_code,
             mode_energy_carrier_codes,
             non_road_parameters.Eurostat.unit_to_use,  # type: ignore
         ][  # type: ignore
-            str(non_road_parameters.historical_year)
+            str(non_road_parameters.reference_historical_year)
         ]  # type: ignore
-        / 1000  # baecause we want to use PJs and the data is in TJ
+        / 1000  # because we want to use PJs and the data is in TJ
     )
 
-    mode_historical_values = mode_historical_values.reset_index()
+    mode_reference_values = mode_reference_values.reset_index()
 
-    mode_historical_values['unit'] = 'PJ'
+    mode_reference_values['unit'] = 'PJ'
 
-    mode_historical_values['siec'] = [
+    mode_reference_values['siec'] = [
         get_name_from_siec_code(siec_code, non_road_parameters.Energy_carriers)
-        for siec_code in mode_historical_values['siec']
+        for siec_code in mode_reference_values['siec']
     ]
 
-    mode_historical_values = mode_historical_values.rename(
+    mode_reference_values = mode_reference_values.rename(
         columns={
             'siec': 'Energy carrier',
             r'geo\TIME_PERIOD': 'Country Code',
-            str(
-                non_road_parameters.historical_year
-            ): non_road_parameters.demand_header[0],
+            # str(
+            #     non_road_parameters.reference_historical_year
+            # ): non_road_parameters.demand_header[0],
         }
     )
-    mode_historical_values['Year'] = non_road_parameters.historical_year
-    mode_historical_values['Mode'] = mode
-    mode_historical_values = mode_historical_values.set_index(
-        non_road_parameters.demand_index
-    )[non_road_parameters.demand_header[0]]
 
-    return mode_historical_values
+    # mode_historical_values['Year'] = non_road_parameters.historical_year
+    mode_reference_values['Mode'] = mode
+
+    mode_reference_values = pd.DataFrame(
+        mode_reference_values.set_index(non_road_parameters.demand_index)[
+            str(non_road_parameters.reference_historical_year)
+        ]
+    )
+
+    return mode_reference_values
 
 
 def get_siec_code(energy_carier: str, carrier_parameters: box.Box) -> str:
@@ -179,6 +179,46 @@ def get_name_from_siec_code(
     carrier_name: str = code_dict[siec_code]
 
     return carrier_name
+
+
+def get_future_demand_values(
+    reference_historical_values: pd.DataFrame,
+    non_road_parameters: box.Box,
+    case_name: str,
+) -> pd.DataFrame:
+    '''
+    Gets the demand for future years.
+    '''
+
+    growth_factors: pd.DataFrame = pd.read_csv(
+        f'{non_road_parameters.source_folder}/{case_name}/'
+        f'{non_road_parameters.growth_factors_file}'
+    ).set_index(non_road_parameters.growth_factors_index)
+
+    future_demand_values: pd.DataFrame = pd.DataFrame(
+        index=reference_historical_values.index, columns=growth_factors.columns
+    )
+
+    for year_label in growth_factors.columns:
+
+        future_demand_values[year_label] = (
+            growth_factors[year_label]
+            * reference_historical_values[
+                str(non_road_parameters.reference_historical_year)
+            ]
+        )
+
+    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+
+    cook.save_dataframe(
+        dataframe=future_demand_values,
+        dataframe_name=non_road_parameters.demand_dataframe_name,
+        groupfile_name=case_name,
+        output_folder=output_folder,
+        dataframe_formats=non_road_parameters.files.dataframe_outputs,
+    )
+
+    return future_demand_values
 
 
 def get_run_demand(
@@ -365,63 +405,19 @@ def get_non_road_profiles(
     return output_profiles
 
 
-def get_demand_values(
-    historical_values: pd.DataFrame,
-    non_road_parameters: box.Box,
-    case_name: str,
-) -> pd.DataFrame:
-
-    demand_values: pd.DataFrame = historical_values.copy()
-
-    scenarios: list[box.Box] = load_scenarios(
-        non_road_parameters.source_folder, case_name
-    )
-    historical_year: int = non_road_parameters.historical_year
-
-    for scenario in scenarios:
-        country_code: str = scenario.name.split('_')[0]
-        mode: str = scenario.name.split('_')[1]
-        year: int = int(scenario.name.split('_')[2])
-        energy_carrier: str = scenario.name.split('_')[3]
-
-        historical_value: float = historical_values.loc[
-            country_code, mode, historical_year, energy_carrier
-        ][non_road_parameters.demand_header]
-
-        scenario_value: float = scenario.growth * historical_value
-
-        demand_values.loc[
-            (country_code, mode, year, energy_carrier),
-            non_road_parameters.demand_header,
-        ] = scenario_value
-
-    demand_values = demand_values.sort_index()
-    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
-
-    cook.save_dataframe(
-        dataframe=demand_values,
-        dataframe_name=non_road_parameters.demand_dataframe_name,
-        groupfile_name=case_name,
-        output_folder=output_folder,
-        dataframe_formats=non_road_parameters.files.dataframe_outputs,
-    )
-
-    return demand_values
-
-
 def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
 
     get_Eurostat_balances(non_road_parameters, case_name)
 
-    historical_values: pd.DataFrame = process_Eurostat_dataframe(
+    reference_historical_values: pd.DataFrame = get_reference_year_data(
         non_road_parameters
     )
-    print(historical_values)
-    exit()
 
-    demand_values: pd.DataFrame = get_demand_values(
-        historical_values, non_road_parameters, case_name
+    future_demand_values: pd.DataFrame = get_future_demand_values(
+        reference_historical_values, non_road_parameters, case_name
     )
+    print(future_demand_values)
+    exit()
 
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
         case_name, demand_values, non_road_parameters

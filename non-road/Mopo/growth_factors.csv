@@ -1,0 +1,1392 @@
+Country Code,Mode,Energy carrier,2030,2040,2050
+AL,domestic-aviation,Aviation gasoline,1.49,1.85,2.11
+AL,domestic-aviation,Blended bio jet kerosene,1.11,1.83,2.39
+AL,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.26,1.9,2.33
+AL,domestic-navigation,Blended biodiesels,1.35,1.61,2.2
+AL,domestic-navigation,Fuel oil,1.3,1.86,2.04
+AL,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.03,1.63,2.36
+AL,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.42,1.79,2.06
+AL,domestic-navigation,Lubricants,1.34,1.65,2.4
+AL,domestic-navigation,Motor gasoline (excluding biofuel portion),1.38,1.88,2.3
+AL,domestic-navigation,Natural gas,1.37,1.95,2.43
+AL,domestic-navigation,Other liquid biofuels,1.3,1.57,2.36
+AL,domestic-navigation,Other oil products n.e.c.,1.32,1.98,2.45
+AL,domestic-navigation,Pure biodiesels,1.41,1.91,2.43
+AL,international-aviation,Aviation gasoline,1.29,1.8,2.17
+AL,international-aviation,Blended bio jet kerosene,1.03,1.51,2.08
+AL,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.9,2.11
+AL,international-maritime-bunkers,Blended biodiesels,1.36,1.66,2.43
+AL,international-maritime-bunkers,Fuel oil,1.39,1.5,2.39
+AL,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.43,1.75,2.44
+AL,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.04,1.66,2
+AL,international-maritime-bunkers,Lubricants,1.08,1.88,2.39
+AL,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.01,1.8,2.05
+AL,international-maritime-bunkers,Natural gas,1.01,1.56,2.42
+AL,international-maritime-bunkers,Other liquid biofuels,1.24,1.59,2.09
+AL,international-maritime-bunkers,Other oil products n.e.c.,1.21,1.53,2.34
+AL,international-maritime-bunkers,Pure biodiesels,1.13,1.83,2.29
+AL,rail,Blended biodiesels,1.45,1.64,2.43
+AL,rail,Electricity,1.08,1.57,2.22
+AL,rail,Gas oil and diesel oil (excluding biofuel portion),1.36,1.65,2.27
+AL,rail,Liquefied petroleum gases,1.32,1.66,2.05
+AL,rail,Other bituminous coal,1.21,1.87,2.47
+AL,rail,Primary solid biofuels,1.39,1.55,2.08
+AL,rail,Pure biodiesels,1.02,1.7,2.21
+AL,rail,Solid fossil fuels,1.2,1.66,2.36
+AT,domestic-aviation,Aviation gasoline,1.3,1.96,2.26
+AT,domestic-aviation,Blended bio jet kerosene,1.26,1.8,2.21
+AT,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.05,1.63,2.1
+AT,domestic-navigation,Blended biodiesels,1.4,1.84,2.23
+AT,domestic-navigation,Fuel oil,1.4,1.58,2.1
+AT,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.33,1.77,2.11
+AT,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.33,1.59,2.11
+AT,domestic-navigation,Lubricants,1.06,1.53,2.37
+AT,domestic-navigation,Motor gasoline (excluding biofuel portion),1.02,1.63,2.4
+AT,domestic-navigation,Natural gas,1.48,1.96,2.18
+AT,domestic-navigation,Other liquid biofuels,1.21,1.6,2.32
+AT,domestic-navigation,Other oil products n.e.c.,1.29,1.55,2.36
+AT,domestic-navigation,Pure biodiesels,1.35,1.54,2
+AT,international-aviation,Aviation gasoline,1.29,1.96,2.21
+AT,international-aviation,Blended bio jet kerosene,1.45,1.63,2.14
+AT,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.32,1.83,2.45
+AT,international-maritime-bunkers,Blended biodiesels,1.25,1.85,2.14
+AT,international-maritime-bunkers,Fuel oil,1.49,1.98,2.36
+AT,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.18,1.74,2.04
+AT,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.46,1.56,2.13
+AT,international-maritime-bunkers,Lubricants,1.14,1.57,2.35
+AT,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.33,1.95,2.5
+AT,international-maritime-bunkers,Natural gas,1.43,1.55,2.34
+AT,international-maritime-bunkers,Other liquid biofuels,1.3,1.9,2.41
+AT,international-maritime-bunkers,Other oil products n.e.c.,1.13,1.68,2.02
+AT,international-maritime-bunkers,Pure biodiesels,1.32,1.72,2.44
+AT,rail,Blended biodiesels,1.09,1.81,2.41
+AT,rail,Electricity,1.1,1.94,2.06
+AT,rail,Gas oil and diesel oil (excluding biofuel portion),1.16,1.74,2.08
+AT,rail,Liquefied petroleum gases,1.35,1.83,2.33
+AT,rail,Other bituminous coal,1.3,1.52,2.15
+AT,rail,Primary solid biofuels,1.06,1.88,2.33
+AT,rail,Pure biodiesels,1.07,1.52,2.11
+AT,rail,Solid fossil fuels,1.29,1.95,2.4
+BA,domestic-aviation,Aviation gasoline,1.37,1.61,2.39
+BA,domestic-aviation,Blended bio jet kerosene,1.11,1.56,2.21
+BA,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.46,1.62,2.21
+BA,domestic-navigation,Blended biodiesels,1.16,1.81,2.26
+BA,domestic-navigation,Fuel oil,1.47,1.69,2.1
+BA,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.11,1.83,2.13
+BA,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.27,1.96,2.19
+BA,domestic-navigation,Lubricants,1.49,1.77,2.43
+BA,domestic-navigation,Motor gasoline (excluding biofuel portion),1.08,1.67,2.44
+BA,domestic-navigation,Natural gas,1.49,1.9,2.06
+BA,domestic-navigation,Other liquid biofuels,1.37,1.84,2.03
+BA,domestic-navigation,Other oil products n.e.c.,1.45,1.58,2.02
+BA,domestic-navigation,Pure biodiesels,1.08,1.93,2.29
+BA,international-aviation,Aviation gasoline,1.27,1.6,2.02
+BA,international-aviation,Blended bio jet kerosene,1.23,1.53,2.14
+BA,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.35,1.7,2.2
+BA,international-maritime-bunkers,Blended biodiesels,1.25,1.7,2.18
+BA,international-maritime-bunkers,Fuel oil,1.06,1.94,2.31
+BA,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.38,1.67,2.5
+BA,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.17,1.64,2.1
+BA,international-maritime-bunkers,Lubricants,1.17,1.87,2.11
+BA,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.14,1.62,2.28
+BA,international-maritime-bunkers,Natural gas,1.38,1.52,2.22
+BA,international-maritime-bunkers,Other liquid biofuels,1.4,1.53,2.37
+BA,international-maritime-bunkers,Other oil products n.e.c.,1.35,1.58,2.34
+BA,international-maritime-bunkers,Pure biodiesels,1.16,1.86,2.02
+BA,rail,Blended biodiesels,1.13,1.55,2.2
+BA,rail,Electricity,1.13,1.73,2.27
+BA,rail,Gas oil and diesel oil (excluding biofuel portion),1.14,1.9,2.08
+BA,rail,Liquefied petroleum gases,1.08,1.82,2.14
+BA,rail,Other bituminous coal,1.01,2,2.19
+BA,rail,Primary solid biofuels,1.12,1.96,2.44
+BA,rail,Pure biodiesels,1.35,1.81,2.01
+BA,rail,Solid fossil fuels,1.12,1.63,2.05
+BE,domestic-aviation,Aviation gasoline,1.1,1.94,2.48
+BE,domestic-aviation,Blended bio jet kerosene,1.13,1.66,2.29
+BE,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.44,1.62,2.39
+BE,domestic-navigation,Blended biodiesels,1.45,1.89,2.01
+BE,domestic-navigation,Fuel oil,1.33,1.91,2.26
+BE,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.09,1.86,2.11
+BE,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.2,1.66,2.39
+BE,domestic-navigation,Lubricants,1.44,1.82,2.1
+BE,domestic-navigation,Motor gasoline (excluding biofuel portion),1.17,1.57,2.14
+BE,domestic-navigation,Natural gas,1.46,1.55,2.49
+BE,domestic-navigation,Other liquid biofuels,1.1,1.86,2.29
+BE,domestic-navigation,Other oil products n.e.c.,1.34,1.77,2.19
+BE,domestic-navigation,Pure biodiesels,1.34,1.95,2.38
+BE,international-aviation,Aviation gasoline,1.45,1.86,2.4
+BE,international-aviation,Blended bio jet kerosene,1.38,1.75,2.08
+BE,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.17,1.59,2.31
+BE,international-maritime-bunkers,Blended biodiesels,1.36,1.5,2.29
+BE,international-maritime-bunkers,Fuel oil,1.26,1.61,2.12
+BE,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.4,1.71,2.05
+BE,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.46,1.97,2.34
+BE,international-maritime-bunkers,Lubricants,1.25,1.76,2.27
+BE,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.45,1.7,2.23
+BE,international-maritime-bunkers,Natural gas,1.15,1.59,2.07
+BE,international-maritime-bunkers,Other liquid biofuels,1.38,1.55,2.01
+BE,international-maritime-bunkers,Other oil products n.e.c.,1.49,1.98,2.03
+BE,international-maritime-bunkers,Pure biodiesels,1.31,1.72,2.13
+BE,rail,Blended biodiesels,1.14,1.86,2.36
+BE,rail,Electricity,1.31,1.64,2.1
+BE,rail,Gas oil and diesel oil (excluding biofuel portion),1.46,1.91,2.45
+BE,rail,Liquefied petroleum gases,1.47,2,2.25
+BE,rail,Other bituminous coal,1.47,1.94,2.02
+BE,rail,Primary solid biofuels,1.12,1.61,2.11
+BE,rail,Pure biodiesels,1.38,1.97,2.47
+BE,rail,Solid fossil fuels,1.46,1.55,2.04
+BG,domestic-aviation,Aviation gasoline,1.42,1.98,2.3
+BG,domestic-aviation,Blended bio jet kerosene,1.07,1.76,2.37
+BG,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.89,2.23
+BG,domestic-navigation,Blended biodiesels,1.01,1.72,2.39
+BG,domestic-navigation,Fuel oil,1.16,1.57,2.18
+BG,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.49,1.69,2.18
+BG,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.48,1.77,2.34
+BG,domestic-navigation,Lubricants,1.04,1.82,2.22
+BG,domestic-navigation,Motor gasoline (excluding biofuel portion),1.4,1.79,2.31
+BG,domestic-navigation,Natural gas,1.2,1.77,2.3
+BG,domestic-navigation,Other liquid biofuels,1.23,1.82,2.08
+BG,domestic-navigation,Other oil products n.e.c.,1.07,1.81,2.44
+BG,domestic-navigation,Pure biodiesels,1.46,1.75,2.43
+BG,international-aviation,Aviation gasoline,1.4,1.94,2.02
+BG,international-aviation,Blended bio jet kerosene,1.22,1.76,2.43
+BG,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.79,2.29
+BG,international-maritime-bunkers,Blended biodiesels,1.14,1.77,2.14
+BG,international-maritime-bunkers,Fuel oil,1.34,1.52,2.43
+BG,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.03,1.92,2.41
+BG,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.2,1.82,2.29
+BG,international-maritime-bunkers,Lubricants,1.02,1.7,2.17
+BG,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.31,1.85,2
+BG,international-maritime-bunkers,Natural gas,1.2,1.52,2.39
+BG,international-maritime-bunkers,Other liquid biofuels,1.03,1.93,2.2
+BG,international-maritime-bunkers,Other oil products n.e.c.,1.23,1.97,2.03
+BG,international-maritime-bunkers,Pure biodiesels,1.29,1.86,2.48
+BG,rail,Blended biodiesels,1.34,1.94,2.04
+BG,rail,Electricity,1.35,2,2.42
+BG,rail,Gas oil and diesel oil (excluding biofuel portion),1.17,2,2.31
+BG,rail,Liquefied petroleum gases,1.32,1.7,2.28
+BG,rail,Other bituminous coal,1.25,1.57,2.41
+BG,rail,Primary solid biofuels,1.46,1.76,2.31
+BG,rail,Pure biodiesels,1.19,1.8,2.38
+BG,rail,Solid fossil fuels,1.04,1.66,2.06
+CY,domestic-aviation,Aviation gasoline,1.15,1.51,2.39
+CY,domestic-aviation,Blended bio jet kerosene,1.5,2,2.27
+CY,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.01,1.59,2.15
+CY,domestic-navigation,Blended biodiesels,1.32,1.78,2.04
+CY,domestic-navigation,Fuel oil,1.38,1.73,2.18
+CY,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.09,1.67,2.25
+CY,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.13,1.82,2.49
+CY,domestic-navigation,Lubricants,1.1,1.8,2.45
+CY,domestic-navigation,Motor gasoline (excluding biofuel portion),1.13,1.94,2
+CY,domestic-navigation,Natural gas,1.12,1.95,2.33
+CY,domestic-navigation,Other liquid biofuels,1.21,1.58,2.03
+CY,domestic-navigation,Other oil products n.e.c.,1.15,1.87,2.26
+CY,domestic-navigation,Pure biodiesels,1.17,1.98,2.35
+CY,international-aviation,Aviation gasoline,1.03,1.64,2.37
+CY,international-aviation,Blended bio jet kerosene,1.23,1.71,2.48
+CY,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.31,1.99,2.18
+CY,international-maritime-bunkers,Blended biodiesels,1.2,1.58,2.19
+CY,international-maritime-bunkers,Fuel oil,1.29,1.91,2.35
+CY,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.16,1.99,2.22
+CY,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.43,1.88,2.08
+CY,international-maritime-bunkers,Lubricants,1.02,1.98,2.16
+CY,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.02,1.86,2.41
+CY,international-maritime-bunkers,Natural gas,1.06,1.79,2.15
+CY,international-maritime-bunkers,Other liquid biofuels,1.18,1.81,2.11
+CY,international-maritime-bunkers,Other oil products n.e.c.,1.02,1.76,2.47
+CY,international-maritime-bunkers,Pure biodiesels,1.09,1.85,2
+CY,rail,Blended biodiesels,1.03,1.55,2.2
+CY,rail,Electricity,1.29,1.94,2.01
+CY,rail,Gas oil and diesel oil (excluding biofuel portion),1.36,1.97,2.34
+CY,rail,Liquefied petroleum gases,1.23,1.91,2.48
+CY,rail,Other bituminous coal,1.21,2,2.15
+CY,rail,Primary solid biofuels,1.01,1.67,2.25
+CY,rail,Pure biodiesels,1.24,1.81,2.21
+CY,rail,Solid fossil fuels,1.26,1.75,2.49
+CZ,domestic-aviation,Aviation gasoline,1.01,1.56,2
+CZ,domestic-aviation,Blended bio jet kerosene,1.5,1.98,2.49
+CZ,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.52,2.23
+CZ,domestic-navigation,Blended biodiesels,1.07,1.69,2.03
+CZ,domestic-navigation,Fuel oil,1.08,1.69,2.12
+CZ,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.46,1.79,2.46
+CZ,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.39,1.89,2.47
+CZ,domestic-navigation,Lubricants,1.3,1.61,2.12
+CZ,domestic-navigation,Motor gasoline (excluding biofuel portion),1.14,1.67,2.31
+CZ,domestic-navigation,Natural gas,1.21,1.79,2.05
+CZ,domestic-navigation,Other liquid biofuels,1.32,1.83,2.45
+CZ,domestic-navigation,Other oil products n.e.c.,1.27,1.67,2.01
+CZ,domestic-navigation,Pure biodiesels,1.45,1.61,2.29
+CZ,international-aviation,Aviation gasoline,1.08,1.52,2.03
+CZ,international-aviation,Blended bio jet kerosene,1.23,1.69,2.45
+CZ,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.03,1.55,2.07
+CZ,international-maritime-bunkers,Blended biodiesels,1.3,1.64,2.47
+CZ,international-maritime-bunkers,Fuel oil,1.02,1.6,2.22
+CZ,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.03,1.81,2.49
+CZ,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.03,1.62,2.35
+CZ,international-maritime-bunkers,Lubricants,1.14,1.79,2.15
+CZ,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.46,1.53,2.1
+CZ,international-maritime-bunkers,Natural gas,1.14,1.66,2.26
+CZ,international-maritime-bunkers,Other liquid biofuels,1.07,1.96,2.38
+CZ,international-maritime-bunkers,Other oil products n.e.c.,1.05,1.96,2.47
+CZ,international-maritime-bunkers,Pure biodiesels,1.14,1.56,2.23
+CZ,rail,Blended biodiesels,1.49,1.68,2.19
+CZ,rail,Electricity,1.16,1.94,2.32
+CZ,rail,Gas oil and diesel oil (excluding biofuel portion),1.5,1.64,2.06
+CZ,rail,Liquefied petroleum gases,1.49,1.73,2.05
+CZ,rail,Other bituminous coal,1.24,1.67,2.36
+CZ,rail,Primary solid biofuels,1.44,1.91,2.13
+CZ,rail,Pure biodiesels,1.06,2,2
+CZ,rail,Solid fossil fuels,1.48,1.68,2.01
+DE,domestic-aviation,Aviation gasoline,1.44,1.54,2.38
+DE,domestic-aviation,Blended bio jet kerosene,1.11,1.56,2.43
+DE,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.7,2.04
+DE,domestic-navigation,Blended biodiesels,1.22,1.58,2.13
+DE,domestic-navigation,Fuel oil,1.41,1.8,2.09
+DE,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.5,1.59,2.13
+DE,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.43,1.98,2.28
+DE,domestic-navigation,Lubricants,1.1,1.68,2.33
+DE,domestic-navigation,Motor gasoline (excluding biofuel portion),1.07,1.85,2.36
+DE,domestic-navigation,Natural gas,1.27,1.91,2.4
+DE,domestic-navigation,Other liquid biofuels,1.03,1.79,2.15
+DE,domestic-navigation,Other oil products n.e.c.,1.38,1.96,2.03
+DE,domestic-navigation,Pure biodiesels,1.06,1.69,2.47
+DE,international-aviation,Aviation gasoline,1.03,1.88,2.16
+DE,international-aviation,Blended bio jet kerosene,1.2,1.74,2.12
+DE,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.28,1.61,2.19
+DE,international-maritime-bunkers,Blended biodiesels,1.15,1.88,2.01
+DE,international-maritime-bunkers,Fuel oil,1.04,1.8,2.28
+DE,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.09,1.65,2.12
+DE,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.81,2.11
+DE,international-maritime-bunkers,Lubricants,1.5,1.66,2.44
+DE,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.09,1.87,2.08
+DE,international-maritime-bunkers,Natural gas,1.24,1.61,2.34
+DE,international-maritime-bunkers,Other liquid biofuels,1.15,1.82,2.01
+DE,international-maritime-bunkers,Other oil products n.e.c.,1.33,1.87,2.5
+DE,international-maritime-bunkers,Pure biodiesels,1.05,1.76,2.07
+DE,rail,Blended biodiesels,1.22,1.7,2.27
+DE,rail,Electricity,1.38,1.97,2.19
+DE,rail,Gas oil and diesel oil (excluding biofuel portion),1.12,1.9,2.28
+DE,rail,Liquefied petroleum gases,1.21,1.5,2.24
+DE,rail,Other bituminous coal,1.33,1.65,2.47
+DE,rail,Primary solid biofuels,1.34,1.99,2.03
+DE,rail,Pure biodiesels,1.37,1.61,2.42
+DE,rail,Solid fossil fuels,1.02,1.94,2.05
+DK,domestic-aviation,Aviation gasoline,1.1,1.62,2.2
+DK,domestic-aviation,Blended bio jet kerosene,1.14,1.78,2.33
+DK,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.24,1.97,2.16
+DK,domestic-navigation,Blended biodiesels,1.02,1.62,2.36
+DK,domestic-navigation,Fuel oil,1.15,1.55,2.29
+DK,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.48,1.52,2.25
+DK,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.42,1.56,2.33
+DK,domestic-navigation,Lubricants,1.1,1.51,2.25
+DK,domestic-navigation,Motor gasoline (excluding biofuel portion),1.27,1.95,2.4
+DK,domestic-navigation,Natural gas,1.09,2,2.16
+DK,domestic-navigation,Other liquid biofuels,1.01,1.91,2.42
+DK,domestic-navigation,Other oil products n.e.c.,1.03,1.6,2.26
+DK,domestic-navigation,Pure biodiesels,1.48,1.86,2.32
+DK,international-aviation,Aviation gasoline,1.47,2,2.24
+DK,international-aviation,Blended bio jet kerosene,1.45,1.5,2.36
+DK,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.01,1.91,2.22
+DK,international-maritime-bunkers,Blended biodiesels,1.39,1.6,2.34
+DK,international-maritime-bunkers,Fuel oil,1.38,1.86,2.18
+DK,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.05,1.75,2.46
+DK,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.34,1.88,2.46
+DK,international-maritime-bunkers,Lubricants,1.38,1.5,2.12
+DK,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.01,1.77,2.34
+DK,international-maritime-bunkers,Natural gas,1.37,1.59,2.3
+DK,international-maritime-bunkers,Other liquid biofuels,1.27,1.8,2.05
+DK,international-maritime-bunkers,Other oil products n.e.c.,1.39,1.62,2.29
+DK,international-maritime-bunkers,Pure biodiesels,1.15,1.8,2.37
+DK,rail,Blended biodiesels,1.49,1.73,2.25
+DK,rail,Electricity,1.14,1.87,2.07
+DK,rail,Gas oil and diesel oil (excluding biofuel portion),1.33,1.51,2.04
+DK,rail,Liquefied petroleum gases,1.15,1.71,2.2
+DK,rail,Other bituminous coal,1.03,1.55,2.33
+DK,rail,Primary solid biofuels,1.13,1.8,2.05
+DK,rail,Pure biodiesels,1.5,1.71,2.1
+DK,rail,Solid fossil fuels,1.13,1.65,2.49
+EE,domestic-aviation,Aviation gasoline,1.47,1.65,2.22
+EE,domestic-aviation,Blended bio jet kerosene,1.47,1.87,2.32
+EE,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.37,1.91,2.41
+EE,domestic-navigation,Blended biodiesels,1.5,1.99,2.46
+EE,domestic-navigation,Fuel oil,1.5,1.93,2.12
+EE,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.16,1.88,2.42
+EE,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.15,2,2.43
+EE,domestic-navigation,Lubricants,1.39,1.59,2.19
+EE,domestic-navigation,Motor gasoline (excluding biofuel portion),1.44,1.82,2.08
+EE,domestic-navigation,Natural gas,1.3,1.92,2.27
+EE,domestic-navigation,Other liquid biofuels,1.08,1.86,2.2
+EE,domestic-navigation,Other oil products n.e.c.,1.31,1.66,2.03
+EE,domestic-navigation,Pure biodiesels,1.46,1.9,2.46
+EE,international-aviation,Aviation gasoline,1.25,1.59,2.4
+EE,international-aviation,Blended bio jet kerosene,1.01,1.52,2.19
+EE,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.44,1.96,2.17
+EE,international-maritime-bunkers,Blended biodiesels,1.06,1.85,2.2
+EE,international-maritime-bunkers,Fuel oil,1.13,1.89,2.2
+EE,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.48,1.93,2.47
+EE,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.6,2.46
+EE,international-maritime-bunkers,Lubricants,1.31,1.77,2.49
+EE,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.2,1.98,2.11
+EE,international-maritime-bunkers,Natural gas,1.35,1.58,2.47
+EE,international-maritime-bunkers,Other liquid biofuels,1.25,1.72,2.38
+EE,international-maritime-bunkers,Other oil products n.e.c.,1.42,1.95,2.42
+EE,international-maritime-bunkers,Pure biodiesels,1.35,1.89,2.28
+EE,rail,Blended biodiesels,1.03,1.66,2.18
+EE,rail,Electricity,1.17,1.54,2.38
+EE,rail,Gas oil and diesel oil (excluding biofuel portion),1.26,2,2.47
+EE,rail,Liquefied petroleum gases,1.34,1.95,2.19
+EE,rail,Other bituminous coal,1.36,1.81,2.34
+EE,rail,Primary solid biofuels,1.26,1.94,2.04
+EE,rail,Pure biodiesels,1.04,1.92,2.01
+EE,rail,Solid fossil fuels,1.4,1.81,2.37
+EL,domestic-aviation,Aviation gasoline,1.04,1.92,2.49
+EL,domestic-aviation,Blended bio jet kerosene,1.26,1.7,2.23
+EL,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.02,1.89,2.25
+EL,domestic-navigation,Blended biodiesels,1.45,1.6,2.44
+EL,domestic-navigation,Fuel oil,1.4,1.63,2.05
+EL,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.41,1.78,2.23
+EL,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.26,1.9,2.31
+EL,domestic-navigation,Lubricants,1.17,1.56,2.12
+EL,domestic-navigation,Motor gasoline (excluding biofuel portion),1.2,1.55,2.4
+EL,domestic-navigation,Natural gas,1.39,1.86,2.08
+EL,domestic-navigation,Other liquid biofuels,1.12,1.92,2.1
+EL,domestic-navigation,Other oil products n.e.c.,1.28,1.87,2.19
+EL,domestic-navigation,Pure biodiesels,1.34,1.63,2.3
+EL,international-aviation,Aviation gasoline,1.41,1.77,2.15
+EL,international-aviation,Blended bio jet kerosene,1.25,1.84,2.33
+EL,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.4,1.8,2
+EL,international-maritime-bunkers,Blended biodiesels,1.03,1.93,2.27
+EL,international-maritime-bunkers,Fuel oil,1.12,1.88,2.35
+EL,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.31,1.87,2.17
+EL,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.97,2.26
+EL,international-maritime-bunkers,Lubricants,1.05,1.73,2.39
+EL,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.48,1.84,2.04
+EL,international-maritime-bunkers,Natural gas,1.35,1.82,2.28
+EL,international-maritime-bunkers,Other liquid biofuels,1.11,1.67,2.08
+EL,international-maritime-bunkers,Other oil products n.e.c.,1.05,1.65,2.36
+EL,international-maritime-bunkers,Pure biodiesels,1.01,1.51,2.43
+EL,rail,Blended biodiesels,1.41,1.8,2.43
+EL,rail,Electricity,1.48,1.81,2.36
+EL,rail,Gas oil and diesel oil (excluding biofuel portion),1.06,1.98,2.33
+EL,rail,Liquefied petroleum gases,1.37,1.99,2.27
+EL,rail,Other bituminous coal,1.11,1.75,2.1
+EL,rail,Primary solid biofuels,1.3,1.71,2.04
+EL,rail,Pure biodiesels,1.27,1.79,2.16
+EL,rail,Solid fossil fuels,1.35,1.89,2.25
+ES,domestic-aviation,Aviation gasoline,1.18,1.74,2.15
+ES,domestic-aviation,Blended bio jet kerosene,1.47,1.94,2.09
+ES,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.27,1.84,2.37
+ES,domestic-navigation,Blended biodiesels,1.48,1.66,2.07
+ES,domestic-navigation,Fuel oil,1.27,1.58,2.48
+ES,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.28,1.6,2.34
+ES,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.01,1.58,2.34
+ES,domestic-navigation,Lubricants,1.25,1.61,2.33
+ES,domestic-navigation,Motor gasoline (excluding biofuel portion),1.02,1.92,2.15
+ES,domestic-navigation,Natural gas,1.43,1.53,2
+ES,domestic-navigation,Other liquid biofuels,1.39,1.63,2.44
+ES,domestic-navigation,Other oil products n.e.c.,1.5,1.63,2.23
+ES,domestic-navigation,Pure biodiesels,1.22,1.72,2.31
+ES,international-aviation,Aviation gasoline,1.4,1.85,2.22
+ES,international-aviation,Blended bio jet kerosene,1.43,1.61,2.28
+ES,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.34,1.59,2.33
+ES,international-maritime-bunkers,Blended biodiesels,1.18,1.87,2.06
+ES,international-maritime-bunkers,Fuel oil,1.08,1.7,2.38
+ES,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.46,1.69,2.48
+ES,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.01,1.66,2.02
+ES,international-maritime-bunkers,Lubricants,1.17,2,2.11
+ES,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.16,1.73,2.16
+ES,international-maritime-bunkers,Natural gas,1.14,1.61,2.03
+ES,international-maritime-bunkers,Other liquid biofuels,1.37,1.53,2.3
+ES,international-maritime-bunkers,Other oil products n.e.c.,1.46,1.71,2.08
+ES,international-maritime-bunkers,Pure biodiesels,1.14,1.73,2.02
+ES,rail,Blended biodiesels,1.09,1.81,2.2
+ES,rail,Electricity,1.13,1.61,2.27
+ES,rail,Gas oil and diesel oil (excluding biofuel portion),1.44,1.51,2.12
+ES,rail,Liquefied petroleum gases,1.5,1.96,2.37
+ES,rail,Other bituminous coal,1.42,1.91,2.07
+ES,rail,Primary solid biofuels,1.21,1.85,2.27
+ES,rail,Pure biodiesels,1.12,1.92,2
+ES,rail,Solid fossil fuels,1.09,1.88,2.02
+EU27_2020,domestic-aviation,Aviation gasoline,1.45,1.63,2.46
+EU27_2020,domestic-aviation,Blended bio jet kerosene,1.01,1.74,2.39
+EU27_2020,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.14,1.74,2.26
+EU27_2020,domestic-navigation,Blended biodiesels,1.14,1.75,2.49
+EU27_2020,domestic-navigation,Fuel oil,1.49,1.74,2.35
+EU27_2020,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.32,1.52,2.12
+EU27_2020,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.97,2.05
+EU27_2020,domestic-navigation,Lubricants,1.32,1.78,2.22
+EU27_2020,domestic-navigation,Motor gasoline (excluding biofuel portion),1.14,1.99,2.48
+EU27_2020,domestic-navigation,Other liquid biofuels,1.13,1.56,2.26
+EU27_2020,domestic-navigation,Other oil products n.e.c.,1.14,1.78,2.2
+EU27_2020,domestic-navigation,Pure biodiesels,1.33,1.58,2.22
+EU27_2020,international-aviation,Aviation gasoline,1.3,1.81,2.41
+EU27_2020,international-aviation,Blended bio jet kerosene,1.46,1.81,2.32
+EU27_2020,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.35,1.83,2.12
+EU27_2020,international-maritime-bunkers,Blended biodiesels,1.4,1.5,2.28
+EU27_2020,international-maritime-bunkers,Fuel oil,1.41,1.69,2.47
+EU27_2020,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.24,1.89,2.32
+EU27_2020,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.27,1.64,2.33
+EU27_2020,international-maritime-bunkers,Lubricants,1.34,1.81,2.23
+EU27_2020,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.35,1.66,2.29
+EU27_2020,international-maritime-bunkers,Natural gas,1.48,1.97,2.46
+EU27_2020,international-maritime-bunkers,Other oil products n.e.c.,1.44,1.56,2.09
+EU27_2020,rail,Blended biodiesels,1.24,1.5,2.26
+EU27_2020,rail,Electricity,1.37,1.88,2.39
+EU27_2020,rail,Gas oil and diesel oil (excluding biofuel portion),1.43,1.72,2.17
+EU27_2020,rail,Liquefied petroleum gases,1.49,1.75,2.07
+EU27_2020,rail,Other bituminous coal,1.34,1.71,2.33
+EU27_2020,rail,Primary solid biofuels,1.04,1.97,2.35
+EU27_2020,rail,Pure biodiesels,1.13,1.75,2.15
+EU27_2020,rail,Solid fossil fuels,1.46,1.63,2.19
+FI,domestic-aviation,Aviation gasoline,1.31,1.81,2.42
+FI,domestic-aviation,Blended bio jet kerosene,1.14,1.94,2.45
+FI,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.22,1.71,2.46
+FI,domestic-navigation,Blended biodiesels,1.19,1.78,2.18
+FI,domestic-navigation,Fuel oil,1.09,1.94,2
+FI,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.3,1.96,2.14
+FI,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.41,1.64,2.17
+FI,domestic-navigation,Lubricants,1.09,1.59,2.31
+FI,domestic-navigation,Motor gasoline (excluding biofuel portion),1.16,1.79,2.17
+FI,domestic-navigation,Natural gas,1.5,1.63,2.03
+FI,domestic-navigation,Other liquid biofuels,1.38,1.53,2.45
+FI,domestic-navigation,Other oil products n.e.c.,1.14,1.87,2.19
+FI,domestic-navigation,Pure biodiesels,1.03,1.8,2.23
+FI,international-aviation,Aviation gasoline,1.47,1.88,2.19
+FI,international-aviation,Blended bio jet kerosene,1.41,1.55,2.25
+FI,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.09,1.65,2.23
+FI,international-maritime-bunkers,Blended biodiesels,1.04,1.98,2.33
+FI,international-maritime-bunkers,Fuel oil,1.02,1.82,2.03
+FI,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.26,1.69,2.12
+FI,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.63,2.06
+FI,international-maritime-bunkers,Lubricants,1.38,1.57,2.21
+FI,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.02,1.8,2.09
+FI,international-maritime-bunkers,Natural gas,1.03,1.65,2.31
+FI,international-maritime-bunkers,Other liquid biofuels,1.17,1.63,2.01
+FI,international-maritime-bunkers,Other oil products n.e.c.,1.15,1.73,2.04
+FI,international-maritime-bunkers,Pure biodiesels,1.32,1.98,2.32
+FI,rail,Blended biodiesels,1.15,1.69,2.08
+FI,rail,Electricity,1.33,1.76,2.12
+FI,rail,Gas oil and diesel oil (excluding biofuel portion),1.07,1.86,2.3
+FI,rail,Liquefied petroleum gases,1.44,1.74,2.17
+FI,rail,Other bituminous coal,1.06,1.72,2.08
+FI,rail,Primary solid biofuels,1.2,1.8,2.19
+FI,rail,Pure biodiesels,1.11,1.6,2.02
+FI,rail,Solid fossil fuels,1.16,1.85,2.03
+FR,domestic-aviation,Aviation gasoline,1.17,1.91,2.37
+FR,domestic-aviation,Blended bio jet kerosene,1.15,1.51,2.44
+FR,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.03,1.87,2.32
+FR,domestic-navigation,Blended biodiesels,1.4,1.63,2.23
+FR,domestic-navigation,Fuel oil,1.1,1.76,2.48
+FR,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.06,1.62,2.45
+FR,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.2,1.68,2.19
+FR,domestic-navigation,Lubricants,1.22,1.76,2.38
+FR,domestic-navigation,Motor gasoline (excluding biofuel portion),1.12,1.59,2.4
+FR,domestic-navigation,Natural gas,1.31,1.74,2.2
+FR,domestic-navigation,Other liquid biofuels,1.19,1.83,2.28
+FR,domestic-navigation,Other oil products n.e.c.,1.46,1.76,2.21
+FR,domestic-navigation,Pure biodiesels,1.38,1.77,2.4
+FR,international-aviation,Aviation gasoline,1.45,1.97,2.37
+FR,international-aviation,Blended bio jet kerosene,1.16,1.68,2.18
+FR,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.18,1.92,2.16
+FR,international-maritime-bunkers,Blended biodiesels,1.31,1.87,2.34
+FR,international-maritime-bunkers,Fuel oil,1.2,1.55,2.3
+FR,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.12,1.82,2.06
+FR,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.4,1.94,2.02
+FR,international-maritime-bunkers,Lubricants,1.41,1.69,2.35
+FR,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.26,1.95,2.09
+FR,international-maritime-bunkers,Natural gas,1.19,1.76,2.14
+FR,international-maritime-bunkers,Other liquid biofuels,1.01,1.94,2.41
+FR,international-maritime-bunkers,Other oil products n.e.c.,1.09,1.77,2.01
+FR,international-maritime-bunkers,Pure biodiesels,1.01,1.57,2.2
+FR,rail,Blended biodiesels,1.35,1.66,2.46
+FR,rail,Electricity,1.16,1.98,2.22
+FR,rail,Gas oil and diesel oil (excluding biofuel portion),1.2,1.78,2.43
+FR,rail,Liquefied petroleum gases,1.5,1.76,2.11
+FR,rail,Other bituminous coal,1.5,1.6,2.19
+FR,rail,Primary solid biofuels,1.08,1.52,2.22
+FR,rail,Pure biodiesels,1.23,1.92,2.2
+FR,rail,Solid fossil fuels,1.27,1.9,2.23
+GE,domestic-aviation,Aviation gasoline,1.13,1.96,2.18
+GE,domestic-aviation,Blended bio jet kerosene,1.4,1.96,2.14
+GE,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.29,1.8,2.47
+GE,domestic-navigation,Blended biodiesels,1.24,1.82,2.05
+GE,domestic-navigation,Fuel oil,1.24,2,2.11
+GE,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.06,1.91,2.18
+GE,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.5,1.78,2.13
+GE,domestic-navigation,Lubricants,1.02,1.95,2.43
+GE,domestic-navigation,Motor gasoline (excluding biofuel portion),1.05,1.77,2.23
+GE,domestic-navigation,Natural gas,1.14,1.83,2.06
+GE,domestic-navigation,Other liquid biofuels,1.11,1.68,2
+GE,domestic-navigation,Other oil products n.e.c.,1.42,1.61,2.42
+GE,domestic-navigation,Pure biodiesels,1.19,1.69,2
+GE,international-aviation,Aviation gasoline,1.36,1.73,2.17
+GE,international-aviation,Blended bio jet kerosene,1.14,1.54,2.14
+GE,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.21,1.55,2.2
+GE,international-maritime-bunkers,Blended biodiesels,1.01,1.99,2.25
+GE,international-maritime-bunkers,Fuel oil,1.39,1.66,2.33
+GE,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.09,1.87,2.16
+GE,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.85,2.32
+GE,international-maritime-bunkers,Lubricants,1.23,1.95,2.07
+GE,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.4,1.97,2.19
+GE,international-maritime-bunkers,Natural gas,1.38,1.9,2.27
+GE,international-maritime-bunkers,Other liquid biofuels,1.25,1.5,2.13
+GE,international-maritime-bunkers,Other oil products n.e.c.,1.25,1.79,2.33
+GE,international-maritime-bunkers,Pure biodiesels,1.36,1.8,2.41
+GE,rail,Blended biodiesels,1.43,1.75,2.12
+GE,rail,Electricity,1.28,1.73,2.45
+GE,rail,Gas oil and diesel oil (excluding biofuel portion),1.05,1.94,2.39
+GE,rail,Liquefied petroleum gases,1.11,1.87,2.3
+GE,rail,Other bituminous coal,1.15,1.55,2.12
+GE,rail,Primary solid biofuels,1.47,1.74,2.46
+GE,rail,Pure biodiesels,1.5,1.78,2.08
+GE,rail,Solid fossil fuels,1.27,1.81,2.28
+HR,domestic-aviation,Aviation gasoline,1.46,1.73,2.09
+HR,domestic-aviation,Blended bio jet kerosene,1.38,1.84,2.16
+HR,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.07,1.85,2.09
+HR,domestic-navigation,Blended biodiesels,1.44,1.96,2.43
+HR,domestic-navigation,Fuel oil,1.25,1.94,2.19
+HR,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.43,1.75,2.21
+HR,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.5,2.43
+HR,domestic-navigation,Lubricants,1.44,1.77,2.36
+HR,domestic-navigation,Motor gasoline (excluding biofuel portion),1.47,1.69,2.45
+HR,domestic-navigation,Natural gas,1.1,1.93,2.07
+HR,domestic-navigation,Other liquid biofuels,1.24,1.71,2.05
+HR,domestic-navigation,Other oil products n.e.c.,1.47,1.57,2.42
+HR,domestic-navigation,Pure biodiesels,1.02,1.54,2.12
+HR,international-aviation,Aviation gasoline,1.31,1.6,2.17
+HR,international-aviation,Blended bio jet kerosene,1.04,1.84,2.13
+HR,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.19,1.84,2.44
+HR,international-maritime-bunkers,Blended biodiesels,1.49,1.89,2.36
+HR,international-maritime-bunkers,Fuel oil,1.21,1.89,2.16
+HR,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.45,1.88,2.23
+HR,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.06,1.88,2.32
+HR,international-maritime-bunkers,Lubricants,1.25,1.62,2.36
+HR,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.27,1.71,2.08
+HR,international-maritime-bunkers,Natural gas,1.16,1.93,2.25
+HR,international-maritime-bunkers,Other liquid biofuels,1.21,1.51,2.39
+HR,international-maritime-bunkers,Other oil products n.e.c.,1.29,1.51,2.24
+HR,international-maritime-bunkers,Pure biodiesels,1.19,1.62,2.37
+HR,rail,Blended biodiesels,1.45,1.55,2.3
+HR,rail,Electricity,1.2,1.55,2.35
+HR,rail,Gas oil and diesel oil (excluding biofuel portion),1.49,1.89,2.43
+HR,rail,Liquefied petroleum gases,1.16,1.95,2.45
+HR,rail,Other bituminous coal,1.18,1.81,2.14
+HR,rail,Primary solid biofuels,1.47,1.98,2.18
+HR,rail,Pure biodiesels,1.38,1.9,2.13
+HR,rail,Solid fossil fuels,1.5,1.61,2.19
+HU,domestic-aviation,Aviation gasoline,1.29,1.54,2.44
+HU,domestic-aviation,Blended bio jet kerosene,1.14,1.88,2
+HU,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.3,1.85,2.39
+HU,domestic-navigation,Blended biodiesels,1.11,1.87,2.13
+HU,domestic-navigation,Fuel oil,1.41,1.73,2.32
+HU,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.09,1.66,2.37
+HU,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.06,1.82,2.29
+HU,domestic-navigation,Lubricants,1.18,1.89,2.4
+HU,domestic-navigation,Motor gasoline (excluding biofuel portion),1.32,1.8,2.34
+HU,domestic-navigation,Natural gas,1.3,1.89,2.49
+HU,domestic-navigation,Other liquid biofuels,1.18,1.75,2.27
+HU,domestic-navigation,Other oil products n.e.c.,1.17,1.7,2.12
+HU,domestic-navigation,Pure biodiesels,1.44,1.82,2.22
+HU,international-aviation,Aviation gasoline,1.23,1.65,2.13
+HU,international-aviation,Blended bio jet kerosene,1.43,1.73,2.21
+HU,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.78,2.34
+HU,international-maritime-bunkers,Blended biodiesels,1.11,1.76,2.12
+HU,international-maritime-bunkers,Fuel oil,1.21,1.93,2.1
+HU,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.45,1.88,2.46
+HU,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.12,1.56,2.27
+HU,international-maritime-bunkers,Lubricants,1.1,1.82,2.03
+HU,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.43,1.81,2.07
+HU,international-maritime-bunkers,Natural gas,1.3,1.52,2.2
+HU,international-maritime-bunkers,Other liquid biofuels,1.49,1.89,2.22
+HU,international-maritime-bunkers,Other oil products n.e.c.,1.26,1.53,2.01
+HU,international-maritime-bunkers,Pure biodiesels,1.29,1.98,2.21
+HU,rail,Blended biodiesels,1.09,1.95,2.43
+HU,rail,Electricity,1.04,1.91,2.21
+HU,rail,Gas oil and diesel oil (excluding biofuel portion),1.25,1.59,2.08
+HU,rail,Liquefied petroleum gases,1.28,1.5,2.4
+HU,rail,Other bituminous coal,1.24,1.68,2.3
+HU,rail,Primary solid biofuels,1.38,1.93,2.32
+HU,rail,Pure biodiesels,1.07,1.95,2.36
+HU,rail,Solid fossil fuels,1.42,1.97,2.14
+IE,domestic-aviation,Aviation gasoline,1.22,1.99,2.29
+IE,domestic-aviation,Blended bio jet kerosene,1.33,2,2.33
+IE,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.04,1.93,2.11
+IE,domestic-navigation,Blended biodiesels,1.43,1.76,2.28
+IE,domestic-navigation,Fuel oil,1.3,1.83,2.02
+IE,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.06,1.89,2.07
+IE,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.04,2,2.26
+IE,domestic-navigation,Lubricants,1.24,1.58,2.18
+IE,domestic-navigation,Motor gasoline (excluding biofuel portion),1.09,1.82,2.38
+IE,domestic-navigation,Natural gas,1.29,1.56,2.37
+IE,domestic-navigation,Other liquid biofuels,1.3,1.5,2.22
+IE,domestic-navigation,Other oil products n.e.c.,1.36,1.8,2.28
+IE,domestic-navigation,Pure biodiesels,1.37,1.73,2.1
+IE,international-aviation,Aviation gasoline,1.15,1.53,2.49
+IE,international-aviation,Blended bio jet kerosene,1.18,1.87,2.31
+IE,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.37,1.83,2.4
+IE,international-maritime-bunkers,Blended biodiesels,1.32,1.6,2.38
+IE,international-maritime-bunkers,Fuel oil,1.23,1.9,2.12
+IE,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.06,1.55,2.02
+IE,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.36,1.86,2.45
+IE,international-maritime-bunkers,Lubricants,1.43,1.85,2.35
+IE,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.01,1.85,2.42
+IE,international-maritime-bunkers,Natural gas,1.49,1.93,2.37
+IE,international-maritime-bunkers,Other liquid biofuels,1.1,1.77,2.21
+IE,international-maritime-bunkers,Other oil products n.e.c.,1.02,1.93,2.23
+IE,international-maritime-bunkers,Pure biodiesels,1.31,1.91,2.36
+IE,rail,Blended biodiesels,1.07,1.91,2.27
+IE,rail,Electricity,1.07,1.9,2.4
+IE,rail,Gas oil and diesel oil (excluding biofuel portion),1.02,1.88,2.09
+IE,rail,Liquefied petroleum gases,1.38,2,2.12
+IE,rail,Other bituminous coal,1.41,1.97,2.19
+IE,rail,Primary solid biofuels,1.37,1.56,2.13
+IE,rail,Pure biodiesels,1.42,1.76,2.42
+IE,rail,Solid fossil fuels,1.37,1.7,2.28
+IS,domestic-aviation,Aviation gasoline,1.48,1.84,2.5
+IS,domestic-aviation,Blended bio jet kerosene,1.03,1.81,2.35
+IS,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.04,1.91,2.39
+IS,domestic-navigation,Blended biodiesels,1.05,1.62,2.24
+IS,domestic-navigation,Fuel oil,1.36,1.91,2.29
+IS,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.01,1.65,2.35
+IS,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.3,1.54,2.23
+IS,domestic-navigation,Lubricants,1.46,1.59,2.28
+IS,domestic-navigation,Motor gasoline (excluding biofuel portion),1.39,1.7,2.07
+IS,domestic-navigation,Natural gas,1.17,1.51,2.38
+IS,domestic-navigation,Other liquid biofuels,1.07,1.83,2.39
+IS,domestic-navigation,Other oil products n.e.c.,1.09,2,2.37
+IS,domestic-navigation,Pure biodiesels,1.23,1.64,2.35
+IS,international-aviation,Aviation gasoline,1.31,1.52,2.24
+IS,international-aviation,Blended bio jet kerosene,1.03,1.53,2.07
+IS,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.37,1.93,2.39
+IS,international-maritime-bunkers,Blended biodiesels,1.4,1.82,2.06
+IS,international-maritime-bunkers,Fuel oil,1.23,1.65,2.21
+IS,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.1,1.98,2.37
+IS,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.09,1.72,2.43
+IS,international-maritime-bunkers,Lubricants,1.29,1.61,2.17
+IS,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.48,1.51,2.31
+IS,international-maritime-bunkers,Natural gas,1.11,1.65,2.48
+IS,international-maritime-bunkers,Other liquid biofuels,1.14,1.54,2.32
+IS,international-maritime-bunkers,Other oil products n.e.c.,1.28,1.87,2.34
+IS,international-maritime-bunkers,Pure biodiesels,1.03,1.67,2.33
+IS,rail,Blended biodiesels,1.07,1.53,2.32
+IS,rail,Electricity,1.31,1.86,2.47
+IS,rail,Gas oil and diesel oil (excluding biofuel portion),1.29,1.53,2.17
+IS,rail,Liquefied petroleum gases,1.02,1.68,2.22
+IS,rail,Other bituminous coal,1.41,1.6,2.49
+IS,rail,Primary solid biofuels,1.38,1.77,2.05
+IS,rail,Pure biodiesels,1.37,1.93,2.24
+IS,rail,Solid fossil fuels,1.25,1.87,2.23
+IT,domestic-aviation,Aviation gasoline,1.12,2,2.17
+IT,domestic-aviation,Blended bio jet kerosene,1.1,1.59,2.49
+IT,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.42,1.74,2.01
+IT,domestic-navigation,Blended biodiesels,1.41,1.62,2.35
+IT,domestic-navigation,Fuel oil,1.43,1.56,2.32
+IT,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.41,1.79,2.37
+IT,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.89,2.18
+IT,domestic-navigation,Lubricants,1.28,1.97,2.36
+IT,domestic-navigation,Motor gasoline (excluding biofuel portion),1.4,1.9,2.39
+IT,domestic-navigation,Natural gas,1.34,1.83,2.39
+IT,domestic-navigation,Other liquid biofuels,1.16,1.65,2.07
+IT,domestic-navigation,Other oil products n.e.c.,1.37,1.72,2.24
+IT,domestic-navigation,Pure biodiesels,1.02,1.96,2.29
+IT,international-aviation,Aviation gasoline,1.31,1.58,2.5
+IT,international-aviation,Blended bio jet kerosene,1.12,1.56,2.24
+IT,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.42,1.52,2.17
+IT,international-maritime-bunkers,Blended biodiesels,1.5,1.69,2.17
+IT,international-maritime-bunkers,Fuel oil,1.35,1.51,2.14
+IT,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.34,1.59,2.46
+IT,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.24,1.91,2.26
+IT,international-maritime-bunkers,Lubricants,1.15,1.88,2.12
+IT,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.48,1.56,2.44
+IT,international-maritime-bunkers,Natural gas,1.45,1.7,2
+IT,international-maritime-bunkers,Other liquid biofuels,1.48,1.96,2.49
+IT,international-maritime-bunkers,Other oil products n.e.c.,1.37,1.57,2.31
+IT,international-maritime-bunkers,Pure biodiesels,1.37,1.74,2.21
+IT,rail,Blended biodiesels,1.5,1.52,2.12
+IT,rail,Electricity,1.24,1.99,2.25
+IT,rail,Gas oil and diesel oil (excluding biofuel portion),1.11,1.96,2.27
+IT,rail,Liquefied petroleum gases,1.45,1.93,2.13
+IT,rail,Other bituminous coal,1.08,1.53,2.13
+IT,rail,Primary solid biofuels,1.31,1.7,2.38
+IT,rail,Pure biodiesels,1.15,1.68,2.11
+IT,rail,Solid fossil fuels,1.13,1.78,2.22
+LT,domestic-aviation,Aviation gasoline,1.27,1.83,2.2
+LT,domestic-aviation,Blended bio jet kerosene,1.02,1.92,2.02
+LT,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.51,2.21
+LT,domestic-navigation,Blended biodiesels,1.4,1.77,2.4
+LT,domestic-navigation,Fuel oil,1.43,1.98,2.39
+LT,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.37,1.71,2.21
+LT,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.13,1.86,2.03
+LT,domestic-navigation,Lubricants,1.07,1.56,2.26
+LT,domestic-navigation,Motor gasoline (excluding biofuel portion),1.27,1.94,2.42
+LT,domestic-navigation,Natural gas,1.08,1.8,2.29
+LT,domestic-navigation,Other liquid biofuels,1.23,1.9,2.06
+LT,domestic-navigation,Other oil products n.e.c.,1.09,1.63,2.48
+LT,domestic-navigation,Pure biodiesels,1.49,1.63,2.42
+LT,international-aviation,Aviation gasoline,1.49,1.53,2.27
+LT,international-aviation,Blended bio jet kerosene,1.19,1.9,2.21
+LT,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.17,1.9,2.31
+LT,international-maritime-bunkers,Blended biodiesels,1.37,1.92,2.42
+LT,international-maritime-bunkers,Fuel oil,1.03,1.7,2.29
+LT,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.25,1.9,2.07
+LT,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.14,2,2.24
+LT,international-maritime-bunkers,Lubricants,1.32,1.9,2.07
+LT,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.03,1.8,2.35
+LT,international-maritime-bunkers,Natural gas,1.38,1.88,2.39
+LT,international-maritime-bunkers,Other liquid biofuels,1.01,1.94,2.19
+LT,international-maritime-bunkers,Other oil products n.e.c.,1.06,1.55,2.18
+LT,international-maritime-bunkers,Pure biodiesels,1.47,1.73,2.43
+LT,rail,Blended biodiesels,1.05,1.52,2.17
+LT,rail,Electricity,1.32,1.55,2.45
+LT,rail,Gas oil and diesel oil (excluding biofuel portion),1.46,1.56,2.33
+LT,rail,Liquefied petroleum gases,1.12,1.74,2.3
+LT,rail,Other bituminous coal,1.45,1.63,2.09
+LT,rail,Primary solid biofuels,1.12,1.66,2.45
+LT,rail,Pure biodiesels,1.25,1.84,2.4
+LT,rail,Solid fossil fuels,1.31,1.83,2.13
+LU,domestic-aviation,Aviation gasoline,1.31,1.91,2.29
+LU,domestic-aviation,Blended bio jet kerosene,1.1,1.64,2.1
+LU,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.5,1.57,2.14
+LU,domestic-navigation,Blended biodiesels,1.3,1.74,2.22
+LU,domestic-navigation,Fuel oil,1.48,1.66,2.3
+LU,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.3,1.75,2.24
+LU,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.83,2.29
+LU,domestic-navigation,Lubricants,1.31,1.6,2.33
+LU,domestic-navigation,Motor gasoline (excluding biofuel portion),1.38,1.53,2.31
+LU,domestic-navigation,Natural gas,1.07,1.83,2.35
+LU,domestic-navigation,Other liquid biofuels,1.41,1.74,2.5
+LU,domestic-navigation,Other oil products n.e.c.,1.34,1.67,2.03
+LU,domestic-navigation,Pure biodiesels,1.25,1.98,2.03
+LU,international-aviation,Aviation gasoline,1.21,1.99,2.38
+LU,international-aviation,Blended bio jet kerosene,1.4,1.61,2.42
+LU,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.48,1.5,2.22
+LU,international-maritime-bunkers,Blended biodiesels,1.32,1.68,2.18
+LU,international-maritime-bunkers,Fuel oil,1.36,1.82,2.42
+LU,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.27,1.51,2.02
+LU,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.04,1.83,2.16
+LU,international-maritime-bunkers,Lubricants,1.4,1.82,2.06
+LU,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.29,1.62,2.21
+LU,international-maritime-bunkers,Natural gas,1.32,1.98,2.12
+LU,international-maritime-bunkers,Other liquid biofuels,1.28,1.58,2.21
+LU,international-maritime-bunkers,Other oil products n.e.c.,1.33,1.99,2.38
+LU,international-maritime-bunkers,Pure biodiesels,1.17,1.83,2.33
+LU,rail,Blended biodiesels,1.34,1.88,2.21
+LU,rail,Electricity,1.44,1.75,2.09
+LU,rail,Gas oil and diesel oil (excluding biofuel portion),1.35,1.64,2.23
+LU,rail,Liquefied petroleum gases,1.08,1.82,2.11
+LU,rail,Other bituminous coal,1.2,1.56,2.37
+LU,rail,Primary solid biofuels,1.3,1.92,2.48
+LU,rail,Pure biodiesels,1.32,1.93,2.1
+LU,rail,Solid fossil fuels,1.01,1.74,2.38
+LV,domestic-aviation,Aviation gasoline,1.06,1.83,2.08
+LV,domestic-aviation,Blended bio jet kerosene,1.11,1.81,2.36
+LV,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.4,1.95,2.44
+LV,domestic-navigation,Blended biodiesels,1.08,1.74,2.28
+LV,domestic-navigation,Fuel oil,1.48,1.55,2.19
+LV,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.31,1.52,2.46
+LV,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.47,1.69,2.39
+LV,domestic-navigation,Lubricants,1.03,1.78,2.12
+LV,domestic-navigation,Motor gasoline (excluding biofuel portion),1.03,1.9,2.2
+LV,domestic-navigation,Natural gas,1.2,1.52,2.24
+LV,domestic-navigation,Other liquid biofuels,1.01,1.93,2.28
+LV,domestic-navigation,Other oil products n.e.c.,1.28,1.6,2.32
+LV,domestic-navigation,Pure biodiesels,1.01,1.84,2.29
+LV,international-aviation,Aviation gasoline,1.45,1.94,2.16
+LV,international-aviation,Blended bio jet kerosene,1.05,1.62,2.41
+LV,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.96,2.33
+LV,international-maritime-bunkers,Blended biodiesels,1.29,1.86,2.3
+LV,international-maritime-bunkers,Fuel oil,1.04,1.78,2.47
+LV,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.21,1.93,2.03
+LV,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.21,1.51,2.1
+LV,international-maritime-bunkers,Lubricants,1.47,1.96,2.07
+LV,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.05,1.72,2.41
+LV,international-maritime-bunkers,Natural gas,1.1,1.77,2.34
+LV,international-maritime-bunkers,Other liquid biofuels,1.39,1.8,2
+LV,international-maritime-bunkers,Other oil products n.e.c.,1.01,1.8,2.48
+LV,international-maritime-bunkers,Pure biodiesels,1.09,1.97,2.48
+LV,rail,Blended biodiesels,1.14,1.97,2.39
+LV,rail,Electricity,1.05,1.64,2.49
+LV,rail,Gas oil and diesel oil (excluding biofuel portion),1.47,1.91,2.43
+LV,rail,Liquefied petroleum gases,1.27,1.53,2.37
+LV,rail,Other bituminous coal,1.44,1.94,2.41
+LV,rail,Primary solid biofuels,1.1,1.75,2.05
+LV,rail,Pure biodiesels,1.29,1.56,2.45
+LV,rail,Solid fossil fuels,1.4,1.9,2.13
+MD,domestic-aviation,Aviation gasoline,1.34,1.8,2.12
+MD,domestic-aviation,Blended bio jet kerosene,1.06,1.62,2.39
+MD,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.33,1.65,2.32
+MD,domestic-navigation,Blended biodiesels,1.24,1.53,2.26
+MD,domestic-navigation,Fuel oil,1.1,1.81,2.45
+MD,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.27,1.97,2.44
+MD,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.45,1.67,2.3
+MD,domestic-navigation,Lubricants,1.26,1.55,2.44
+MD,domestic-navigation,Motor gasoline (excluding biofuel portion),1.03,1.7,2.39
+MD,domestic-navigation,Natural gas,1.05,1.88,2.21
+MD,domestic-navigation,Other liquid biofuels,1.22,2,2.17
+MD,domestic-navigation,Other oil products n.e.c.,1.14,1.84,2.19
+MD,domestic-navigation,Pure biodiesels,1.32,1.92,2.14
+MD,international-aviation,Aviation gasoline,1.42,1.88,2.15
+MD,international-aviation,Blended bio jet kerosene,1.34,1.67,2.4
+MD,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.26,1.96,2.44
+MD,international-maritime-bunkers,Blended biodiesels,1.33,2,2.23
+MD,international-maritime-bunkers,Fuel oil,1.03,1.84,2.33
+MD,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.08,1.8,2.11
+MD,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.02,1.89,2.41
+MD,international-maritime-bunkers,Lubricants,1.1,1.96,2.13
+MD,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.26,1.52,2.07
+MD,international-maritime-bunkers,Natural gas,1.12,1.91,2
+MD,international-maritime-bunkers,Other liquid biofuels,1.3,1.78,2.34
+MD,international-maritime-bunkers,Other oil products n.e.c.,1.49,1.92,2.42
+MD,international-maritime-bunkers,Pure biodiesels,1.12,1.63,2.1
+MD,rail,Blended biodiesels,1.46,1.87,2.27
+MD,rail,Electricity,1.47,1.71,2.2
+MD,rail,Gas oil and diesel oil (excluding biofuel portion),1.13,1.68,2.34
+MD,rail,Liquefied petroleum gases,1.43,1.56,2.32
+MD,rail,Other bituminous coal,1.28,1.75,2.35
+MD,rail,Primary solid biofuels,1.08,1.56,2.46
+MD,rail,Pure biodiesels,1.42,1.86,2.02
+MD,rail,Solid fossil fuels,1.19,1.66,2.32
+ME,domestic-aviation,Aviation gasoline,1.39,1.57,2.22
+ME,domestic-aviation,Blended bio jet kerosene,1.06,1.94,2.3
+ME,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.64,2.33
+ME,domestic-navigation,Blended biodiesels,1.22,1.73,2.37
+ME,domestic-navigation,Fuel oil,1.13,1.91,2.31
+ME,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.44,1.99,2.22
+ME,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.09,1.98,2.06
+ME,domestic-navigation,Lubricants,1.11,1.96,2.01
+ME,domestic-navigation,Motor gasoline (excluding biofuel portion),1.35,1.8,2.48
+ME,domestic-navigation,Natural gas,1.16,1.57,2.11
+ME,domestic-navigation,Other liquid biofuels,1.04,1.93,2.03
+ME,domestic-navigation,Other oil products n.e.c.,1.09,1.52,2.24
+ME,domestic-navigation,Pure biodiesels,1.18,1.82,2.32
+ME,international-aviation,Aviation gasoline,1.24,1.81,2.39
+ME,international-aviation,Blended bio jet kerosene,1.31,1.83,2.25
+ME,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.33,1.81,2.1
+ME,international-maritime-bunkers,Blended biodiesels,1.19,1.69,2.43
+ME,international-maritime-bunkers,Fuel oil,1.43,1.61,2.33
+ME,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.03,1.5,2.05
+ME,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.03,1.51,2.32
+ME,international-maritime-bunkers,Lubricants,1.02,1.86,2
+ME,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.06,1.81,2.25
+ME,international-maritime-bunkers,Natural gas,1.48,1.92,2
+ME,international-maritime-bunkers,Other liquid biofuels,1.32,1.7,2.24
+ME,international-maritime-bunkers,Other oil products n.e.c.,1.19,1.95,2.21
+ME,international-maritime-bunkers,Pure biodiesels,1.22,1.99,2.22
+ME,rail,Blended biodiesels,1.11,1.61,2.1
+ME,rail,Electricity,1.03,1.85,2.2
+ME,rail,Gas oil and diesel oil (excluding biofuel portion),1.05,1.86,2.13
+ME,rail,Liquefied petroleum gases,1.16,1.57,2.14
+ME,rail,Other bituminous coal,1.3,1.6,2.23
+ME,rail,Primary solid biofuels,1.45,1.69,2
+ME,rail,Pure biodiesels,1.46,1.59,2.09
+ME,rail,Solid fossil fuels,1.37,1.57,2.48
+MK,domestic-aviation,Aviation gasoline,1.06,1.95,2.49
+MK,domestic-aviation,Blended bio jet kerosene,1.32,1.71,2.23
+MK,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.83,2.11
+MK,domestic-navigation,Blended biodiesels,1.48,1.76,2.41
+MK,domestic-navigation,Fuel oil,1.01,1.53,2.39
+MK,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.22,1.77,2.18
+MK,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.09,1.55,2.25
+MK,domestic-navigation,Lubricants,1.25,1.71,2.16
+MK,domestic-navigation,Motor gasoline (excluding biofuel portion),1.02,1.78,2.38
+MK,domestic-navigation,Natural gas,1.35,1.56,2.21
+MK,domestic-navigation,Other liquid biofuels,1.33,1.5,2.45
+MK,domestic-navigation,Other oil products n.e.c.,1.44,1.74,2
+MK,domestic-navigation,Pure biodiesels,1.29,1.81,2.41
+MK,international-aviation,Aviation gasoline,1.39,1.94,2.4
+MK,international-aviation,Blended bio jet kerosene,1.46,1.96,2.44
+MK,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.76,2.15
+MK,international-maritime-bunkers,Blended biodiesels,1.2,1.98,2.01
+MK,international-maritime-bunkers,Fuel oil,1.06,1.72,2.35
+MK,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.46,1.79,2.31
+MK,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.03,1.93,2.13
+MK,international-maritime-bunkers,Lubricants,1.12,1.73,2
+MK,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.37,1.51,2.46
+MK,international-maritime-bunkers,Natural gas,1.43,1.66,2.1
+MK,international-maritime-bunkers,Other liquid biofuels,1.35,1.6,2.32
+MK,international-maritime-bunkers,Other oil products n.e.c.,1.39,1.93,2.14
+MK,international-maritime-bunkers,Pure biodiesels,1.36,1.86,2.04
+MK,rail,Blended biodiesels,1.48,1.93,2.02
+MK,rail,Electricity,1.3,1.68,2.05
+MK,rail,Gas oil and diesel oil (excluding biofuel portion),1.37,1.8,2.29
+MK,rail,Liquefied petroleum gases,1.13,1.81,2.06
+MK,rail,Other bituminous coal,1.4,1.5,2.19
+MK,rail,Primary solid biofuels,1.47,1.87,2.46
+MK,rail,Pure biodiesels,1.4,1.96,2.27
+MK,rail,Solid fossil fuels,1.21,1.76,2.34
+MT,domestic-aviation,Aviation gasoline,1.2,1.74,2.37
+MT,domestic-aviation,Blended bio jet kerosene,1.27,1.87,2.17
+MT,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.28,1.67,2.41
+MT,domestic-navigation,Blended biodiesels,1.44,1.99,2.13
+MT,domestic-navigation,Fuel oil,1.43,1.84,2.18
+MT,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.42,1.56,2.14
+MT,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.47,1.57,2.14
+MT,domestic-navigation,Lubricants,1.44,1.57,2.05
+MT,domestic-navigation,Motor gasoline (excluding biofuel portion),1.45,1.66,2.09
+MT,domestic-navigation,Natural gas,1.04,1.97,2.06
+MT,domestic-navigation,Other liquid biofuels,1.41,1.92,2.47
+MT,domestic-navigation,Other oil products n.e.c.,1.22,1.54,2.36
+MT,domestic-navigation,Pure biodiesels,1.36,1.7,2.18
+MT,international-aviation,Aviation gasoline,1.29,1.92,2.26
+MT,international-aviation,Blended bio jet kerosene,1.4,1.96,2.42
+MT,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.23,1.5,2.32
+MT,international-maritime-bunkers,Blended biodiesels,1.22,1.55,2.24
+MT,international-maritime-bunkers,Fuel oil,1.38,1.71,2.26
+MT,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.12,1.74,2.16
+MT,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.73,2.39
+MT,international-maritime-bunkers,Lubricants,1.47,1.79,2.3
+MT,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.27,1.63,2.44
+MT,international-maritime-bunkers,Natural gas,1.31,1.87,2.14
+MT,international-maritime-bunkers,Other liquid biofuels,1.46,1.68,2.38
+MT,international-maritime-bunkers,Other oil products n.e.c.,1.1,1.69,2.37
+MT,international-maritime-bunkers,Pure biodiesels,1.31,1.58,2.29
+MT,rail,Blended biodiesels,1.37,1.7,2.03
+MT,rail,Electricity,1.19,1.69,2.4
+MT,rail,Gas oil and diesel oil (excluding biofuel portion),1.33,1.79,2.5
+MT,rail,Liquefied petroleum gases,1.03,1.59,2.36
+MT,rail,Other bituminous coal,1.23,1.53,2.11
+MT,rail,Primary solid biofuels,1.09,1.79,2.33
+MT,rail,Pure biodiesels,1.47,1.57,2.04
+MT,rail,Solid fossil fuels,1.02,1.91,2.05
+NL,domestic-aviation,Aviation gasoline,1.37,1.92,2.07
+NL,domestic-aviation,Blended bio jet kerosene,1.27,1.66,2.01
+NL,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.13,1.71,2.41
+NL,domestic-navigation,Blended biodiesels,1.3,1.57,2.05
+NL,domestic-navigation,Fuel oil,1.3,1.56,2.41
+NL,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.43,1.93,2.23
+NL,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.68,2.16
+NL,domestic-navigation,Lubricants,1.02,1.86,2.22
+NL,domestic-navigation,Motor gasoline (excluding biofuel portion),1.45,1.78,2.15
+NL,domestic-navigation,Natural gas,1.3,1.92,2.49
+NL,domestic-navigation,Other liquid biofuels,1.25,1.51,2.29
+NL,domestic-navigation,Other oil products n.e.c.,1.01,1.91,2.24
+NL,domestic-navigation,Pure biodiesels,1.31,1.89,2.1
+NL,international-aviation,Aviation gasoline,1.43,1.66,2.27
+NL,international-aviation,Blended bio jet kerosene,1.26,1.87,2.25
+NL,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.93,2.37
+NL,international-maritime-bunkers,Blended biodiesels,1.34,1.56,2.37
+NL,international-maritime-bunkers,Fuel oil,1.18,1.53,2.44
+NL,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.44,1.55,2.02
+NL,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.07,1.96,2.44
+NL,international-maritime-bunkers,Lubricants,1.01,1.73,2.09
+NL,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.22,1.93,2.29
+NL,international-maritime-bunkers,Natural gas,1.49,1.61,2.01
+NL,international-maritime-bunkers,Other liquid biofuels,1.28,1.89,2
+NL,international-maritime-bunkers,Other oil products n.e.c.,1.01,1.54,2.15
+NL,international-maritime-bunkers,Pure biodiesels,1.22,1.93,2.37
+NL,rail,Blended biodiesels,1.33,1.66,2.17
+NL,rail,Electricity,1.12,2,2.15
+NL,rail,Gas oil and diesel oil (excluding biofuel portion),1.46,1.78,2.5
+NL,rail,Liquefied petroleum gases,1.41,1.84,2.36
+NL,rail,Other bituminous coal,1.03,1.67,2.19
+NL,rail,Primary solid biofuels,1.49,1.59,2.29
+NL,rail,Pure biodiesels,1.36,1.97,2.26
+NL,rail,Solid fossil fuels,1.08,1.98,2.26
+NO,domestic-aviation,Aviation gasoline,1.5,1.67,2.08
+NO,domestic-aviation,Blended bio jet kerosene,1.22,1.76,2.42
+NO,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.07,1.54,2.4
+NO,domestic-navigation,Blended biodiesels,1.15,1.7,2.32
+NO,domestic-navigation,Fuel oil,1.39,1.84,2.35
+NO,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.05,1.88,2.33
+NO,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.5,1.72,2.44
+NO,domestic-navigation,Lubricants,1.36,1.66,2.12
+NO,domestic-navigation,Motor gasoline (excluding biofuel portion),1.24,1.69,2.41
+NO,domestic-navigation,Natural gas,1.36,1.73,2.23
+NO,domestic-navigation,Other liquid biofuels,1.4,1.63,2.32
+NO,domestic-navigation,Other oil products n.e.c.,1.01,1.7,2.02
+NO,domestic-navigation,Pure biodiesels,1.36,1.68,2.33
+NO,international-aviation,Aviation gasoline,1.25,1.7,2.13
+NO,international-aviation,Blended bio jet kerosene,1.39,1.73,2.14
+NO,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.47,1.81,2.26
+NO,international-maritime-bunkers,Blended biodiesels,1.09,1.85,2.41
+NO,international-maritime-bunkers,Fuel oil,1.41,1.9,2.44
+NO,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.08,1.87,2.43
+NO,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.95,2.05
+NO,international-maritime-bunkers,Lubricants,1.27,1.74,2.28
+NO,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.24,1.82,2.19
+NO,international-maritime-bunkers,Natural gas,1.5,1.94,2.22
+NO,international-maritime-bunkers,Other liquid biofuels,1.24,1.91,2.29
+NO,international-maritime-bunkers,Other oil products n.e.c.,1.11,1.78,2.45
+NO,international-maritime-bunkers,Pure biodiesels,1.14,1.92,2.14
+NO,rail,Blended biodiesels,1.22,1.62,2.41
+NO,rail,Electricity,1.46,1.85,2.2
+NO,rail,Gas oil and diesel oil (excluding biofuel portion),1.34,1.94,2.14
+NO,rail,Liquefied petroleum gases,1.14,1.5,2.24
+NO,rail,Other bituminous coal,1.25,1.67,2.35
+NO,rail,Primary solid biofuels,1.5,1.92,2.46
+NO,rail,Pure biodiesels,1.45,1.95,2.44
+NO,rail,Solid fossil fuels,1.18,1.84,2.49
+PL,domestic-aviation,Aviation gasoline,1.45,1.95,2.49
+PL,domestic-aviation,Blended bio jet kerosene,1.46,1.96,2.18
+PL,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.11,1.66,2.31
+PL,domestic-navigation,Blended biodiesels,1.48,1.62,2.06
+PL,domestic-navigation,Fuel oil,1.21,1.54,2.32
+PL,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.35,1.86,2.05
+PL,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.05,1.77,2.49
+PL,domestic-navigation,Lubricants,1.44,1.92,2.3
+PL,domestic-navigation,Motor gasoline (excluding biofuel portion),1.41,1.58,2.02
+PL,domestic-navigation,Natural gas,1.18,1.65,2.35
+PL,domestic-navigation,Other liquid biofuels,1.35,1.65,2.35
+PL,domestic-navigation,Other oil products n.e.c.,1.37,1.68,2
+PL,domestic-navigation,Pure biodiesels,1.38,1.92,2.01
+PL,international-aviation,Aviation gasoline,1.31,1.78,2.38
+PL,international-aviation,Blended bio jet kerosene,1.13,1.85,2.27
+PL,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.17,1.94,2.22
+PL,international-maritime-bunkers,Blended biodiesels,1.21,2,2.24
+PL,international-maritime-bunkers,Fuel oil,1.29,1.65,2.5
+PL,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.27,1.7,2.06
+PL,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.1,1.74,2.28
+PL,international-maritime-bunkers,Lubricants,1.07,1.95,2.37
+PL,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.15,1.7,2.3
+PL,international-maritime-bunkers,Natural gas,1.13,1.61,2.14
+PL,international-maritime-bunkers,Other liquid biofuels,1.37,1.56,2.35
+PL,international-maritime-bunkers,Other oil products n.e.c.,1.28,1.56,2.23
+PL,international-maritime-bunkers,Pure biodiesels,1.2,1.65,2.41
+PL,rail,Blended biodiesels,1.5,1.84,2.39
+PL,rail,Electricity,1.15,1.74,2.22
+PL,rail,Gas oil and diesel oil (excluding biofuel portion),1.31,1.59,2.46
+PL,rail,Liquefied petroleum gases,1.05,1.71,2.22
+PL,rail,Other bituminous coal,1.15,1.84,2.15
+PL,rail,Primary solid biofuels,1.05,1.53,2.2
+PL,rail,Pure biodiesels,1.32,1.8,2.5
+PL,rail,Solid fossil fuels,1.15,1.52,2.16
+PT,domestic-aviation,Aviation gasoline,1.42,1.72,2.49
+PT,domestic-aviation,Blended bio jet kerosene,1.19,1.62,2.13
+PT,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.37,1.51,2
+PT,domestic-navigation,Blended biodiesels,1.47,1.65,2
+PT,domestic-navigation,Fuel oil,1.31,1.96,2.25
+PT,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.15,1.53,2.19
+PT,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.21,1.88,2.4
+PT,domestic-navigation,Lubricants,1.3,1.56,2.5
+PT,domestic-navigation,Motor gasoline (excluding biofuel portion),1.1,1.82,2.44
+PT,domestic-navigation,Natural gas,1.14,1.88,2.21
+PT,domestic-navigation,Other liquid biofuels,1.04,1.75,2.5
+PT,domestic-navigation,Other oil products n.e.c.,1.3,1.88,2.25
+PT,domestic-navigation,Pure biodiesels,1.18,1.82,2.09
+PT,international-aviation,Aviation gasoline,1.27,1.5,2.49
+PT,international-aviation,Blended bio jet kerosene,1.02,1.58,2.12
+PT,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.39,1.5,2.36
+PT,international-maritime-bunkers,Blended biodiesels,1.09,1.56,2.48
+PT,international-maritime-bunkers,Fuel oil,1.2,1.53,2.35
+PT,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.15,1.8,2.08
+PT,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.07,1.78,2.1
+PT,international-maritime-bunkers,Lubricants,1.15,1.51,2.06
+PT,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.41,1.6,2.17
+PT,international-maritime-bunkers,Natural gas,1.44,1.76,2.31
+PT,international-maritime-bunkers,Other liquid biofuels,1.01,1.5,2.26
+PT,international-maritime-bunkers,Other oil products n.e.c.,1.22,1.63,2.25
+PT,international-maritime-bunkers,Pure biodiesels,1.08,1.75,2.13
+PT,rail,Blended biodiesels,1.37,1.89,2.38
+PT,rail,Electricity,1.48,1.9,2.13
+PT,rail,Gas oil and diesel oil (excluding biofuel portion),1.42,1.89,2.42
+PT,rail,Liquefied petroleum gases,1.1,1.74,2.06
+PT,rail,Other bituminous coal,1.4,1.94,2.05
+PT,rail,Primary solid biofuels,1.16,1.62,2.28
+PT,rail,Pure biodiesels,1.1,1.8,2.02
+PT,rail,Solid fossil fuels,1.04,1.81,2.46
+RO,domestic-aviation,Aviation gasoline,1.12,1.6,2
+RO,domestic-aviation,Blended bio jet kerosene,1.18,1.88,2
+RO,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.1,1.51,2.17
+RO,domestic-navigation,Blended biodiesels,1.29,1.96,2.22
+RO,domestic-navigation,Fuel oil,1.01,1.9,2.27
+RO,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.43,1.96,2.15
+RO,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.94,2.15
+RO,domestic-navigation,Lubricants,1.3,1.67,2.12
+RO,domestic-navigation,Motor gasoline (excluding biofuel portion),1.2,1.7,2.47
+RO,domestic-navigation,Natural gas,1.21,1.86,2.49
+RO,domestic-navigation,Other liquid biofuels,1.37,1.6,2.14
+RO,domestic-navigation,Other oil products n.e.c.,1.43,1.53,2.19
+RO,domestic-navigation,Pure biodiesels,1.5,1.6,2.12
+RO,international-aviation,Aviation gasoline,1.35,1.62,2.19
+RO,international-aviation,Blended bio jet kerosene,1.4,1.76,2.04
+RO,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.49,1.77,2.33
+RO,international-maritime-bunkers,Blended biodiesels,1.16,1.81,2.1
+RO,international-maritime-bunkers,Fuel oil,1.45,1.52,2.09
+RO,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.11,1.77,2.37
+RO,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.95,2.24
+RO,international-maritime-bunkers,Lubricants,1.25,1.7,2.09
+RO,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.22,1.98,2.34
+RO,international-maritime-bunkers,Natural gas,1.17,1.94,2.42
+RO,international-maritime-bunkers,Other liquid biofuels,1.39,1.56,2.19
+RO,international-maritime-bunkers,Other oil products n.e.c.,1.47,1.82,2.01
+RO,international-maritime-bunkers,Pure biodiesels,1.35,1.87,2.17
+RO,rail,Blended biodiesels,1.34,1.57,2.31
+RO,rail,Electricity,1.37,1.78,2.14
+RO,rail,Gas oil and diesel oil (excluding biofuel portion),1.29,1.64,2.17
+RO,rail,Liquefied petroleum gases,1.13,1.5,2.31
+RO,rail,Other bituminous coal,1.41,1.81,2.01
+RO,rail,Primary solid biofuels,1.03,1.88,2
+RO,rail,Pure biodiesels,1.35,1.73,2.3
+RO,rail,Solid fossil fuels,1.33,1.61,2.2
+RS,domestic-aviation,Aviation gasoline,1.08,1.8,2.21
+RS,domestic-aviation,Blended bio jet kerosene,1.4,1.94,2.23
+RS,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.17,1.51,2.48
+RS,domestic-navigation,Blended biodiesels,1.22,1.81,2.4
+RS,domestic-navigation,Fuel oil,1.4,1.7,2.36
+RS,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.09,1.95,2.29
+RS,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.08,1.68,2.26
+RS,domestic-navigation,Lubricants,1.31,1.85,2.14
+RS,domestic-navigation,Motor gasoline (excluding biofuel portion),1.37,1.78,2.47
+RS,domestic-navigation,Natural gas,1.2,1.61,2.42
+RS,domestic-navigation,Other liquid biofuels,1.02,1.73,2.08
+RS,domestic-navigation,Other oil products n.e.c.,1.46,1.82,2.1
+RS,domestic-navigation,Pure biodiesels,1.48,1.65,2.19
+RS,international-aviation,Aviation gasoline,1.32,1.62,2.48
+RS,international-aviation,Blended bio jet kerosene,1.28,1.67,2.46
+RS,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.16,1.51,2.14
+RS,international-maritime-bunkers,Blended biodiesels,1.18,1.94,2.35
+RS,international-maritime-bunkers,Fuel oil,1.49,1.96,2.13
+RS,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.08,1.97,2.39
+RS,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.36,1.8,2.21
+RS,international-maritime-bunkers,Lubricants,1.42,1.58,2.28
+RS,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.44,1.62,2.3
+RS,international-maritime-bunkers,Natural gas,1.38,1.76,2.28
+RS,international-maritime-bunkers,Other liquid biofuels,1.1,1.87,2.48
+RS,international-maritime-bunkers,Other oil products n.e.c.,1.44,1.94,2.39
+RS,international-maritime-bunkers,Pure biodiesels,1.29,1.57,2.18
+RS,rail,Blended biodiesels,1.23,1.66,2.32
+RS,rail,Electricity,1.32,1.63,2.15
+RS,rail,Gas oil and diesel oil (excluding biofuel portion),1.38,1.88,2.48
+RS,rail,Liquefied petroleum gases,1.23,1.67,2.02
+RS,rail,Other bituminous coal,1.01,1.66,2.39
+RS,rail,Primary solid biofuels,1.19,1.54,2.5
+RS,rail,Pure biodiesels,1.17,1.71,2.1
+RS,rail,Solid fossil fuels,1.02,1.88,2.11
+SE,domestic-aviation,Aviation gasoline,1.12,1.94,2.03
+SE,domestic-aviation,Blended bio jet kerosene,1.15,1.72,2.03
+SE,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.4,1.69,2.27
+SE,domestic-navigation,Blended biodiesels,1.05,1.98,2.47
+SE,domestic-navigation,Fuel oil,1.02,1.67,2.16
+SE,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.44,1.73,2.26
+SE,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.07,1.84,2.16
+SE,domestic-navigation,Lubricants,1.05,1.61,2.39
+SE,domestic-navigation,Motor gasoline (excluding biofuel portion),1.18,1.98,2.36
+SE,domestic-navigation,Natural gas,1.49,1.68,2.22
+SE,domestic-navigation,Other liquid biofuels,1.29,1.71,2.01
+SE,domestic-navigation,Other oil products n.e.c.,1.34,1.85,2.45
+SE,domestic-navigation,Pure biodiesels,1.09,1.84,2.01
+SE,international-aviation,Aviation gasoline,1.44,1.5,2.34
+SE,international-aviation,Blended bio jet kerosene,1.47,1.62,2.41
+SE,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.06,1.59,2.34
+SE,international-maritime-bunkers,Blended biodiesels,1.27,1.53,2.08
+SE,international-maritime-bunkers,Fuel oil,1.4,1.7,2.05
+SE,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.2,1.51,2.1
+SE,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.13,1.84,2.15
+SE,international-maritime-bunkers,Lubricants,1.17,1.69,2.29
+SE,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.16,2,2.4
+SE,international-maritime-bunkers,Natural gas,1.44,1.75,2.16
+SE,international-maritime-bunkers,Other liquid biofuels,1.36,1.97,2.13
+SE,international-maritime-bunkers,Other oil products n.e.c.,1.02,1.62,2.43
+SE,international-maritime-bunkers,Pure biodiesels,1.37,1.73,2.25
+SE,rail,Blended biodiesels,1.12,1.65,2.06
+SE,rail,Electricity,1.11,1.55,2.02
+SE,rail,Gas oil and diesel oil (excluding biofuel portion),1.38,1.56,2.13
+SE,rail,Liquefied petroleum gases,1.47,1.95,2.46
+SE,rail,Other bituminous coal,1.05,1.5,2.47
+SE,rail,Primary solid biofuels,1.07,1.99,2.4
+SE,rail,Pure biodiesels,1.05,1.66,2.24
+SE,rail,Solid fossil fuels,1.48,1.87,2.33
+SI,domestic-aviation,Aviation gasoline,1.21,1.91,2.35
+SI,domestic-aviation,Blended bio jet kerosene,1.3,1.74,2.18
+SI,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.15,1.8,2.49
+SI,domestic-navigation,Blended biodiesels,1.05,1.68,2.38
+SI,domestic-navigation,Fuel oil,1.24,1.66,2.2
+SI,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.07,1.87,2.31
+SI,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.37,1.86,2.33
+SI,domestic-navigation,Lubricants,1.18,1.97,2.06
+SI,domestic-navigation,Motor gasoline (excluding biofuel portion),1.42,1.68,2.38
+SI,domestic-navigation,Natural gas,1.1,1.84,2.37
+SI,domestic-navigation,Other liquid biofuels,1.32,1.56,2.43
+SI,domestic-navigation,Other oil products n.e.c.,1.46,1.88,2
+SI,domestic-navigation,Pure biodiesels,1.46,1.61,2.27
+SI,international-aviation,Aviation gasoline,1.44,1.52,2.01
+SI,international-aviation,Blended bio jet kerosene,1.27,1.66,2.22
+SI,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.27,1.74,2.37
+SI,international-maritime-bunkers,Blended biodiesels,1.04,1.96,2.34
+SI,international-maritime-bunkers,Fuel oil,1.33,1.74,2.37
+SI,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.09,1.71,2.12
+SI,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.25,1.94,2.44
+SI,international-maritime-bunkers,Lubricants,1.36,1.82,2.22
+SI,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.28,1.56,2.22
+SI,international-maritime-bunkers,Natural gas,1.06,1.5,2.27
+SI,international-maritime-bunkers,Other liquid biofuels,1.36,1.8,2.31
+SI,international-maritime-bunkers,Other oil products n.e.c.,1.02,1.97,2.24
+SI,international-maritime-bunkers,Pure biodiesels,1.27,1.75,2.44
+SI,rail,Blended biodiesels,1.29,1.79,2.21
+SI,rail,Electricity,1.06,1.93,2.41
+SI,rail,Gas oil and diesel oil (excluding biofuel portion),1.1,1.7,2.22
+SI,rail,Liquefied petroleum gases,1.15,1.75,2.29
+SI,rail,Other bituminous coal,1.14,1.68,2.31
+SI,rail,Primary solid biofuels,1.07,1.71,2.3
+SI,rail,Pure biodiesels,1.17,1.71,2.43
+SI,rail,Solid fossil fuels,1.15,1.9,2
+SK,domestic-aviation,Aviation gasoline,1.07,1.53,2.41
+SK,domestic-aviation,Blended bio jet kerosene,1.35,1.89,2.19
+SK,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.13,1.86,2.12
+SK,domestic-navigation,Blended biodiesels,1.01,1.97,2.44
+SK,domestic-navigation,Fuel oil,1.4,1.53,2.3
+SK,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.1,1.84,2.32
+SK,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.24,1.5,2.44
+SK,domestic-navigation,Lubricants,1.39,1.98,2
+SK,domestic-navigation,Motor gasoline (excluding biofuel portion),1.38,1.88,2.42
+SK,domestic-navigation,Natural gas,1.12,1.62,2.4
+SK,domestic-navigation,Other liquid biofuels,1.49,1.6,2.03
+SK,domestic-navigation,Other oil products n.e.c.,1.16,1.67,2.39
+SK,domestic-navigation,Pure biodiesels,1.07,1.96,2.39
+SK,international-aviation,Aviation gasoline,1.48,1.99,2.06
+SK,international-aviation,Blended bio jet kerosene,1.28,1.87,2.09
+SK,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.04,1.86,2.16
+SK,international-maritime-bunkers,Blended biodiesels,1.29,1.85,2.26
+SK,international-maritime-bunkers,Fuel oil,1.39,1.54,2.04
+SK,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.17,1.73,2.01
+SK,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.43,1.93,2.43
+SK,international-maritime-bunkers,Lubricants,1.41,1.54,2.38
+SK,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.45,1.99,2.34
+SK,international-maritime-bunkers,Natural gas,1.48,1.71,2.23
+SK,international-maritime-bunkers,Other liquid biofuels,1.21,1.79,2.04
+SK,international-maritime-bunkers,Other oil products n.e.c.,1.45,1.95,2.24
+SK,international-maritime-bunkers,Pure biodiesels,1.41,1.57,2.45
+SK,rail,Blended biodiesels,1.07,1.6,2.34
+SK,rail,Electricity,1.5,1.76,2.32
+SK,rail,Gas oil and diesel oil (excluding biofuel portion),1.38,1.51,2.24
+SK,rail,Liquefied petroleum gases,1.49,1.64,2.05
+SK,rail,Other bituminous coal,1.39,1.71,2.37
+SK,rail,Primary solid biofuels,1.15,1.7,2.05
+SK,rail,Pure biodiesels,1.33,1.52,2.28
+SK,rail,Solid fossil fuels,1.04,1.86,2.03
+TR,domestic-aviation,Aviation gasoline,1.13,1.99,2.24
+TR,domestic-aviation,Blended bio jet kerosene,1.39,1.88,2.23
+TR,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.07,1.88,2.46
+TR,domestic-navigation,Blended biodiesels,1.19,1.54,2.45
+TR,domestic-navigation,Fuel oil,1.27,1.69,2.31
+TR,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.32,1.7,2
+TR,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.4,1.98,2.09
+TR,domestic-navigation,Lubricants,1.32,1.66,2.08
+TR,domestic-navigation,Motor gasoline (excluding biofuel portion),1.12,1.65,2.5
+TR,domestic-navigation,Natural gas,1.5,1.55,2.33
+TR,domestic-navigation,Other liquid biofuels,1.16,1.64,2.16
+TR,domestic-navigation,Other oil products n.e.c.,1.44,1.92,2.33
+TR,domestic-navigation,Pure biodiesels,1.01,1.63,2.3
+TR,international-aviation,Aviation gasoline,1.25,1.76,2.44
+TR,international-aviation,Blended bio jet kerosene,1.42,1.69,2.3
+TR,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.26,1.7,2.15
+TR,international-maritime-bunkers,Blended biodiesels,1.35,1.79,2.05
+TR,international-maritime-bunkers,Fuel oil,1.38,2,2.39
+TR,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.28,1.59,2.32
+TR,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.22,1.71,2.24
+TR,international-maritime-bunkers,Lubricants,1.5,1.68,2.31
+TR,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.1,1.99,2.11
+TR,international-maritime-bunkers,Natural gas,1.12,1.73,2.19
+TR,international-maritime-bunkers,Other liquid biofuels,1.16,1.84,2.24
+TR,international-maritime-bunkers,Other oil products n.e.c.,1.32,1.98,2.49
+TR,international-maritime-bunkers,Pure biodiesels,1.49,1.54,2.31
+TR,rail,Blended biodiesels,1.05,1.53,2.29
+TR,rail,Electricity,1.01,1.77,2.15
+TR,rail,Gas oil and diesel oil (excluding biofuel portion),1.15,1.65,2.41
+TR,rail,Liquefied petroleum gases,1.1,1.81,2.29
+TR,rail,Other bituminous coal,1.28,1.91,2.11
+TR,rail,Primary solid biofuels,1.14,1.93,2.3
+TR,rail,Pure biodiesels,1.45,1.53,2.14
+TR,rail,Solid fossil fuels,1.34,1.73,2.13
+UA,domestic-aviation,Aviation gasoline,1.43,1.56,2.3
+UA,domestic-aviation,Blended bio jet kerosene,1.01,1.56,2.28
+UA,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.46,2,2.35
+UA,domestic-navigation,Blended biodiesels,1.38,1.69,2.06
+UA,domestic-navigation,Fuel oil,1.35,1.75,2.41
+UA,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.03,1.5,2.32
+UA,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.18,1.72,2.46
+UA,domestic-navigation,Lubricants,1.28,1.67,2.4
+UA,domestic-navigation,Motor gasoline (excluding biofuel portion),1.08,1.95,2.49
+UA,domestic-navigation,Natural gas,1.09,1.78,2.46
+UA,domestic-navigation,Other liquid biofuels,1.05,1.72,2.01
+UA,domestic-navigation,Other oil products n.e.c.,1.13,1.52,2.4
+UA,domestic-navigation,Pure biodiesels,1.36,1.98,2.5
+UA,international-aviation,Aviation gasoline,1.17,1.54,2.3
+UA,international-aviation,Blended bio jet kerosene,1.44,1.64,2.1
+UA,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.47,1.88,2.1
+UA,international-maritime-bunkers,Blended biodiesels,1.44,1.51,2.24
+UA,international-maritime-bunkers,Fuel oil,1.27,1.55,2.21
+UA,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.03,1.79,2.35
+UA,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.14,1.6,2.35
+UA,international-maritime-bunkers,Lubricants,1.24,1.67,2.37
+UA,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.13,1.63,2.42
+UA,international-maritime-bunkers,Natural gas,1.21,1.64,2.04
+UA,international-maritime-bunkers,Other liquid biofuels,1.36,1.94,2.42
+UA,international-maritime-bunkers,Other oil products n.e.c.,1.24,1.88,2.15
+UA,international-maritime-bunkers,Pure biodiesels,1.29,1.87,2.1
+UA,rail,Blended biodiesels,1.39,1.57,2.03
+UA,rail,Electricity,1.35,1.85,2.27
+UA,rail,Gas oil and diesel oil (excluding biofuel portion),1.27,1.51,2.43
+UA,rail,Liquefied petroleum gases,1.25,1.99,2.08
+UA,rail,Other bituminous coal,1.21,1.92,2.22
+UA,rail,Primary solid biofuels,1.46,1.64,2.38
+UA,rail,Pure biodiesels,1.27,1.93,2.16
+UA,rail,Solid fossil fuels,1.22,1.7,2.17
+UK,domestic-aviation,Aviation gasoline,1.47,1.8,2.13
+UK,domestic-aviation,Blended bio jet kerosene,1.18,1.72,2.49
+UK,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.3,1.69,2.15
+UK,domestic-navigation,Blended biodiesels,1.02,1.53,2.18
+UK,domestic-navigation,Fuel oil,1.44,1.8,2.32
+UK,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.5,1.87,2.45
+UK,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.37,1.68,2.2
+UK,domestic-navigation,Lubricants,1.2,1.84,2.42
+UK,domestic-navigation,Motor gasoline (excluding biofuel portion),1.5,1.8,2.5
+UK,domestic-navigation,Natural gas,1.32,1.57,2.45
+UK,domestic-navigation,Other liquid biofuels,1.12,1.92,2.43
+UK,domestic-navigation,Other oil products n.e.c.,1.31,1.65,2.27
+UK,domestic-navigation,Pure biodiesels,1.28,1.72,2.49
+UK,international-aviation,Aviation gasoline,1.16,1.75,2.43
+UK,international-aviation,Blended bio jet kerosene,1.37,1.58,2.3
+UK,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.21,1.88,2.34
+UK,international-maritime-bunkers,Blended biodiesels,1.07,1.64,2.13
+UK,international-maritime-bunkers,Fuel oil,1.11,1.77,2.34
+UK,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.42,1.61,2.16
+UK,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.34,1.61,2.33
+UK,international-maritime-bunkers,Lubricants,1.47,1.55,2.09
+UK,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.13,1.91,2.09
+UK,international-maritime-bunkers,Natural gas,1.22,1.69,2.35
+UK,international-maritime-bunkers,Other liquid biofuels,1.22,1.97,2.27
+UK,international-maritime-bunkers,Other oil products n.e.c.,1.17,1.9,2.46
+UK,international-maritime-bunkers,Pure biodiesels,1.17,1.77,2.44
+UK,rail,Blended biodiesels,1.41,1.98,2.09
+UK,rail,Electricity,1.43,1.53,2.35
+UK,rail,Gas oil and diesel oil (excluding biofuel portion),1.07,1.6,2.02
+UK,rail,Liquefied petroleum gases,1.03,1.58,2.16
+UK,rail,Other bituminous coal,1.49,1.79,2.43
+UK,rail,Primary solid biofuels,1.1,1.56,2.19
+UK,rail,Pure biodiesels,1.4,1.92,2.2
+UK,rail,Solid fossil fuels,1.36,2,2.47
+XK,domestic-aviation,Aviation gasoline,1.38,1.87,2.15
+XK,domestic-aviation,Blended bio jet kerosene,1.16,1.55,2.48
+XK,domestic-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.09,1.82,2.04
+XK,domestic-navigation,Blended biodiesels,1.33,1.98,2.32
+XK,domestic-navigation,Fuel oil,1.11,1.74,2.3
+XK,domestic-navigation,Gas oil and diesel oil (excluding biofuel portion),1.42,1.92,2.44
+XK,domestic-navigation,Kerosene-type jet fuel (excluding biofuel portion),1.45,1.66,2.24
+XK,domestic-navigation,Lubricants,1.47,1.8,2
+XK,domestic-navigation,Motor gasoline (excluding biofuel portion),1.44,1.88,2.12
+XK,domestic-navigation,Natural gas,1.38,1.78,2.47
+XK,domestic-navigation,Other liquid biofuels,1.44,1.67,2.4
+XK,domestic-navigation,Other oil products n.e.c.,1.14,1.98,2.08
+XK,domestic-navigation,Pure biodiesels,1.04,1.63,2.15
+XK,international-aviation,Aviation gasoline,1.4,1.68,2.11
+XK,international-aviation,Blended bio jet kerosene,1.3,1.87,2.29
+XK,international-aviation,Kerosene-type jet fuel (excluding biofuel portion),1.2,1.97,2.26
+XK,international-maritime-bunkers,Blended biodiesels,1.09,1.54,2.45
+XK,international-maritime-bunkers,Fuel oil,1.21,1.59,2.27
+XK,international-maritime-bunkers,Gas oil and diesel oil (excluding biofuel portion),1.34,1.51,2.32
+XK,international-maritime-bunkers,Kerosene-type jet fuel (excluding biofuel portion),1.29,1.69,2.43
+XK,international-maritime-bunkers,Lubricants,1.03,1.59,2.14
+XK,international-maritime-bunkers,Motor gasoline (excluding biofuel portion),1.3,1.66,2.12
+XK,international-maritime-bunkers,Natural gas,1.38,1.96,2.06
+XK,international-maritime-bunkers,Other liquid biofuels,1.03,1.57,2.26
+XK,international-maritime-bunkers,Other oil products n.e.c.,1.29,1.8,2.1
+XK,international-maritime-bunkers,Pure biodiesels,1.31,1.75,2.17
+XK,rail,Blended biodiesels,1.06,1.96,2.08
+XK,rail,Electricity,1.26,1.53,2.4
+XK,rail,Gas oil and diesel oil (excluding biofuel portion),1.01,1.83,2.2
+XK,rail,Liquefied petroleum gases,1.08,1.56,2.46
+XK,rail,Other bituminous coal,1.17,1.51,2.15
+XK,rail,Primary solid biofuels,1.02,1.56,2
+XK,rail,Pure biodiesels,1.04,1.93,2.27
+XK,rail,Solid fossil fuels,1.25,1.89,2

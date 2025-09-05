@@ -20,25 +20,28 @@ obatined dataframe. This only runs if the user decides to fetch
 the database from Eurostat. See [the documentation about parameters for more details](#eurostat).
 
 
-### process_Eurostat_dataframe
-Processes the DataFrame fetched from Eurostat into a DataFrame for the years
+### get_reference_year_data
+Processes the DataFrame fetched from Eurostat into a DataFrame for the reference year
 modes, energy carriers we want.
 
 The function runs through each mode (defined [here](#modes)) and gets its
 values from the Eurostat table obatined [here](#get_Eurostat_balances) through
-the [get_mode_Eurostat_values function](#get_mode_Eurostat_values).
+the [get_mode_reference_values function](#get_mode_reference_values).
 The function also sets [the index](#demand_index) and sorts it. 
 
-The function also saves the resulting historical data.
+The function also saves the resulting  reference historical data.
 
 
 
-### get_mode_Eurostat_values
+### get_mode_reference_values
 This function get historical data from the Eurostat DataFrame for a
 given mode.
 We need to translate the energy carrier into [SIEC codes](#get_siec_code)
 and back into [carrier names](#get_name_from_siec_code).
-
+In between these translations, we slice the source
+Eurostat year according to the [chosen mode and its carriers](#modes),
+the [unit we want to use](#unit_to_use) (actually, we slice
+with TJs, which we convert to PJs), and [reference historical year](#reference_historical_year).
 
 
 ### get_siec_code
@@ -49,8 +52,13 @@ Gets the
 Gets the name of an energy carrier from its 
 [SIEC (Standard international energy product classification code)](https://dd.eionet.europa.eu/vocabulary/eurostat/siec/view), using a [translation_file](#code_file).
 
+### get_future_demand_values
+Gets the demand for future years.
+This function takes the reference values from [get_mode_reference_values](#get_mode_reference_values)
+and multiplies them by a [growth table][#growth_factors_file].
 
-## Configuration (non-roal.toml)
+
+## Configuration (non-road.toml)
 
 #### historical_dataframe_name
 The name of the historical data DataFrame.
@@ -74,8 +82,16 @@ DataFrame.
 #### demand_header
 This is the name of the header/column of the historical demand DataFrame
 
-#### histtorical_year
-The year for which we extract the Eurostat data
+#### reference_historical_year
+The year for which we extract the Eurostat data.
+
+#### growth_factors_file
+The name of the file (in source_folder/case_name) containing
+the growth factors (relative to the [reference historical year](#reference_historical_year))
+for all country/mode/energy carrier combinations in the historical data.
+
+#### growth_factors_index
+The index columns for the growth factor file.
 
 ### modes
 For each mode, you need to provide its code and the
@@ -122,7 +138,7 @@ retrieving the Eurostat data.
 
 #### index_headers
 The headers/columns to use as an index (used in the 
-[function getting values per mode][#get_mode_eurostat_values]).
+[function getting values per mode][#get_mode_reference_values]).
 #### unit_to_use
 The unit to use for the Eurostat data
 

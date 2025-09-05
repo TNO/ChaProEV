@@ -1,17 +1,19 @@
 
 
 
-historical_dataframe_name = 'Historical data'
-demand_dataframe_name = 'Demand data'
+historical_dataframe_name = 'Reference Historical demand (PJ)'
+demand_dataframe_name = 'Future Yearly demand (PJ)'
 
 
 source_folder = 'non-road'
 output_folder = 'non-road-output'
 
-demand_index = ['Country Code', 'Mode', 'Year', 'Energy carrier']
+demand_index = ['Country Code', 'Mode', 'Energy carrier']
 demand_header = ['Demand_PJ']
 
-historical_year = 2023
+reference_historical_year = 2023
+growth_factors_file = 'growth_factors.csv'
+growth_factors_index = ['Country Code', 'Mode', 'Energy carrier']
 countries = ['Netherlands', 'Andorra', 'Kiribati']
 country_codes = ['NL', 'AND', 'KIR']
 [modes]
