@@ -18,23 +18,23 @@ from tqdm.rich import tqdm
 
 
 def get_run_demand(
-    scenario_name: str, case_name: str, general_parameters: box.Box
+    scenario_name: str, case_name: str, non_road_parameters: box.Box
 ) -> float:
 
     scenario_elements_list: list[str] = scenario_name.split('_')
 
     country_code: str = scenario_elements_list[0]
     mode: str = scenario_elements_list[1]
-    year: int = general_parameters.historical_year
+    year: int = non_road_parameters.historical_year
     carrier: str = scenario_elements_list[3]
 
     run_index: tuple = country_code, mode, year, carrier
 
-    demand_index: list[str] = list(general_parameters.demand_index)
-    demand_header: str = general_parameters.demand_header
+    demand_index: list[str] = list(non_road_parameters.demand_index)
+    demand_header: str = non_road_parameters.demand_header
 
-    source_table: str = general_parameters.demand_dataframe_name
-    database_folder: str = f'{general_parameters.output_folder}/{case_name}'
+    source_table: str = non_road_parameters.demand_dataframe_name
+    database_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
     database_file: str = f'{database_folder}/{case_name}.sqlite3'
 
     demand_values: pd.DataFrame = cook.read_table_from_database(
@@ -97,11 +97,11 @@ def get_profile_weights(
 
 @cook.function_timer
 def get_profile(
-    scenario: box.Box, case_name: str, general_parameters: box.Box
+    scenario: box.Box, case_name: str, non_road_parameters: box.Box
 ) -> tuple[str, pd.DataFrame]:
 
     run_demand: float = get_run_demand(
-        scenario.name, case_name, general_parameters
+        scenario.name, case_name, non_road_parameters
     )
 
     run_start_parameters: box.Box = scenario.run_start
@@ -280,21 +280,31 @@ def get_demand_values(
     return demand_values
 
 
-def get_Eurostat_balances(general_parameters: box.Box, case_name: str) -> None:
+def get_Eurostat_balances(
+    non_road_parameters: box.Box, case_name: str
+) -> None:
+    '''
+    This function gets the energy balances from Eurostat via
+    the [Eurostat Python Package](https://pypi.org/project/eurostat/).
+    '''
 
-    Eurostat_balances_dataframe: pd.DataFrame = eurostat.get_data_df(
-        general_parameters.Eurostat.table_code
-    )
+    Eurostat_parameters: box.Box = non_road_parameters.Eurostat
 
-    output_folder: str = f'{general_parameters.output_folder}/{case_name}'
+    if Eurostat_parameters.fetch:
 
-    cook.save_dataframe(
-        dataframe=Eurostat_balances_dataframe,
-        dataframe_name=general_parameters.Eurostat.table_name,
-        groupfile_name=case_name,
-        output_folder=output_folder,
-        dataframe_formats=non_road_parameters.files.dataframe_outputs,
-    )
+        Eurostat_balances_dataframe: pd.DataFrame = pd.DataFrame(
+            eurostat.get_data_df(Eurostat_parameters.table_code)
+        )
+
+        output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+        print(Eurostat_balances_dataframe)
+        cook.save_dataframe(
+            dataframe=Eurostat_balances_dataframe,
+            dataframe_name=Eurostat_parameters.table_name,
+            groupfile_name=case_name,
+            output_folder=output_folder,
+            dataframe_formats=non_road_parameters.files.dataframe_outputs,
+        )
 
 
 def get_siec_code(energy_carier: str, carrier_parameters: box.Box) -> str:
@@ -389,21 +399,15 @@ def get_mode_historical_values(
     return mode_historical_values
 
 
-if __name__ == '__main__':
+def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
 
-    case_name: str = 'Mopo'
-    non_road_parameters_file: str = 'non-road.toml'
-
-    non_road_parameters: box.Box = cook.parameters_from_TOML(
-        non_road_parameters_file
-    )
-
-    if non_road_parameters.Eurostat.fetch:
-        get_Eurostat_balances(non_road_parameters, case_name)
+    get_Eurostat_balances(non_road_parameters, case_name)
 
     historical_values: pd.DataFrame = fetch_historical_values(
         non_road_parameters
     )
+    print(historical_values)
+    exit()
 
     demand_values: pd.DataFrame = get_demand_values(
         historical_values, non_road_parameters, case_name
@@ -422,6 +426,18 @@ if __name__ == '__main__':
             output_folder=output_folder,
             dataframe_formats=non_road_parameters.files.dataframe_outputs,
         )
+
+
+if __name__ == '__main__':
+
+    case_name: str = 'Mopo'
+    non_road_parameters_file: str = 'non-road.toml'
+
+    non_road_parameters: box.Box = cook.parameters_from_TOML(
+        non_road_parameters_file
+    )
+    get_non_road_data(case_name, non_road_parameters)
+
     print('Remove names from scenarios')
     print('Do growth in a function')
     print('First/last week inclusion issues')
