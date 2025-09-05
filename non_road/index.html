@@ -78,8 +78,26 @@
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Non-road</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#module">Module</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#get_non_road_data">get_non_road_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_eurostat_balances">get_Eurostat_balances</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#configuration-non-roaltoml">Configuration (non-roal.toml)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#eurostat">Eurostat</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#fetch">fetch</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#table_code">table_code</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#table_name">table_name</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -127,7 +145,32 @@
                 <h1 id="non-road-profiles">Non-road Profiles</h1>
 <p>This module computes demand profiles for non-road modes of transport.</p>
 <h2 id="module">Module</h2>
+<h3 id="get_non_road_data">get_non_road_data</h3>
+<p>This is the main function of this module. It runs all the functions of this module.</p>
+<h3 id="get_eurostat_balances">get_Eurostat_balances</h3>
+<p>This function gets the energy balances from Eurostat via
+the <a href="https://pypi.org/project/eurostat/">Eurostat Python Package</a>.
+This function runs a function from the Eurostat package to
+get a table, by using the right table code and saving the
+obatined dataframe. This only runs if the user decides to fetch
+the database from Eurostat. See <a href="###Eurostat">the documentation about parameters for more details</a>.</p>
 <h2 id="configuration-non-roaltoml">Configuration (non-roal.toml)</h2>
+<h3 id="eurostat">Eurostat</h3>
+<p>These are parameters for getting data from the Eurostat API,
+using the <a href="https://pypi.org/project/eurostat/">Eurostat Python Package</a></p>
+<h4 id="fetch">fetch</h4>
+<p>A boolean to tell the model if it needs to fetch the data from Eurostat.
+Set it to true if you don't have the data yet or if you want to refresh it.
+Set it to false if you want to run with already fetch data (for exmaple if 
+you ant to run offline, or if you just got the data).</p>
+<h4 id="table_code">table_code</h4>
+<p>The table code for complete energy balances is 'nrg_bal_c'.
+Other codes can be obtained with eurostat.get_toc_df().
+See <a href="https://pypi.org/project/eurostat/">Eurostat Python Package</a>
+for details.</p>
+<h4 id="table_name">table_name</h4>
+<p>The name you want to use to save your DataFrame and that you will be using for
+retrieving the Eurostat data.</p>
               
             </div>
           </div><footer>
