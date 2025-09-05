@@ -57,6 +57,18 @@ Gets the demand for future years.
 This function takes the reference values from [get_mode_reference_values](#get_mode_reference_values)
 and multiplies them by a [growth table][#growth_factors_file].
 
+### get_non_road_profiles
+This function creates the profiles we need.
+It first [loads the scenarios][#load_scenarios] and then runs
+the [profile getting](#get_profile) function for each scenario
+(see the [general explanation about this](parallel_processing.md) )
+
+### load_scenarios
+This loads [scenarios](#scenarios) into a list so that they can be used to
+[get profiles][#get_profile].
+
+### get_profile
+
 
 ## Configuration (non-road.toml)
 
@@ -116,6 +128,29 @@ energy_carriers = [
 
 ]
 ```
+
+### progress_bars
+Parameters related to displaying progress bars using [tqdm](https://github.com/tqdm/tqdm).
+#### display_scenario_run
+Set to true if you want to show progress bars
+#### scenario_run_description
+The text to display together with the progress bars
+
+
+### parallel_processing
+Parameters related to  [parallel processing](parallel_processing.md).
+#### set_amount_of_processes
+Set to true if you want to adjust the amount pof processes by hand.
+#### amount_of_processes
+The amount of processes if set by hand.
+
+
+### files
+#### files.dataframe_outputs
+Indicate below if you want to save your Pandas DataFrames in the
+listed formats (put a true if you want to do so, false if you don't).
+This uses the [Save DataFrame](https://tno.github.io/ETS_CookBook/save_dataframe/)
+from the [ETS CookBook](https://github.com/TNO/ETS_CookBook).
 
 
 ### Eurostat

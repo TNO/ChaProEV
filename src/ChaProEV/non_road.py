@@ -361,9 +361,14 @@ def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
 @cook.function_timer
 def get_non_road_profiles(
     case_name: str,
-    demand_values: pd.DataFrame,
     non_road_parameters: box.Box,
 ) -> dict[str, pd.DataFrame]:
+
+    scenarios: list[box.Box] = load_scenarios(
+        non_road_parameters.source_folder, case_name
+    )
+    print(scenarios)
+    exit()
 
     set_amount_of_processes: bool = (
         non_road_parameters.parallel_processing.set_amount_of_processes
@@ -374,10 +379,6 @@ def get_non_road_profiles(
         amount_of_parallel_processes = (
             non_road_parameters.parallel_processing.amount_of_processes
         )
-
-    scenarios: list[box.Box] = load_scenarios(
-        non_road_parameters.source_folder, case_name
-    )
 
     pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = zip(
         scenarios, repeat(case_name), repeat(non_road_parameters)
@@ -416,11 +417,11 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
     future_demand_values: pd.DataFrame = get_future_demand_values(
         reference_historical_values, non_road_parameters, case_name
     )
+
     print(future_demand_values)
-    exit()
 
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
-        case_name, demand_values, non_road_parameters
+        case_name, non_road_parameters
     )
 
     output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
@@ -444,6 +445,8 @@ if __name__ == '__main__':
     )
     get_non_road_data(case_name, non_road_parameters)
 
+    print('Get growth')
+    print('Get CH, UK, etc.')
     print('Check whihc historical year to use')
     print('Remove names from scenarios')
     print('Do growth in a function')

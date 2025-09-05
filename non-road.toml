@@ -14,8 +14,7 @@ demand_header = ['Demand_PJ']
 reference_historical_year = 2023
 growth_factors_file = 'growth_factors.csv'
 growth_factors_index = ['Country Code', 'Mode', 'Energy carrier']
-countries = ['Netherlands', 'Andorra', 'Kiribati']
-country_codes = ['NL', 'AND', 'KIR']
+
 [modes]
 [modes.domestic-aviation]
 code = 'FC_TRA_DAVI_E'
