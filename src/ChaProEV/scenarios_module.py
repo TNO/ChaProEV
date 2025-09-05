@@ -158,7 +158,7 @@ def run_scenario(
             charging_profile_to_vehicle_from_sessions,
             charging_profile_from_network_from_sessions,
         ) = charging.get_profile_from_sessions(
-            charging_sessions_with_charged_amounts,
+            charging_sessions_with_charged_amounts,  # type: ignore
             scenario,
             general_parameters,
             case_name,
@@ -166,8 +166,8 @@ def run_scenario(
     if produce_standard_profiles:
         profiles.make_profile_display_dataframe(
             location_split,
-            total_battery_space_per_location,
-            charge_drawn_from_network,
+            total_battery_space_per_location,  # type: ignore
+            charge_drawn_from_network,  # type: ignore
             run_next_leg_charge_from_network,
             run_next_leg_charge_to_vehicle,
             connectivity_per_location,
@@ -181,7 +181,7 @@ def run_scenario(
         )
     if produce_sessions:
         profiles.make_sessions_display_dataframes(
-            charging_sessions_with_charged_amounts,
+            charging_sessions_with_charged_amounts,  # type: ignore
             scenario,
             general_parameters,
             case_name,
@@ -196,9 +196,9 @@ def run_scenario(
 
     display_run_totals, display_fleet_run_totals = (
         profiles.make_display_totals(
-            charging_costs,
-            charge_drawn_from_network,
-            charge_drawn_by_vehicles,
+            charging_costs,  # type: ignore
+            charge_drawn_from_network,  # type: ignore
+            charge_drawn_by_vehicles,  # type: ignore
             consumption_table,
             scenario,
             general_parameters,

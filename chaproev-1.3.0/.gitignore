@@ -1,0 +1,15 @@
+input/*
+!input/Mopo/
+output/
+devel/
+ChaProEV_env/
+__pycache__/
+documentation/
+site/
+.venv/
+reference_run/
+reference_run_prev/
+reference_run_previous/
+non-road-output/
+test_outputs/
+

@@ -650,18 +650,22 @@ def get_location_split_and_impact_of_departures_and_arrivals(
             for destination in possible_destinations:
                 location_split[destination] = (
                     location_split[destination].values
-                    + mobility_matrix.loc[start_location, destination][
+                    + mobility_matrix.loc[
+                        start_location, destination
+                    ][  # type: ignore
                         'Arrivals impact'
-                    ]
-                    .cumsum()
+                    ]  # type: ignore
+                    .cumsum()  # type: ignore
                     .values
                 )
                 location_split[start_location] = (
                     location_split[start_location].values
-                    - mobility_matrix.loc[start_location, destination][
+                    - mobility_matrix.loc[
+                        start_location, destination
+                    ][  # type: ignore
                         'Departures impact'
-                    ]
-                    .cumsum()
+                    ]  # type: ignore
+                    .cumsum()  # type: ignore
                     .values
                 )
 

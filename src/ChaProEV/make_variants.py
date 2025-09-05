@@ -132,10 +132,10 @@ def make_toml_variants(case_name: str) -> None:
         for variant_name in variant_names:
             with open(
                 f'scenarios/{case_name}/{variant_name}.toml',
-                'w',
-                encoding='utf-8',
+                'wb',
+                # encoding='utf-8',
             ) as file_to_write:
-                toml.dump(variant_scenarios[variant_name], file_to_write)
+                tomli_w.dump(variant_scenarios[variant_name], file_to_write)
 
 
 if __name__ == '__main__':

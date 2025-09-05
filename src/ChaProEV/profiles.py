@@ -50,7 +50,7 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
         own_driveway_percentage: float = float(
             car_drivewway_percentages.loc[variant_name][
                 f'{own_driveway_name}_percentage'
-            ]
+            ]  # type: ignore
         )
 
         if use_years_in_profiles:
@@ -259,7 +259,9 @@ def fleet_profiles(
     ).set_index('Scenario')
 
     total_fleet_thousands: float = float(
-        fleet_split.loc[scenario_name]['Total Fleet (thousands)']
+        fleet_split.loc[scenario_name][
+            'Total Fleet (thousands)'
+        ]  # type: ignore
     )
     consumption_table: pd.DataFrame = pd.read_pickle(
         f'{output_folder}/{scenario_name}_{consumption_table_name}.pkl'
@@ -283,7 +285,9 @@ def fleet_profiles(
     ):
         carrier_fleet_thousands: float = float(
             total_fleet_thousands
-            * fleet_split.loc[scenario_name][f'{energy_carrier} proportion']
+            * fleet_split.loc[scenario_name][
+                f'{energy_carrier} proportion'
+            ]  # type: ignore
         )
         fleet_consumption_table[fleet_consumption_name] = (
             carrier_fleet_thousands * consumption_table[consumption_name]
@@ -374,8 +378,8 @@ def fleet_profiles(
     fleet_consumption_table.to_pickle(
         f'{output_folder}/{scenario_name}_{consumption_table_name}_fleet.pkl'
     )
-    if produce_sessions:
-        fleet_sessions.to_pickle(
+    if produce_sessions:  # type: ignore
+        fleet_sessions.to_pickle(  # type: ignore
             f'{output_folder}/{scenario_name}_charging_sessions_fleet.pkl'
         )
 

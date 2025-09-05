@@ -7,7 +7,7 @@ demand_dataframe_name = 'Demand data'
 
 source_folder = 'non-road'
 output_folder = 'non-road-output'
-demand_file = 'scenario_demands.csv'
+
 demand_index = ['Country Code', 'Mode', 'Year', 'Energy carrier']
 demand_header = ['Demand_PJ']
 

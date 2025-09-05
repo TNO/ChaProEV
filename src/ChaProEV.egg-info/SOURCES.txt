@@ -24,6 +24,8 @@ todo.txt
 .vscode/ltex.dictionary.en-US.txt
 .vscode/settings.json
 comparisons/comparison_template.toml
+dist/chaproev-1.3.0-py3-none-any.whl
+dist/chaproev-1.3.0.tar.gz
 docs/ChaProEV_workflow.png
 docs/Legs.png
 docs/Locations.png
@@ -46,6 +48,7 @@ docs/make_variants.md
 docs/mobility-PC-28624.md
 docs/mobility.md
 docs/multiprocessing.md
+docs/non_road.md
 docs/outputs.md
 docs/profiles.md
 docs/run_time.md

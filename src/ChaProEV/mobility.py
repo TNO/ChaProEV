@@ -60,41 +60,41 @@ class ChargingSession:
     class_name: str = 'charging_session'
 
     def __init__(
-        charging_session,
+        self,
         trip_charging_session: define.TripChargingSession,
         day_start_time_tag: datetime.datetime,
         trip_probability: float,
     ) -> None:
 
-        charging_session.start_time: datetime.datetime = (
+        self.start_time: datetime.datetime = (
             day_start_time_tag
             + datetime.timedelta(hours=trip_charging_session.start_time)
         )
-        charging_session.end_time: datetime.datetime = (
+        self.end_time: datetime.datetime = (
             day_start_time_tag
             + datetime.timedelta(hours=trip_charging_session.end_time)
         )
 
-        charging_session.location: str = trip_charging_session.location
-        charging_session.previous_leg_consumption: float = (
+        self.location: str = trip_charging_session.location
+        self.previous_leg_consumption: float = (
             trip_charging_session.previous_leg_consumption * trip_probability
         )
-        charging_session.next_leg_consumption: float = (
+        self.next_leg_consumption: float = (
             trip_charging_session.next_leg_consumption * trip_probability
         )
-        charging_session.connectivity: float = (
+        self.connectivity: float = (
             trip_charging_session.connectivity * trip_probability
         )
-        charging_session.power_to_vehicle: float = (
+        self.power_to_vehicle: float = (
             trip_charging_session.power_to_vehicle * trip_probability
         )
-        charging_session.power_from_network: float = (
+        self.power_from_network: float = (
             trip_charging_session.power_from_network * trip_probability
         )
-        charging_session.power_from_vehicle: float = (
+        self.power_from_vehicle: float = (
             trip_charging_session.power_from_vehicle * trip_probability
         )
-        charging_session.power_to_network: float = (
+        self.power_to_network: float = (
             trip_charging_session.power_to_network * trip_probability
         )
 
@@ -108,7 +108,7 @@ class NextDayStartChargingSession:
     class_name: str = 'charging_session'
 
     def __init__(
-        next_day_start_charging_session,
+        self,
         day_start_location: str,
         next_day_start_session_start: datetime.datetime,
         next_day_start_session_end: datetime.datetime,
@@ -122,33 +122,33 @@ class NextDayStartChargingSession:
         location_power_to_network: float,
     ) -> None:
 
-        next_day_start_charging_session.start_time: datetime.datetime = (
+        self.start_time: datetime.datetime = (
             next_day_start_session_start
         )
-        next_day_start_charging_session.end_time: datetime.datetime = (
+        self.end_time: datetime.datetime = (
             next_day_start_session_end
         )
-        next_day_start_charging_session.location: str = day_start_location
+        self.location: str = day_start_location
 
-        next_day_start_charging_session.previous_leg_consumption: float = (
+        self.previous_leg_consumption: float = (
             previous_leg_consumption * group_size
         )
-        next_day_start_charging_session.next_leg_consumption: float = (
+        self.next_leg_consumption: float = (
             next_leg_consumption * group_size
         )
-        next_day_start_charging_session.connectivity: float = (
+        self.connectivity: float = (
             location_connectivity * group_size
         )
-        next_day_start_charging_session.power_to_vehicle: float = (
+        self.power_to_vehicle: float = (
             location_power_to_vehicle * group_size
         )
-        next_day_start_charging_session.power_from_network: float = (
+        self.power_from_network: float = (
             location_power_from_network * group_size
         )
-        next_day_start_charging_session.power_from_vehicle: float = (
+        self.power_from_vehicle: float = (
             location_power_from_vehicle * group_size
         )
-        next_day_start_charging_session.power_to_network: float = (
+        self.power_to_network: float = (
             location_power_to_network * group_size
         )
 
@@ -178,7 +178,9 @@ def get_run_charging_sessions(
         for trip in trips:
             trip_probability: float = trip_probabilities_per_day_type.loc[
                 trip.name
-            ][day_type]
+            ][
+                day_type
+            ]  # type: ignore
             if trip_probability > 0:
 
                 for trip_charging_session in trip.charging_sessions:
@@ -455,7 +457,7 @@ def get_run_mobility_matrix(
                 location_connections.loc[location_tuple]
             )
             run_mobility_matrix.loc[
-                (location_tuple), location_connections_headers
+                (location_tuple), location_connections_headers  # type: ignore
             ] = these_locations_connections.values
         pickle_interim_files: bool = general_parameters.interim_files['pickle']
         if pickle_interim_files:
@@ -647,8 +649,7 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
-        mobility_module_parameters.
-        maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays
     )
 
     # Some useful quantities telling us how many of which day type there are
@@ -775,14 +776,18 @@ def get_car_trip_probabilities_per_day_type(
     ] = (
         weekend_trips_per_year / weekend_days_per_year_without_holiday_trips
     ) * float(
-        day_type_start_location_split.loc['home']['weekend_in_work_week']
+        day_type_start_location_split.loc['home'][
+            'weekend_in_work_week'
+        ]  # type: ignore
     )
     trip_probabilities_per_day_type.loc[
         'weekend_trip', 'weekend_in_holiday_week'
     ] = (
         weekend_trips_per_year / weekend_days_per_year_without_holiday_trips
     ) * float(
-        day_type_start_location_split.loc['home']['weekend_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekend_in_holiday_week'
+        ]  # type: ignore
     )
     trip_probabilities_per_day_type.loc[
         'weekend_trip', 'weekend_holiday_departures'
@@ -831,7 +836,9 @@ def get_car_trip_probabilities_per_day_type(
     probability_of_going_to_work_in_a_holiday_week: float = (
         worked_days_in_holiday_weeks / weekdays_in_holiday_weeks
     ) / float(
-        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_holiday_week'
+        ]  # type: ignore
     )
 
     if probability_of_going_to_work_in_a_holiday_week > 1:
@@ -875,16 +882,18 @@ def get_car_trip_probabilities_per_day_type(
             float(
                 trip_probabilities_per_day_type.loc['holiday_outward'][
                     'weekday_in_holiday_week'
-                ]
+                ]  # type: ignore
             )
             + float(
                 trip_probabilities_per_day_type.loc['holiday_back'][
                     'weekday_in_holiday_week'
-                ]
+                ]  # type: ignore
             )
         )
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_holiday_week'
+        ]  # type: ignore
     )
 
     # The vehicles also need to be home fot that to occur,
@@ -970,7 +979,9 @@ def get_car_trip_probabilities_per_day_type(
     ] = (
         weekday_leisure_trips_on_non_work_days_in_a_work_week / number_weekdays
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_work_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_work_week'
+        ]  # type: ignore
     )
     trip_probabilities_per_day_type.loc[
         'leisure_only', 'weekday_in_holiday_week'
@@ -978,19 +989,25 @@ def get_car_trip_probabilities_per_day_type(
         weekday_leisure_trips_on_non_work_days_in_a_holiday_week
         / number_weekdays
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_holiday_week'
+        ]  # type: ignore
     )
     # For weekends, we distribute the leisure trips across the weekemd
 
     trip_probabilities_per_day_type.loc[
         'leisure_only', 'weekend_in_work_week'
     ] = (leisure_trips_per_weekend / len(weekend_day_numbers)) * float(
-        day_type_start_location_split.loc['home']['weekend_in_work_week']
+        day_type_start_location_split.loc['home'][
+            'weekend_in_work_week'
+        ]  # type: ignore
     )
     trip_probabilities_per_day_type.loc[
         'leisure_only', 'weekend_in_holiday_week'
     ] = (leisure_trips_per_weekend / len(weekend_day_numbers)) * float(
-        day_type_start_location_split.loc['home']['weekend_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekend_in_holiday_week'
+        ]  # type: ignore
     )
     # For holiday departure and return weekends, we assume
     # that only those who do not travel can have a leisure-only trip
@@ -998,7 +1015,7 @@ def get_car_trip_probabilities_per_day_type(
         trip_probabilities_per_day_type.loc['holiday_outward'][
             'weekend_holiday_departures'
         ]
-        * len(weekend_day_numbers)
+        * len(weekend_day_numbers)  # type: ignore
         # We need to account for departures on all days
     )
 
@@ -1009,13 +1026,15 @@ def get_car_trip_probabilities_per_day_type(
         * leisure_trips_per_weekend
         / len(weekend_day_numbers)
     ) * float(
-        day_type_start_location_split.loc['home']['weekend_holiday_departures']
+        day_type_start_location_split.loc['home'][
+            'weekend_holiday_departures'
+        ]  # type: ignore
     )
     percentage_not_returning: float = 1 - float(
         trip_probabilities_per_day_type.loc['holiday_back'][
             'weekend_holiday_returns'
         ]
-        * len(weekend_day_numbers)
+        * len(weekend_day_numbers)  # type: ignore
         # We need to take into account returns on both days
     )
     trip_probabilities_per_day_type.loc[
@@ -1025,7 +1044,9 @@ def get_car_trip_probabilities_per_day_type(
         * leisure_trips_per_weekend
         / len(weekend_day_numbers)
     ) * float(
-        day_type_start_location_split.loc['home']['weekend_holiday_returns']
+        day_type_start_location_split.loc['home'][
+            'weekend_holiday_returns'
+        ]  # type: ignore
     )
     # For overlap weekends, we have:
 
@@ -1037,7 +1058,7 @@ def get_car_trip_probabilities_per_day_type(
         + trip_probabilities_per_day_type.loc['holiday_back'][
             'holiday_overlap_weekend'
         ]
-        * len(weekend_day_numbers)
+        * len(weekend_day_numbers)  # type: ignore
     )
 
     trip_probabilities_per_day_type.loc[
@@ -1047,7 +1068,9 @@ def get_car_trip_probabilities_per_day_type(
         * leisure_trips_per_weekend
         / len(weekend_day_numbers)
     ) * float(
-        day_type_start_location_split.loc['home']['holiday_overlap_weekend']
+        day_type_start_location_split.loc['home'][
+            'holiday_overlap_weekend'
+        ]  # type: ignore
     )
 
     # The amount of weekday leisure trips taking place on work weekdays is
@@ -1089,7 +1112,9 @@ def get_car_trip_probabilities_per_day_type(
         probability_of_going_to_work_in_a_work_week
         * leisure_trip_probability_on_a_work_weekday_in_a_work_week
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_work_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_work_week'
+        ]  # type: ignore
     )
     trip_probabilities_per_day_type.loc[
         'commute_to_work', 'weekday_in_work_week'
@@ -1097,7 +1122,9 @@ def get_car_trip_probabilities_per_day_type(
         probability_of_going_to_work_in_a_work_week
         * (1 - leisure_trip_probability_on_a_work_weekday_in_a_work_week)
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_work_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_work_week'
+        ]  # type: ignore
     )
 
     trip_probabilities_per_day_type.loc[
@@ -1138,7 +1165,9 @@ def get_car_trip_probabilities_per_day_type(
         probability_of_going_to_work_in_a_holiday_week
         * leisure_trip_probability_on_a_work_weekday_in_a_holiday_week
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_holiday_week'
+        ]  # type: ignore
     )
     trip_probabilities_per_day_type.loc[
         'commute_to_work', 'weekday_in_holiday_week'
@@ -1146,7 +1175,9 @@ def get_car_trip_probabilities_per_day_type(
         probability_of_going_to_work_in_a_holiday_week
         * (1 - leisure_trip_probability_on_a_work_weekday_in_a_holiday_week)
     ) * float(
-        day_type_start_location_split.loc['home']['weekday_in_holiday_week']
+        day_type_start_location_split.loc['home'][
+            'weekday_in_holiday_week'
+        ]  # type: ignore
     )
 
     trip_probabilities_per_day_type.loc[
@@ -1256,11 +1287,13 @@ def car_holiday_departures_returns_corrections(
     sunday_filter: pd.Series[bool] = run_range.isocalendar().day == 7
     day_start_hour: int = scenario.mobility_module.day_start_hour
     HOURS_IN_A_DAY: int = general_parameters.time.HOURS_IN_A_DAY
-    day_start_hour_filter: pd.Series[bool] = run_range.hour == day_start_hour
+    day_start_hour_filter: pd.Series[bool] = (
+        run_range.hour == day_start_hour
+    )  # type: ignore
 
     departure_saturdays_starts: list[datetime.datetime] = run_range[
         departures_filter & saturday_filter & day_start_hour_filter
-    ]
+    ]  # type: ignore
 
     departure_saturdays: list[pd.DatetimeIndex] = [
         pd.date_range(
@@ -1271,7 +1304,7 @@ def car_holiday_departures_returns_corrections(
 
     departure_sundays_starts: list[datetime.datetime] = run_range[
         departures_filter & sunday_filter & day_start_hour_filter
-    ]
+    ]  # type: ignore
 
     departure_sundays: list[pd.DatetimeIndex] = [
         pd.date_range(
@@ -1284,7 +1317,7 @@ def car_holiday_departures_returns_corrections(
         float(
             run_trip_probabilities.loc[departure_saturdays_start][
                 'stay_put_holiday'
-            ]
+            ]  # type: ignore
         )
         for departure_saturdays_start in departure_saturdays_starts
     ]
@@ -1332,7 +1365,7 @@ def car_holiday_departures_returns_corrections(
 
     return_saturdays_starts: list[datetime.datetime] = run_range[
         returns_filter & saturday_filter & day_start_hour_filter
-    ]
+    ]  # type: ignore
 
     return_saturdays: list[pd.DatetimeIndex] = [
         pd.date_range(
@@ -1343,7 +1376,7 @@ def car_holiday_departures_returns_corrections(
 
     return_sundays_starts: list[datetime.datetime] = run_range[
         returns_filter & sunday_filter & day_start_hour_filter
-    ]
+    ]  # type: ignore
 
     return_sundays: list[pd.DatetimeIndex] = [
         pd.date_range(
@@ -1356,7 +1389,7 @@ def car_holiday_departures_returns_corrections(
         float(
             run_trip_probabilities.loc[return_saturdays_start][
                 'stay_put_holiday'
-            ]
+            ]  # type: ignore
         )
         for return_saturdays_start in return_saturdays_starts
     ]
@@ -1666,35 +1699,35 @@ def get_location_split(
         percentage_driving['Driving percent'] = (
             percentage_driving['Driving percent'].values
             + trip.run_percentage_driving.values
-            * run_trip_probabilities[trip.name].values
+            * run_trip_probabilities[trip.name].values  # type: ignore
         )
         connectivity['Connectivity'] = (
             connectivity['Connectivity'].values
             + trip.run_connectivity.values
-            * run_trip_probabilities[trip.name].values
+            * run_trip_probabilities[trip.name].values  # type: ignore
         )
         maximal_delivered_power['Maximal Delivered Power (kW)'] = (
             maximal_delivered_power['Maximal Delivered Power (kW)'].values
             + trip.run_maximal_delivered_power.values
-            * run_trip_probabilities[trip.name].values
+            * run_trip_probabilities[trip.name].values  # type: ignore
         )
 
         maximal_received_power['Maximal Received Power (kW)'] = (
             maximal_received_power['Maximal Received Power (kW)'].values
             + trip.run_maximal_received_power.values
-            * run_trip_probabilities[trip.name].values
+            * run_trip_probabilities[trip.name].values  # type: ignore
         )
         vehicle_discharge_power['Vehicle Discharge Power (kW)'] = (
             vehicle_discharge_power['Vehicle Discharge Power (kW)'].values
             + trip.run_vehicle_discharge_power.values
-            * run_trip_probabilities[trip.name].values
+            * run_trip_probabilities[trip.name].values  # type: ignore
         )
         discharge_power_to_network['Discharge Power to Network (kW)'] = (
             discharge_power_to_network[
                 'Discharge Power to Network (kW)'
             ].values
             + trip.run_discharge_power_to_network.values
-            * run_trip_probabilities[trip.name].values
+            * run_trip_probabilities[trip.name].values  # type: ignore
         )
 
         for location_name in trip.run_location_split.columns:
@@ -1703,14 +1736,14 @@ def get_location_split(
             ].values + (
                 trip.run_location_split[location_name].values
                 * run_trip_probabilities[trip.name].values
-            )
+            )  # type: ignore
 
             connectivity_per_location[
                 location_name
             ] = connectivity_per_location[location_name].values + (
                 trip.run_connectivity_per_location[location_name].values
                 * run_trip_probabilities[trip.name].values
-            )
+            )  # type: ignore
 
             maximal_delivered_power_per_location[
                 location_name
@@ -1719,7 +1752,7 @@ def get_location_split(
                     location_name
                 ].values
                 * run_trip_probabilities[trip.name].values
-            )
+            )  # type: ignore
             maximal_received_power_per_location[
                 location_name
             ] = maximal_received_power_per_location[location_name].values + (
@@ -1727,7 +1760,7 @@ def get_location_split(
                     location_name
                 ].values
                 * run_trip_probabilities[trip.name].values
-            )
+            )  # type: ignore
             vehicle_discharge_power_per_location[
                 location_name
             ] = vehicle_discharge_power_per_location[location_name].values + (
@@ -1735,7 +1768,7 @@ def get_location_split(
                     location_name
                 ].values
                 * run_trip_probabilities[trip.name].values
-            )
+            )  # type: ignore
             discharge_power_to_network_per_location[
                 location_name
             ] = discharge_power_to_network_per_location[
@@ -1745,7 +1778,7 @@ def get_location_split(
                     location_name
                 ].values
                 * run_trip_probabilities[trip.name].values
-            )
+            )  # type: ignore
 
     loop_timer.append(datetime.datetime.now())
     pickle_interim_files: bool = general_parameters.interim_files.pickle
@@ -1825,7 +1858,9 @@ def get_starting_location_split(
     if compute_start_location_split:
         run_range: list[datetime.datetime] = run_time.get_time_range(
             scenario, general_parameters
-        )[0]
+        )[
+            0
+        ]  # type: ignore
         run_start_time_tag: datetime.datetime = run_range[0]
         run_start_day_type: str = run_time.get_day_type(
             run_start_time_tag, scenario, general_parameters
@@ -1844,9 +1879,11 @@ def get_starting_location_split(
 
     else:
         for location_name in location_names:
-            location_split.loc[run_range, location_name] = location_parameters[
-                location_name
-            ].percentage_in_location_at_run_start
+            location_split.loc[run_range, location_name] = (  # type: ignore
+                location_parameters[
+                    location_name
+                ].percentage_in_location_at_run_start
+            )
 
     return location_split
 
@@ -2001,7 +2038,7 @@ def make_mobility_data(
 ]:
 
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
-        trips, scenario, case_name, general_parameters
+        trips, scenario, case_name, general_parameters  # type: ignore
     )
     trip_probabilities_per_day_type: pd.DataFrame = (
         get_trip_probabilities_per_day_type(
@@ -2012,7 +2049,7 @@ def make_mobility_data(
     mobility_quantities: list = scenario.mobility_module['mobility_quantities']
 
     run_mobility_matrix: pd.DataFrame = get_run_mobility_matrix(
-        trips,
+        trips,  # type: ignore
         location_connections,
         mobility_quantities,
         run_trip_probabilities,
@@ -2051,7 +2088,11 @@ def make_mobility_data(
         vehicle_discharge_power_per_location,
         discharge_power_to_network_per_location,
     ) = get_location_split(
-        trips, run_trip_probabilities, scenario, case_name, general_parameters
+        trips,  # type: ignore
+        run_trip_probabilities,
+        scenario,
+        case_name,
+        general_parameters,  # type: ignore
     )
     (
         run_next_leg_kilometers,
@@ -2059,14 +2100,14 @@ def make_mobility_data(
         run_next_leg_charge_from_network,
         run_next_leg_charge_to_vehicle,
     ) = get_kilometers_for_next_leg(
-        trips,
+        trips,  # type: ignore
         run_trip_probabilities,
         scenario,
         case_name,
         general_parameters,
     )
     run_charging_sessions: list[ChargingSession] = get_run_charging_sessions(
-        trips,
+        trips,  # type: ignore
         trip_probabilities_per_day_type,
         scenario,
         general_parameters,
@@ -2120,8 +2161,8 @@ if __name__ == '__main__':
     scenario: Box = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
 
     location_connections, legs, locations, trips = (

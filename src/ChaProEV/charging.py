@@ -659,7 +659,11 @@ def compute_charging_events(
         )
         location_modulated_charging_power: float = (
             location_charging_power
-            * float(charging_modulation.loc[time_tag][charging_location])
+            * float(
+                charging_modulation.loc[time_tag][
+                    charging_location
+                ]  # type: ignore
+            )  # type: ignore
         )
 
         # This variable is useful if new battery spaces
@@ -698,7 +702,10 @@ def compute_charging_events(
         ).sum()
 
         # We only do the charge computations if there is a charge to be drawn
-        if charge_drawn_by_vehicles_this_time_tag > zero_threshold:
+        if (
+            charge_drawn_by_vehicles_this_time_tag > zero_threshold
+        ):  # type: ignore
+
             charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
                 charge_drawn_by_vehicles.loc[time_tag][charging_location]
                 + charge_drawn_by_vehicles_this_time_tag
@@ -984,7 +991,7 @@ def copy_day_type_profiles_to_whole_run(
                     if (
                         spillover_amounts_per_battery_space[test_battery_space]
                         > zero_threshold
-                    ):
+                    ):  # type: ignore
                         occupied_spillover_battery_spaces.append(
                             test_battery_space
                         )
@@ -1397,9 +1404,7 @@ def get_charging_profile(
     if use_day_types_in_charge_computing:
         compute_charge = False
         day_types_to_compute: list[str] = day_types.copy()
-        reference_day_type_time_tags: dict[
-            str, list[datetime.datetime]
-        ] = {}
+        reference_day_type_time_tags: dict[str, list[datetime.datetime]] = {}
         time_tags_of_day_type: list[datetime.datetime] = []
 
     day_start_hour: int = scenario.mobility_module.day_start_hour
@@ -1451,7 +1456,7 @@ def get_charging_profile(
         if (
             use_day_types_in_charge_computing
             and (time_tag.hour == day_start_hour)
-            and (run_day_type in day_types_to_compute)
+            and (run_day_type in day_types_to_compute)  # type: ignore
         ):
             # For the da to be representative, it cannot have
             # charging from the prior day (this spillover issue
@@ -1473,14 +1478,14 @@ def get_charging_profile(
             )
 
             if not does_charge_demand_spillover:
-                day_types_to_compute.remove(run_day_type)
+                day_types_to_compute.remove(run_day_type)  # type: ignore
                 compute_charge = True
                 time_tags_of_day_type = []
 
         if compute_charge:
 
             if use_day_types_in_charge_computing:
-                time_tags_of_day_type.append(time_tag)
+                time_tags_of_day_type.append(time_tag)  # type: ignore
 
             # We start by looking at how travel changes the
             # available battery spaces at each location
@@ -1525,9 +1530,9 @@ def get_charging_profile(
                 time_tag.hour == day_end_hour
             ):
                 compute_charge = False
-                reference_day_type_time_tags[run_day_type] = (
+                reference_day_type_time_tags[run_day_type] = (  # type: ignore
                     time_tags_of_day_type
-                )
+                )  # type: ignore
 
     if use_day_types_in_charge_computing:
 
@@ -1535,7 +1540,7 @@ def get_charging_profile(
             scenario,
             case_name,
             run_range,
-            reference_day_type_time_tags,
+            reference_day_type_time_tags,  # type: ignore
             location_split,
             run_mobility_matrix,
             battery_spaces,
@@ -1799,9 +1804,7 @@ def get_profile_from_sessions(
             sessions_charging_slots, used_powers_to_vehicle
         )
     ]
-    sessions_charging_slots_charge_factors_from_network: list[
-        np.ndarray
-    ] = [
+    sessions_charging_slots_charge_factors_from_network: list[np.ndarray] = [
         used_power * np.ones(len(session_charging_slots))
         for session_charging_slots, used_power in zip(
             sessions_charging_slots, used_powers_from_network
@@ -1890,8 +1893,8 @@ if __name__ == '__main__':
     case_name = 'Mopo'
     # scenario_name = 'XX_car'
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
     # scenario_file_name: str = f'scenarios/{case_name}/{scenario_name}.toml'
     # scenario = Box(cook.parameters_from_TOML(scenario_file_name))
@@ -1934,8 +1937,8 @@ if __name__ == '__main__':
 
     scenario = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = scenario_name
-    general_parameters = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
