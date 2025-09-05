@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>Profiles - ChaProEV</title>
+    <title>Parallel processing - ChaProEV</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Profiles";
-        var mkdocs_page_input_path = "profiles.md";
+        var mkdocs_page_name = "Parallel processing";
+        var mkdocs_page_input_path = "parallel_processing.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -66,7 +66,7 @@
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Modules</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
@@ -91,20 +91,12 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Profiles</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#home-type-split">Home type split</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#sessions">Sessions</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#standard-profiles">Standard profiles</a>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Programming matters</span></p>
-              <ul>
-                  <li class="toctree-l1"><a class="reference internal" href="../parallel_processing/">Parallel processing</a>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Parallel processing</a>
                   </li>
               </ul>
       </div>
@@ -121,8 +113,8 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">Modules</li>
-      <li class="breadcrumb-item active">Profiles</li>
+          <li class="breadcrumb-item">Programming matters</li>
+      <li class="breadcrumb-item active">Parallel processing</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -131,19 +123,43 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="approach">Approach</h1>
-<h2 id="home-type-split">Home type split</h2>
-<p>vbmn</p>
-<h2 id="sessions">Sessions</h2>
-<p>hhgjh</p>
-<h2 id="standard-profiles">Standard profiles</h2>
-<p>ghjkg</p>
+                <pre><code class="language-python">    scenarios: list[Box] = scenarios_module.load_scenarios(case_name)
+
+    set_amount_of_processes: bool = (
+        general_parameters.parallel_processing.set_amount_of_processes
+    )
+    if set_amount_of_processes:
+        amount_of_parallel_processes: int | None = None
+    else:
+        amount_of_parallel_processes = (
+            general_parameters.parallel_processing.amount_for_scenarios
+        )
+
+    pool_inputs: ty.Iterator[tuple[Box, str, Box]] | ty.Any = zip(
+        scenarios, repeat(case_name), repeat(general_parameters)
+    )
+    # the ty.Any alternative is there because transforming it with the
+    # progress bar makes mypy think it change is type
+    progress_bars_parameters: Box = general_parameters.progress_bars
+    display_scenario_run: bool = progress_bars_parameters.display_scenario_run
+    scenario_run_description: str = (
+        progress_bars_parameters.scenario_run_description
+    )
+    if display_scenario_run:
+        pool_inputs = tqdm.tqdm(
+            pool_inputs,
+            desc=scenario_run_description,
+            total=len(scenarios),
+        )
+
+    with Pool(amount_of_parallel_processes) as scenarios_pool:
+        scenarios_pool.starmap(scenarios_module.run_scenario, pool_inputs)
+</code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../scenarios_module/" class="btn btn-neutral float-left" title="Scenarios"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../parallel_processing/" class="btn btn-neutral float-right" title="Parallel processing">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../profiles/" class="btn btn-neutral float-left" title="Profiles"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -166,10 +182,8 @@
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../scenarios_module/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../profiles/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
-    
-      <span><a href="../parallel_processing/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

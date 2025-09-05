@@ -93,6 +93,12 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#get_future_demand_values">get_future_demand_values</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_non_road_profiles">get_non_road_profiles</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#load_scenarios">load_scenarios</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_profile">get_profile</a>
+    </li>
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#configuration-non-roadtoml">Configuration (non-road.toml)</a>
@@ -166,6 +172,11 @@
                   <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
                   </li>
               </ul>
+              <p class="caption"><span class="caption-text">Programming matters</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../parallel_processing/">Parallel processing</a>
+                  </li>
+              </ul>
       </div>
     </div>
     </nav>
@@ -229,6 +240,13 @@ with TJs, which we convert to PJs), and <a href="#reference_historical_year">ref
 <p>Gets the demand for future years.
 This function takes the reference values from <a href="#get_mode_reference_values">get_mode_reference_values</a>
 and multiplies them by a [growth table][#growth_factors_file].</p>
+<h3 id="get_non_road_profiles">get_non_road_profiles</h3>
+<p>This function creates the profiles we need.
+It first [loads the scenarios][#load_scenarios] and then runs
+the <a href="#get_profile">profile getting</a> function for each scenario
+(see the <a href="../parallel_processing/">general explanation about this</a> )</p>
+<h3 id="load_scenarios">load_scenarios</h3>
+<h3 id="get_profile">get_profile</h3>
 <h2 id="configuration-non-roadtoml">Configuration (non-road.toml)</h2>
 <h4 id="historical_dataframe_name">historical_dataframe_name</h4>
 <p>The name of the historical data DataFrame.</p>
