@@ -51,11 +51,15 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../input/">Inputs</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
+                </li>
+    </ul>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Approach</span></p>
@@ -72,6 +76,8 @@
                   <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../non_road/">Non-road</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
                   </li>
@@ -127,8 +133,15 @@ if __name__ == '__main__':
     ChaProEV.run_ChaProEV(case_name)
 </code></pre>
 <p>where you need to give a name to your case ('my_case') in the example above.</p>
-<p>To run your case, you need to provide
-<a href="../scenario/">scenario parameters</a>, <a href="../variants/">(optional) variant parameters</a>,  <a href="../input/">(optional) inputs</a>, and <a href="../general_parameters/">general parameters</a> (that should not change much from case to case).</p>
+<p>To run your case, you need to provide general parameters,
+scenario parameters, variant parameters, and (optional) inputs.</p>
+<p>## General parameters
+The file containing the general parameters (common for all acenarios) is
+in your root working folder as is called 
+<a href="../general_parameters/">ChaProEV.toml</a> (click on link for details).
+ ## Scenarios</p>
+<p>## Variants</p>
+<p>## Inputs</p>
               
             </div>
           </div><footer>

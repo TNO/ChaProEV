@@ -5,15 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>General parameters - ChaProEV</title>
+    <title>Purpose - ChaProEV</title>
     <link rel="stylesheet" href="../css/theme.css" />
     <link rel="stylesheet" href="../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
     
       <script>
         // Current page data
-        var mkdocs_page_name = "General parameters";
-        var mkdocs_page_input_path = "general_parameters.md";
+        var mkdocs_page_name = "Purpose";
+        var mkdocs_page_input_path = "general_parameters-PC-28624.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -44,218 +44,12 @@
                 </li>
               </ul>
               <p class="caption"><span class="caption-text">User guide</span></p>
-              <ul class="current">
+              <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">General parameters</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#variants">variants</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#use_variants">use_variants</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#csv_version">csv_version</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#use_years_in_profiles">use_years_in_profiles</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#parallel_processing">parallel_processing</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#set_amount_of_processes">set_amount_of_processes</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#amount_for_scenarios">amount_for_scenarios</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#amount_for_pickle_saves">amount_for_pickle_saves</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#interim_files">interim_files</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#pickle">pickle</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#consumption_tables_frequencies">consumption_tables_frequencies</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#save_consumption_table">save_consumption_table</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#profile_dataframe">profile_dataframe</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#headers">headers</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#fleet_headers">fleet_headers</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#do_fleet_tables">do_fleet_tables</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#fleet_file_name">fleet_file_name</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#sessions_dataframe">sessions_dataframe</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#properties">properties</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dataframe_headers">dataframe_headers</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#run_dataframe_headers">run_dataframe_headers</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#display_dataframe_headers">display_dataframe_headers</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#display_dataframe_index">display_dataframe_index</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#fleet_display_dataframe_headers">fleet_display_dataframe_headers</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#plots">plots</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#vehicle_temperature_efficiency">vehicle_temperature_efficiency</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#style">style</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#source_data_folder">source_data_folder</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#source_data_file">source_data_file</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#fit_color">fit_color</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#fit_line_size">fit_line_size</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#geotab_data_color">geotab_data_color</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#geotab_data_size">geotab_data_size</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#title_size">title_size</a>
-    </li>
-        </ul>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#files">files</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#input_root">input_root</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#output_root">output_root</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#groupfile_root">groupfile_root</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#figures">figures</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#dpi">dpi</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#outputs">outputs</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#dataframe_outputs">dataframe_outputs</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#maps">maps</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#map_data_folder">map_data_folder</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#area_data_file_name">area_data_file_name</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#general_exclusion_codes">general_exclusion_codes</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#border_data_file_prefix">border_data_file_prefix</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#border_data_file_suffix">border_data_file_suffix</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#points_data_file_prefix">points_data_file_prefix</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#points_data_file_suffix">points_data_file_suffix</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#country_code_header">country_code_header</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#country_code_header_in_map_data">country_code_header_in_map_data</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#heat_bar_map">heat_bar_map</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#colors">colors</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#color_bars">color_bars</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#unit_conversions">unit_conversions</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#numbers">numbers</a>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#consumption">consumption</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#energy_carriers">energy_carriers</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#consumption_table_name">consumption_table_name</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#time_header">time_header</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#distance_header">distance_header</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#fleet_distance_header">fleet_distance_header</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#energy_carriers_consumption_names">energy_carriers_consumption_names</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#fleet_energy_carriers_consumption_names">fleet_energy_carriers_consumption_names</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#home_type">home_type</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#do_car_home_type_split">do_car_home_type_split</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#percentages_file">percentages_file</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#index_name">index_name</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#own_driveway_name">own_driveway_name</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#on_street_name">on_street_name</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#profiles_index">profiles_index</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#sessions_index">sessions_index</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#sessions_values_columns">sessions_values_columns</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#sessions">sessions</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#produce">produce</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#generate_profiles">generate_profiles</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#standard_profiles">standard_profiles</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#produce_1">produce</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#progress_bars">progress_bars</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#display_scenario_run">display_scenario_run</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#scenario_run_description">scenario_run_description</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#display_saving_pool_run">display_saving_pool_run</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#saving_pool_run_description">saving_pool_run_description</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#discharge">discharge</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#no_discharge_efficiency_output">no_discharge_efficiency_output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#no_charge_efficiency_output">no_charge_efficiency_output</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
                   </li>
@@ -314,8 +108,7 @@
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
     <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">User guide</li>
-      <li class="breadcrumb-item active">General parameters</li>
+      <li class="breadcrumb-item active">Purpose</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -329,7 +122,8 @@
 that are common for all your scenarios.
 This page describes the various parameters.
 You can use the navigation bar on the left to go directly to a group
-of parameters (or a given parameter).</p>
+of parameters (or a given parameter).
+This mostly contains general parameters that should not change too much from case to case. As such, you can take the version provided in the repository (and possibly modify one or two things).</p>
 <h2 id="variants">variants</h2>
 <p>The variants section of the configuration file sets parameters
 to create scenario <a href="../variants/">variants</a> (see that page for
@@ -343,7 +137,7 @@ to define your variants (in a folder within the variants folder: this
 folder needs to have the same name as your case). Setting it to false makes you use a toml file in the variants folder (case_name.toml).</p>
 <h3 id="use_years_in_profiles">use_years_in_profiles</h3>
 <p>This is used to create different variants per year when doing 
-<a href="car_home_own_driveway_splits.md">car home own driveway and street parking splits</a></p>
+<a href="../profiles/#home-type-split">car home own driveway and street parking splits</a></p>
 <h2 id="parallel_processing">parallel_processing</h2>
 <p>This parallel processing section of the configuration file sets parameters to manage the <a href="../multiprocessing/">parallel processing/multiprocessing</a> of the model (which reduces the model run time, see link for details).</p>
 <h3 id="set_amount_of_processes">set_amount_of_processes</h3>
@@ -363,87 +157,172 @@ tables frequencies (see <a href="../consumption/">consumption module</a>). The d
 <h3 id="save_consumption_table">save_consumption_table</h3>
 <p>Provide a list of booleans (true or false) to save a given frequency to file (this list needs to have the same length as the above list): true save a file for that frequency and false does not.</p>
 <h2 id="profile_dataframe">profile_dataframe</h2>
+<p>These are the headers that appear in output dataframes.</p>
 <h3 id="headers">headers</h3>
+<p>This one is for profiles (at one-vehicle scale).</p>
 <h3 id="fleet_headers">fleet_headers</h3>
+<p>This one is for the fleet-level dataframes.</p>
 <h3 id="do_fleet_tables">do_fleet_tables</h3>
+<p>Set this to true to create fleet-level tables.</p>
 <h3 id="fleet_file_name">fleet_file_name</h3>
+<p>The file name (has to be a csv inside the input/your_case folder)
+containing the fleet characteristics.
+See <a href="../input/#fleets">here</a> for details about this file.</p>
 <h2 id="sessions_dataframe">sessions_dataframe</h2>
+<p>This is to create the session dataframes.</p>
 <h3 id="properties">properties</h3>
+<p>Those are the quantities we want to put in the session dataframes.</p>
 <h3 id="dataframe_headers">dataframe_headers</h3>
+<p>Those are the headers of the session dataframes at the day level.</p>
 <h3 id="run_dataframe_headers">run_dataframe_headers</h3>
+<p>Those are the headers of the session dataframes for the whole run.</p>
 <h3 id="display_dataframe_headers">display_dataframe_headers</h3>
+<p>These are the headers of the display/final output dataframe headers at vehicle level.</p>
 <h3 id="display_dataframe_index">display_dataframe_index</h3>
+<p>These give the index of the display/final output dataframe headers.</p>
 <h3 id="fleet_display_dataframe_headers">fleet_display_dataframe_headers</h3>
+<p>These are the headers of the display/final output dataframe headers at fleet
+level.</p>
 <h2 id="plots">plots</h2>
+<p>This contains parameters for output plots (colors, styles, sizes, etc.).</p>
 <h3 id="vehicle_temperature_efficiency">vehicle_temperature_efficiency</h3>
+<p>This set of parameters is for the <a href="../weather/#range-and-temperature">range-temperature</a> plot.</p>
 <h4 id="style">style</h4>
+<p>This is a string with one of the <a href="https://matplotlib.org/stable/gallery/style_sheets/style_sheets_reference.html">available Matplotlib styles</a>.</p>
 <h4 id="source_data_folder">source_data_folder</h4>
+<p>Folder where the data to plot is.</p>
 <h4 id="source_data_file">source_data_file</h4>
+<p>File containg the data to plot.</p>
 <h4 id="fit_color">fit_color</h4>
+<p>The color name of fit line.</p>
 <h4 id="fit_line_size">fit_line_size</h4>
+<p>The size of the fir line.</p>
 <h4 id="geotab_data_color">geotab_data_color</h4>
+<p>The color of the data points. </p>
 <h4 id="geotab_data_size">geotab_data_size</h4>
+<p>The size of the data points.</p>
 <h4 id="title_size">title_size</h4>
+<p>The size of the plot title.</p>
 <h2 id="files">files</h2>
+<p>General file parameters.</p>
 <h3 id="input_root">input_root</h3>
+<p>The name of the folder where your input data goes (it goes to a subfolder of this with the name of your case).</p>
 <h3 id="output_root">output_root</h3>
+<p>The name of the folder where your output data goes (it goes to a subfolder of this with the name of your case).</p>
 <h3 id="groupfile_root">groupfile_root</h3>
+<p>This is for files that group data (such as (sqlite) databases or Excel workbooks) and will be the name of that grouping file.</p>
 <h3 id="figures">figures</h3>
+<p>Parameters for plots/figures.</p>
 <h4 id="dpi">dpi</h4>
+<p>Change this to change the resolution of the output figures.</p>
 <h4 id="outputs">outputs</h4>
+<p>Indicate  if you want to save your (Matplotlib) figures (true if you do, false if you don't) in various formats.</p>
 <h3 id="dataframe_outputs">dataframe_outputs</h3>
+<p>Indicate if you want to save your Pandas DataFrames in the
+listed formats (put a true if you want to do so, false if you don't).
+Clipboard saves to the local clipboard, not a file.</p>
 <h2 id="maps">maps</h2>
+<p>Parameters for making maps.</p>
 <h2 id="map_data_folder">map_data_folder</h2>
+<p>The folder where the map data is.</p>
 <h2 id="area_data_file_name">area_data_file_name</h2>
+<p>The file containing map areas.</p>
 <h2 id="general_exclusion_codes">general_exclusion_codes</h2>
+<p>Excluded map codes.</p>
 <h2 id="border_data_file_prefix">border_data_file_prefix</h2>
+<p>The prefix of the border data file.</p>
 <h2 id="border_data_file_suffix">border_data_file_suffix</h2>
+<p>The suffix of the border data file.</p>
 <h2 id="points_data_file_prefix">points_data_file_prefix</h2>
+<p>The prefix of the points data file.</p>
 <h2 id="points_data_file_suffix">points_data_file_suffix</h2>
+<p>The suffix of the points data file.</p>
 <h2 id="country_code_header">country_code_header</h2>
+<p>The header we use for country codes.</p>
 <h2 id="country_code_header_in_map_data">country_code_header_in_map_data</h2>
+<p>The country code header in tnhe source data.</p>
 <h2 id="heat_bar_map">heat_bar_map</h2>
+<p>The heat bar map/scale we want to use for maps (is the name of a 
+<a href="#color_bars">color bar</a>).</p>
 <h2 id="colors">colors</h2>
+<p>Definitions of custom colors (with RGB values, from 0 to 255).</p>
 <h2 id="color_bars">color_bars</h2>
+<p>You can deine color bars here, by listing the colors they use (in order).</p>
 <h2 id="unit_conversions">unit_conversions</h2>
+<p>This contains various constants used for unit conversions,
+such as the amount of Joules in a kiloWatt-hour.
+Some are grouped (time conversions).
+The times subpart also contains the codes for weekend day numbers
+and the index of the first hour in the year (often 0,
+but sometimes 1, as for the SPINE toolbox).</p>
 <h2 id="numbers">numbers</h2>
+<p>This contains a threshold to avoid issues with float precision and exteremely small values that are actually zero.</p>
 <h2 id="consumption">consumption</h2>
+<p>This contains settings (mostly headers and display names) related to
+the <a href="../consumption/">connusmption</a> tables.</p>
 <h3 id="energy_carriers">energy_carriers</h3>
+<p>A list of the energy carriers that come in the consumption table.</p>
 <h3 id="consumption_table_name">consumption_table_name</h3>
+<p>The name of the consumption table.</p>
 <h3 id="time_header">time_header</h3>
+<p>The header used for the time index in the consumption table.</p>
 <h3 id="distance_header">distance_header</h3>
+<p>The header used for the distance column in the consumption table.</p>
 <h3 id="fleet_distance_header">fleet_distance_header</h3>
+<p>The header used for the distance column in the fleet consumption table.</p>
 <h3 id="energy_carriers_consumption_names">energy_carriers_consumption_names</h3>
+<p>The headers for each emergy carrier in the consumption table. </p>
 <h3 id="fleet_energy_carriers_consumption_names">fleet_energy_carriers_consumption_names</h3>
+<p>The headers for each emergy carrier in the fleet consumption table.</p>
 <h2 id="home_type">home_type</h2>
+<p>These are parametrers related to the <a href="../profiles/#home-type-split">home type split</a> (split for cars between cars with their own driveway and street parking).</p>
 <h3 id="do_car_home_type_split">do_car_home_type_split</h3>
+<p>Set this to true to compute the split. Set it to false not to do it.</p>
 <h3 id="percentages_file">percentages_file</h3>
+<p>The file name (has to be a csv inside the input/your_case folder)
+containing the spli.
+See <a href="../input/#car-own-driveway-percentage">here</a> for details about this file.</p>
 <h3 id="index_name">index_name</h3>
+<p>The index header in the source file.</p>
 <h3 id="own_driveway_name">own_driveway_name</h3>
+<p>The header for the own driveway percentage. Also used for the output profile file names.</p>
 <h3 id="on_street_name">on_street_name</h3>
+<p>The header for the street parking percentage. Used for the output profile file names.</p>
 <h3 id="profiles_index">profiles_index</h3>
+<p>The index for the profile outputs.</p>
 <h3 id="sessions_index">sessions_index</h3>
+<p>The index for the sessions outputs.</p>
 <h3 id="sessions_values_columns">sessions_values_columns</h3>
+<p>The columns of the sessions dataframes.</p>
 <h2 id="sessions">sessions</h2>
+<p>Parameters used for the <a href="../profiles/#sessions">sessions</a>.</p>
 <h3 id="produce">produce</h3>
+<p>Set to true if you want to create  <a href="../profiles/#sessions">sessions</a>, to
+false if you don't.</p>
 <h3 id="generate_profiles">generate_profiles</h3>
+<p>Set to true if you want to [generate profiles from sessions][scenarios_module.md#Generate-profiles-from-sessions], to false if you don't.</p>
 <h2 id="standard_profiles">standard_profiles</h2>
 <h3 id="produce_1">produce</h3>
+<p>Set to true if you want to produce <a href="../profiles/#standard-profiles">standard charging profiles</a>, false if you don't.</p>
 <h2 id="progress_bars">progress_bars</h2>
+<p>Parameters related to displaying progress bars.</p>
 <h3 id="display_scenario_run">display_scenario_run</h3>
+<p>Set to true to show a progress bar for the computing of scenarios, false if you don't.</p>
 <h3 id="scenario_run_description">scenario_run_description</h3>
+<p>Text to display for the scenarios progress bar.</p>
 <h3 id="display_saving_pool_run">display_saving_pool_run</h3>
+<p>Set to true to show a progress bar for the saving of output files, false if you don't.</p>
 <h3 id="saving_pool_run_description">saving_pool_run_description</h3>
+<p>Text to display for the output file saving progress bar.</p>
 <h2 id="discharge">discharge</h2>
+<p>Parameters related to vehicle discharge.</p>
 <h3 id="no_discharge_efficiency_output">no_discharge_efficiency_output</h3>
+<p>Message to display if the discharge efficiencncy value is empty.</p>
 <h3 id="no_charge_efficiency_output">no_charge_efficiency_output</h3>
+<p>Message to display if the charge efficiencncy value is empty.</p>
               
             </div>
           </div><footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../scenario/" class="btn btn-neutral float-left" title="Creating scenarios"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../variants/" class="btn btn-neutral float-right" title="Variants">Next <span class="icon icon-circle-arrow-right"></span></a>
-    </div>
 
   <hr/>
 
@@ -465,10 +344,6 @@ tables frequencies (see <a href="../consumption/">consumption module</a>). The d
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../scenario/" style="color: #fcfcfc">&laquo; Previous</a></span>
-    
-    
-      <span><a href="../variants/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

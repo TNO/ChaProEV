@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Scenario file description - ChaProEV</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Scenario file description";
+        var mkdocs_page_input_path = "scenario-PC-28624.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ChaProEV
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Approach</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../non_road/">Non-road</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../consumption/">Consumption</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../make_variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running_model/">Running model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multiprocessing/">Multiprocessing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../writing/">Writing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChaProEV</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Scenario file description</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="scenario-file-description">Scenario file description</h1>
+<p>The models runs through a series of scenarios. For each scenario,
+you need to create a scenario file in the scenarios/your_case
+folder (or use a <a href="../variants/">variant</a>).
+This page describes the elements of the scenario file (your_scenario.toml).</p>
+<h2 id="run">run</h2>
+<p>Run parameters give the elements to produce the time tags of the run range.</p>
+<h3 id="use_day_types_in_charge_computing">use_day_types_in_charge_computing</h3>
+<p>If set to true, the charging computations will be done per <a href="#day_types">day type</a> rather
+than for all days of the run, which fastens the computations in the <a href="../charging/">charging module</a>.
+If set to false, the model will compute each day separately, which is considerably slower.</p>
+<h3 id="start">start</h3>
+<p>This part gives the year, month, day, hour, and minute of the start of the
+computations. It is best to set this to a day hour start for consistency
+and then cut off the start for display (see below). For example,
+start on 31/12/2019 at 05:00 if your day start hour is 05:00 and if you want
+to show results starting on 1/1/2020 at 00:00.</p>
+<h3 id="end">end</h3>
+<p>This part gives the year, month, day, hour, and minute of the end of the
+computations. Note that the end time tag is not included in the run,
+so put 1/1/2021 at 00:00 if you want to compute for 2020.</p>
+<h3 id="display_start">display_start</h3>
+<p>This is the first time tag you want to show in your end results.</p>
+<h3 id="display_end">display_end</h3>
+<p>This is the first time tag that does not appear in your displayed results.</p>
+<h3 id="frequency">frequency</h3>
+<p>The time frequency of the run (size and type).
+For the type, use 'H' for hours, 'min' for minutes,
+'S' for seconds, 'D' for days. For more info and other types, see 
+<a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases">here</a>.
+The current model uses  hourly (so 1 and 'h'). Changing that might require
+some adjustments in the code.</p>
+<h3 id="display-frequency">display frequency</h3>
+<p>The frequency of the displayed values can be different than the frequency of the computations.
+In the current version, this needs to be the same or less frequent than the computation frequency above.</p>
+<h3 id="extra_downloads">extra_downloads</h3>
+<p>This is to decide if you want to dowload some files (note that this concerns the currently inactive weather module).</p>
+<h4 id="download_weather_data">download_weather_data</h4>
+<p>Put true if you want to download the weather data. In principle,
+you only to do this once, unless you add years and/or areas</p>
+<h4 id="make_weather_database">make_weather_database</h4>
+<p>Put true if you want to remake the weather database. In principle,
+you only to do this once, unless you add years and/or areas. Note
+that this refers to other years ans areas than the weather download.</p>
+<h4 id="download_ev_tool_data">download_EV_tool_data</h4>
+<p>Put true if you want to download the data from the EV tool by geootab
+This should only be needed once and is independentr of the case.</p>
+<h2 id="locations">locations</h2>
+<p>You can modify existing locations or create new ones by copying
+exisiting ones (copy everything under '[locations.code]', where
+code is the name of your location). You need to have all the elements below.</p>
+<h3 id="vehicle">vehicle</h3>
+<p>This is the name of the vehicle that goes to that location.
+This name needs to match the scenario's vehicle name (in <a href="#vehicle">vehicle</a>) 
+for the location to
+<a href="../define/#declare_class_instances">be included</a> in the scenario.
+The reason for this check is to avoid including unnecessary locations (a user
+could put all locations for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter locations
+by hand). 
+If a location is used by different vehicles, simply create one location per
+vehicle (e.g. stadium_car and stadium_bus).</p>
+<h3 id="connectivity">connectivity</h3>
+<p>This is a (float) number between 0 and 1 that gives us the probability
+that a vehicle is connected to a charger when it is at this location (essentially,
+it is the ratio between parking places with a charger and the total amount of parkin places).</p>
+<h3 id="charging_power">charging_power</h3>
+<p>The available charging power (in kW).</p>
+<h3 id="charger_efficiency">charger_efficiency</h3>
+<p>This is a (float) number between 0 and 1 that gives us the charger efficiency.
+Essentially, it is the ratio between the power received by the vehicle and the
+power drwan from the network.</p>
+<h3 id="latitude">latitude</h3>
+<p>The location's latitude, used for <a href="../weather/">weather-related</a> computations (currenly inactive).</p>
+<h3 id="longitude">longitude</h3>
+<p>The location's longitude, used for <a href="../weather/">weather-related</a> computations (currenly inactive).</p>
+<h3 id="charging_price">charging_price</h3>
+<p>The standard charging price (in €/kWh), currently inactive.</p>
+<h3 id="charging_desirability">charging_desirability</h3>
+<p>An indicator (0-1) of how much people like to charge at this location. Currently inactive.</p>
+<h3 id="percentage_in_location_at_run_start">percentage_in_location_at_run_start</h3>
+<p>If filling it directly instead of <a href="#compute_start_location_split">computing it</a> (see 
+<a href="../mobility/#compute_start_location_split">this function</a>), you can put a probability
+(float between 0 and 1) that the vehicle is at that location at the start of the run.</p>
+<h3 id="vehicle_discharge_power">vehicle_discharge_power</h3>
+<p>The available discharging power (in kW).</p>
+<h3 id="proportion_of_discharge_to_network">proportion_of_discharge_to_network</h3>
+<p>This is a (float) number between 0 and 1 that gives us the discharging.
+Essentially, it is the ratio between the power going to the network and the power
+discharged by the vehicle.</p>
+<h3 id="time_modulation_factors">time_modulation_factors</h3>
+<p>For each hour (starting at midnight), a factor between 0 and 1 that tells us
+how much oof the charging power is available (1 means that it is fully available,
+and 0 that the charger is entirely shut down during that hour).</p>
+<h2 id="legs">legs</h2>
+<p>Legs are vehicle movements between two locations. You can modify existing 
+legs or create new ones by copying
+exisiting ones (copy everything under '[legs.code]', where
+code is the name of your leg). You need to have all the elements below.</p>
+<h3 id="vehicle_1">vehicle</h3>
+<p>This is the name of the vehicle that performs that leg.
+This name needs to match the scenario's vehicle name (in <a href="#vehicle">vehicle</a>) 
+for the leg to
+<a href="../define/#declare_class_instances">be included</a> in the scenario.
+The reason for this check is to avoid including unnecessary legs (a user
+could put all legs for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter legs
+by hand). 
+If a le is used by different vehicles, simply create one leg per
+vehicle (e.g. from_stadium_to_home_car and from_stadium_to_home_bus).</p>
+<h3 id="distance">distance</h3>
+<p>The distance between the start and and end of the loation (in kilometers).</p>
+<h3 id="duration">duration</h3>
+<p>Hoe long ot takes for the vehicle to perform the leg
+(in hours: 30 minutes= 0.5 hours).</p>
+<h3 id="hour_in_day_factors">hour_in_day_factors</h3>
+<p>This factor adds a correction to the vehicle consumption that depends
+on the hour in day (the first is for 00:00 to 00:59,
+the last for 23:00 to 23:59). Note that these are actual hours,
+not hours in the user day (which can start and end at other moments than
+midnight). This is used to take into account things like traffic jams.
+The default value is 1.
+(Note that this is currently inactive/not used in the model).</p>
+<h3 id="locations_1">locations</h3>
+<p>Provide the names of the start and end locations (which need to be among
+the <a href="#locations">locations</a> provided above).</p>
+<h3 id="road_type_mix">road_type_mix</h3>
+<p>This is to put a road type mix for the leg.
+The reason for this is that we might want to reflect the fact that vehicles might have different
+energy consumptions for different road types.</p>
+<h4 id="mix">mix</h4>
+<p>Give the road type mix.
+We need a value for each of the road_types 
+(see <a href="#transport_factors">transport_factors</a>)
+If the road type does not occur in the leg, simply put 0
+Note that the total should be 1 (there are no checks to ensure this,
+so you need to make sure you do this correctly). 
+The list provided in mix needs to correspond to the road types in
+<a href="#transport_factors">transport_factors</a>.
+This will be used in <a href="../mobility/#make_mobility_data">computing weighted quantities</a>.
+Note that these weighted quantities are partly inactive (in the sense that they
+are not the focus of current runs/have not been tested).</p>
+<h2 id="vehicle_2">vehicle</h2>
+<p>These parameters define the scenario's vehicle. If you want profiles
+for several vehicles, run separate scenarios.</p>
+<h3 id="name">name</h3>
+<p>This is the name of the vehicle, which will be
+<a href="../define/#declare_class_instances">checked</a> to see if legs, trips,
+and locations are actually declared.</p>
+<h3 id="base_location">base_location</h3>
+<p>Choose one of the [locations][#locations] as a base location (at day start).
+This is not relevant for cars, as they can be split between different locations
+at day start (say home and holiday), as seen in the <a href="../mobility/#get_day_type_start_location_split">computation of location at
+day start</a>.</p>
+<h3 id="yearly_kilometrage">yearly_kilometrage</h3>
+<p>Provide the yearly kilometrage for this vehicle. This could be used for
+checking/testing purposes, but is currently not used/inactive.</p>
+<h3 id="kilometers_column_for_consumption">kilometers_column_for_consumption</h3>
+<p>Tells which column from the <a href="../mobility/#get_run_mobility_matrix">run mobility matrix</a>
+is used when <a href="../consumption/#create_consumption_tables">creating consumption tables</a>
+(it should be 'Arrivals' or 'Departures', with the current default being 'Arrivals').</p>
+<h3 id="use_weighted">use_weighted</h3>
+<p>Set it to true if you want to <a href="../consumption/#create_consumption_tables">use</a>
+[weights][#weights] for [road types][#road_types] for your <a href="#road_type_mix">legs</a>.</p>
+<h3 id="battery_capacity">battery_capacity</h3>
+<p>The standard/nominal capacity of the vehicle's battery. Note that the battery
+<a href="../weather/#range-and-temperature">capacity changes with temperature</a>,
+but that the impact of this is inactove/not modelled yet.</p>
+<h3 id="solar_panel_size_kwp">solar_panel_size_kWp</h3>
+<p>The capacity (kWp) of the solar panels on the vehicle (currently inactive/not implemented).</p>
+<h3 id="base_consumption_per_km">base_consumption_per_km</h3>
+<p>A set of vehicle base consumptions (reference values that can be modified
+by using [weights][#use_weighted]).
+They are all in values per kilometer, in units in which the energy carrier
+is typically sold.</p>
+<h2 id="trips">trips</h2>
+<p>Trips are collections of <a href="#legs">legs</a> on a given day.
+You can modify existing 
+trips or create new ones by copying
+exisiting ones (copy everything under '[trips.code]', where
+code is the name of your trip). You need to have all the elements below.</p>
+<h3 id="vehicle_3">vehicle</h3>
+<p>This is the name of the vehicle that performs that trip.
+This name needs to match the scenario's vehicle name (in <a href="#vehicle">vehicle</a>) 
+for the trip to
+<a href="../define/#declare_class_instances">be included</a> in the scenario.
+The reason for this check is to avoid including unnecessary trips (a user
+could put all trips for all vehicles in their scenario files so that they
+could copy the whole list between scenarios without having to filter trips
+by hand). 
+If a le is used by different vehicles, simply create one leg per
+vehicle (e.g. weekend_trip_car and weekend_trip_bus).</p>
+<h3 id="legs_1">legs</h3>
+<p>A list of <a href="#legs">legs</a> that constitute the trip (in order they are performed).</p>
+<h3 id="time_between_legs">time_between_legs</h3>
+<p>This is the time spent at each interim location (same units as used
+in general (hours in the current version of the model)).
+You need one value less than the amount of legs, even if the vehicle
+doesn't stay there (in that case, set the value to 0).</p>
+<h3 id="percentage_station_users">percentage_station_users</h3>
+<p>This is a placeholder for future management of fast-charging stations users
+and is currently inactive.</p>
+<h3 id="start_probabilities">start_probabilities</h3>
+<p>This is a list of start probabilities (sum has to add up to one), with
+enough values to cover a whole day (24 in the current implementation, as the
+base unit is an hour). The first value is for the <a href="#day_start_hour">day start hour</a>.</p>
+<h3 id="repeated_sequence">repeated_sequence</h3>
+<p>This is used to repeat a sequence of two legs, whic you provide here as a leg
+(put an empty list if no legs repeat). This is for example used for busses that
+go between the start and the end of a route. </p>
+<h3 id="repetition_amounts">repetition_amounts</h3>
+<p>This is the amount of times the sequence is repeated.
+If the sequence of two legs
+appear several times in the trip, you need to provide one value per appearance
+of the sequence (even if that repetition amount is 1). Using the same sequence
+repeatedlly can be used in cases where a van performs legs between two locations
+in clusters (something like before morning peak, morning peak, between peaks, 
+evening peak, after evening peak) and tell how often per cluster the van travels.</p>
+<h3 id="time_between_repetitions">time_between_repetitions</h3>
+<p>This is the time between repetitions (in your standard time units, hours in the current version).
+Similarly to the amounts, you need to provide one value (even if it is zero) per
+appearance of the sequence.</p>
+<h2 id="mobility_module">mobility_module</h2>
+<p>These parameters are mostly used in the <a href="../mobility/">mobility module</a>.</p>
+<h3 id="day_start_hour">day_start_hour</h3>
+<p>This parameter defines the start of the day for the scenario. It is chosen
+so that there are no movements during that hour number. It represents the
+shift from midnight, so a day start hour of 5 means that the day starts
+at hour 5 (i.e. 05.00). The idea is to choose an hour that is logical
+for the users/matches their patterns. This is connected to the 
+<a href="#day_types">day types</a>, as a given day will correspond to a day type.
+For example, the hours between 00:00 and 05:00 on a Saturday belong to
+the Thursday before and are as such on a week day 
+(as opposed to a weekend day).</p>
+<h3 id="compute_start_location_split">compute_start_location_split</h3>
+<p>Set to false if  <a href="#percentage_in_location_at_run_start">filling it directly</a>, 
+true if computing it (see 
+<a href="../mobility/#compute_start_location_split">this function</a>).</p>
+<h3 id="day_types">day_types</h3>
+<p>A list of day types (i.e. days where mobility patterns repeat, thus where
+the same trips occur (either a single one or a mix with given probabilites)).
+Thius is used in mobility computations, to compute <a href="../mobility/#get_trip_probabilities_per_day_type">trip probabilities per day type</a>
+You can decide to make <a href="#use_day_types_in_charge_computing">charge computations at the day type level</a>
+in the <a href="../charging/">charging module</a>.
+to save computation time.</p>
+<h3 id="mobility_quantities">mobility_quantities</h3>
+<p>These are the headers of the <a href="../mobility/#get_run_mobility_matrix">run mobility matrix</a>.
+You can change these if you want to change the formulation of the headers.</p>
+<h3 id="battery_space_shift_quantities">battery_space_shift_quantities</h3>
+<p>These correspond to the quantities computed <a href="../define/#compute_travel_impact">here</a>,
+though this list is currently not in use/inactive.</p>
+<h3 id="location_connections_headers">location_connections_headers</h3>
+<p>These headers are used in the <a href="../mobility/#get_run_mobility_matrix">run moblity matrix</a>.
+You can change these if you want to change the formulation of the headers.</p>
+<h3 id="mobility_index_names">mobility_index_names</h3>
+<p>These index names are used in the <a href="../mobility/#get_run_mobility_matrix">run moblity matrix</a>.
+You can change these if you want to change the formulation of the headers.</p>
+<h3 id="kilometers_driven_headers">kilometers_driven_headers</h3>
+<p>A  currently inactive/not in use list of matrix headers for a kilometers-based matrix.</p>
+<h3 id="holiday_weeks">holiday_weeks</h3>
+<p>A list of week numbers that are holiday weeks, used to compute 
+<a href="../mobility/#get_car_trip_probabilities_per_day_type">car holiday trip probabilities</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="number_of_holiday_weeks">number_of_holiday_weeks</h3>
+<p>We need to provide the number of holliday weeks seprately,
+as counting the elements of the list above might not work, such as
+when the above list contains weeks 1 and 53 (which just represent
+the fact that years don't necessarily start and/or end at the start/end
+of a week).</p>
+<h3 id="holiday_departures_in_weekend_week_numbers">holiday_departures_in_weekend_week_numbers</h3>
+<p>The week numbers when people go on holidays during the weekend, used to compute 
+<a href="../mobility/#get_car_trip_probabilities_per_day_type">car holiday trip probabilities</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="holiday_returns_in_weekend_week_numbers">holiday_returns_in_weekend_week_numbers</h3>
+<p>The week numbers when people come back from holidays during the weekend, used to compute 
+<a href="../mobility/#get_car_trip_probabilities_per_day_type">car holiday trip probabilities</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="work_hours_in_a_work_day">work_hours_in_a_work_day</h3>
+<p>Worked hours per day. This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="hours_worked_per_work_week">hours_worked_per_work_week</h3>
+<p>Amount of hours worked per week.
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="hours_in_a_standard_work_week">hours_in_a_standard_work_week</h3>
+<p>How many hours there are in a standard work week (default is 40).
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="percentage_working_on_a_work_week">percentage_working_on_a_work_week</h3>
+<p>The probability that a car driver goes to work in a work (i.e. non-holiday) week.
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for non-holiday weeks.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="worked_hours_per_year">worked_hours_per_year</h3>
+<p>Amount of worked hours per year. 
+This is used in the computations to determine
+the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probability that a car driver goes to work on a given day</a>, most notably for holiday weeks
+(as they are a remainder).
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="leisure_trips_per_weekend">leisure_trips_per_weekend</h3>
+<p>The amount of leisure trips car users perform in a weekend.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of trips including visits to leisure locations</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="leisure_trips_per_week_outside_weekends">leisure_trips_per_week_outside_weekends</h3>
+<p>The amount of leisure trips car users perform on non-weekend days.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of trips including visits to leisure locations</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="maximal_fill_percentage_leisure_trips_on_non_work_weekdays">maximal_fill_percentage_leisure_trips_on_non_work_weekdays</h3>
+<p>A factor that puts a cap on the percentage of trips that include a leisure trip on
+weekdays where the person does not go to work.</p>
+<p>This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of trips including visits to leisure locations</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="weekend_trips_per_year">weekend_trips_per_year</h3>
+<p>The amount of weekend trips car users take in a year.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of weeekend trips</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="holiday_trips_taken">holiday_trips_taken</h3>
+<p>The amount of holiday trips car users take in a year.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of holiday trips</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="time_spent_at_holiday_destination">time_spent_at_holiday_destination</h3>
+<p>How long car users stay at their holiday  destination.
+This is used to compute the <a href="../mobility/#get_car_trip_probabilities_per_day_type">probabilities of holiday trips</a>, as well as <a href="../mobility/#get_day_type_start_location_split">locations at day start</a>.
+As such, this is only relevant for cars in the current implementation of the model.</p>
+<h3 id="trips_per_day_type">trips_per_day_type</h3>
+<p>For vehicles other than cars, we assume that there is one trip per day type.
+This is where we match the trips to their day type.
+This is used <a href="../mobility/#get_trip_probabilities_per_day_type_other_vehicles">here</a>.</p>
+<h2 id="transport_factors">transport_factors</h2>
+<p>These are the factors used if we <a href="#use_weighted">use weighted</a> 
+consumptions per road type
+<a href="#road_type_mix">in legs</a>, reflecting the fact that vehicles might have different
+energy consumptions for different road types.</p>
+<h3 id="road_types">road_types</h3>
+<p>Provide a list of names for theroad types you want to use.</p>
+<h3 id="weights">weights</h3>
+<p>Provide one weight/energy use correction factor for each road type.</p>
+<h2 id="weather">weather</h2>
+<p>Parameters related to <a href="../weather/">weather computations</a>, which
+is currently inactive/not integrated in the model itself.</p>
+<h3 id="weather_factors_table_root_name">weather_factors_table_root_name</h3>
+<p>A root for <a href="../weather/#get_scenario_weather_data">saving weather factors</a>
+for each scenario (the scenario name will be mixed with this when saving the data).</p>
+<h3 id="source_data">source_data</h3>
+<p>Parameters about the source data (<a href="https://cds.climate.copernicus.eu/">CDS ERA-5</a>) for the <a href="https://cds.climate.copernicus.eu/how-to-api">cdsapi library</a>.</p>
+<h4 id="start_year">start_year</h4>
+<p>The first year for which you want to get data.</p>
+<h4 id="end_year">end_year</h4>
+<p>The last year for which you want to get data.</p>
+<h4 id="quantities">quantities</h4>
+<p>A list of the quantities you want to extract.</p>
+<h4 id="raw_data_folder">raw_data_folder</h4>
+<p>The folder where you want to put your raw data.</p>
+<h4 id="raw-data-area">raw data area</h4>
+<p>These define the area over which the raw weather data will be
+downloaded. The corresponding in the processed weather database is <a href="#processed-data-area">below</a>
+(you need to provide the minimal and maximal longitudes and latitudes of the area).</p>
+<h3 id="processed_data">processed_data</h3>
+<p>This is data that you will use in your model/run. It is a subpart of the raw data
+(for example: you might want all Europe in your raw data, but just one country in the processed data).</p>
+<h4 id="raw_data_folder_1">raw_data_folder</h4>
+<p>The folder where you can find your raw data.</p>
+<h4 id="processed_folder">processed_folder</h4>
+<p>The folder where you want to store your data.</p>
+<h4 id="weather_database_file_name">weather_database_file_name</h4>
+<p>The database file name where you want to store you processed weather data (in the folder above).</p>
+<h4 id="chunk_size">chunk_size</h4>
+<p>This parameter is there to avoid issues when writing a too large DataFrame
+at once (instead, we split it into chunks).</p>
+<h4 id="quantities-processed">quantities processed</h4>
+<p>The quantities in your processed weather data. It has to be a subset of <a href="#quantities">what</a> you can in your raw wether data.</p>
+<h4 id="kelvin_to_celsius">KELVIN_TO_CELSIUS</h4>
+<p>A factor to convert Kelvin to Celsius.</p>
+<h4 id="quantity_tags">quantity_tags</h4>
+<p>Tags corresponding to the <a href="#quantities-processed">quantities</a> you want.</p>
+<h4 id="quantity_processed_names">quantity_processed_names</h4>
+<p>Output table display names corresponding to the <a href="#quantities-processed">quantities</a> you want.</p>
+<h4 id="cumulative_quantity_processed_names">cumulative_quantity_processed_names</h4>
+<p>The display names of quantities from <a href="#quantity_processed_names">all quantities</a> that are cumulative.</p>
+<h4 id="cumulative_quantities">cumulative_quantities</h4>
+<p>The quantities from <a href="#quantity_processed_names">all quantities</a> that are cumulative.</p>
+<h4 id="queries_for_cumulative_quantities">queries_for_cumulative_quantities</h4>
+<p>The SQL queries to get the <a href="#cumulative_quantities">cumulative quantities</a>.</p>
+<h4 id="temperature_quantities">temperature_quantities</h4>
+<p>The quantities from <a href="#quantity_processed_names">all quantities</a> that are related to temperatures.</p>
+<h4 id="processed_index_tags">processed_index_tags</h4>
+<p>The index name tags for the processed data tables.</p>
+<h4 id="processed-data-area">Processed data area</h4>
+<p>This is the area for the processed data that you will use in the model.
+It is a subpart of the <a href="#raw-data-area">raw data area</a>.
+You need to provide the minimal and maximal longitudes and latitudes of the area.</p>
+<h3 id="ev_tool">EV_tool</h3>
+<p>Parameters for the EV tool data from geotab.
+The data is obtained with <a href="../weather/#get_ev_tool_data">this function</a> and
+used in the determination of <a href="../weather/#range-and-temperature">capacity changes with temperature</a>.</p>
+<h4 id="ev_tool_url">EV_tool_url</h4>
+<p>The source URL of the data.</p>
+<h4 id="user_agent">user_agent</h4>
+<p>A string to provide a user agent</p>
+<h4 id="efficiency_curve_script_index">efficiency_curve_script_index</h4>
+<p>The <a href="../weather/#get_ev_tool_data">script to get data</a> produces a list of scripts.
+This is the list index that we need.</p>
+<h4 id="data_splitter">data_splitter</h4>
+<p>A splitting string needed in the <a href="../weather/#get_ev_tool_data">script to get data</a>.</p>
+<h4 id="file_name">file_name</h4>
+<p>The file where we store the temperature efficiency data.</p>
+<h4 id="groupfile_name">groupfile_name</h4>
+<p>The groupfile file (for Excel or SQLite) where we store the temperature efficiency data.</p>
+<h4 id="folder">folder</h4>
+<p>The folder where the data is saved.</p>
+<h4 id="efficiency_factor_column_name">efficiency_factor_column_name</h4>
+<p>The column name for the efficiency factor.</p>
+<h4 id="vehicle_temperature_efficiencies">vehicle_temperature_efficiencies</h4>
+<p>Factors to compute the <a href="../weather/#range-and-temperature">capacity changes with temperature</a>,
+namely the source folder, file name, and the order of the fitting polynomial.</p>
+<h2 id="charging">charging</h2>
+<p>Some parameters related to charging.</p>
+<h3 id="price_reaction_exponent">price_reaction_exponent</h3>
+<p>An exponent factor to compute how users react to a given <a href="#charging_price">charging price</a> (inactive/not currently implemented).</p>
+<h3 id="desirability_reaction_exponent">desirability_reaction_exponent</h3>
+<p>An exponent factor to compute how users react to a given <a href="#charging_desirability">desirability factor</a> (inactive/not currently implemented).</p>
+<h2 id="charging_sessions">charging_sessions</h2>
+<p>Parameters for sessions.</p>
+<h3 id="resolution">resolution</h3>
+<p>A resolution factor used when <a href="../define/#get_trip_charging_sessions">getting charging sessions</a>.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        });
+    </script>
+
+</body>
+</html>
