@@ -14,14 +14,21 @@ nav:
     - Weather: weather.md
     - Run time: run_time.md
     - Define: define.md
+    - Mobility: mobility.md
+    - Non-road: non_road.md
     - Charging: charging.md
     - Consumption: consumption.md
     - Variants: make_variants.md
     - Running model: running_model.md
     - Multiprocessing: multiprocessing.md
     - Writing: writing.md
+    - Scenarios: scenarios_module.md
+    - Profiles: profiles.md
 
 theme: 
   name: readthedocs
   sticky_navigation: False
+
+
+
 
