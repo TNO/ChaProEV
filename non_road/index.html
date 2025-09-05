@@ -83,10 +83,40 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#get_eurostat_balances">get_Eurostat_balances</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_reference_year_data">get_reference_year_data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_mode_reference_values">get_mode_reference_values</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_siec_code">get_siec_code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_name_from_siec_code">get_name_from_siec_code</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#get_future_demand_values">get_future_demand_values</a>
+    </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#configuration-non-roaltoml">Configuration (non-roal.toml)</a>
+    <li class="toctree-l2"><a class="reference internal" href="#configuration-non-roadtoml">Configuration (non-road.toml)</a>
         <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#historical_dataframe_name">historical_dataframe_name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#demand_dataframe_name">demand_dataframe_name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#source_folder">source_folder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#output_folder">output_folder</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#demand_index">demand_index</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#demand_header">demand_header</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#reference_historical_year">reference_historical_year</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#growth_factors_file">growth_factors_file</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#growth_factors_index">growth_factors_index</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#modes">modes</a>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#eurostat">Eurostat</a>
         <ul>
     <li class="toctree-l4"><a class="reference internal" href="#fetch">fetch</a>
@@ -95,9 +125,27 @@
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#table_name">table_name</a>
     </li>
+    <li class="toctree-l4"><a class="reference internal" href="#index_headers">index_headers</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#unit_to_use">unit_to_use</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#energy_carriers">Energy_carriers</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#code_file">code_file</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#code_column">code_column</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#name_column">name_column</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#status_column">status_column</a>
+    </li>
         </ul>
     </li>
         </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scenarios">Scenarios</a>
     </li>
     </ul>
                   </li>
@@ -153,8 +201,81 @@ the <a href="https://pypi.org/project/eurostat/">Eurostat Python Package</a>.
 This function runs a function from the Eurostat package to
 get a table, by using the right table code and saving the
 obatined dataframe. This only runs if the user decides to fetch
-the database from Eurostat. See <a href="###Eurostat">the documentation about parameters for more details</a>.</p>
-<h2 id="configuration-non-roaltoml">Configuration (non-roal.toml)</h2>
+the database from Eurostat. See <a href="#eurostat">the documentation about parameters for more details</a>.</p>
+<h3 id="get_reference_year_data">get_reference_year_data</h3>
+<p>Processes the DataFrame fetched from Eurostat into a DataFrame for the reference year
+modes, energy carriers we want.</p>
+<p>The function runs through each mode (defined <a href="#modes">here</a>) and gets its
+values from the Eurostat table obatined <a href="#get_Eurostat_balances">here</a> through
+the <a href="#get_mode_reference_values">get_mode_reference_values function</a>.
+The function also sets <a href="#demand_index">the index</a> and sorts it. </p>
+<p>The function also saves the resulting  reference historical data.</p>
+<h3 id="get_mode_reference_values">get_mode_reference_values</h3>
+<p>This function get historical data from the Eurostat DataFrame for a
+given mode.
+We need to translate the energy carrier into <a href="#get_siec_code">SIEC codes</a>
+and back into <a href="#get_name_from_siec_code">carrier names</a>.
+In between these translations, we slice the source
+Eurostat year according to the <a href="#modes">chosen mode and its carriers</a>,
+the <a href="#unit_to_use">unit we want to use</a> (actually, we slice
+with TJs, which we convert to PJs), and <a href="#reference_historical_year">reference historical year</a>.</p>
+<h3 id="get_siec_code">get_siec_code</h3>
+<p>Gets the
+<a href="https://dd.eionet.europa.eu/vocabulary/eurostat/siec/view">SIEC (Standard international energy product classification code)</a>, for an energy carrier using a <a href="#code_file">translation_file</a>.</p>
+<h3 id="get_name_from_siec_code">get_name_from_siec_code</h3>
+<p>Gets the name of an energy carrier from its 
+<a href="https://dd.eionet.europa.eu/vocabulary/eurostat/siec/view">SIEC (Standard international energy product classification code)</a>, using a <a href="#code_file">translation_file</a>.</p>
+<h3 id="get_future_demand_values">get_future_demand_values</h3>
+<p>Gets the demand for future years.
+This function takes the reference values from <a href="#get_mode_reference_values">get_mode_reference_values</a>
+and multiplies them by a [growth table][#growth_factors_file].</p>
+<h2 id="configuration-non-roadtoml">Configuration (non-road.toml)</h2>
+<h4 id="historical_dataframe_name">historical_dataframe_name</h4>
+<p>The name of the historical data DataFrame.</p>
+<h4 id="demand_dataframe_name">demand_dataframe_name</h4>
+<p>The name of the DataFrame that conatins all th edemand data (historical
+and projected)</p>
+<h4 id="source_folder">source_folder</h4>
+<p>The folder that contains source/input data for a given
+case (so it is under that case name's subfolder).
+The case name subfolder contains the <a href="#scenarios">scenarios per mode and year</a></p>
+<h4 id="output_folder">output_folder</h4>
+<p>The folder where the output files go (in a case name subfolder).</p>
+<h4 id="demand_index">demand_index</h4>
+<p>Those are the columns we use for the index of the historical demand
+DataFrame.</p>
+<h4 id="demand_header">demand_header</h4>
+<p>This is the name of the header/column of the historical demand DataFrame</p>
+<h4 id="reference_historical_year">reference_historical_year</h4>
+<p>The year for which we extract the Eurostat data.</p>
+<h4 id="growth_factors_file">growth_factors_file</h4>
+<p>The name of the file (in source_folder/case_name) containing
+the growth factors (relative to the <a href="#reference_historical_year">reference historical year</a>)
+for all country/mode/energy carrier combinations in the historical data.</p>
+<h4 id="growth_factors_index">growth_factors_index</h4>
+<p>The index columns for the growth factor file.</p>
+<h3 id="modes">modes</h3>
+<p>For each mode, you need to provide its code and the
+energy carriers it uses.
+Follow the structure of existing elements (see example below), by copying it
+and replacing the name (in this case international-maritime-bunkers)
+by the name of your mode and by using the right code and energy carriers.</p>
+<pre><code class="language-toml">[modes.international-maritime-bunkers]
+code = 'INTMARB'
+energy_carriers = [
+    'Natural gas',
+    'Motor gasoline (excluding biofuel portion)',
+    'Kerosene-type jet fuel (excluding biofuel portion)',
+    'Gas oil and diesel oil (excluding biofuel portion)',
+    'Fuel oil',
+    'Lubricants',
+    'Other oil products n.e.c.',
+    'Blended biodiesels',
+    'Pure biodiesels',
+    'Other liquid biofuels'
+
+]
+</code></pre>
 <h3 id="eurostat">Eurostat</h3>
 <p>These are parameters for getting data from the Eurostat API,
 using the <a href="https://pypi.org/project/eurostat/">Eurostat Python Package</a></p>
@@ -171,6 +292,22 @@ for details.</p>
 <h4 id="table_name">table_name</h4>
 <p>The name you want to use to save your DataFrame and that you will be using for
 retrieving the Eurostat data.</p>
+<h4 id="index_headers">index_headers</h4>
+<p>The headers/columns to use as an index (used in the 
+[function getting values per mode][#get_mode_reference_values]).</p>
+<h4 id="unit_to_use">unit_to_use</h4>
+<p>The unit to use for the Eurostat data</p>
+<h3 id="energy_carriers">Energy_carriers</h3>
+<h4 id="code_file">code_file</h4>
+<p>The location of the file used to translate 
+<a href="https://dd.eionet.europa.eu/vocabulary/eurostat/siec/view">SIEC (Standard international energy product classification codes)</a>.</p>
+<h4 id="code_column">code_column</h4>
+<p>The name of the column conmtaining the SIEC codes</p>
+<h4 id="name_column">name_column</h4>
+<p>The name of the column conatining energy carriers/products names.</p>
+<h4 id="status_column">status_column</h4>
+<p>The column containing the status of that code (if it is still in use , 'it is 'valid').</p>
+<h2 id="scenarios">Scenarios</h2>
               
             </div>
           </div><footer>
