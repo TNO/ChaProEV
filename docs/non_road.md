@@ -63,9 +63,6 @@ It first [loads the scenarios][#load_scenarios] and then runs
 the [profile getting](#get_profile) function for each scenario
 (see the [general explanation about this](parallel_processing.md) )
 
-### load_scenarios
-This loads [scenarios](#scenarios) into a list so that they can be used to
-[get profiles][#get_profile].
 
 ### get_profile
 
@@ -82,7 +79,7 @@ and projected)
 #### source_folder
 The folder that contains source/input data for a given
 case (so it is under that case name's subfolder).
-The case name subfolder contains the [scenarios per mode and year](#scenarios)
+
 
 #### output_folder
 The folder where the output files go (in a case name subfolder).
@@ -111,6 +108,7 @@ energy carriers it uses.
 Follow the structure of existing elements (see example below), by copying it
 and replacing the name (in this case international-maritime-bunkers)
 by the name of your mode and by using the right code and energy carriers.
+
 ```toml
 [modes.international-maritime-bunkers]
 code = 'INTMARB'
@@ -127,7 +125,26 @@ energy_carriers = [
     'Other liquid biofuels'
 
 ]
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
 ```
+#### modified_instances
+These are the instances (week numbers) that differ from the average
+(i.e. when the consumption is higher or lower).
+
+#### modification_factors
+The correction factor for the modified instances
+
+#### recurring_modifications
+This is used if you want to have modifications recur/repeat.
+You need to tell when these modifications start (in a list of starts),
+what the modification factors are, what the steps (interval between modifications),
+and how many of these are (if you put 0, then it goes for the whole run).
+The latter three are lists of the same length as the modification starts.
 
 ### progress_bars
 Parameters related to displaying progress bars using [tqdm](https://github.com/tqdm/tqdm).
@@ -188,5 +205,9 @@ The name of the column conatining energy carriers/products names.
 #### status_column
 The column containing the status of that code (if it is still in use , 'it is 'valid').
 
+### run_range
+The year, month, day, hour of the run start and end
+(end should be the first time step that is not included).
+The ferquency string tells us the frequency of the range (and where
+it starts, such as 'W-MON'),
 
-## Scenarios

@@ -1,5 +1,6 @@
 
-name = 'NL_dometsic-aviation_2040_Aviation gasoline'
+[common]
+[scenario]
 modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
 modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
 recurring_modifications_starts = [2]

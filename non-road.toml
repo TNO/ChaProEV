@@ -24,6 +24,13 @@ energy_carriers = [
     'Aviation gasoline',
 ]
 
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
+
 [modes.international-aviation]
 code = 'INTAVI'
 energy_carriers = [
@@ -32,6 +39,12 @@ energy_carriers = [
     'Aviation gasoline',
 ]
 
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
 
 [modes.international-maritime-bunkers]
 code = 'INTMARB'
@@ -48,6 +61,12 @@ energy_carriers = [
     'Other liquid biofuels'
 
 ]
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
 
 [modes.domestic-navigation]
 code = 'FC_TRA_DNAVI_E'
@@ -64,6 +83,12 @@ energy_carriers = [
     'Other liquid biofuels'
 
 ]
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
 
 [modes.rail]
 code = 'FC_TRA_RAIL_E'
@@ -77,15 +102,14 @@ energy_carriers = [
     'Blended biodiesels',
     'Electricity'
 ]
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
 
-[mode_energy_carriers]
-air = [
-    'Kerosene-type jet fuel (excluding biofuel portion)',
-    'Blended bio jet kerosene',
-    'Aviation gasoline',
-    'Total'
-]
-sea = ['heavy fuel oil', 'olive oil']
+
 
 [progress_bars]
 display_scenario_run = true
@@ -127,3 +151,17 @@ code_file = 'input/siec.csv'
 code_column ='Notation'
 name_column = 'Label'
 status_column = 'Status'
+
+
+[run_range]
+frequency = 'W-MON'
+[run_range.start]
+year = 2018
+month = 1
+day = 1
+hour = 0
+[run_range.end]
+year = 2019
+month = 1
+day = 1
+hour = 0

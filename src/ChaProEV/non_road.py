@@ -221,52 +221,58 @@ def get_future_demand_values(
     return future_demand_values
 
 
-def get_run_demand(
-    scenario_name: str, case_name: str, non_road_parameters: box.Box
-) -> float:
+# def get_run_demand(
+#     scenario_name: str, case_name: str, non_road_parameters: box.Box
+# ) -> float:
 
-    scenario_elements_list: list[str] = scenario_name.split('_')
+#     scenario_elements_list: list[str] = scenario_name.split('_')
 
-    country_code: str = scenario_elements_list[0]
-    mode: str = scenario_elements_list[1]
-    year: int = non_road_parameters.historical_year
-    carrier: str = scenario_elements_list[3]
+#     country_code: str = scenario_elements_list[0]
+#     mode: str = scenario_elements_list[1]
+#     year: int = non_road_parameters.historical_year
+#     carrier: str = scenario_elements_list[3]
 
-    run_index: tuple = country_code, mode, year, carrier
+#     run_index: tuple = country_code, mode, year, carrier
 
-    demand_index: list[str] = list(non_road_parameters.demand_index)
-    demand_header: str = non_road_parameters.demand_header
+#     demand_index: list[str] = list(non_road_parameters.demand_index)
+#     demand_header: str = non_road_parameters.demand_header
 
-    source_table: str = non_road_parameters.demand_dataframe_name
-    database_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
-    database_file: str = f'{database_folder}/{case_name}.sqlite3'
+#     source_table: str = non_road_parameters.demand_dataframe_name
+#     database_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+#     database_file: str = f'{database_folder}/{case_name}.sqlite3'
 
-    demand_values: pd.DataFrame = cook.read_table_from_database(
-        source_table, database_file
-    ).set_index(demand_index)
+#     demand_values: pd.DataFrame = cook.read_table_from_database(
+#         source_table, database_file
+#     ).set_index(demand_index)
 
-    run_demand: float = demand_values.loc[run_index][demand_header][0]
+#     run_demand: float = demand_values.loc[run_index][demand_header][0]
 
-    return run_demand
+#     return run_demand
 
 
 def get_profile_weights(
-    scenario: box.Box, run_range=pd.DatetimeIndex
+    scenario: tuple[list[str], str],
+    non_road_parameters: box.Box,
+    run_range=pd.DatetimeIndex,
 ) -> pd.Series:
 
+    mode: str = scenario[0][1]
+    mode_scenario: box.Box = non_road_parameters.modes[mode]
     weight_factors: np.ndarray = np.ones(run_range.size)
 
     for modified_instance, modification_factor in zip(
-        scenario.modified_instances, scenario.modification_factors
+        mode_scenario.modified_instances, mode_scenario.modification_factors
     ):
         weight_factors[modified_instance] *= modification_factor
 
     recurring_modifications_starts: list[int] = (
-        scenario.recurring_modifications_starts
+        mode_scenario.recurring_modifications_starts
     )
-    recurring_modifications: list[float] = scenario.recurring_modifications
-    recurrences_steps: list[int] = scenario.recurrences_steps
-    amounts_of_recurrences: list[int] = scenario.amounts_of_recurrences
+    recurring_modifications: list[float] = (
+        mode_scenario.recurring_modifications
+    )
+    recurrences_steps: list[int] = mode_scenario.recurrences_steps
+    amounts_of_recurrences: list[int] = mode_scenario.amounts_of_recurrences
 
     for (
         recurring_start,
@@ -293,82 +299,97 @@ def get_profile_weights(
 
     weight_factors /= sum(weight_factors)
 
+    scenario_name: str = ' '.join(scenario[0]) + '_' + scenario[1]
     run_profile_weights: pd.Series = pd.Series(
-        weight_factors, index=run_range, name=scenario.name
+        weight_factors, index=run_range, name=scenario_name
     )
     return run_profile_weights
 
 
-@cook.function_timer
+# @cook.function_timer
 def get_profile(
-    scenario: box.Box, case_name: str, non_road_parameters: box.Box
+    scenario: tuple[list[str], str],
+    future_yearly_demand_values: pd.DataFrame,
+    non_road_parameters: box.Box,
+    run_range: pd.DatetimeIndex,
 ) -> tuple[str, pd.DataFrame]:
 
-    run_demand: float = get_run_demand(
-        scenario.name, case_name, non_road_parameters
+    scenario_name: str = (
+        ' '.join(scenario[0]) + '_' + scenario[1] + '_Demand (PJ)'
     )
 
-    run_start_parameters: box.Box = scenario.run_start
-    run_start: datetime.datetime = datetime.datetime(
-        run_start_parameters.year,
-        run_start_parameters.month,
-        run_start_parameters.day,
-        run_start_parameters.hour,
-    )
-    run_end_parameters: box.Box = scenario.run_end
-    run_end: datetime.datetime = datetime.datetime(
-        run_end_parameters.year,
-        run_end_parameters.month,
-        run_end_parameters.day,
-        run_end_parameters.hour,
-    )
-    frequency: str = scenario.frequency
+    run_demand: float = future_yearly_demand_values.loc[
+        scenario
+    ]  # type: ignore
 
-    run_range: pd.DatetimeIndex = pd.date_range(
-        start=run_start, end=run_end, freq=frequency, inclusive='left'
+    run_profile_weights: pd.Series = get_profile_weights(
+        scenario, non_road_parameters, run_range
     )
-
-    run_profile_weights: pd.Series = get_profile_weights(scenario, run_range)
     run_demand_profile: pd.Series = pd.Series(
-        run_demand * run_profile_weights, index=run_range, name=scenario.name
+        run_demand * run_profile_weights, index=run_range, name=scenario_name
     )
     run_demand_dataframe: pd.DataFrame = pd.DataFrame(run_demand_profile)
-    return scenario.name, run_demand_dataframe
+    return scenario_name, run_demand_dataframe
 
 
-def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
-    scenario_folder_files: list[str] = os.listdir(
-        f'{non_road_folder}/{case_name}'
-    )
-    scenario_files: list[str] = [
-        scenario_folder_file
-        for scenario_folder_file in scenario_folder_files
-        if scenario_folder_file.split('.')[1] == 'toml'
-    ]
-    scenario_file_paths: list[str] = [
-        f'{non_road_folder}/{case_name}/{scenario_file}'
-        for scenario_file in scenario_files
-    ]
-    scenarios: list[box.Box] = [
-        cook.parameters_from_TOML(scenario_file_path)
-        for scenario_file_path in scenario_file_paths
-    ]
-    for scenario, scenario_file in zip(scenarios, scenario_files):
-        scenario.name = scenario_file.split('.')[0]
-    return scenarios
+# def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
+#     scenario_folder_files: list[str] = os.listdir(
+#         f'{non_road_folder}/{case_name}'
+#     )
+#     scenario_files: list[str] = [
+#         scenario_folder_file
+#         for scenario_folder_file in scenario_folder_files
+#         if scenario_folder_file.split('.')[1] == 'toml'
+#     ]
+#     scenario_file_paths: list[str] = [
+#         f'{non_road_folder}/{case_name}/{scenario_file}'
+#         for scenario_file in scenario_files
+#     ]
+#     scenarios: list[box.Box] = [
+#         cook.parameters_from_TOML(scenario_file_path)
+#         for scenario_file_path in scenario_file_paths
+#     ]
+#     for scenario, scenario_file in zip(scenarios, scenario_files):
+#         scenario.name = scenario_file.split('.')[0]
+#     return scenarios
 
 
 @cook.function_timer
 def get_non_road_profiles(
+    future_yearly_demand_values: pd.DataFrame,
     case_name: str,
     non_road_parameters: box.Box,
 ) -> dict[str, pd.DataFrame]:
 
-    scenarios: list[box.Box] = load_scenarios(
-        non_road_parameters.source_folder, case_name
+    demand_index_elements: pd.MultiIndex = (
+        future_yearly_demand_values.index  # type: ignore
     )
-    print(scenarios)
-    exit()
+    scenario_years: pd.Index = future_yearly_demand_values.columns
+
+    scenarios: list[tuple[list[str], str]] = [
+        (demand_index_element, scenario_year)
+        for demand_index_element in demand_index_elements
+        for scenario_year in scenario_years
+    ]
+
+    run_range_parameters: box.Box = non_road_parameters.run_range
+    run_start: datetime.datetime = datetime.datetime(
+        run_range_parameters.start.year,
+        run_range_parameters.start.month,
+        run_range_parameters.start.day,
+        run_range_parameters.start.hour,
+    )
+    run_end: datetime.datetime = datetime.datetime(
+        run_range_parameters.end.year,
+        run_range_parameters.end.month,
+        run_range_parameters.end.day,
+        run_range_parameters.end.hour,
+    )
+    frequency: str = run_range_parameters.frequency
+
+    run_range: pd.DatetimeIndex = pd.date_range(
+        start=run_start, end=run_end, freq=frequency, inclusive='left'
+    )
 
     set_amount_of_processes: bool = (
         non_road_parameters.parallel_processing.set_amount_of_processes
@@ -380,8 +401,21 @@ def get_non_road_profiles(
             non_road_parameters.parallel_processing.amount_of_processes
         )
 
-    pool_inputs: ty.Iterator[tuple[box.Box, str, box.Box]] | ty.Any = zip(
-        scenarios, repeat(case_name), repeat(non_road_parameters)
+    pool_inputs: (
+        ty.Iterator[
+            tuple[
+                list[tuple[list[str], str]],
+                pd.DataFrame,
+                box.Box,
+                pd.DatetimeIndex,
+            ]
+        ]
+        | ty.Any
+    ) = zip(
+        scenarios,
+        repeat(future_yearly_demand_values),
+        repeat(non_road_parameters),
+        repeat(run_range),
     )
     # the ty.Any alternative is there because transforming it with the
     # progress bar makes mypy think it change is type
@@ -406,25 +440,14 @@ def get_non_road_profiles(
     return output_profiles
 
 
-def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
+@cook.function_timer
+def save_output_profies(
+    output_profiles: dict[str, pd.DataFrame],
+    case_name: str,
+    output_folder: str,
+    non_road_parameters: box.Box,
+) -> None:
 
-    get_Eurostat_balances(non_road_parameters, case_name)
-
-    reference_historical_values: pd.DataFrame = get_reference_year_data(
-        non_road_parameters
-    )
-
-    future_demand_values: pd.DataFrame = get_future_demand_values(
-        reference_historical_values, non_road_parameters, case_name
-    )
-
-    print(future_demand_values)
-
-    output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
-        case_name, non_road_parameters
-    )
-
-    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
     for output_profile in output_profiles:
         cook.save_dataframe(
             dataframe=output_profiles[output_profile],
@@ -433,6 +456,29 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
             output_folder=output_folder,
             dataframe_formats=non_road_parameters.files.dataframe_outputs,
         )
+
+
+def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
+
+    get_Eurostat_balances(non_road_parameters, case_name)
+
+    reference_historical_values: pd.DataFrame = get_reference_year_data(
+        non_road_parameters
+    )
+
+    future_yearly_demand_values: pd.DataFrame = get_future_demand_values(
+        reference_historical_values, non_road_parameters, case_name
+    )
+
+    output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
+        future_yearly_demand_values, case_name, non_road_parameters
+    )
+
+    output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
+
+    save_output_profies(
+        output_profiles, case_name, output_folder, non_road_parameters
+    )
 
 
 if __name__ == '__main__':
@@ -456,3 +502,6 @@ if __name__ == '__main__':
     print('NRMM: is that other/nec?')
     print('CH (and others?) missing')
     print('Tram/metro? nrg_d_traq')
+    print('Scenarios now per mode, but could be differentiated per country')
+    print('and/or year (or even carrier)')
+    print('Parallelize saving?')
