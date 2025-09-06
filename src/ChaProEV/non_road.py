@@ -3,7 +3,6 @@ Functions for non-road transport modes
 '''
 
 import datetime
-import os
 import typing as ty
 from itertools import repeat
 from multiprocessing import Pool
@@ -221,35 +220,6 @@ def get_future_demand_values(
     return future_demand_values
 
 
-# def get_run_demand(
-#     scenario_name: str, case_name: str, non_road_parameters: box.Box
-# ) -> float:
-
-#     scenario_elements_list: list[str] = scenario_name.split('_')
-
-#     country_code: str = scenario_elements_list[0]
-#     mode: str = scenario_elements_list[1]
-#     year: int = non_road_parameters.historical_year
-#     carrier: str = scenario_elements_list[3]
-
-#     run_index: tuple = country_code, mode, year, carrier
-
-#     demand_index: list[str] = list(non_road_parameters.demand_index)
-#     demand_header: str = non_road_parameters.demand_header
-
-#     source_table: str = non_road_parameters.demand_dataframe_name
-#     database_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
-#     database_file: str = f'{database_folder}/{case_name}.sqlite3'
-
-#     demand_values: pd.DataFrame = cook.read_table_from_database(
-#         source_table, database_file
-#     ).set_index(demand_index)
-
-#     run_demand: float = demand_values.loc[run_index][demand_header][0]
-
-#     return run_demand
-
-
 def get_profile_weights(
     scenario: tuple[list[str], str],
     non_road_parameters: box.Box,
@@ -258,7 +228,7 @@ def get_profile_weights(
 
     mode: str = scenario[0][1]
     mode_scenario: box.Box = non_road_parameters.modes[mode]
-    weight_factors: np.ndarray = np.ones(run_range.size)
+    weight_factors: np.ndarray = np.ones(run_range.size)  # type: ignore
 
     for modified_instance, modification_factor in zip(
         mode_scenario.modified_instances, mode_scenario.modification_factors
@@ -293,7 +263,7 @@ def get_profile_weights(
             elapsed_recurrences += 1
 
             run_index += recurrence_step
-            recurring = run_index < run_range.size
+            recurring = run_index < run_range.size  # type: ignore
             if amount_of_recurrences > 0:
                 recurring = elapsed_recurrences > amount_of_recurrences
 
@@ -301,8 +271,8 @@ def get_profile_weights(
 
     scenario_name: str = ' '.join(scenario[0]) + '_' + scenario[1]
     run_profile_weights: pd.Series = pd.Series(
-        weight_factors, index=run_range, name=scenario_name
-    )
+        weight_factors, index=run_range, name=scenario_name  # type: ignore
+    )  # type: ignore
     return run_profile_weights
 
 
@@ -323,35 +293,13 @@ def get_profile(
     ]  # type: ignore
 
     run_profile_weights: pd.Series = get_profile_weights(
-        scenario, non_road_parameters, run_range
+        scenario, non_road_parameters, run_range  # type: ignore
     )
     run_demand_profile: pd.Series = pd.Series(
         run_demand * run_profile_weights, index=run_range, name=scenario_name
     )
     run_demand_dataframe: pd.DataFrame = pd.DataFrame(run_demand_profile)
     return scenario_name, run_demand_dataframe
-
-
-# def load_scenarios(non_road_folder: str, case_name: str) -> list[box.Box]:
-#     scenario_folder_files: list[str] = os.listdir(
-#         f'{non_road_folder}/{case_name}'
-#     )
-#     scenario_files: list[str] = [
-#         scenario_folder_file
-#         for scenario_folder_file in scenario_folder_files
-#         if scenario_folder_file.split('.')[1] == 'toml'
-#     ]
-#     scenario_file_paths: list[str] = [
-#         f'{non_road_folder}/{case_name}/{scenario_file}'
-#         for scenario_file in scenario_files
-#     ]
-#     scenarios: list[box.Box] = [
-#         cook.parameters_from_TOML(scenario_file_path)
-#         for scenario_file_path in scenario_file_paths
-#     ]
-#     for scenario, scenario_file in zip(scenarios, scenario_files):
-#         scenario.name = scenario_file.split('.')[0]
-#     return scenarios
 
 
 @cook.function_timer
