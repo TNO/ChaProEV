@@ -86,11 +86,11 @@ def run_ChaProEV(case_name: str) -> None:
         general_parameters.parallel_processing.set_amount_of_processes
     )
     if set_amount_of_processes:
-        amount_of_parallel_processes: int | None = None
-    else:
-        amount_of_parallel_processes = (
+        amount_of_parallel_processes: int | None = (
             general_parameters.parallel_processing.amount_for_scenarios
         )
+    else:
+        amount_of_parallel_processes = None
 
     pool_inputs: ty.Iterator[tuple[Box, str, Box]] | ty.Any = zip(
         scenarios, repeat(case_name), repeat(general_parameters)

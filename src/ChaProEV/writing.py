@@ -50,11 +50,13 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         general_parameters.parallel_processing.set_amount_of_processes
     )
     if set_amount_of_processes:
-        number_of_parallel_processes: int | None = None
-    else:
-        number_of_parallel_processes = (
+        number_of_parallel_processes: int | None = (
             general_parameters.parallel_processing.amount_for_pickle_saves
         )
+
+    else:
+        number_of_parallel_processes = None
+
     saving_pool_inputs: (
         ty.Iterator[tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
     ) = zip(
@@ -118,8 +120,8 @@ if __name__ == '__main__':
     # test_scenario_name: str = 'baseline'
     start_time: datetime.datetime = datetime.datetime.now()
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
 
     extra_end_outputs(case_name, general_parameters)
