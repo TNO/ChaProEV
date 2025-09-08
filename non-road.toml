@@ -119,8 +119,9 @@ saving_run_description =  'Saving profiles'
 
 
 [parallel_processing]
-set_amount_of_processes = false
+set_amount_of_processes = true
 amount_of_processes = 4
+use_for_saving = false
 
 [files]
 # Indicate below if you want to save your Pandas DataFrames in the

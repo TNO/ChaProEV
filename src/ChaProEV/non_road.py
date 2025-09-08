@@ -397,48 +397,51 @@ def save_output_profies(
     non_road_parameters: box.Box,
 ) -> None:
 
-    # if non_road_parameters.parallel_processing.set_amount_of_processes:
-    #     number_of_parallel_processes: int | None = (
-    #         non_road_parameters.parallel_processing.amount_of_processes
-    #     )
-    # else:
-    #     number_of_parallel_processes = None
-
-    # saving_pool_inputs: (
-    #     ty.Iterator[tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
-    # ) = zip(
-    #     tables_to_save,
-    #     output_table_names,
-    #     repeat(groupfile_name),
-    #     repeat(output_folder),
-    #     repeat(general_parameters.files.dataframe_outputs),
-    # )
-    # # the ty.Any alternative is there because transforming it with the
-    # # progress bar makes mypy think it change is type
-    # progress_bars_parameters: Box = general_parameters.progress_bars
-    # display_saving_pool_run: bool = (
-    #     progress_bars_parameters.display_saving_pool_run
-    # )
-    # saving_pool_run_description: str = (
-    #     progress_bars_parameters.saving_pool_run_description
-    # )
-    # if display_saving_pool_run:
-    #     saving_pool_inputs = tqdm.tqdm(
-    #         saving_pool_inputs,
-    #         desc=saving_pool_run_description,
-    #         total=len(tables_to_save),
-    #     )
-    # with Pool(number_of_parallel_processes) as saving_pool:
-    #     saving_pool.starmap(cook.save_dataframe, saving_pool_inputs)
-
-    for output_profile in output_profiles:
-        cook.save_dataframe(
-            dataframe=output_profiles[output_profile],
-            dataframe_name=output_profile,
-            groupfile_name=case_name,
-            output_folder=output_folder,
-            dataframe_formats=non_road_parameters.files.dataframe_outputs,
+    if non_road_parameters.parallel_processing.set_amount_of_processes:
+        number_of_parallel_processes: int | None = (
+            non_road_parameters.parallel_processing.amount_of_processes
         )
+    else:
+        number_of_parallel_processes = None
+
+    saving_pool_inputs: (
+        ty.Iterator[tuple[pd.DataFrame, str, str, str, box.Box]] | ty.Any
+    ) = zip(
+        output_profiles.values(),
+        output_profiles.keys(),
+        repeat(case_name),
+        repeat(output_folder),
+        repeat(non_road_parameters.files.dataframe_outputs),
+    )
+    # the ty.Any alternative is there because transforming it with the
+    # progress bar makes mypy think it change is type
+
+    progress_bars_parameters: box.Box = non_road_parameters.progress_bars
+    display_saving_pool_run: bool = (
+        progress_bars_parameters.display_saving_profiles
+    )
+    saving_pool_run_description: str = (
+        progress_bars_parameters.saving_run_description
+    )
+    if display_saving_pool_run:
+        saving_pool_inputs = tqdm(
+            saving_pool_inputs,
+            desc=saving_pool_run_description,
+            total=len(output_profiles.keys()),
+        )
+
+    if non_road_parameters.parallel_processing.use_for_saving:
+        with Pool(number_of_parallel_processes) as saving_pool:
+            saving_pool.starmap(cook.save_dataframe, saving_pool_inputs)
+    else:
+        for output_profile in output_profiles:
+            cook.save_dataframe(
+                dataframe=output_profiles[output_profile],
+                dataframe_name=output_profile,
+                groupfile_name=case_name,
+                output_folder=output_folder,
+                dataframe_formats=non_road_parameters.files.dataframe_outputs,
+            )
 
 
 def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
