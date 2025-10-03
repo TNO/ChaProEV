@@ -390,7 +390,7 @@ def get_non_road_profiles(
 
 
 @cook.function_timer
-def save_output_profies(
+def save_output_profiles(
     output_profiles: dict[str, pd.DataFrame],
     case_name: str,
     output_folder: str,
@@ -462,7 +462,7 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
 
     output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
 
-    save_output_profies(
+    save_output_profiles(
         output_profiles, case_name, output_folder, non_road_parameters
     )
 
