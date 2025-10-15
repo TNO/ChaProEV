@@ -459,11 +459,128 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
         future_yearly_demand_values, case_name, non_road_parameters
     )
+    # print(output_profiles)
+
+    country_codes: list[str] = []
+    modes: list[str] = []
+    years: list[int] = []
+    carriers: list[str] = []
+    for profile_name in output_profiles.keys():
+        print(profile_name)
+
+        if not profile_name.startswith('EU27'):
+            country_code: str = profile_name.split(' ')[0]
+            country_codes.append(country_code)
+            year: int = int(profile_name.split('_')[1][:4])
+            years.append(year)
+            mode: str = profile_name.split(' ')[1]
+            carrier: str = profile_name.split('_')[0][
+                len(f'{country_code} {mode} ') :
+            ]
+            carriers.append(carrier)
+            modes.append(mode)
+            # print(f'{country_code=}, {mode=}, {year=}, {carrier=}')
+            # if carrier == 'Electricity':
+            #     modes.append(f'{mode}_{carrier}')
+            # else:
+            #     modes.append(mode)
+    country_codes = sorted(list(set(country_codes)))
+    modes = sorted(list(set(modes)))
+    years = sorted(list(set(years)))
+    carriers = sorted(list(set(carriers)))
+    non_thermal_carriers: list[str] = ['Electricity']
+    non_energetic_carriers: list[str] = ['Lubricants']
+    profiles_grouped_by_carrier: dict[str, pd.DataFrame] = {}
+    country_year_profiles: dict[str, pd.DataFrame] = {}
+    print(f'{country_codes=}')
+    print(f'{modes=}')
+    print(f'{years=}')
+    print(f'{carriers=}')
+    for country_code in country_codes:
+        for year in years:
+            this_country_year_profiles: pd.DataFrame = pd.DataFrame()
+            for mode in modes:
+                profiles_to_group_thermal: list[pd.Series] = []
+                profiles_to_group_non_thermal: list[pd.Series] = []
+
+                for carrier in carriers:
+                    if carrier not in non_energetic_carriers:
+                        profile_name_to_get: str = (
+                            f'{country_code} {mode} {carrier}_{year}'
+                            '_Demand (PJ)'
+                        )
+
+                        if profile_name_to_get in output_profiles.keys():
+
+                            if carrier in non_thermal_carriers:
+                                profiles_to_group_non_thermal.append(
+                                    output_profiles[profile_name_to_get][
+                                        profile_name_to_get
+                                    ].fillna(0)
+                                )
+                            else:
+                                # print(output_profiles[profile_name_to_get])
+                                profiles_to_group_thermal.append(
+                                    output_profiles[profile_name_to_get][
+                                        profile_name_to_get
+                                    ].fillna(0)
+                                )
+                                # print(
+                                #     output_profiles[profile_name_to_get][
+                                #         profile_name_to_get
+                                #     ].fillna(0)
+                                # )
+                # print(mode)
+                # if mode == 'domestic-navigation':
+                #     exit()
+                if len(profiles_to_group_non_thermal) > 0:
+                    group_name: str = (
+                        f'{country_code}_{mode}_non_thermal_PJ_{year}'
+                    )
+                    profiles_grouped_by_carrier[group_name] = pd.DataFrame(
+                        sum(profiles_to_group_non_thermal)
+                    )
+                    this_country_year_profiles[f'{mode}_non_thermal_PJ'] = (
+                        profiles_grouped_by_carrier[group_name]
+                    )
+
+                if len(profiles_to_group_thermal) > 0:
+                    group_name = f'{country_code}_{mode}_thermal_PJ_{year}'
+                    profiles_grouped_by_carrier[group_name] = pd.DataFrame(
+                        sum(profiles_to_group_thermal)
+                    )
+                    this_country_year_profiles[f'{mode}_thermal_PJ'] = (
+                        profiles_grouped_by_carrier[group_name]
+                    )
+
+            country_year_profiles[f'{country_code}_{year}'] = (
+                this_country_year_profiles
+            )
 
     output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
 
     save_output_profiles(
         output_profiles, case_name, output_folder, non_road_parameters
+    )
+
+    carrier_group_output_folder: str = (
+        f'{non_road_parameters.output_folder}/{case_name}/carrier_group'
+    )
+    save_output_profiles(
+        profiles_grouped_by_carrier,
+        case_name,
+        carrier_group_output_folder,
+        non_road_parameters,
+    )
+
+    country_year_output_folder: str = (
+        f'{non_road_parameters.output_folder}/{case_name}/country_year'
+    )
+    save_output_profiles(
+        country_year_profiles,
+        case_name,
+        country_year_output_folder,
+        non_road_parameters,
     )
 
 

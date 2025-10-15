@@ -11,7 +11,7 @@ output_folder = 'non-road-output'
 demand_index = ['Country Code', 'Mode', 'Energy carrier']
 demand_header = ['Demand_PJ']
 
-reference_historical_year = 2023
+reference_historical_year = 2018
 growth_factors_file = 'growth_factors.csv'
 growth_factors_index = ['Country Code', 'Mode', 'Energy carrier']
 
