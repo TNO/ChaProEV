@@ -17,15 +17,16 @@ mkdocs-PC-28624.yml
 mkdocs.yml
 non-road.toml
 pyproject.toml
+ref_val.csv
 requirements.txt
 requirements_obsolete.txt
 siec.csv
 todo.txt
 .vscode/ltex.dictionary.en-US.txt
 .vscode/settings.json
+chaproev-1.3.0/.flake8
+chaproev-1.3.0/.gitignore
 comparisons/comparison_template.toml
-dist/chaproev-1.3.0-py3-none-any.whl
-dist/chaproev-1.3.0.tar.gz
 docs/ChaProEV_workflow.png
 docs/Legs.png
 docs/Locations.png
@@ -50,6 +51,7 @@ docs/mobility.md
 docs/multiprocessing.md
 docs/non_road.md
 docs/outputs.md
+docs/parallel_processing.md
 docs/profiles.md
 docs/run_time.md
 docs/running_model.md
@@ -89,7 +91,9 @@ input/Mopo/car_own_driveway_percentage.csv
 input/Mopo/fleets.csv
 non-road/Mopo/NL_domestic-aviation_2040_Aviation gasoline.toml
 non-road/Mopo/NL_domestic-aviation_2050_Aviation gasoline.toml
+non-road/Mopo/growth_factors.csv
 non-road/Mopo/scenario_demands.csv
+non-road/Mopo/scenarios.toml
 scenarios/Mopo/Latvia_car_own_driveway_2050.toml
 scenarios/Mopo/Netherlands_urban_car.toml
 scenarios/Mopo/Switzerland_car_own_driveway_2050.toml
@@ -99,6 +103,11 @@ scenarios/Mopo/XX_car_test.toml
 scenarios/Mopo/XX_truck.toml
 scenarios/Mopo/XX_van.toml
 scenarios/bus_test/XX_bus.toml
+scenarios/cumulative_test/Spain_bus_2050.toml
+scenarios/cumulative_test/Spain_van_2050.toml
+scenarios/cumulative_test/XX_car.toml
+scenarios/cumulative_test/XX_truck.toml
+scenarios/cumulative_test/XX_van.toml
 scenarios/local_impact_BEVs/baseline.toml
 src/ChaProEV/ChaProEV.py
 src/ChaProEV/__init__.py
