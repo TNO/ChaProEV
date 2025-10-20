@@ -451,6 +451,9 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
     reference_historical_values: pd.DataFrame = get_reference_year_data(
         non_road_parameters
     )
+    # print(reference_historical_values)
+    # reference_historical_values.to_csv('ref_val.csv')
+    # exit()
 
     future_yearly_demand_values: pd.DataFrame = get_future_demand_values(
         reference_historical_values, non_road_parameters, case_name
@@ -459,7 +462,7 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
     output_profiles: dict[str, pd.DataFrame] = get_non_road_profiles(
         future_yearly_demand_values, case_name, non_road_parameters
     )
-    # print(output_profiles)
+
 
     country_codes: list[str] = []
     modes: list[str] = []
@@ -597,6 +600,7 @@ if __name__ == '__main__':
     print('Get growth')
     print('Get CH, UK, etc.')
     print('Check whihc historical year to use')
+    print('SPread aross weeks in modes')
     print('Remove names from scenarios')
     print('Do growth in a function')
     print('First/last week inclusion issues')
@@ -608,3 +612,6 @@ if __name__ == '__main__':
     print('Scenarios now per mode, but could be differentiated per country')
     print('and/or year (or even carrier)')
     print('Parallelize saving?')
+
+    ENTSO-e for future
+    WLO?

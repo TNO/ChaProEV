@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from rich import print
 
 try:
     import run_time  # type: ignore
@@ -1389,124 +1390,199 @@ class Trip:
         )
         self.next_leg_kilometers.index.name = 'Hour number (from day start)'
         # The standard version sets the kilometers in the time slot
-        # before departure, this second, cumulative, version does so from
-        # the moment the vehicles arrive
-        # (or day start for the first leg of the trip)
+        # before departure, this second, cumulative, version does so
+        # until the end of the day
         self.next_leg_kilometers_cumulative: pd.DataFrame = (
             self.next_leg_kilometers.copy()
         )
 
-        previous_leg_arrivals_amount: list[float] = []
-        for leg_index, leg_name in enumerate(self.legs):
+        for hour_index in range(HOURS_IN_A_DAY - 1):
+            # We skip the last time slot, as this should wrap the trip
+            # and we are not looking into the next day
+            # with this apporach
 
-            leg_parameters = scenario.legs[leg_name]
-            start_location = leg_parameters.locations.start
-            end_location = leg_parameters.locations.end
+            start_end_location_combinations: pd.DataFrame = (
+                self.mobility_matrix.copy()
+                .reset_index()[['From', 'To']]
+                .set_index('From')
+            )
 
-            if leg_index == 0:
+            # For each start location, we look at all the upcoming
+            # dearture kilometers (standard and cumulative)
+            for start_location in set(start_end_location_combinations.index):
+                upcoming_departures_kilometers: float = 0
+                upcoming_departures_kilometers_cumulative: float = 0
 
-                for hour_index in range(HOURS_IN_A_DAY - 1):
-                    # We skip the last time slot, as this should wrap the trip
-                    # and we are not looking into the next day
-                    # with this apporach
+                # Those are split per end location in the run mobility matrix
 
-                    # For the standard version, we look if the vehicle
-                    # is set to depart in the next time
-                    upcoming_departures_kilometers = self.mobility_matrix.loc[
-                        (start_location, end_location, hour_index + 1),
-                        'Departures kilometers',
-                    ]
+                # We need t check which end locations are possible
+                possible_end_locations: set[str] = set(
+                    start_end_location_combinations.loc[
+                        start_location, 'To'
+                    ].values  # type: ignore
+                )
 
-                    self.next_leg_kilometers.loc[
-                        hour_index, start_location
-                    ] = (
-                        self.next_leg_kilometers.loc[hour_index][
-                            start_location
-                        ]
-                        + upcoming_departures_kilometers
-                    )
+                for end_location in possible_end_locations:
 
-                    # For the other version, we look at all future departures
-
-                    all_future_departures_kilometers = (
+                    this_end_location_departures_kilometers: float = (
                         self.mobility_matrix.loc[
-                            (
-                                start_location,
-                                end_location,
-                                list(range(hour_index + 1, HOURS_IN_A_DAY)),
-                            ),
+                            (start_location, end_location, hour_index + 1),
                             'Departures kilometers',
-                        ].sum()
-                    )
-
-                    self.next_leg_kilometers_cumulative.loc[
-                        hour_index, start_location
-                    ] = (
-                        self.next_leg_kilometers_cumulative.loc[hour_index][
-                            start_location
                         ]
-                        + all_future_departures_kilometers
+                    )  # type: ignore
+                    upcoming_departures_kilometers += (
+                        this_end_location_departures_kilometers
                     )
 
-            else:
-                for hour_index in range(HOURS_IN_A_DAY - 1):
-                    # We skip the last time slot, as this should wrap the trip
-                    # and we are not looking into the next day
-                    # with this approach
+                    this_end_location_departures_kilometers_cumulative: (
+                        float
+                    ) = self.mobility_matrix.loc[
+                        (
+                            start_location,
+                            end_location,
+                            list(range(hour_index + 1, HOURS_IN_A_DAY)),
+                        ),
+                        'Departures kilometers',
+                    ].sum()
 
-                    # We do the same as for the first leg, but we need
-                    # to limit that to the vehicles that already have
-                    # arrived at the end location
-                    upcoming_departures_kilometers_raw: float = (
-                        self.mobility_matrix['Departures kilometers'].loc[
-                            start_location, end_location, hour_index + 1
-                        ]
+                    upcoming_departures_kilometers_cumulative += (
+                        this_end_location_departures_kilometers_cumulative
                     )
+                self.next_leg_kilometers.loc[hour_index, start_location] = (
+                    upcoming_departures_kilometers
+                )
 
-                    previous_arrivals_to_use: float = sum(
-                        previous_leg_arrivals_amount[: hour_index + 1]
-                    )
-                    actual_upcoming_departures_kilometers = (
-                        upcoming_departures_kilometers_raw
-                        * previous_arrivals_to_use
-                    )
+                self.next_leg_kilometers_cumulative.loc[
+                    hour_index, start_location
+                ] = upcoming_departures_kilometers_cumulative
 
-                    self.next_leg_kilometers.loc[
-                        hour_index, start_location
-                    ] = (
-                        self.next_leg_kilometers.loc[hour_index][
-                            start_location
-                        ]
-                        + actual_upcoming_departures_kilometers
-                    )
+        # previous_leg_arrivals_amount: list[float] = []
+        # for leg_index, leg_name in enumerate(self.legs):
 
-                    # Once again, the variant applies to all future departures
+        #     leg_parameters = scenario.legs[leg_name]
+        #     start_location = leg_parameters.locations.start
+        #     end_location = leg_parameters.locations.end
 
-                    all_future_departures_kilometers_raw: float = (
-                        self.mobility_matrix['Departures kilometers']
-                        .loc[start_location, end_location][
-                            list(range(hour_index + 1, HOURS_IN_A_DAY))
-                        ]
-                        .sum()
-                    )
+        #     if leg_index == 0:
 
-                    actual_all_future_departures_kilometers = (
-                        previous_arrivals_to_use
-                        * all_future_departures_kilometers_raw
-                    )
+        #         for hour_index in range(HOURS_IN_A_DAY - 1):
+        #             # We skip the last time slot, as this should wrap the trip
+        #             # and we are not looking into the next day
+        #             # with this apporach
 
-                    self.next_leg_kilometers_cumulative.loc[
-                        hour_index, start_location
-                    ] = (
-                        self.next_leg_kilometers_cumulative.loc[hour_index][
-                            start_location
-                        ]
-                        + actual_all_future_departures_kilometers
-                    )
+        #             # For the standard version, we look if the vehicle
+        #             # is set to depart in the next time
+        #             upcoming_departures_kilometers = self.mobility_matrix.loc[
+        #                 (start_location, end_location, hour_index + 1),
+        #                 'Departures kilometers',
+        #             ]
 
-            previous_leg_arrivals_amount = self.mobility_matrix[
-                'Arrivals amount'
-            ].loc[start_location, end_location]
+        #             self.next_leg_kilometers.loc[
+        #                 hour_index, start_location
+        #             ] = (
+        #                 self.next_leg_kilometers.loc[hour_index][
+        #                     start_location
+        #                 ]
+        #                 + upcoming_departures_kilometers
+        #             )
+        #             print(f'{hour_index=}')
+        #             print(f'{upcoming_departures_kilometers=}')
+        #             # input()
+
+        #             # For the other version, we look at all future departures
+
+        #             all_future_departures_kilometers = (
+        #                 self.mobility_matrix.loc[
+        #                     (
+        #                         start_location,
+        #                         end_location,
+        #                         list(range(hour_index + 1, HOURS_IN_A_DAY)),
+        #                     ),
+        #                     'Departures kilometers',
+        #                 ].sum()
+        #             )
+
+        #             self.next_leg_kilometers_cumulative.loc[
+        #                 hour_index, start_location
+        #             ] = (
+        #                 self.next_leg_kilometers_cumulative.loc[hour_index][
+        #                     start_location
+        #                 ]
+        #                 + all_future_departures_kilometers
+        #             )
+
+        #     else:
+        #         for hour_index in range(HOURS_IN_A_DAY - 1):
+        #             # We skip the last time slot, as this should wrap the trip
+        #             # and we are not looking into the next day
+        #             # with this approach
+
+        #             # We do the same as for the first leg, but we need
+        #             # to limit that to the vehicles that already have
+        #             # arrived at the end location
+        #             upcoming_departures_kilometers_raw: float = (
+        #                 self.mobility_matrix['Departures kilometers'].loc[
+        #                     start_location, end_location, hour_index + 1
+        #                 ]
+        #             )
+
+        #             previous_arrivals_to_use: float = sum(
+        #                 previous_leg_arrivals_amount[: hour_index + 1]
+        #             )
+        #             actual_upcoming_departures_kilometers = (
+        #                 upcoming_departures_kilometers_raw
+        #                 * previous_arrivals_to_use
+        #             )
+        #             print(f'{hour_index=}')
+        #             print(f'{upcoming_departures_kilometers_raw=}')
+        #             print(f'{previous_arrivals_to_use=}')
+        #             # This seems to be the issue, as is too large
+        #             # Because the arrivals amount is the arrivals amount of all legs, non just the previous leg?
+        #             # Or somehow use redeprtures, as it is for locations
+        #             # with repeated legs
+        #             # Mango
+        #             # ((should be <=1)???)
+        #             print(f'{actual_upcoming_departures_kilometers=}')
+        #             # if previous_arrivals_to_use > 1:
+        #             #     input()
+        #             input()
+
+        #             self.next_leg_kilometers.loc[
+        #                 hour_index, start_location
+        #             ] = (
+        #                 self.next_leg_kilometers.loc[hour_index][
+        #                     start_location
+        #                 ]
+        #                 + actual_upcoming_departures_kilometers
+        #             )
+
+        #             # Once again, the variant applies to all future departures
+
+        #             all_future_departures_kilometers_raw: float = (
+        #                 self.mobility_matrix['Departures kilometers']
+        #                 .loc[start_location, end_location][
+        #                     list(range(hour_index + 1, HOURS_IN_A_DAY))
+        #                 ]
+        #                 .sum()
+        #             )
+
+        #             actual_all_future_departures_kilometers = (
+        #                 previous_arrivals_to_use
+        #                 * all_future_departures_kilometers_raw
+        #             )
+
+        #             self.next_leg_kilometers_cumulative.loc[
+        #                 hour_index, start_location
+        #             ] = (
+        #                 self.next_leg_kilometers_cumulative.loc[hour_index][
+        #                     start_location
+        #                 ]
+        #                 + actual_all_future_departures_kilometers
+        #             )
+
+        #     previous_leg_arrivals_amount = self.mobility_matrix[
+        #         'Arrivals amount'
+        #     ].loc[start_location, end_location]
 
         self.next_leg_charge_to_vehicle: pd.DataFrame = (
             self.next_leg_kilometers.copy()
@@ -2074,8 +2150,8 @@ if __name__ == '__main__':
     general_parameters: Box = cook.parameters_from_TOML(
         general_parameters_file_name
     )
-    case_name = 'Mopo'
-    test_scenario_name: str = 'XX_car_test'
+    case_name: str = 'cumulative_test'  # 'Mopo'
+    test_scenario_name: str = 'XX_van'  # 'XX_car_test'
     scenario_file_name: str = (
         f'scenarios/{case_name}/{test_scenario_name}.toml'
     )
@@ -2087,15 +2163,15 @@ if __name__ == '__main__':
     for trip in trips:
         print(trip.name)
         # print(trip.mobility_matrix)
-        print(trip.vehicle_discharge_power_per_location)
-        print(trip.vehicle_discharge_power)
-        print(trip.maximal_received_power_per_location)
-        print(trip.maximal_received_power)
+        # print(trip.vehicle_discharge_power_per_location)
+        # print(trip.vehicle_discharge_power)
+        # print(trip.maximal_received_power_per_location)
+        # print(trip.maximal_received_power)
 
         # trip.mobility_matrix.to_csv(
-        #     f'test_bus_moility_matrices/{trip.name}.csv'
+        #     f'devel/toast/{trip.name}.csv'
         # )
-        # print(trip.next_leg_kilometers)
-        input()
-    exit()
+        print(trip.next_leg_kilometers)
+        # input()
+   
     print((datetime.datetime.now() - start_).total_seconds())

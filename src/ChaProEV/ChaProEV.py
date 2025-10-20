@@ -124,8 +124,8 @@ def run_ChaProEV(case_name: str) -> None:
 if __name__ == '__main__':
     # This is a case name, which is the grouping of all your scenarios.
     # This is principally used to label your output files.
-    case_name = 'Mopo'
-
+    # case_name: str = 'Mopo'
+    case_name: str = 'cumulative_test'
     run_ChaProEV(case_name)
 
     # print('Add sessions into next day')
