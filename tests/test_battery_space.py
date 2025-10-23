@@ -1,6 +1,6 @@
 import os
-import typing as ty
 
+import box
 import pandas as pd
 from ETS_CookBook import ETS_CookBook as cook
 
@@ -9,25 +9,20 @@ def test_battery_space() -> None:
 
     case_name: str = 'Mopo'
     general_parameters_file: str = 'ChaProEV.toml'
-    general_parameters: ty.Dict = cook.parameters_from_TOML(
+    general_parameters: box.Box = cook.parameters_from_TOML(
         general_parameters_file
     )
-    save_interim_files: bool = general_parameters['interim_files']['pickle']
+    save_interim_files: bool = general_parameters.interim_files.pickle
 
     if save_interim_files:
-        scenario_files: ty.List[str] = os.listdir(f'scenarios/{case_name}')
-        scenario_names: ty.List[str] = []
+        scenario_files: list[str] = os.listdir(f'scenarios/{case_name}')
+        scenario_names: list[str] = []
 
         for scenario_file in scenario_files:
             file_extension: str = scenario_file.split('.')[1]
             if file_extension == 'toml':
                 scenario_names.append(scenario_file.split('.')[0])
-        # scenario_names = [
-        #         'XX_truck',
-        #         'XX_van',
-        #         'XX_bus',
-        #     'XX_car'
-        # ]
+
         for scenario_name in scenario_names:
             location_split: pd.DataFrame = pd.read_pickle(
                 f'output/{case_name}/{scenario_name}_location_split.pkl'

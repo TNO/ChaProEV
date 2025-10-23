@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from rich import print
 
 
 def get_run_duration(
@@ -437,8 +438,8 @@ if __name__ == '__main__':
     scenario: Box = cook.parameters_from_TOML(scenario_file_name)
     scenario.name = test_scenario_name
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
     run_range, run_hour_numbers, display_range = get_time_range(
         scenario, general_parameters

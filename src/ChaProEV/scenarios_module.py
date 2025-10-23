@@ -8,6 +8,7 @@ import os
 import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from rich import print
 
 try:
     import define  # type: ignore
@@ -80,7 +81,7 @@ def run_scenario(
     scenario: Box, case_name: str, general_parameters: Box
 ) -> None:
     scenario_name: str = scenario.name
-    print(scenario_name)
+    print(f'Running scenario {scenario_name}')
     location_connections, legs, locations, trips = (
         define.declare_all_instances(scenario, case_name, general_parameters)
     )

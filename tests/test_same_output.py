@@ -1,6 +1,4 @@
 import os
-import typing as ty
-
 import pandas as pd
 
 
@@ -11,7 +9,7 @@ def test_all_files() -> None:
     folder_to_test: str = f'output/{case_name}'
     reference_folder: str = 'reference_run'
 
-    test_quantities: ty.List[str] = [
+    test_quantities: list[str] = [
         test_file.split('.')[0]
         for test_file in os.listdir(folder_to_test)
         if test_file.split('.')[1] == 'pkl'

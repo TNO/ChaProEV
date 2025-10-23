@@ -14,9 +14,10 @@ from itertools import repeat
 from multiprocessing import Pool
 
 import pandas as pd
-import tqdm
+from tqdm.rich import tqdm
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from rich import print
 
 
 @cook.function_timer
@@ -76,7 +77,7 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         progress_bars_parameters.saving_pool_run_description
     )
     if display_saving_pool_run:
-        saving_pool_inputs = tqdm.tqdm(
+        saving_pool_inputs = tqdm(
             saving_pool_inputs,
             desc=saving_pool_run_description,
             total=len(tables_to_save),

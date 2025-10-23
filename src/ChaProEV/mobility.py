@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from rich import print
 
 try:
     import run_time  # type: ignore
@@ -122,35 +123,23 @@ class NextDayStartChargingSession:
         location_power_to_network: float,
     ) -> None:
 
-        self.start_time: datetime.datetime = (
-            next_day_start_session_start
-        )
-        self.end_time: datetime.datetime = (
-            next_day_start_session_end
-        )
+        self.start_time: datetime.datetime = next_day_start_session_start
+        self.end_time: datetime.datetime = next_day_start_session_end
         self.location: str = day_start_location
 
         self.previous_leg_consumption: float = (
             previous_leg_consumption * group_size
         )
-        self.next_leg_consumption: float = (
-            next_leg_consumption * group_size
-        )
-        self.connectivity: float = (
-            location_connectivity * group_size
-        )
-        self.power_to_vehicle: float = (
-            location_power_to_vehicle * group_size
-        )
+        self.next_leg_consumption: float = next_leg_consumption * group_size
+        self.connectivity: float = location_connectivity * group_size
+        self.power_to_vehicle: float = location_power_to_vehicle * group_size
         self.power_from_network: float = (
             location_power_from_network * group_size
         )
         self.power_from_vehicle: float = (
             location_power_from_vehicle * group_size
         )
-        self.power_to_network: float = (
-            location_power_to_network * group_size
-        )
+        self.power_to_network: float = location_power_to_network * group_size
 
 
 def get_run_charging_sessions(
@@ -1445,7 +1434,6 @@ def get_run_trip_probabilities(
     Gets a DataFrame containing the trip probabilities for the whole run.
     '''
 
-    # moo = datetime.datetime.now()
     day_types: list[str] = scenario.mobility_module.day_types
     scenario_vehicle: str = scenario.vehicle.name
     trip_list: list[str] = []
@@ -1461,8 +1449,6 @@ def get_run_trip_probabilities(
         scenario, general_parameters
     )[0]
 
-    # print((datetime.datetime.now() - moo).total_seconds())
-    # moo = datetime.datetime.now()
     run_trip_probabilities: pd.DataFrame = pd.DataFrame(index=run_range)
     run_trip_probabilities.index.name = 'Time Tag'
 
@@ -1470,38 +1456,28 @@ def get_run_trip_probabilities(
         run_trip_probabilities, scenario, general_parameters
     )
 
-    # print((datetime.datetime.now() - moo).total_seconds())
-    # moo = datetime.datetime.now()
     trip_probabilities_per_day_type: pd.DataFrame = (
         get_trip_probabilities_per_day_type(
             scenario, case_name, general_parameters
         )
     )
 
-    # print((datetime.datetime.now() - moo).total_seconds())
-    # moo = datetime.datetime.now()
-
     for trip in trip_list:
         for day_type in day_types:
             run_trip_probabilities.loc[
                 run_trip_probabilities['Day Type'] == day_type, trip
             ] = trip_probabilities_per_day_type.loc[trip, day_type]
-    # print((datetime.datetime.now() - moo).total_seconds())
-    # moo = datetime.datetime.now()
 
     table_name: str = f'{scenario.name}_run_trip_probabilities'
     pickle_interim_files: bool = general_parameters.interim_files.pickle
     if pickle_interim_files:
         run_trip_probabilities.to_pickle(f'{output_folder}/{table_name}.pkl')
-    # print((datetime.datetime.now() - moo).total_seconds())
-    # moo = datetime.datetime.now()
 
     vehicle_name: str = scenario.vehicle.name
     if vehicle_name == 'car':
         run_trip_probabilities = car_holiday_departures_returns_corrections(
             run_trip_probabilities, scenario, case_name, general_parameters
         )
-    # print('Weekend corrs', (datetime.datetime.now() - moo).total_seconds())
 
     return run_trip_probabilities
 

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from rich import print
 
 try:
     import run_time  # type: ignore

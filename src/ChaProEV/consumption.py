@@ -230,8 +230,8 @@ def get_consumption_data(
 
 if __name__ == '__main__':
     general_parameters_file_name: str = 'ChaProEV.toml'
-    general_parameters: Box = (
-        cook.parameters_from_TOML(general_parameters_file_name)
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
     )
     case_name = 'Mopo'
     scenario_name: str = 'XX_car'
