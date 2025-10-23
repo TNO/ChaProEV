@@ -463,7 +463,6 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
         future_yearly_demand_values, case_name, non_road_parameters
     )
 
-
     country_codes: list[str] = []
     modes: list[str] = []
     years: list[int] = []
@@ -493,7 +492,7 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
     carriers = sorted(list(set(carriers)))
     non_thermal_carriers: list[str] = ['Electricity']
     non_energetic_carriers: list[str] = ['Lubricants']
-    profiles_grouped_by_carrier: dict[str, pd.DataFrame] = {}
+    profiles_grouped_by_carrier: dict[str, pd.Series] = {}
     country_year_profiles: dict[str, pd.DataFrame] = {}
     print(f'{country_codes=}')
     print(f'{modes=}')
@@ -540,7 +539,7 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
                     group_name: str = (
                         f'{country_code}_{mode}_non_thermal_PJ_{year}'
                     )
-                    profiles_grouped_by_carrier[group_name] = pd.DataFrame(
+                    profiles_grouped_by_carrier[group_name] = pd.Series(
                         sum(profiles_to_group_non_thermal)
                     )
                     this_country_year_profiles[f'{mode}_non_thermal_PJ'] = (
@@ -549,7 +548,7 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
 
                 if len(profiles_to_group_thermal) > 0:
                     group_name = f'{country_code}_{mode}_thermal_PJ_{year}'
-                    profiles_grouped_by_carrier[group_name] = pd.DataFrame(
+                    profiles_grouped_by_carrier[group_name] = pd.Series(
                         sum(profiles_to_group_thermal)
                     )
                     this_country_year_profiles[f'{mode}_thermal_PJ'] = (
@@ -613,5 +612,6 @@ if __name__ == '__main__':
     print('and/or year (or even carrier)')
     print('Parallelize saving?')
 
-    ENTSO-e for future
-    WLO?
+    # ENTSO-e for future
+    # WLO?
+    # Add proportionality cutoff for partial weeks (also for road????)
