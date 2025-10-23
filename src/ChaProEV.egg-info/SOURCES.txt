@@ -95,11 +95,10 @@ non-road/Mopo/growth_factors.csv
 non-road/Mopo/scenario_demands.csv
 non-road/Mopo/scenarios.toml
 scenarios/Mopo/Latvia_car_own_driveway_2050.toml
-scenarios/Mopo/Netherlands_urban_car.toml
+scenarios/Mopo/Netherlands_urban_car_2030.toml
 scenarios/Mopo/Switzerland_car_own_driveway_2050.toml
 scenarios/Mopo/XX_bus.toml
 scenarios/Mopo/XX_car.toml
-scenarios/Mopo/XX_car_test.toml
 scenarios/Mopo/XX_truck.toml
 scenarios/Mopo/XX_van.toml
 scenarios/bus_test/XX_bus.toml
@@ -141,6 +140,7 @@ test_bus_moility_matrices/bus_weekend_in_workweek.csv
 tests/test_battery_space.py
 tests/test_charge_and_consumption.py
 tests/test_empty_values.py
+tests/test_enough_power_next_leg.py
 tests/test_same_output.py
 variants/Mopo.toml
 variants/Mopo/XX_car.csv
