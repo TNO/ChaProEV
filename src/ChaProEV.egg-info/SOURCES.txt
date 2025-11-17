@@ -27,6 +27,8 @@ todo.txt
 chaproev-1.3.0/.flake8
 chaproev-1.3.0/.gitignore
 comparisons/comparison_template.toml
+dist/chaproev-1.3.3-py3-none-any.whl
+dist/chaproev-1.3.3.tar.gz
 docs/ChaProEV_workflow.png
 docs/Legs.png
 docs/Locations.png
