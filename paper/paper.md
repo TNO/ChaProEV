@@ -27,7 +27,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-ChaProEV
+ChaProEV is
 # Statement of need
 [@COMPETES_demand_response]
 
