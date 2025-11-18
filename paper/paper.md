@@ -46,33 +46,33 @@ a clear way to modify them without touching code
 No code parameters and profiles modification (explain what kind of modifications 
 are possible)
 
-\begin{enumerate}[I).]
-  \item \textit{Demand for next leg (kWh) (from network):} The charge that the vehicles 
+
+1. Demand for next leg (kWh) (from network): The charge that the vehicles 
   leaving in the next time step need to pull from the network 
   for the leg they are about to undertake, corrected by the charger efficiency. 
-\item \textit{Demand for next leg (kWh) (to vehicles):} The part of the above that
-vehicles get. ({$E_{t}^{\mathrm{drive}}$} in Equation \eqref{eq:EV-soc})
-  \item \textit{Connected vehicles:} The share of vehicles that
+2.  Demand for next leg (kWh) (to vehicles): The part of the above that
+vehicles get. ({$E_{t}^{\mathrm{drive}}$} in Equation )
+3. Connected vehicles:The share of vehicles that
 are connected to a charger ({$N_{t}^{\mathrm{plugged}}$} in Equation \eqref{eq:soc-limits})
   \item \textit{Charging Power from Network (kW):} Maximum power that connected vehicles
   can potentially draw from the network. 
-({$\bar{P}_{t}^{\mathrm{G2V}}$} in Equation \eqref{eq:EV-soc})
-  \item \textit{Charging Power to Vehicles (kW):} Maximum power that can potentially go to vehicles
+({$\bar{P}_{t}^{\mathrm{G2V}}$} in Equation)
+4. Charging Power to Vehicles (kW): Maximum power that can potentially go to vehicles
   go to vehicles (i.e. the same as above with a charger efficiency correction).
   \item \textit{Vehicle Discharge Power (kW):} The amount of power connected
 vehicles can discharge to the network.
-  \item \textit{Discharge Power to Network (kW):} How much of that discharged power can go to the network. 
-({$\bar{P}_{t}^{\mathrm{V2G}}$} in Equation \eqref{eq:EV-soc})
-  \item \textit{Effective charging efficiency:} Ratio between charging power going 
+5. Discharge Power to Network (kW): How much of that discharged power can go to the network. 
+({$\bar{P}_{t}^{\mathrm{V2G}}$} in Equation)
+6. Effective charging efficiency: Ratio between charging power going 
   to the vehicle and power coming from the network. This can vary in time,
   as the location of the charging vehicles (and thus the efficiency of the involved chargers)
   changes as they move around. 
-($\eta^{\mathrm{G2V}}$ in Equation \eqref{eq:EV-soc})
-\item \textit{Effective discharging efficiency:} Same as above, but for discharging
+($\eta^{\mathrm{G2V}}$ in Equation)
+7. Effective discharging efficiency: Same as above, but for discharging
 (it is the power going out of the vehicles divided by the power going into the network).
-($\eta^{\mathrm{V2G}}$ in Equation \eqref{eq:EV-soc})
+($\eta^{\mathrm{V2G}}$ in Equation)
 
-\end{enumerate}
+
 
 # Acknowledgements
 
