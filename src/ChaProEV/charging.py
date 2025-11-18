@@ -327,7 +327,7 @@ def impact_of_departures(
                     time_tag_departures_impact,
                     battery_spaces[start_location].at[
                         time_tag, departing_battery_space
-                    ],
+                    ],  # type: ignore
                 )
 
                 # We update the departures (i.e. how many remain
