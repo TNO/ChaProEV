@@ -28,7 +28,9 @@ bibliography: paper.bib
 
 # Summary
 ChaProEV is
+
 # Statement of need
+
 [@COMPETES_demand_response]
 
 # Conceptual innovations
