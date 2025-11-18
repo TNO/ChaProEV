@@ -19,8 +19,10 @@ authors:
 affiliations:
  - name: TNO Energy and Materials Transition, Radarweg 60, Amsterdam, 1043 NT, The Netherlands
    index: 1
+   ror: 01bnjb948
  - name: Faculty of Electrical Engineering, Mathematics and Computer Science, Delft University of Technology, Delft, The Netherlands
    index: 2
+   ror: 02e2c7k09
 date: 18 November 2025
 bibliography: paper.bib
 
