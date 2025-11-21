@@ -49,9 +49,9 @@ A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
 $$
 e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta
 $$
-$$
+<!-- $$
 \underline{E}N_{t}^{\mathrm{plugged}}N\alpha & \leq e_{t}\leq\bar{E}N_{t}^{\mathrm{plugged}}N\alpha\qquad\forall t
-$$
+$$ -->
 
 
 
