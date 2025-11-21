@@ -84,6 +84,35 @@ and $\alpha$ is the proportion of vehicles that are optimally providing demand r
 
 ## Further modelling
 
+
+The formulation \autoref{eq:EV-soc}-\autoref{eq:v2G-limits} has several
+shortcomings because there is no clear distinction between plugged
+and unplugged EVs. For example, suppose that plugged EVs were fully charged and
+the unplugged EVs were near to being empty, equation \autoref{eq:EV-soc}
+allows that unplugged EVs could be charging while they should be unavailable
+to the system. \citet{momber_2014_pevstorage_1_22} shows this and more
+detailed cases where the traditional EV aggregated formulation fails.
+
+To overcome the above shortcomings, \citet{momber_2014_pevstorage_1_22}
+proposed a more rigorous formulation, in which inventories for plugged/unplugged
+EVs are clearly distinguished from each other. This formulation ensures
+that only EVs plugged to the grid are charged/discharged from the
+electric system. It also guarantees that unplugged EVs cannot further
+charge while driving.
+
+The state of charge of EVs in \autoref{eq:EV-soc} is now replaced by
+the separated plugged \autoref{eq:soc-plugged} and unplugged \autoref{eq:soc-unplugged}
+state of charges. Additionally, \autoref{eq:soc-limits} is replaced
+by \autoref{eq:soc-plugged-limits} and \autoref{eq:soc-unplugged-limits}.
+\begin{align}
+e_{t}^{\mathrm{plugged}}= & e_{t-1}^{\mathrm{plugged}}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta-\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta\nonumber \\
+ & +N_{t-1}^{\mathrm{plugging}}N\alpha e_{t-1}^{\mathrm{unplugged}}-N_{t-1}^{\mathrm{unplugging}}N\alpha e_{t-1}^{\mathrm{plugged}}\quad\forall t\label{eq:soc-plugged}\\
+e_{t}^{\mathrm{unplugged}}= & e_{t-1}^{\mathrm{unplugged}}-E_{t-1}^{\mathrm{drive}}\Delta N\alpha\nonumber \\
+ & -N_{t-1}^{\mathrm{plugging}}N\alpha e_{t-1}^{\mathrm{unplugged}}+N_{t-1}^{\mathrm{unplugging}}N\alpha e_{t-1}^{\mathrm{plugged}}\quad\forall t\label{eq:soc-unplugged}\\
+\underline{E}N_{t}^{\mathrm{plugged}}N\alpha & \leq e_{t}^{\mathrm{plugged}}\leq\bar{E}N_{t}^{\mathrm{plugged}}N\alpha\qquad\forall t\label{eq:soc-plugged-limits}\\
+\underline{E}N_{t}^{\mathrm{unplugged}}N\alpha & \leq e_{t}^{\mathrm{unplugged}}\leq\bar{E}N_{t}^{\mathrm{unplugged}}N\alpha\qquad\forall t\label{eq:soc-unplugged-limits}
+\end{align}
+
 # Software innovations
 
 No code parameters and profiles modification (explain what kind of modifications 
