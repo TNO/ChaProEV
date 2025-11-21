@@ -53,9 +53,10 @@ $$ e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta -\frac{p_{t}^{
 
 <!-- {#eq:SOC} -->
 
-Two equ
 
+labels
 [@eq:SOC]
+[@SOC]
 
 
 
