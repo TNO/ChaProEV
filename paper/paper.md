@@ -47,7 +47,7 @@ a clear way to modify them without touching code
 A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
 
 $$
-e_{t} & =e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta
+e_{t} & =e_{t-1}+\eta^{\text{G2V}}p_{t}^{\text{G2V}}\Delta
 $$
 
 <!-- $
