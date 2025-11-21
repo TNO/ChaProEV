@@ -70,7 +70,7 @@ Scenarios
 2.  Demand for next leg (kWh) (to vehicles): The part of the above that
 vehicles get. ({$E_{t}^{\mathrm{drive}}$} in Equation )
 3. Connected vehicles:The share of vehicles that
-are connected to a charger ({$N_{t}^{\mathrm{plugged}}$} in Equation \eqref{eq:soc-limits})
+are connected to a charger ({$N_{t}^{\mathrm{plugged}}$} in Equation )
   \item \textit{Charging Power from Network (kW):} Maximum power that connected vehicles
   can potentially draw from the network. 
 ({$\bar{P}_{t}^{\mathrm{G2V}}$} in Equation)
