@@ -90,10 +90,10 @@ shortcomings because there is no clear distinction between plugged
 and unplugged EVs. For example, suppose that plugged EVs were fully charged and
 the unplugged EVs were near to being empty, equation \autoref{eq:EV-soc}
 allows that unplugged EVs could be charging while they should be unavailable
-to the system. \citet{momber_2014_pevstorage_1_22} shows this and more
+to the system. [@momber_2014_pevstorage_1_22] shows this and more
 detailed cases where the traditional EV aggregated formulation fails.
 
-To overcome the above shortcomings, \citet{momber_2014_pevstorage_1_22}
+To overcome the above shortcomings, [@momber_2014_pevstorage_1_22]
 proposed a more rigorous formulation, in which inventories for plugged/unplugged
 EVs are clearly distinguished from each other. This formulation ensures
 that only EVs plugged to the grid are charged/discharged from the
