@@ -119,30 +119,56 @@ No code parameters and profiles modification (explain what kind of modifications
 are possible)
 Scenarios
 
-1. Demand for next leg (kWh) (from network): The charge that the vehicles 
+\begin{enumerate}[I).]
+  \item \textit{Demand for next leg (kWh) (from network):} The charge that the vehicles 
   leaving in the next time step need to pull from the network 
   for the leg they are about to undertake, corrected by the charger efficiency. 
-2.  Demand for next leg (kWh) (to vehicles): The part of the above that
-vehicles get. ({$E_{t}^{\mathrm{drive}}$} in Equation )
-3. Connected vehicles:The share of vehicles that
-are connected to a charger ({$N_{t}^{\mathrm{plugged}}$} in Equation )
+\item \textit{Demand for next leg (kWh) (to vehicles):} The part of the above that
+vehicles get. ({$E_{t}^{\mathrm{drive}}$} in Equation \eqref{eq:EV-soc})
+  \item \textit{Connected vehicles:} The share of vehicles that
+are connected to a charger ({$N_{t}^{\mathrm{plugged}}$} in Equation \eqref{eq:soc-limits})
   \item \textit{Charging Power from Network (kW):} Maximum power that connected vehicles
   can potentially draw from the network. 
-({$\bar{P}_{t}^{\mathrm{G2V}}$} in Equation)
-4. Charging Power to Vehicles (kW): Maximum power that can potentially go to vehicles
+({$\bar{P}_{t}^{\mathrm{G2V}}$} in Equation \eqref{eq:EV-soc})
+  \item \textit{Charging Power to Vehicles (kW):} Maximum power that can potentially go to vehicles
   go to vehicles (i.e. the same as above with a charger efficiency correction).
   \item \textit{Vehicle Discharge Power (kW):} The amount of power connected
 vehicles can discharge to the network.
-5. Discharge Power to Network (kW): How much of that discharged power can go to the network. 
-({$\bar{P}_{t}^{\mathrm{V2G}}$} in Equation)
-6. Effective charging efficiency: Ratio between charging power going 
+  \item \textit{Discharge Power to Network (kW):} How much of that discharged power can go to the network. 
+({$\bar{P}_{t}^{\mathrm{V2G}}$} in Equation \eqref{eq:EV-soc})
+  \item \textit{Effective charging efficiency:} Ratio between charging power going 
   to the vehicle and power coming from the network. This can vary in time,
   as the location of the charging vehicles (and thus the efficiency of the involved chargers)
   changes as they move around. 
-($\eta^{\mathrm{G2V}}$ in Equation)
-7. Effective discharging efficiency: Same as above, but for discharging
+($\eta^{\mathrm{G2V}}$ in Equation \eqref{eq:EV-soc})
+\item \textit{Effective discharging efficiency:} Same as above, but for discharging
 (it is the power going out of the vehicles divided by the power going into the network).
-($\eta^{\mathrm{V2G}}$ in Equation)
+($\eta^{\mathrm{V2G}}$ in Equation \eqref{eq:EV-soc})
+
+\end{enumerate}
+
+ChaProEV also provides charging sessions (in case they are not obtained from energy system models). This provides another
+description of the system that could be used for models and analyses that focus
+on charging sessions rather than profiles (which are aggregates of such sessions).
+Sessions include (in addition the elements that
+a profile gets):
+\begin{enumerate}[I).]
+  \item \textit{Location:} Where the session takes place
+  \item \textit{Start time:} At which moment the vehicles in the session can 
+  start charging (i.e. when they arrive).
+  \item \textit{End time:} At which moment the vehicles in the session must 
+  stop charging (i.e. when they leave). 
+  \item \textit{Demand for incoming leg (kWh) (to vehicle):} How much the incoming vehicles
+  have spent on the leg arriving to the session.
+  \item \textit{Maximal Possible Charge to Vehicles (kWh):} How much the vehicles
+  could charge if they used the available power during their whole session.
+  \item \textit{Charge to Vehicles (kWh):} How much of the vehicles actually charge
+  during the session. This is based on the charging strategy of the vehicles
+  and can be used to derive a charging profile.
+  \item \textit{Charge from Network (kWh):} The same as above, but corrected
+  for charging efficiency (i.e. how much the network  provides)
+\end{enumerate}
+
 
 
 
