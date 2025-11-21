@@ -52,21 +52,26 @@ A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
 \label{eq:EV-soc}
  e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta -\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t 
 \end{equation}
-<!-- $$ e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta -\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t \label{SOC}$$  -->
+
+
+\begin{align}
+e_{t} & =e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta-\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t\label{eq:EV-soc}\\
+\underline{E}N_{t}^{\mathrm{plugged}}N\alpha & \leq e_{t}\leq\bar{E}N_{t}^{\mathrm{plugged}}N\alpha\qquad\forall t\label{eq:soc-limits}\\
+0 & \leq p_{t}^{\mathrm{G2V}}\leq\bar{P}_{t}^{\mathrm{G2V}}N_{t}^{\mathrm{plugged}}N\alpha\qquad\forall t\\
+0 & \leq p_{t}^{\mathrm{V2G}}\leq\bar{P}_{t}^{\mathrm{V2G}}N_{t}^{\mathrm{plugged}}N\alpha\qquad\forall t\label{eq:v2G-limits}
+\end{align}
+where $t$ is the time index and parameter $\Delta$ (h) is the duration
+of the time step. Variable $e_{t}$ (kWh) tracks the total state of
+charge of the plugged EVs to the grid. Variables $p_{t}^{\mathrm{G2V}}$/$p_{t}^{V2G}$
+(kW) are the power consumed/provided by the EVs from/to the grid. Parameters $\eta^{\mathrm{G2V}}$/$\eta^{\mathrm{V2G}}$
+(p.u.) are the charging/discharging efficiencies; $\underline{E}$/$\bar{E}$
+(kWh) are the minimum/maximum storage capacity per vehicle; $N$ is
+the total number of EVs; and $\alpha$ (p.u.) is the share of controllable
+EVs providing demand response to the system. Section \ref{boundary_output}
+defines the remaining parameters (profiles).
 
 
 \autoref{eq:EV-soc}
-<!-- \begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-<!-- {#eq:SOC} -->
-
-
-labels
-[@eq:EV-soc]
-[@SOC] -->
 
 
 
