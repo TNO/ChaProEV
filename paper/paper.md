@@ -41,13 +41,21 @@ Mopo/Ines, etc.) in a clear and accessible way, with the also allowing
 a clear way to modify them without touching code
 [@COMPETES_demand_response]
 
-# Conceptual innovations
+# Conceptual innovations: Supporting optimisation models
+
+## Basic elements
+A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
+$$ 
+e_{t} & =e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta-\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t
+$$
+
+## Further modelling
 
 # Software innovations
 
 No code parameters and profiles modification (explain what kind of modifications 
 are possible)
-
+Scenarios
 
 1. Demand for next leg (kWh) (from network): The charge that the vehicles 
   leaving in the next time step need to pull from the network 
