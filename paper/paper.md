@@ -48,11 +48,6 @@ A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
 
 
 
-\begin{equation}
-\label{eq:EV-soc}
- e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta -\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t 
-\end{equation}
-
 
 \begin{align}
 e_{t} & =e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta-\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t\label{eq:EV-soc}\\
@@ -67,11 +62,23 @@ charge of the plugged EVs to the grid. Variables $p_{t}^{\mathrm{G2V}}$/$p_{t}^{
 (p.u.) are the charging/discharging efficiencies; $\underline{E}$/$\bar{E}$
 (kWh) are the minimum/maximum storage capacity per vehicle; $N$ is
 the total number of EVs; and $\alpha$ (p.u.) is the share of controllable
-EVs providing demand response to the system. Section \ref{boundary_output}
+EVs providing demand response to the system. 
+
+
+Section \ref{boundary_output}
 defines the remaining parameters (profiles).
 
 
-\autoref{eq:EV-soc}
+\autoref{eq:EV-soc}-\autoref{eq:v2G-limits} model the demand
+response provided by controllable EVs through $p_{t}^{\mathrm{G2V}}$
+and $p_{t}^{\mathrm{V2G}}$. The total EV demand $d_{t}^{\mathrm{Tot}}$
+(kW), including the non-controllable load, is defined as
+\begin{align}
+d_{t}^{\mathrm{Tot}} & =D_{t}^{0}N\left(1-\alpha\right)+p_{t}^{\mathrm{G2V}}-p_{t}^{\mathrm{V2G}}\qquad\forall t\label{eq:Total-EV-demand}
+\end{align}
+where $D_{t}^{0}$ is the reference (non-demand response) profile given by ChaProEV (see Section \ref{reference_profile_data}),
+and $\alpha$ is the proportion of vehicles that are optimally providing demand response.
+
 
 
 
