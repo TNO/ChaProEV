@@ -46,10 +46,9 @@ a clear way to modify them without touching code
 ## Basic elements
 A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
 
-$$
-e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta -\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t {#eq:SOC}
-% \underline{E}N_{t}^{\mathrm{plugged}}N\alpha & \leq e_{t}\leq\bar{E}N_{t}^{\mathrm{plugged}}N\alpha\qquad\forall t
-$$
+
+$$ e_{t}  = e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta -\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t $$ {#eq:SOC}
+
 Two equ
 
 [@eq:SOC]
