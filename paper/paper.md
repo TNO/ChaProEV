@@ -45,15 +45,20 @@ a clear way to modify them without touching code
 
 ## Basic elements
 A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
-$
+
+$$
+e_{t} & =e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta
+$$
+
+<!-- $
 e_{t} & =e_{t-1}+\eta^{\mathrm{G2V}}p_{t}^{\mathrm{G2V}}\Delta-\frac{p_{t}^{\mathrm{V2G}}}{\eta^{\mathrm{V2G}}}\Delta-E_{t}^{\mathrm{drive}}\Delta N\alpha\quad\forall t
-$
+$ -->
 
 ## Further modelling
 
 # Software innovations
 
-<!-- No code parameters and profiles modification (explain what kind of modifications 
+No code parameters and profiles modification (explain what kind of modifications 
 are possible)
 Scenarios
 
@@ -80,7 +85,7 @@ vehicles can discharge to the network.
 ($\eta^{\mathrm{G2V}}$ in Equation)
 7. Effective discharging efficiency: Same as above, but for discharging
 (it is the power going out of the vehicles divided by the power going into the network).
-($\eta^{\mathrm{V2G}}$ in Equation) -->
+($\eta^{\mathrm{V2G}}$ in Equation)
 
 
 
