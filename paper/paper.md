@@ -119,7 +119,7 @@ No code parameters and profiles modification (explain what kind of modifications
 are possible)
 Scenarios
 
-\begin{enumerate}[I).]
+<!-- \begin{enumerate}[I).]
   \item \textit{Demand for next leg (kWh) (from network):} The charge that the vehicles 
   leaving in the next time step need to pull from the network 
   for the leg they are about to undertake, corrected by the charger efficiency. 
@@ -145,7 +145,7 @@ vehicles can discharge to the network.
 (it is the power going out of the vehicles divided by the power going into the network).
 ($\eta^{\mathrm{V2G}}$ in Equation \eqref{eq:EV-soc})
 
-\end{enumerate}
+\end{enumerate} -->
 
 ChaProEV also provides charging sessions (in case they are not obtained from energy system models). This provides another
 description of the system that could be used for models and analyses that focus
