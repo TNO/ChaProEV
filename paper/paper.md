@@ -171,7 +171,7 @@ a profile gets):
 
 ![trips \label{fig:trips}](Trips.png)
 
-\autoref{trips}
+\autoref{fig:trips}
 
 # Acknowledgements
 
