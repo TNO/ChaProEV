@@ -169,7 +169,7 @@ a profile gets):
   for charging efficiency (i.e. how much the network  provides)
 \end{enumerate}
 
-
+(trips.png)
 
 
 # Acknowledgements
