@@ -152,7 +152,7 @@ description of the system that could be used for models and analyses that focus
 on charging sessions rather than profiles (which are aggregates of such sessions).
 Sessions include (in addition the elements that
 a profile gets):
-\begin{enumerate}[I).]
+\begin{enumerate}
   \item \textit{Location:} Where the session takes place
   \item \textit{Start time:} At which moment the vehicles in the session can 
   start charging (i.e. when they arrive).
