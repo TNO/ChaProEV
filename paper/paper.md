@@ -41,6 +41,10 @@ Mopo/Ines, etc.) in a clear and accessible way, with the also allowing
 a clear way to modify them without touching code
 [@COMPETES_demand_response]
 
+tailored to supply optimisation models (list, but also actual implementations)
+throug the model below by explicitely supplying the necessary parameters 
+[EV parameters for optimisation models](#conceptual-innovations-supporting-optimisation-models)
+and providing an option to change some stiry parameters [creating new scenarios](#software-innovations)
 # Conceptual innovations: Supporting optimisation models
 
 ## Basic elements
