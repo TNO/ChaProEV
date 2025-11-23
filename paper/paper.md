@@ -36,13 +36,13 @@ ChaProEV is
 Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
 have a strong impact on the electric grid [@TNO_local_impact;@TNO_impact_elektriciteitssysteem], and on
 energy systemns in general. -->
-<!-- 
+
 It is therefore important that models that seek the optimisation of energy systems properly  
 [@OPERA] [@TIMES-Europe]
 ([@PyPSA])
 
-[@COMPETES] [@Tulipa] [@TradeRES] [@TradeRES_scenario_database] -->
-<!-- 
+[@COMPETES] [@Tulipa] [@TradeRES] [@TradeRES_scenario_database]
+
 
 
 - Profiles are good and useful, but optimisation modes might also
@@ -62,7 +62,7 @@ and providing an option to change some stiry parameters [creating new scenarios]
 # Conceptual innovations: Supporting optimisation models
 
 ## Basic elements
-A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]:
+A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]: 
 
 
 
