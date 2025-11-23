@@ -14,9 +14,47 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            -   name: Build
-                run:
-                    mkdocs build
-            -   name: Deploy
-                run: 
-                    mkdocs gh-deploy
+        
+        -   name: Checkout repository
+            uses: actions/checkout@v4
+            with:
+                # Ensure full history so mkdocs gh-deploy can create commits correctly
+                fetch-depth: 0
+
+        -   name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.13'
+
+        -   name: Cache pip
+            uses: actions/cache@v4
+            with:
+                path: ~/.cache/pip
+                key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+                restore-keys: |
+                    ${{ runner.os }}-pip-
+
+        -   name: Install MkDocs and plugins
+            run: |
+                if [ -f requirements.txt ]; then
+                    pip install -r requirements.txt
+                else
+                    # Basic MkDocs + Material theme as a sensible default
+                    pip install mkdocs mkdocs-material
+                fi
+
+        -   name: Verify MkDocs config
+            run: |
+                if [ ! -f mkdocs.yml ]; then
+                    echo "mkdocs.yml not found at repo root."
+                    exit 1
+                fi
+                mkdocs --version
+                mkdocs build --strict
+
+        -   name: Build
+            run:
+                mkdocs build
+        -   name: Deploy
+            run: 
+                mkdocs gh-deploy
