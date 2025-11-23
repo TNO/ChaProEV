@@ -42,7 +42,7 @@ It is therefore important that models that seek the optimisation of energy syste
 They do not take into account the dynamics of the energy system and teh grid at each time step and/or they do not
 integrate the specifics of the case studied by running the optimisation or simulation model.
 
-
+<!-- 
 Dynamic fit at each time: ....
 
 Situation specifics: ....
@@ -50,7 +50,7 @@ Situation specifics: ....
 ChaProEv was developped to improve these two elements [@COMPETES;@COMPETES_demand_response]
 
 substequently is  [@TradeRES;@TradeRES_scenario_database] [@Mopo] [@TradeRES_scenario_database]
-[@TradeRES] [@SpineOpt] [@Spine_toolbox] [@vRES_Dutch_Power_Systems] [@price_formation]
+[@TradeRES] [@SpineOpt] [@Spine_toolbox] [@vRES_Dutch_Power_Systems] [@price_formation] -->
 <!-- 
 
 energy system optimization models
@@ -69,8 +69,8 @@ as well as new and custom types of constraints for optimisation models
 [@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@Mopo],
 which helps use the flexibility EVs provide to the system with G2V and V2G.
  -->
-
-plenned/possible [@Tulipa;@OPERA;@TIMES-Europe;@PyPSA]
+<!-- 
+plenned/possible [@Tulipa;@OPERA;@TIMES-Europe;@PyPSA] -->
 
 
 
