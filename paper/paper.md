@@ -32,7 +32,7 @@ bibliography: paper.bib
 ChaProEV is
 
 # Statement of need
-
+<!-- 
 Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
 have a strong impact on the electric grid [@TNO_local_impact;@TNO_impact_elektriciteitssysteem], and on
 energy systemns in general.
@@ -40,7 +40,7 @@ energy systemns in general.
 It is therefore important that models that seek the optimisation of energy systems or simualte them properly take BEVs into acocunt. Some models
 [@OPERA;@TIMES-Europe] only include fixed charging reference profiles. These profiles can be fixed in two ways:
 They do not take into account the dynamics of the energy system and teh grid at each time step and/or they do not
-integrate the specifics of the case studied by running the optimisation or simulation model.
+integrate the specifics of the case studied by running the optimisation or simulation model. -->
 
 <!-- 
 Dynamic fit at each time: ....
