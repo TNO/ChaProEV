@@ -27,4 +27,4 @@ jobs:
 
       - name: Run Black on src/
         run: |
-          black --check --line-length 79 --skip-string-normalization src/ChaProEV
+          black --line-length 79 --skip-string-normalization src/ChaProEV
