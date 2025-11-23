@@ -3,6 +3,8 @@ name: Check Code Formatting with Black
 
 on:
   push:
+    paths:
+      - src/**
     branches:
       - main
       - master
@@ -25,6 +27,6 @@ jobs:
         run: |
           pip install black
 
-      - name: Run Black on src/
+      - name: Run Black on src/**
         run: |
-          black --line-length 79 --skip-string-normalization src/ChaProEV
+          black --line-length 79 --skip-string-normalization src/**
