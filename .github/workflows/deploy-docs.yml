@@ -1,0 +1,22 @@
+name: Deploy docs
+on:
+  push:
+    paths:
+      - docs/**
+      - .github/workflows/deploy-docs.yml
+      - 'mkdocs.yml'
+
+
+
+jobs:
+
+    build-and-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: Build
+                run:
+                    mkdocs build
+            -   name: Deploy
+                run: 
+                    mkdocs gh-deploy
