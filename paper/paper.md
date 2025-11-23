@@ -34,7 +34,15 @@ ChaProEV is
 # Statement of need
 
 Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
-have a strong impact on the electric grid [@TNO_local_impact] [@TNO_impact_elektriciteitssysteem].
+have a strong impact on the electric grid [@TNO_local_impact;@TNO_impact_elektriciteitssysteem], and on
+energy systemns in general.
+
+It is therefore important that models that seek the optimisation of energy systems properly  
+[@OPERA;@TIMERS-Europe]
+([@PyPSA])
+
+[@COMPETES] [#Tulipa] [@TradeRES] [@TradeRES_scenario_database]
+
 
 
 - Profiles are good and useful, but optimisation modes might also
