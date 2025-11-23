@@ -35,13 +35,43 @@ ChaProEV is
 
 Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
 have a strong impact on the electric grid [@TNO_local_impact;@TNO_impact_elektriciteitssysteem], and on
-energy systemns in general. -->
+energy systemns in general.
 
-It is therefore important that models that seek the optimisation of energy systems properly  
-[@OPERA] [@TIMES-Europe]
-([@PyPSA])
+It is therefore important that models that seek the optimisation of energy systems or simualte them properly take BEVs into acocunt. Some models
+[@OPERA;@TIMES-Europe] only include fixed charging reference profiles. These profiles can be fixed in two ways:
+They do not take into account the dynamics of the energy system and teh grid at each time step and/or they do not
+integrate the specific s of the cse studied by running the optimisation model.
 
-[@COMPETES] [@Tulipa] [@TradeRES] [@TradeRES_scenario_database]
+
+Dynamic fit at eache time: ....
+
+Situation specifics: ....
+
+ChaProEv was developped to improve these two elements [@COMPETES;@@COMPETES_demand_response]
+
+substequently is  [@TradeRES;@TradeRES_scenario_database] [@Mopo] [@TradeRES_scenario_database]
+[@TradeRES] [@SpineOpt] [@Spine_toolbox] [@vRES_Dutch_Power_Systems] [@price_formation]
+
+
+energy system optimization models
+[@COMPETES;@COMPETES_demand_response;@OPERA;SpineOpt;@Tulipa;@Spine_toolbox], and
+simulation models [@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems]. 
+
+ChaProEV has also been used in European-level
+[@TradeRES;@TradeRES_scenario_database;@Mopo]
+and regional-level
+[@TNO_local_impact;@TNO_impact_elektriciteitssysteem;@CE_afspraken] projects.
+
+ChaProEV has also integrated well into existing grid models, enabling these models
+to include up-to-date and customisable charging profiles of EVS
+[@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@TradeRES;@TradeRES_scenario_database,@CE_afspraken,@price_formation;@capacity_remuneration],
+as well as new and custom types of constraints for optimisation models
+[@Spine_toolbox,@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@Mopo],
+which helps use the flexibility EVs provide to the system with G2V and V2G.
+
+
+plenned/possible [@Tulipa;@OPERA;@@TIMES-Europe;@PyPSA]
+
 
 
 
@@ -56,7 +86,7 @@ a clear way to modify them without touching code
 tailored to supply optimisation models (list, but also actual implementations)
 throug the model below by explicitely supplying the necessary parameters 
 [EV parameters for optimisation models](#conceptual-innovations-supporting-optimisation-models)
-and providing an option to change some stiry parameters [creating new scenarios](#software-innovations)
+and providing an option to change some story parameters [creating new scenarios](#software-innovations)
 
 
 # Conceptual innovations: Supporting optimisation models
