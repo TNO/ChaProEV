@@ -14,11 +14,7 @@ jobs:
 
         steps:
         
-        -   name: Checkout repository
-            uses: actions/checkout@v4
-            with:
-                # Ensure full history so mkdocs gh-deploy can create commits correctly
-                fetch-depth: 0
+
 
         -   name: Set up Python
             uses: actions/setup-python@v5
