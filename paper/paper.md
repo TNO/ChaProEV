@@ -64,9 +64,9 @@ and regional-level
 
 ChaProEV has also integrated well into existing grid models, enabling these models
 to include up-to-date and customisable charging profiles of EVS
-[@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@TradeRES;@TradeRES_scenario_database,@CE_afspraken,@price_formation;@capacity_remuneration],
+[@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@TradeRES;@TradeRES_scenario_database;@CE_afspraken;@price_formation;@capacity_remuneration],
 as well as new and custom types of constraints for optimisation models
-[@Spine_toolbox,@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@Mopo],
+[@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Systems;@Mopo],
 which helps use the flexibility EVs provide to the system with G2V and V2G.
 
 
