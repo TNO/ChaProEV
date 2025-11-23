@@ -1,3 +1,3 @@
 # ChaProEV
 
-The ChaProEV model
+The ChaProEV (Charging Profiles of Electric Vehicles) model
