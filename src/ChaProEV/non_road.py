@@ -27,7 +27,6 @@ def get_Eurostat_balances(
     Eurostat_parameters: box.Box = non_road_parameters.Eurostat
 
     if Eurostat_parameters.fetch:
-
         Eurostat_balances_dataframe: pd.DataFrame = pd.DataFrame(
             eurostat.get_data_df(Eurostat_parameters.table_code)
         )
@@ -145,7 +144,6 @@ def get_mode_reference_values(
 
 
 def get_siec_code(energy_carier: str, carrier_parameters: box.Box) -> str:
-
     code_file: str = carrier_parameters.code_file
     code_data: pd.DataFrame = pd.read_csv(code_file)
     code_data = code_data.loc[
@@ -164,7 +162,6 @@ def get_siec_code(energy_carier: str, carrier_parameters: box.Box) -> str:
 def get_name_from_siec_code(
     siec_code: str, carrier_parameters: box.Box
 ) -> str:
-
     code_file: str = carrier_parameters.code_file
     code_data: pd.DataFrame = pd.read_csv(code_file)
     code_data = code_data.loc[
@@ -199,7 +196,6 @@ def get_future_demand_values(
     )
 
     for year_label in growth_factors.columns:
-
         future_demand_values[year_label] = (
             growth_factors[year_label]
             * reference_historical_values[
@@ -225,7 +221,6 @@ def get_profile_weights(
     non_road_parameters: box.Box,
     run_range=pd.DatetimeIndex,
 ) -> pd.Series:
-
     mode: str = scenario[0][1]
     mode_scenario: box.Box = non_road_parameters.modes[mode]
     weight_factors: np.ndarray = np.ones(run_range.size)  # type: ignore
@@ -235,12 +230,12 @@ def get_profile_weights(
     ):
         weight_factors[modified_instance] *= modification_factor
 
-    recurring_modifications_starts: list[int] = (
-        mode_scenario.recurring_modifications_starts
-    )
-    recurring_modifications: list[float] = (
-        mode_scenario.recurring_modifications
-    )
+    recurring_modifications_starts: list[
+        int
+    ] = mode_scenario.recurring_modifications_starts
+    recurring_modifications: list[
+        float
+    ] = mode_scenario.recurring_modifications
     recurrences_steps: list[int] = mode_scenario.recurrences_steps
     amounts_of_recurrences: list[int] = mode_scenario.amounts_of_recurrences
 
@@ -283,7 +278,6 @@ def get_profile(
     non_road_parameters: box.Box,
     run_range: pd.DatetimeIndex,
 ) -> tuple[str, pd.DataFrame]:
-
     scenario_name: str = (
         ' '.join(scenario[0]) + '_' + scenario[1] + '_Demand (PJ)'
     )
@@ -308,7 +302,6 @@ def get_non_road_profiles(
     case_name: str,
     non_road_parameters: box.Box,
 ) -> dict[str, pd.DataFrame]:
-
     demand_index_elements: pd.MultiIndex = (
         future_yearly_demand_values.index  # type: ignore
     )
@@ -396,7 +389,6 @@ def save_output_profiles(
     output_folder: str,
     non_road_parameters: box.Box,
 ) -> None:
-
     if non_road_parameters.parallel_processing.set_amount_of_processes:
         number_of_parallel_processes: int | None = (
             non_road_parameters.parallel_processing.amount_of_processes
@@ -445,7 +437,6 @@ def save_output_profiles(
 
 
 def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
-
     get_Eurostat_balances(non_road_parameters, case_name)
 
     reference_historical_values: pd.DataFrame = get_reference_year_data(
@@ -513,7 +504,6 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
                         )
 
                         if profile_name_to_get in output_profiles.keys():
-
                             if carrier in non_thermal_carriers:
                                 profiles_to_group_non_thermal.append(
                                     output_profiles[profile_name_to_get][
@@ -542,22 +532,22 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
                     profiles_grouped_by_carrier[group_name] = pd.Series(
                         sum(profiles_to_group_non_thermal)
                     )
-                    this_country_year_profiles[f'{mode}_non_thermal_PJ'] = (
-                        profiles_grouped_by_carrier[group_name]
-                    )
+                    this_country_year_profiles[
+                        f'{mode}_non_thermal_PJ'
+                    ] = profiles_grouped_by_carrier[group_name]
 
                 if len(profiles_to_group_thermal) > 0:
                     group_name = f'{country_code}_{mode}_thermal_PJ_{year}'
                     profiles_grouped_by_carrier[group_name] = pd.Series(
                         sum(profiles_to_group_thermal)
                     )
-                    this_country_year_profiles[f'{mode}_thermal_PJ'] = (
-                        profiles_grouped_by_carrier[group_name]
-                    )
+                    this_country_year_profiles[
+                        f'{mode}_thermal_PJ'
+                    ] = profiles_grouped_by_carrier[group_name]
 
-            country_year_profiles[f'{country_code}_{year}'] = (
-                this_country_year_profiles
-            )
+            country_year_profiles[
+                f'{country_code}_{year}'
+            ] = this_country_year_profiles
 
     output_folder: str = f'{non_road_parameters.output_folder}/{case_name}'
 
@@ -587,7 +577,6 @@ def get_non_road_data(case_name: str, non_road_parameters: box.Box) -> None:
 
 
 if __name__ == '__main__':
-
     case_name: str = 'Mopo'
     non_road_parameters_file: str = 'non-road.toml'
 

@@ -78,7 +78,6 @@ def get_trip_charging_sessions(
                         weighted_leg_distances,
                     )
                 ):
-
                     session_first_start += time_driving
                     session_location: str = leg_destination
                     session_size: float = (
@@ -184,16 +183,15 @@ def mobility_matrix_to_run_mobility_matrix(
             general_parameters,
         )
         for matrix_quantity in matrix_to_expand.columns:
-            run_matrix.at[(leg_tuple[0], leg_tuple[1]), matrix_quantity] = (
-                cloned_matrix[matrix_quantity].values
-            )
+            run_matrix.at[
+                (leg_tuple[0], leg_tuple[1]), matrix_quantity
+            ] = cloned_matrix[matrix_quantity].values
     return run_matrix
 
 
 def get_slot_split(
     percent_in_first_slot, travelling_group_size
 ) -> tuple[float, float, float]:
-
     percent_in_next_slot: float = 1 - percent_in_first_slot
 
     first_slot_impact_in_first_slot: float = (
@@ -238,7 +236,6 @@ def compute_travel_impact(
     battery_space_shifts: dict,
     vehicle_electricity_consumption: float,
 ) -> pd.DataFrame:
-
     leg_consumption: float = vehicle_electricity_consumption * distance
     weighted_leg_consumption: float = (
         vehicle_electricity_consumption * weighted_distance
@@ -506,11 +503,9 @@ def get_travelling_group_travel_impact(
     vehicle_electricity_consumption: float,
     HOURS_IN_A_DAY: int,
 ) -> pd.DataFrame:
-
     travelling_group_first_slot: int = travelling_group_start_slot
     percent_in_first_slot: float = 1
     if travelling_group_first_slot + 2 >= HOURS_IN_A_DAY:
-
         print('Trip extending beyond day end. Check your entry')
         exit()
     # The trips start uniformly within the first slot
@@ -691,9 +686,9 @@ class Leg:
         self.vehicle: str = leg_parameters.vehicle
         self.distance: float = leg_parameters.distance
         self.duration: float = leg_parameters.duration
-        self.hour_in_day_factors: list[float] = (
-            leg_parameters.hour_in_day_factors
-        )
+        self.hour_in_day_factors: list[
+            float
+        ] = leg_parameters.hour_in_day_factors
         locations: Box = leg_parameters.locations
         self.start_location: str = locations.start
         self.end_location: str = locations.end
@@ -755,14 +750,14 @@ class Trip:
             trip_parameters.percentage_station_users
         )
 
-        self.start_probabilities: list[float] = (
-            trip_parameters.start_probabilities
-        )
+        self.start_probabilities: list[
+            float
+        ] = trip_parameters.start_probabilities
         self.repeated_sequence: list[str] = trip_parameters.repeated_sequence
         self.repetition_amounts: list[int] = trip_parameters.repetition_amounts
-        self.time_between_repetitions: list[float] = (
-            trip_parameters.time_between_repetitions
-        )
+        self.time_between_repetitions: list[
+            float
+        ] = trip_parameters.time_between_repetitions
 
         self.day_start_hour: int = scenario.mobility_module.day_start_hour
         self.leg_driving_times: list[float] = [
@@ -779,7 +774,6 @@ class Trip:
             self.leg_driving_times = []
             repetition_iteration_index: int = 0
             for leg_index, leg in enumerate(trip_legs_store):
-
                 if leg not in self.repeated_sequence:
                     self.legs.append(leg)
                     if leg_index < len(trip_legs_store) - 1:
@@ -820,14 +814,12 @@ class Trip:
                             )
 
                         else:
-
                             add_final_time_between_legs: bool = True
 
                             if leg_index == (
                                 len(trip_legs_store)
                                 - len(self.repeated_sequence)
                             ):
-
                                 if (
                                     trip_legs_store[-1]
                                     == self.repeated_sequence[-1]
@@ -933,9 +925,9 @@ class Trip:
             mobility_index_tuples,
             names=['From', 'To', 'Hour number (from day start)'],
         )
-        mobility_quantities: list[str] = (
-            scenario.mobility_module.mobility_quantities
-        )
+        mobility_quantities: list[
+            str
+        ] = scenario.mobility_module.mobility_quantities
 
         self.mobility_matrix: pd.DataFrame = pd.DataFrame(
             np.zeros((len(mobility_index), len(mobility_quantities))),
@@ -1017,30 +1009,30 @@ class Trip:
             self.battery_space_shifts_arrivals_impact_weighted.sort_index()
         )
         self.battery_space_shifts: dict[tuple[str, str], pd.DataFrame] = {}
-        self.battery_space_shifts[('Departures', 'Amount')] = (
-            self.battery_space_shifts_departures
-        )
-        self.battery_space_shifts[('Departures', 'Impact')] = (
-            self.battery_space_shifts_departures_impact
-        )
-        self.battery_space_shifts[('Departures', 'Amount Weighted')] = (
-            self.battery_space_shifts_departures_weighted
-        )
-        self.battery_space_shifts[('Departures', 'Impact Weighted')] = (
-            self.battery_space_shifts_departures_impact_weighted
-        )
-        self.battery_space_shifts[('Arrivals', 'Amount')] = (
-            self.battery_space_shifts_arrivals
-        )
-        self.battery_space_shifts[('Arrivals', 'Impact')] = (
-            self.battery_space_shifts_arrivals_impact
-        )
-        self.battery_space_shifts[('Arrivals', 'Amount Weighted')] = (
-            self.battery_space_shifts_arrivals_weighted
-        )
-        self.battery_space_shifts[('Arrivals', 'Impact Weighted')] = (
-            self.battery_space_shifts_arrivals_impact_weighted
-        )
+        self.battery_space_shifts[
+            ('Departures', 'Amount')
+        ] = self.battery_space_shifts_departures
+        self.battery_space_shifts[
+            ('Departures', 'Impact')
+        ] = self.battery_space_shifts_departures_impact
+        self.battery_space_shifts[
+            ('Departures', 'Amount Weighted')
+        ] = self.battery_space_shifts_departures_weighted
+        self.battery_space_shifts[
+            ('Departures', 'Impact Weighted')
+        ] = self.battery_space_shifts_departures_impact_weighted
+        self.battery_space_shifts[
+            ('Arrivals', 'Amount')
+        ] = self.battery_space_shifts_arrivals
+        self.battery_space_shifts[
+            ('Arrivals', 'Impact')
+        ] = self.battery_space_shifts_arrivals_impact
+        self.battery_space_shifts[
+            ('Arrivals', 'Amount Weighted')
+        ] = self.battery_space_shifts_arrivals_weighted
+        self.battery_space_shifts[
+            ('Arrivals', 'Impact Weighted')
+        ] = self.battery_space_shifts_arrivals_impact_weighted
 
         # We want to track where the vehicle is
         self.location_split: pd.DataFrame = pd.DataFrame(
@@ -1057,29 +1049,30 @@ class Trip:
             first_leg: str = self.legs[0]
             initial_location: str = scenario.legs[first_leg].locations.start
             self.location_split[initial_location] = 1
-        self.location_split, self.mobility_matrix = (
-            get_location_split_and_impact_of_departures_and_arrivals(
-                self.location_names,
-                self.location_split,
-                self.mobility_matrix,
-                self.start_probabilities,
-                self.time_between_legs,
-                self.leg_driving_times,
-                self.start_locations_of_legs,
-                self.end_locations_of_legs,
-                self.leg_distances,
-                self.weighted_leg_distances,
-                self.battery_space_shifts,
-                vehicle_electricity_consumption,
-                HOURS_IN_A_DAY,
-            )
+        (
+            self.location_split,
+            self.mobility_matrix,
+        ) = get_location_split_and_impact_of_departures_and_arrivals(
+            self.location_names,
+            self.location_split,
+            self.mobility_matrix,
+            self.start_probabilities,
+            self.time_between_legs,
+            self.leg_driving_times,
+            self.start_locations_of_legs,
+            self.end_locations_of_legs,
+            self.leg_distances,
+            self.weighted_leg_distances,
+            self.battery_space_shifts,
+            vehicle_electricity_consumption,
+            HOURS_IN_A_DAY,
         )
 
         # We can also get the percentage driving
 
-        self.percentage_driving: pd.Series[float] = (
-            1 - self.location_split.sum(axis=1)
-        )
+        self.percentage_driving: pd.Series[
+            float
+        ] = 1 - self.location_split.sum(axis=1)
 
         # We also get the connectivity:
         self.connectivity_per_location: pd.DataFrame = (
@@ -1168,17 +1161,17 @@ class Trip:
         time_between_legs_used: list[float] = self.time_between_legs.copy()
         time_between_legs_used.append(dummy_time_between_legs)
 
-        self.charging_sessions: list[TripChargingSession] = (
-            get_trip_charging_sessions(
-                self.end_locations_of_legs,
-                self.start_probabilities,
-                time_between_legs_used,
-                self.leg_driving_times,
-                self.leg_distances,
-                self.weighted_leg_distances,
-                scenario,
-                general_parameters,
-            )
+        self.charging_sessions: list[
+            TripChargingSession
+        ] = get_trip_charging_sessions(
+            self.end_locations_of_legs,
+            self.start_probabilities,
+            time_between_legs_used,
+            self.leg_driving_times,
+            self.leg_distances,
+            self.weighted_leg_distances,
+            scenario,
+            general_parameters,
         )
 
         # We now can create a mobility matrix for the whole run
@@ -1193,9 +1186,9 @@ class Trip:
             for time_tag in run_time_tags
         ]
 
-        mobility_index_names: list[str] = (
-            scenario.mobility_module.mobility_index_names
-        )
+        mobility_index_names: list[
+            str
+        ] = scenario.mobility_module.mobility_index_names
         run_mobility_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
             run_mobility_index_tuples, names=mobility_index_names
         )
@@ -1422,7 +1415,6 @@ class Trip:
                 )
 
                 for end_location in possible_end_locations:
-
                     this_end_location_departures_kilometers: float = (
                         self.mobility_matrix.loc[
                             (start_location, end_location, hour_index + 1),
@@ -1447,9 +1439,9 @@ class Trip:
                     upcoming_departures_kilometers_cumulative += (
                         this_end_location_departures_kilometers_cumulative
                     )
-                self.next_leg_kilometers.loc[hour_index, start_location] = (
-                    upcoming_departures_kilometers
-                )
+                self.next_leg_kilometers.loc[
+                    hour_index, start_location
+                ] = upcoming_departures_kilometers
 
                 self.next_leg_kilometers_cumulative.loc[
                     hour_index, start_location
@@ -1575,7 +1567,6 @@ class TripChargingSession:
         location_discharge_power_from_vehicle: float,
         location_discharge_power_to_network: float,
     ) -> None:
-
         self.start_time: float = session_start
         self.end_time: float = session_end
         self.location: str = location_name
@@ -1656,9 +1647,9 @@ def declare_all_instances(
     )
 
     # We want to get the location connections
-    location_connections_headers: list[str] = (
-        scenario.mobility_module.location_connections_headers
-    )
+    location_connections_headers: list[
+        str
+    ] = scenario.mobility_module.location_connections_headers
     location_connections_index_tuples: list[tuple[str, str]] = [
         (start_location.name, end_location.name)
         for start_location in locations
@@ -1700,7 +1691,6 @@ def declare_all_instances(
     # We want to save the moblity matrixes
     if pickle_interim_files:
         for trip in trips:
-
             mobility_table_name: str = (
                 f'{scenario_name}_{trip.name}_mobility_matrix'
             )
@@ -1970,9 +1960,9 @@ def declare_all_instances(
                 f'run_battery_space_shifts_arrivals_impact_weighted'
                 f'.pkl'
             )
-            charging_sessions_headers: list[str] = (
-                general_parameters.sessions_dataframe.dataframe_headers
-            )
+            charging_sessions_headers: list[
+                str
+            ] = general_parameters.sessions_dataframe.dataframe_headers
 
             charging_sessions_dataframe: pd.DataFrame = (
                 get_charging_sessions_dataframe(
@@ -2000,14 +1990,13 @@ def get_charging_sessions_dataframe(
         index=range(len(charging_sessions))
     )
 
-    charging_sessions_properties: list[str] = (
-        general_parameters.sessions_dataframe.properties
-    )
+    charging_sessions_properties: list[
+        str
+    ] = general_parameters.sessions_dataframe.properties
     for session_index, session in enumerate(charging_sessions):
         for charging_session_header, charging_session_property in zip(
             chosen_headers, charging_sessions_properties
         ):
-
             charging_sessions_dataframe.loc[
                 session_index, charging_session_header
             ] = getattr(session, charging_session_property)

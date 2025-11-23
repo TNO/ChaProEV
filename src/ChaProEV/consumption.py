@@ -137,12 +137,12 @@ def create_consumption_tables(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
 
-    consumption_tables_frequencies: list[str] = (
-        general_parameters.interim_files.consumption_tables_frequencies
-    )
-    save_consumption_table: list[bool] = (
-        general_parameters.interim_files.save_consumption_table
-    )
+    consumption_tables_frequencies: list[
+        str
+    ] = general_parameters.interim_files.consumption_tables_frequencies
+    save_consumption_table: list[
+        bool
+    ] = general_parameters.interim_files.save_consumption_table
     is_consumption_table_saved: Box = Box(
         dict(zip(consumption_tables_frequencies, save_consumption_table))
     )

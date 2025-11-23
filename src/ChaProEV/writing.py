@@ -93,9 +93,9 @@ def write_scenario_parameters(
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
     '''
-    scenario_parameter_categories: list[str] = (
-        scenario.scenario_parameter_categories
-    )
+    scenario_parameter_categories: list[
+        str
+    ] = scenario.scenario_parameter_categories
 
     scenario_name: str = scenario.name
     # groupfile_root: str = scenario['files']['groupfile_root']

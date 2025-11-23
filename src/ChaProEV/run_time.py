@@ -268,12 +268,12 @@ def get_day_type(
 
     day_name: str = f'{day_type}_in_{week_type}_week'
 
-    holiday_departures_in_weekend_week_numbers: list[int] = (
-        scenario.mobility_module.holiday_departures_in_weekend_week_numbers
-    )
-    holiday_returns_in_weekend_week_numbers: list[int] = (
-        scenario.mobility_module.holiday_returns_in_weekend_week_numbers
-    )
+    holiday_departures_in_weekend_week_numbers: list[
+        int
+    ] = scenario.mobility_module.holiday_departures_in_weekend_week_numbers
+    holiday_returns_in_weekend_week_numbers: list[
+        int
+    ] = scenario.mobility_module.holiday_returns_in_weekend_week_numbers
     holiday_overlap_weekend_week_numbers: list[int] = list(
         set(holiday_departures_in_weekend_week_numbers).intersection(
             holiday_returns_in_weekend_week_numbers

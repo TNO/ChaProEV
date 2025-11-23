@@ -82,9 +82,12 @@ def run_scenario(
 ) -> None:
     scenario_name: str = scenario.name
     print(f'Running scenario {scenario_name}')
-    location_connections, legs, locations, trips = (
-        define.declare_all_instances(scenario, case_name, general_parameters)
-    )
+    (
+        location_connections,
+        legs,
+        locations,
+        trips,
+    ) = define.declare_all_instances(scenario, case_name, general_parameters)
 
     (
         run_mobility_matrix,
@@ -195,16 +198,17 @@ def run_scenario(
     if do_fleet_tables:
         profiles.fleet_profiles(case_name, scenario_name, general_parameters)
 
-    display_run_totals, display_fleet_run_totals = (
-        profiles.make_display_totals(
-            charging_costs,  # type: ignore
-            charge_drawn_from_network,  # type: ignore
-            charge_drawn_by_vehicles,  # type: ignore
-            consumption_table,
-            scenario,
-            general_parameters,
-            case_name,
-        )
+    (
+        display_run_totals,
+        display_fleet_run_totals,
+    ) = profiles.make_display_totals(
+        charging_costs,  # type: ignore
+        charge_drawn_from_network,  # type: ignore
+        charge_drawn_by_vehicles,  # type: ignore
+        consumption_table,
+        scenario,
+        general_parameters,
+        case_name,
     )
     # print(scenario.name)
     # print(display_run_totals)

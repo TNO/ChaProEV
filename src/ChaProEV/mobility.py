@@ -66,7 +66,6 @@ class ChargingSession:
         day_start_time_tag: datetime.datetime,
         trip_probability: float,
     ) -> None:
-
         self.start_time: datetime.datetime = (
             day_start_time_tag
             + datetime.timedelta(hours=trip_charging_session.start_time)
@@ -122,7 +121,6 @@ class NextDayStartChargingSession:
         location_power_from_vehicle: float,
         location_power_to_network: float,
     ) -> None:
-
         self.start_time: datetime.datetime = next_day_start_session_start
         self.end_time: datetime.datetime = next_day_start_session_end
         self.location: str = day_start_location
@@ -156,10 +154,10 @@ def get_run_charging_sessions(
     #     scenario.vehicle.base_consumption_per_km.electricity_kWh
     # )
     charging_sessions: list = []
-    time_tags_and_types: list[tuple[datetime.datetime, str]] = (
-        run_time.get_day_start_time_tags_and_types(
-            scenario, general_parameters
-        )
+    time_tags_and_types: list[
+        tuple[datetime.datetime, str]
+    ] = run_time.get_day_start_time_tags_and_types(
+        scenario, general_parameters
     )
     for day_tag_index, (day_start_time_tag, day_type) in enumerate(
         time_tags_and_types
@@ -171,9 +169,7 @@ def get_run_charging_sessions(
                 day_type
             ]  # type: ignore
             if trip_probability > 0:
-
                 for trip_charging_session in trip.charging_sessions:
-
                     charging_sessions.append(
                         ChargingSession(
                             trip_charging_session,
@@ -378,7 +374,6 @@ def get_run_mobility_matrix(
         unique_trip_legs: list[str] = list(set(trip.legs))
 
         if len(unique_trip_legs) > 0:
-
             trip_location_tuples: list[tuple[str, str]] = []
 
             for trip_leg in unique_trip_legs:
@@ -393,9 +388,9 @@ def get_run_mobility_matrix(
                 run_trip_probabilities[trip.name]
             )
 
-            location_connections_headers: list[str] = (
-                scenario.mobility_module.location_connections_headers
-            )
+            location_connections_headers: list[
+                str
+            ] = scenario.mobility_module.location_connections_headers
 
             # We need a version for each start/end location combination
             # that appears in our trip mobility matrix. This is also the
@@ -416,7 +411,6 @@ def get_run_mobility_matrix(
             ].values
 
             for quantity in run_mobility_matrix.columns:
-
                 if quantity not in location_connections_headers:
                     weighted_mobility_quantity_to_use = (
                         trip.run_mobility_matrix[quantity]
@@ -426,7 +420,6 @@ def get_run_mobility_matrix(
                     # We need to place it at the right places in the run
 
                     for trip_location_tuple in trip_location_tuples:
-
                         run_mobility_matrix.loc[
                             (trip_location_tuple),
                             quantity,
@@ -475,9 +468,9 @@ def get_possible_destinations_and_origins(
     for location_name in location_names:
         possible_destinations[location_name] = []
         possible_origins[location_name] = []
-    mobility_location_tuples: list[tuple[str, str]] = (
-        get_mobility_location_tuples(scenario)
-    )
+    mobility_location_tuples: list[
+        tuple[str, str]
+    ] = get_mobility_location_tuples(scenario)
     for mobility_location_tuple in mobility_location_tuples:
         start_location: str = mobility_location_tuple[0]
         destination: str = mobility_location_tuple[1]
@@ -556,9 +549,9 @@ def get_trip_probabilities_per_day_type_other_vehicles(
     )
     trip_probabilities_per_day_type.index.name = 'Trip'
 
-    trips_per_day_type: list[str] = (
-        mobility_module_parameters.trips_per_day_type[scenario_vehicle]
-    )
+    trips_per_day_type: list[
+        str
+    ] = mobility_module_parameters.trips_per_day_type[scenario_vehicle]
 
     for day_type, trip_name in zip(day_types, trips_per_day_type):
         trip_probabilities_per_day_type.loc[trip_name, day_type] = 1
@@ -652,15 +645,15 @@ def get_car_trip_probabilities_per_day_type(
         weekday_proportion * (1 - workweek_proportion) * DAYS_IN_A_YEAR
     )
 
-    holiday_departures_in_weekend_week_numbers: list[int] = (
-        scenario.mobility_module.holiday_departures_in_weekend_week_numbers
-    )
+    holiday_departures_in_weekend_week_numbers: list[
+        int
+    ] = scenario.mobility_module.holiday_departures_in_weekend_week_numbers
     number_of_holiday_departure_weekends: int = len(
         holiday_departures_in_weekend_week_numbers
     )
-    holiday_returns_in_weekend_week_numbers: list[int] = (
-        scenario.mobility_module.holiday_returns_in_weekend_week_numbers
-    )
+    holiday_returns_in_weekend_week_numbers: list[
+        int
+    ] = scenario.mobility_module.holiday_returns_in_weekend_week_numbers
     number_of_holiday_return_weekends: int = len(
         holiday_returns_in_weekend_week_numbers
     )
@@ -1226,9 +1219,9 @@ def get_car_trip_probabilities_per_day_type(
     stay_put_probabilities: pd.Series = (
         1 - travelling_trip_probabilities_per_day_type.sum()
     )
-    trip_probabilities_per_day_type.loc['stay_put_home'] = (
-        stay_put_probabilities
-    )
+    trip_probabilities_per_day_type.loc[
+        'stay_put_home'
+    ] = stay_put_probabilities
 
     table_name: str = f'{scenario.name}_trip_probabilities_per_day_type'
 
@@ -1314,7 +1307,6 @@ def car_holiday_departures_returns_corrections(
     for departure_saturday, departure_shift_value in zip(
         departure_saturdays, departure_shift_values
     ):
-
         run_trip_probabilities.loc[departure_saturday, 'stay_put_home'] = (
             run_trip_probabilities.loc[departure_saturday][
                 'stay_put_home'
@@ -1334,7 +1326,6 @@ def car_holiday_departures_returns_corrections(
     for departure_sunday, departure_shift_value in zip(
         departure_sundays, departure_shift_values
     ):
-
         run_trip_probabilities.loc[departure_sunday, 'stay_put_home'] = (
             run_trip_probabilities.loc[departure_sunday][
                 'stay_put_home'
@@ -1386,7 +1377,6 @@ def car_holiday_departures_returns_corrections(
     for return_saturday, return_shift_value in zip(
         return_saturdays, return_shift_values
     ):
-
         run_trip_probabilities.loc[return_saturday, 'stay_put_home'] = (
             run_trip_probabilities.loc[return_saturday][
                 'stay_put_home'
@@ -1406,7 +1396,6 @@ def car_holiday_departures_returns_corrections(
     for return_sunday, return_shift_value in zip(
         return_sundays, return_shift_values
     ):
-
         run_trip_probabilities.loc[return_sunday, 'stay_put_home'] = (
             run_trip_probabilities.loc[return_sunday]['stay_put_home'].values[
                 0
@@ -1492,9 +1481,9 @@ def get_day_type_start_location_split(
     mobility_module_parameters: Box = scenario.mobility_module
     holiday_trips_taken: float = mobility_module_parameters.holiday_trips_taken
 
-    holiday_departures_in_weekend_week_numbers: list[int] = (
-        mobility_module_parameters.holiday_departures_in_weekend_week_numbers
-    )
+    holiday_departures_in_weekend_week_numbers: list[
+        int
+    ] = mobility_module_parameters.holiday_departures_in_weekend_week_numbers
     number_of_holiday_departure_weekends: int = len(
         holiday_departures_in_weekend_week_numbers
     )
@@ -1516,7 +1505,6 @@ def get_day_type_start_location_split(
     day_type_start_location_split.index.name = 'Location'
 
     if vehicle_name == 'car':
-
         # Outside holidays, the vehicles start at home
         day_types_outside_holidays: list[str] = [
             'weekday_in_work_week',
@@ -1540,9 +1528,9 @@ def get_day_type_start_location_split(
             day_type_start_location_split.loc['home', day_type] = (
                 1 - percentage_on_holiday_in_holiday_week
             )
-            day_type_start_location_split.loc['holiday', day_type] = (
-                percentage_on_holiday_in_holiday_week
-            )
+            day_type_start_location_split.loc[
+                'holiday', day_type
+            ] = percentage_on_holiday_in_holiday_week
 
         # For departure and return weekends, this is split across
         # the weekend days (note that this is an approximation, as
@@ -1561,9 +1549,10 @@ def get_day_type_start_location_split(
                 percentage_on_holiday_in_holiday_week
                 / len(weekend_day_numbers)
             )
-            day_type_start_location_split.loc['holiday', day_type] = (
-                percentage_on_holiday_in_holiday_week
-                / len(weekend_day_numbers)
+            day_type_start_location_split.loc[
+                'holiday', day_type
+            ] = percentage_on_holiday_in_holiday_week / len(
+                weekend_day_numbers
             )
     else:
         vehicle_base_location = vehicle_parameters.base_location
@@ -1671,7 +1660,6 @@ def get_location_split(
     )
 
     for trip in trips:
-
         percentage_driving['Driving percent'] = (
             percentage_driving['Driving percent'].values
             + trip.run_percentage_driving.values
@@ -1846,12 +1834,11 @@ def get_starting_location_split(
         )
 
         for location_name in location_names:
-
-            location_split.loc[run_range, location_name] = (
-                day_type_start_location_split[run_start_day_type][
-                    location_name
-                ]
-            )
+            location_split.loc[
+                run_range, location_name
+            ] = day_type_start_location_split[run_start_day_type][
+                location_name
+            ]
 
     else:
         for location_name in location_names:
@@ -1871,7 +1858,6 @@ def get_kilometers_for_next_leg(
     case_name: str,
     general_parameters: Box,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
     vehicle_parameters: Box = scenario.vehicle
@@ -1915,12 +1901,10 @@ def get_kilometers_for_next_leg(
     )
 
     for trip in trips:
-
         this_trip_probabilities: pd.Series[float] = pd.Series(
             run_trip_probabilities[trip.name]
         )
         for location_name in trip.run_next_leg_kilometers.columns:
-
             run_next_leg_kilometers[
                 location_name
             ] += trip.run_next_leg_kilometers[location_name].mul(
@@ -2012,7 +1996,6 @@ def make_mobility_data(
     list[ChargingSession],
     pd.DataFrame,
 ]:
-
     run_trip_probabilities: pd.DataFrame = get_run_trip_probabilities(
         trips, scenario, case_name, general_parameters  # type: ignore
     )
@@ -2090,9 +2073,9 @@ def make_mobility_data(
     )
     pickle_interim_files: bool = general_parameters.interim_files.pickle
 
-    charging_sessions_headers: list[str] = (
-        general_parameters.sessions_dataframe.run_dataframe_headers
-    )
+    charging_sessions_headers: list[
+        str
+    ] = general_parameters.sessions_dataframe.run_dataframe_headers
 
     run_charging_sessions_dataframe: pd.DataFrame = (
         define.get_charging_sessions_dataframe(
@@ -2141,9 +2124,12 @@ if __name__ == '__main__':
         general_parameters_file_name
     )
 
-    location_connections, legs, locations, trips = (
-        define.declare_all_instances(scenario, case_name, general_parameters)
-    )
+    (
+        location_connections,
+        legs,
+        locations,
+        trips,
+    ) = define.declare_all_instances(scenario, case_name, general_parameters)
 
     (
         run_mobility_matrix,

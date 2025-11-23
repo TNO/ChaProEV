@@ -199,9 +199,9 @@ def make_weather_dataframe(
     ]
     KELVIN_TO_CELSIUS: float = weather_parameters.KELVIN_TO_CELSIUS
 
-    temperature_quantities: list[str] = (
-        weather_parameters.temperature_quantities
-    )
+    temperature_quantities: list[
+        str
+    ] = weather_parameters.temperature_quantities
 
     processed_index_tags: list[str] = weather_parameters.processed_index_tags
 
@@ -284,9 +284,9 @@ def write_weather_database(scenario: Box) -> None:
     )
     quantities: list[str] = weather_parameters.quantities
     quantity_tags: list[str] = weather_parameters.quantity_tags
-    quantity_processed_names: list[str] = (
-        weather_parameters.quantity_processed_names
-    )
+    quantity_processed_names: list[
+        str
+    ] = weather_parameters.quantity_processed_names
     chunk_size: int = weather_parameters.chunk_size
     cook.check_if_folder_exists(processed_folder)
     weather_database_file: str = (
@@ -378,9 +378,9 @@ def get_hourly_values(
                     shifted_cumulative_values: np.ndarray = np.roll(
                         cumulative_values, -1
                     )
-                    location_dataframe.loc[:, f'Shifted {quantity_name}'] = (
-                        shifted_cumulative_values
-                    )
+                    location_dataframe.loc[
+                        :, f'Shifted {quantity_name}'
+                    ] = shifted_cumulative_values
 
                     location_dataframe.loc[:, f'Hourly {quantity_name}'] = (
                         shifted_cumulative_values
@@ -435,9 +435,9 @@ def get_all_hourly_values(scenario: Box) -> None:
     weather_database: str = f'{processed_folder}/{weather_database_file_name}'
     quantity_names: list[str] = weather_parameters['quantity_processed_names']
     chunk_size: int = weather_parameters.chunk_size
-    queries_for_cumulative_quantities: list[str] = (
-        weather_parameters.queries_for_cumulative_quantities
-    )
+    queries_for_cumulative_quantities: list[
+        str
+    ] = weather_parameters.queries_for_cumulative_quantities
 
     query_dictionary: dict[str, str] = dict(
         zip(cumulative_quantities, queries_for_cumulative_quantities)
@@ -502,9 +502,9 @@ def get_EV_tool_data(scenario: Box, general_parameters: Box) -> None:
     ]
     efficiency_curve_script_text: str = efficiency_curve_script.get_text()
     data_splitter: str = EV_tool_parameters['data_splitter']
-    efficiency_curve_script_data: list[str] = (
-        efficiency_curve_script_text.split(data_splitter)
-    )
+    efficiency_curve_script_data: list[
+        str
+    ] = efficiency_curve_script_text.split(data_splitter)
 
     temperatures: list[float] = []
     efficiency_factors: list[float] = []
@@ -570,9 +570,9 @@ def temperature_efficiency_factor(temperature: float, scenario: Box) -> float:
     temperature_efficiencies_data: pd.DataFrame = pd.read_pickle(
         f'{source_folder}/{source_file}'
     )
-    data_temperature_range: pd.Index[float] = (
-        temperature_efficiencies_data.index
-    )
+    data_temperature_range: pd.Index[
+        float
+    ] = temperature_efficiencies_data.index
     data_efficiencies: pd.Series[float] = temperature_efficiencies_data[
         values_header
     ]
@@ -764,13 +764,13 @@ def get_scenario_weather_data(
 
     weather_processed_data_parameters: Box = scenario.weather.processed_data
 
-    quantity_processed_names: list[str] = (
-        weather_processed_data_parameters.quantity_processed_names
-    )
+    quantity_processed_names: list[
+        str
+    ] = weather_processed_data_parameters.quantity_processed_names
 
-    cumulative_quantity_processed_names: list[str] = (
-        weather_processed_data_parameters.cumulative_quantity_processed_names
-    )
+    cumulative_quantity_processed_names: list[
+        str
+    ] = weather_processed_data_parameters.cumulative_quantity_processed_names
 
     run_parameters: Box = scenario.run
     run_start: datetime.datetime = datetime.datetime(

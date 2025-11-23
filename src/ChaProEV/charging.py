@@ -159,9 +159,10 @@ def get_charging_framework(
     location_nodes: pd.DataFrame = pd.DataFrame(
         index=location_names, columns=['Connections']
     )
-    possible_destinations, possible_origins = (
-        mobility.get_possible_destinations_and_origins(scenario)
-    )
+    (
+        possible_destinations,
+        possible_origins,
+    ) = mobility.get_possible_destinations_and_origins(scenario)
 
     for location_name in location_names:
         location_nodes.loc[location_name, 'Connections'] = len(
@@ -187,9 +188,9 @@ def get_charging_framework(
         ].set_index(['Time Tag'])
         battery_spaces[location_name][float(0)] = float(0)
 
-        battery_spaces[location_name].loc[run_range[0], 0] = (
-            location_split.loc[run_range[0]][location_name]
-        )
+        battery_spaces[location_name].loc[
+            run_range[0], 0
+        ] = location_split.loc[run_range[0]][location_name]
     total_battery_space_per_location: pd.DataFrame = pd.DataFrame(
         index=run_range, columns=location_names
     )
@@ -227,9 +228,9 @@ def get_charging_framework(
     )
     charge_drawn_from_network.index.name = 'Time Tag'
 
-    mobility_location_tuples: list[tuple[str, str]] = (
-        mobility.get_mobility_location_tuples(scenario)
-    )
+    mobility_location_tuples: list[
+        tuple[str, str]
+    ] = mobility.get_mobility_location_tuples(scenario)
     mobility_locations_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
         mobility_location_tuples, names=['Origin', 'Destination']
     )
@@ -269,7 +270,6 @@ def impact_of_departures(
     zero_threshold: float,
     run_mobility_matrix,  # it's a DataFarame but MyPy gives an error,
 ) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, float]:
-
     time_tag_departures_impact: float = run_departures_impact.loc[
         start_location, end_location, time_tag
     ]
@@ -281,7 +281,6 @@ def impact_of_departures(
     )
 
     if time_tag_departures_impact > zero_threshold:
-
         # We look at which battery spaces there are at this location
         # and sort them. The lowest battery spaces will be first.
         # These are the ones we assume are more likely to leave,
@@ -399,7 +398,6 @@ def impact_of_arrivals(
     # due to the MultiIndex)
     zero_threshold: float,
 ) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, float]:
-
     time_tag_arrivals_impact: float = run_arrivals_impact.loc[
         start_location, end_location, time_tag
     ]
@@ -415,7 +413,6 @@ def impact_of_arrivals(
     )
 
     if time_tag_arrivals_impact > zero_threshold:
-
         # We look at which battery spaces can arrive at the end
         # location. We sort them by size, as the ones with a lower
         # battery space are more likely to have left their origin first
@@ -431,7 +428,6 @@ def impact_of_arrivals(
         # less available battery capacity wll want to charge first).
 
         for arriving_battery_space in arriving_battery_spaces:
-
             # We will be removing the arrivals from the lower
             # battery spaces from the pool, until we have reached
             # all arrivals. For example, if we have 0.2 arrivals
@@ -465,9 +461,9 @@ def impact_of_arrivals(
                     arriving_battery_space
                     not in battery_spaces[end_location].columns.values
                 ):
-                    battery_spaces[end_location][arriving_battery_space] = (
-                        float(0)
-                    )
+                    battery_spaces[end_location][
+                        arriving_battery_space
+                    ] = float(0)
 
                 battery_spaces[end_location].loc[
                     time_tag, arriving_battery_space
@@ -514,9 +510,7 @@ def travel_space_occupation(
     travelling_battery_spaces: pd.DataFrame,
     use_spillover: bool = False,
 ) -> dict[str, pd.DataFrame]:
-
     for location_to_compute in location_names:
-
         if time_tag_index > 0:
             # We add the values from the previous time tag to
             # the battery space. We do so because travels can propagate to
@@ -532,9 +526,9 @@ def travel_space_occupation(
             and (time_tag.hour == day_start_hour)
             and not use_spillover
         ):
-            battery_spaces[location_to_compute].loc[time_tag, 0] = (
-                location_split.loc[time_tag][location_to_compute]
-            )
+            battery_spaces[location_to_compute].loc[
+                time_tag, 0
+            ] = location_split.loc[time_tag][location_to_compute]
 
         # We need to look at the impact of arrivals first
         # because if we look at departures first, we might go wrong,
@@ -542,16 +536,18 @@ def travel_space_occupation(
         # the battery space occupation would drop below zero (and
         # because we do the computations for occupations above zero)
         for start_location in possible_origins[location_to_compute]:
-            battery_spaces, travelling_battery_spaces, arrivals_gap = (
-                impact_of_arrivals(
-                    time_tag,
-                    battery_spaces,
-                    start_location,
-                    location_to_compute,
-                    run_arrivals_impact,
-                    travelling_battery_spaces,
-                    zero_threshold,
-                )
+            (
+                battery_spaces,
+                travelling_battery_spaces,
+                arrivals_gap,
+            ) = impact_of_arrivals(
+                time_tag,
+                battery_spaces,
+                start_location,
+                location_to_compute,
+                run_arrivals_impact,
+                travelling_battery_spaces,
+                zero_threshold,
             )
 
             run_arrivals_impact_gaps.loc[
@@ -559,18 +555,20 @@ def travel_space_occupation(
             ] += arrivals_gap
 
         for end_location in possible_destinations[location_to_compute]:
-            battery_spaces, travelling_battery_spaces, departures_gap = (
-                impact_of_departures(
-                    scenario,
-                    time_tag,
-                    battery_spaces,
-                    location_to_compute,
-                    end_location,
-                    run_departures_impact,
-                    travelling_battery_spaces,
-                    zero_threshold,
-                    run_mobility_matrix,
-                )
+            (
+                battery_spaces,
+                travelling_battery_spaces,
+                departures_gap,
+            ) = impact_of_departures(
+                scenario,
+                time_tag,
+                battery_spaces,
+                location_to_compute,
+                end_location,
+                run_departures_impact,
+                travelling_battery_spaces,
+                zero_threshold,
+                run_mobility_matrix,
             )
 
             run_departures_impact_gaps.loc[
@@ -593,39 +591,40 @@ def travel_space_occupation(
             max(this_time_tag_arrivals_gap, this_time_tag_departures_gap)
             > zero_threshold
         ):
-
             # If the departures gap is larger than the arrivals gap, we add
             # extra arrivals (from within the same hour) first. Otherwise,
             # we start wit the extra departures.
 
             for start_location in possible_origins[location_to_compute]:
-
-                battery_spaces, travelling_battery_spaces, arrivals_gap = (
-                    impact_of_arrivals(
-                        time_tag,
-                        battery_spaces,
-                        start_location,
-                        location_to_compute,
-                        run_arrivals_impact_gaps,
-                        travelling_battery_spaces,
-                        zero_threshold,
-                    )
+                (
+                    battery_spaces,
+                    travelling_battery_spaces,
+                    arrivals_gap,
+                ) = impact_of_arrivals(
+                    time_tag,
+                    battery_spaces,
+                    start_location,
+                    location_to_compute,
+                    run_arrivals_impact_gaps,
+                    travelling_battery_spaces,
+                    zero_threshold,
                 )
 
             for end_location in possible_destinations[location_to_compute]:
-
-                battery_spaces, travelling_battery_spaces, departures_gap = (
-                    impact_of_departures(
-                        scenario,
-                        time_tag,
-                        battery_spaces,
-                        location_to_compute,
-                        end_location,
-                        run_departures_impact_gaps,
-                        travelling_battery_spaces,
-                        zero_threshold,
-                        run_mobility_matrix,
-                    )
+                (
+                    battery_spaces,
+                    travelling_battery_spaces,
+                    departures_gap,
+                ) = impact_of_departures(
+                    scenario,
+                    time_tag,
+                    battery_spaces,
+                    location_to_compute,
+                    end_location,
+                    run_departures_impact_gaps,
+                    travelling_battery_spaces,
+                    zero_threshold,
+                    run_mobility_matrix,
                 )
 
     return battery_spaces
@@ -641,7 +640,6 @@ def compute_charging_events(
     location_names: list[str],
     charging_modulation: pd.DataFrame,
 ) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
-
     zero_threshold: float = general_parameters.numbers.zero_threshold
     location_parameters: Box = scenario.locations
 
@@ -658,14 +656,11 @@ def compute_charging_events(
         location_charging_power: float = float(
             charging_location_parameters.charging_power
         )
-        location_modulated_charging_power: float = (
-            location_charging_power
-            * float(
-                charging_modulation.loc[time_tag][
-                    charging_location
-                ]  # type: ignore
-            )  # type: ignore
-        )
+        location_modulated_charging_power: float = location_charging_power * float(
+            charging_modulation.loc[time_tag][
+                charging_location
+            ]  # type: ignore
+        )  # type: ignore
 
         # This variable is useful if new battery spaces
         # are added within this charging procedure
@@ -706,7 +701,6 @@ def compute_charging_events(
         if (
             charge_drawn_by_vehicles_this_time_tag > zero_threshold
         ):  # type: ignore
-
             charge_drawn_by_vehicles.loc[time_tag, charging_location] = (
                 charge_drawn_by_vehicles.loc[time_tag][charging_location]
                 + charge_drawn_by_vehicles_this_time_tag
@@ -817,9 +811,10 @@ def copy_day_type_profiles_to_whole_run(
     location_nodes: pd.DataFrame = pd.DataFrame(
         index=location_names, columns=['Connections']
     )
-    possible_destinations, possible_origins = (
-        mobility.get_possible_destinations_and_origins(scenario)
-    )
+    (
+        possible_destinations,
+        possible_origins,
+    ) = mobility.get_possible_destinations_and_origins(scenario)
 
     for location_name in location_names:
         location_nodes.loc[location_name, 'Connections'] = len(
@@ -841,9 +836,9 @@ def copy_day_type_profiles_to_whole_run(
         columns=['Day Type'],
         index=battery_spaces[location_names[0]].index,
     )
-    filter_for_battery_spaces['Hours from day start'] = (
-        run_hours_from_day_start
-    )
+    filter_for_battery_spaces[
+        'Hours from day start'
+    ] = run_hours_from_day_start
     day_types: list[str] = scenario.mobility_module.day_types
 
     for day_type in day_types:
@@ -881,7 +876,6 @@ def copy_day_type_profiles_to_whole_run(
     # space with 0 kWh.
 
     for location_name in location_names:
-
         totals_from_battery_space: pd.DataFrame | pd.Series = battery_spaces[
             location_name
         ].sum(axis=1)
@@ -927,17 +921,18 @@ def copy_day_type_profiles_to_whole_run(
     # at each of the locations
     day_ends_with_spillover_battery_spaces: dict = {}
     for location_name in location_names:
-
         day_end_battery_spaces: pd.DataFrame = battery_spaces[
             location_name
         ].loc[run_range.hour == day_end_hour]
         non_empty_day_end_battery_spaces: pd.DataFrame = (
             day_end_battery_spaces.drop(columns=float(0))
         )
-        day_ends_with_spillover_battery_spaces[location_name] = (
-            non_empty_day_end_battery_spaces.loc[
-                non_empty_day_end_battery_spaces.sum(axis=1) > zero_threshold
-            ].index.get_level_values('Time Tag')
+        day_ends_with_spillover_battery_spaces[
+            location_name
+        ] = non_empty_day_end_battery_spaces.loc[
+            non_empty_day_end_battery_spaces.sum(axis=1) > zero_threshold
+        ].index.get_level_values(
+            'Time Tag'
         )
 
     # We look at the battery spillover spaces
@@ -945,14 +940,13 @@ def copy_day_type_profiles_to_whole_run(
         # The get charging framework created a spillover Dataframe
         # with battery spaces starting aat the inital location split.
         # We don't need it for spillover (as it is zero)
-        spillover_battery_spaces[spillover_location] = (
-            spillover_battery_spaces[spillover_location].drop(float(0), axis=1)
-        )
+        spillover_battery_spaces[
+            spillover_location
+        ] = spillover_battery_spaces[spillover_location].drop(float(0), axis=1)
 
         for day_end_time_tag in day_ends_with_spillover_battery_spaces[
             spillover_location
         ]:
-
             spillover_time_tag_index: int = list(run_range).index(
                 day_end_time_tag
             )
@@ -1000,7 +994,6 @@ def copy_day_type_profiles_to_whole_run(
                 for (
                     occupied_spillover_battery_space
                 ) in occupied_spillover_battery_spaces:
-
                     battery_spaces[spillover_location].loc[
                         spillover_time_tag,
                         occupied_spillover_battery_space,
@@ -1101,7 +1094,6 @@ def copy_day_type_profiles_to_whole_run(
                 # the spillover battery spaces
 
                 if spillover_time_tag_index < len(run_range) - 1:
-
                     for (
                         modified_battery_space
                     ) in spillover_battery_spaces_change.index:
@@ -1136,10 +1128,10 @@ def copy_day_type_profiles_to_whole_run(
                     float(0)
                     in spillover_battery_spaces[spillover_location].columns
                 ):
-                    spillover_battery_spaces[spillover_location] = (
-                        spillover_battery_spaces[spillover_location].drop(
-                            float(0), axis=1
-                        )
+                    spillover_battery_spaces[
+                        spillover_location
+                    ] = spillover_battery_spaces[spillover_location].drop(
+                        float(0), axis=1
                     )
 
                 charge_drawn_by_vehicles.loc[
@@ -1241,9 +1233,9 @@ def write_output(
     charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_from_network.index
     )
-    charge_drawn_from_network_total['Total Charge Drawn (kWh)'] = (
-        charge_drawn_from_network.sum(axis=1)
-    )
+    charge_drawn_from_network_total[
+        'Total Charge Drawn (kWh)'
+    ] = charge_drawn_from_network.sum(axis=1)
 
     charging_costs_total: pd.Series = charging_costs.sum(axis=1)
     percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
@@ -1321,9 +1313,9 @@ def write_output(
     charge_drawn_by_vehicles_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
-    charge_drawn_by_vehicles_total['Total Charge Drawn (kWh)'] = (
-        charge_drawn_by_vehicles.sum(axis=1)
-    )
+    charge_drawn_by_vehicles_total[
+        'Total Charge Drawn (kWh)'
+    ] = charge_drawn_by_vehicles.sum(axis=1)
     percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
@@ -1343,9 +1335,9 @@ def write_output(
         sum_of_battery_spaces_this_location: pd.Series[float] = battery_spaces[
             location_name
         ].sum(axis=1)
-        sum_of_battery_spaces[location_name] = (
-            sum_of_battery_spaces_this_location.values
-        )
+        sum_of_battery_spaces[
+            location_name
+        ] = sum_of_battery_spaces_this_location.values
     if pickle_interim_files:
         sum_of_battery_spaces.to_pickle(
             f'{output_folder}/{scenario.name}_sum_of_battery_spaces.pkl'
@@ -1433,9 +1425,10 @@ def get_charging_profile(
     location_nodes: pd.DataFrame = pd.DataFrame(
         index=location_names, columns=['Connections']
     )
-    possible_destinations, possible_origins = (
-        mobility.get_possible_destinations_and_origins(scenario)
-    )
+    (
+        possible_destinations,
+        possible_origins,
+    ) = mobility.get_possible_destinations_and_origins(scenario)
 
     for location_name in location_names:
         location_nodes.loc[location_name, 'Connections'] = len(
@@ -1446,14 +1439,14 @@ def get_charging_profile(
     )
     location_names = list(location_nodes.index.values)
 
-    possible_destinations, possible_origins = (
-        mobility.get_possible_destinations_and_origins(scenario)
-    )
+    (
+        possible_destinations,
+        possible_origins,
+    ) = mobility.get_possible_destinations_and_origins(scenario)
 
     for time_tag_index, (time_tag, run_day_type) in enumerate(
         zip(run_range, run_day_types)
     ):
-
         if (
             use_day_types_in_charge_computing
             and (time_tag.hour == day_start_hour)
@@ -1484,7 +1477,6 @@ def get_charging_profile(
                 time_tags_of_day_type = []
 
         if compute_charge:
-
             if use_day_types_in_charge_computing:
                 time_tags_of_day_type.append(time_tag)  # type: ignore
 
@@ -1536,7 +1528,6 @@ def get_charging_profile(
                 )  # type: ignore
 
     if use_day_types_in_charge_computing:
-
         copy_day_type_profiles_to_whole_run(
             scenario,
             case_name,
@@ -1561,15 +1552,14 @@ def get_charging_profile(
         )
 
         for battery_space in battery_spaces[location_name].columns:
-
             location_total_battery_space += (
                 pd.Series(battery_spaces[location_name][battery_space].values)
                 * float(battery_space)
             ).values
 
-        total_battery_space_per_location[location_name] = (
-            location_total_battery_space
-        )
+        total_battery_space_per_location[
+            location_name
+        ] = location_total_battery_space
     charging_costs: pd.DataFrame = charge_drawn_from_network.copy()
     for location in scenario.locations:
         charging_costs[location] *= scenario.locations[location].charging_price
@@ -1598,7 +1588,6 @@ def get_charging_profile(
 def session_modulation(
     run_charging_sessions_dataframe: pd.DataFrame,
 ) -> pd.Series:
-
     modulation_factor: pd.Series = pd.Series(
         np.ones(len(run_charging_sessions_dataframe.index))
     )
@@ -1622,11 +1611,11 @@ def charging_amounts_in_charging_sessions(
         int
     ) / general_parameters.time.SECONDS_PER_HOUR
 
-    charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
-        charging_sessions_with_charged_amounts[
-            'Demand for incoming leg (kWh) (to vehicle)'
-        ]
-    )
+    charging_sessions_with_charged_amounts[
+        'Target charge (kWh)'
+    ] = charging_sessions_with_charged_amounts[
+        'Demand for incoming leg (kWh) (to vehicle)'
+    ]
     charging_sessions_with_charged_amounts[
         'Maximal Possible Charge to Vehicles (kWh)'
     ] = (
@@ -1635,9 +1624,9 @@ def charging_amounts_in_charging_sessions(
             'Charging Power to Vehicles (kW)'
         ]
     )
-    charging_sessions_with_charged_amounts['Modulation factor'] = (
-        session_modulation(charging_sessions_with_charged_amounts).values
-    )
+    charging_sessions_with_charged_amounts[
+        'Modulation factor'
+    ] = session_modulation(charging_sessions_with_charged_amounts).values
     charging_sessions_with_charged_amounts[
         'Available Charge to Vehicles (kWh)'
     ] = charging_sessions_with_charged_amounts['Modulation factor'].multiply(
@@ -1645,13 +1634,15 @@ def charging_amounts_in_charging_sessions(
             'Maximal Possible Charge to Vehicles (kWh)'
         ]
     )
-    charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] = (
-        charging_sessions_with_charged_amounts[
-            [
-                'Available Charge to Vehicles (kWh)',
-                'Target charge (kWh)',
-            ]
-        ].min(axis=1)
+    charging_sessions_with_charged_amounts[
+        'Charge to Vehicles (kWh)'
+    ] = charging_sessions_with_charged_amounts[
+        [
+            'Available Charge to Vehicles (kWh)',
+            'Target charge (kWh)',
+        ]
+    ].min(
+        axis=1
     )
     charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
         charging_sessions_with_charged_amounts['Target charge (kWh)']
@@ -1685,13 +1676,15 @@ def charging_amounts_in_charging_sessions(
             + rolled_deficit
         )
 
-        charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] = (
-            charging_sessions_with_charged_amounts[
-                [
-                    'Available Charge to Vehicles (kWh)',
-                    'Target charge (kWh)',
-                ]
-            ].min(axis=1)
+        charging_sessions_with_charged_amounts[
+            'Charge to Vehicles (kWh)'
+        ] = charging_sessions_with_charged_amounts[
+            [
+                'Available Charge to Vehicles (kWh)',
+                'Target charge (kWh)',
+            ]
+        ].min(
+            axis=1
         )
         charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
             charging_sessions_with_charged_amounts['Target charge (kWh)']
@@ -1825,7 +1818,6 @@ def get_profile_from_sessions(
         sessions['End time if constant charge from start'],
         sessions_charging_slots,
     ):
-
         first_slot_non_charging_portion: float = (
             start_time - session_charging_slots[0]
         ).total_seconds() / general_parameters.time.SECONDS_PER_HOUR

@@ -8,7 +8,6 @@ from ETS_CookBook import ETS_CookBook as cook
 
 # @cook.function_timer
 def make_variants(case_name: str, csv_version: bool = True) -> None:
-
     if csv_version:
         make_csv_variants(case_name)
     else:
@@ -27,7 +26,6 @@ def make_csv_variants(case_name: str) -> None:
     variant_files_folder: str = f'variants/{case_name}/'
     variant_files: list[str] = os.listdir(variant_files_folder)
     for variant_file in variant_files:
-
         reference_scenario_name: str = variant_file.split('.')[0]
 
         # Here we use a dict for the reference scenario
@@ -44,11 +42,9 @@ def make_csv_variants(case_name: str) -> None:
         variant_names: list[str] = list(variant_data.index)
 
         for variant_name in variant_names:
-
             variant_scenario: Box = reference_scenario.copy()
 
             for quantity_string in variant_data.columns:
-
                 variant_name_list = quantity_string.split('.')
                 variant_value = variant_data.loc[variant_name][quantity_string]
 
@@ -106,7 +102,6 @@ def make_toml_variants(case_name: str) -> None:
             next_step_in_modification = modified_parameters[modified_parameter]
             next_level: str = list(next_step_in_modification.keys())[0]
             while next_level not in variant_names:
-
                 this_modification_names.append(next_level)
                 next_step_in_modification = next_step_in_modification[
                     next_level
