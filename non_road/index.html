@@ -95,8 +95,6 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#get_non_road_profiles">get_non_road_profiles</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#load_scenarios">load_scenarios</a>
-    </li>
     <li class="toctree-l3"><a class="reference internal" href="#get_profile">get_profile</a>
     </li>
         </ul>
@@ -122,6 +120,14 @@
     <li class="toctree-l3"><a class="reference internal" href="#growth_factors_index">growth_factors_index</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#modes">modes</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#modified_instances">modified_instances</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#modification_factors">modification_factors</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#recurring_modifications">recurring_modifications</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#progress_bars">progress_bars</a>
         <ul>
@@ -171,9 +177,9 @@
     </li>
         </ul>
     </li>
-        </ul>
+    <li class="toctree-l3"><a class="reference internal" href="#run_range">run_range</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#scenarios">Scenarios</a>
+        </ul>
     </li>
     </ul>
                   </li>
@@ -267,9 +273,6 @@ and multiplies them by a [growth table][#growth_factors_file].</p>
 It first [loads the scenarios][#load_scenarios] and then runs
 the <a href="#get_profile">profile getting</a> function for each scenario
 (see the <a href="../parallel_processing/">general explanation about this</a> )</p>
-<h3 id="load_scenarios">load_scenarios</h3>
-<p>This loads <a href="#scenarios">scenarios</a> into a list so that they can be used to
-[get profiles][#get_profile].</p>
 <h3 id="get_profile">get_profile</h3>
 <h2 id="configuration-non-roadtoml">Configuration (non-road.toml)</h2>
 <h4 id="historical_dataframe_name">historical_dataframe_name</h4>
@@ -279,8 +282,7 @@ the <a href="#get_profile">profile getting</a> function for each scenario
 and projected)</p>
 <h4 id="source_folder">source_folder</h4>
 <p>The folder that contains source/input data for a given
-case (so it is under that case name's subfolder).
-The case name subfolder contains the <a href="#scenarios">scenarios per mode and year</a></p>
+case (so it is under that case name's subfolder).</p>
 <h4 id="output_folder">output_folder</h4>
 <p>The folder where the output files go (in a case name subfolder).</p>
 <h4 id="demand_index">demand_index</h4>
@@ -317,7 +319,24 @@ energy_carriers = [
     'Other liquid biofuels'
 
 ]
+modified_instances = [2, 4, 12, 26, 47, 48, 49, 50]
+modification_factors = [0.89, 0.89, 0.26, 0.26, 0.26, 0.42, 0.77, 0.89]
+recurring_modifications_starts = [2]
+recurring_modifications = [0.5]
+recurrences_steps = [2]
+amounts_of_recurrences = [0] # If set to zero, repeats for whole run
 </code></pre>
+<h4 id="modified_instances">modified_instances</h4>
+<p>These are the instances (week numbers) that differ from the average
+(i.e. when the consumption is higher or lower).</p>
+<h4 id="modification_factors">modification_factors</h4>
+<p>The correction factor for the modified instances</p>
+<h4 id="recurring_modifications">recurring_modifications</h4>
+<p>This is used if you want to have modifications recur/repeat.
+You need to tell when these modifications start (in a list of starts),
+what the modification factors are, what the steps (interval between modifications),
+and how many of these are (if you put 0, then it goes for the whole run).
+The latter three are lists of the same length as the modification starts.</p>
 <h3 id="progress_bars">progress_bars</h3>
 <p>Parameters related to displaying progress bars using <a href="https://github.com/tqdm/tqdm">tqdm</a>.</p>
 <h4 id="display_scenario_run">display_scenario_run</h4>
@@ -367,7 +386,11 @@ retrieving the Eurostat data.</p>
 <p>The name of the column conatining energy carriers/products names.</p>
 <h4 id="status_column">status_column</h4>
 <p>The column containing the status of that code (if it is still in use , 'it is 'valid').</p>
-<h2 id="scenarios">Scenarios</h2>
+<h3 id="run_range">run_range</h3>
+<p>The year, month, day, hour of the run start and end
+(end should be the first time step that is not included).
+The ferquency string tells us the frequency of the range (and where
+it starts, such as 'W-MON'),</p>
               
             </div>
           </div><footer>
