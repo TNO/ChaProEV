@@ -33,8 +33,8 @@ ChaProEV is
 
 # Statement of need
 
-<!-- Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
-have a strong impact on the electric grid [@TNO_local_impact] [@TNO_impact_elektriciteitssysteem], and on
+Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
+have a strong impact on the electric grid [@TNO_local_impact;@TNO_impact_elektriciteitssysteem], and on
 energy systemns in general. -->
 <!-- 
 It is therefore important that models that seek the optimisation of energy systems properly  
@@ -56,7 +56,7 @@ a clear way to modify them without touching code
 tailored to supply optimisation models (list, but also actual implementations)
 throug the model below by explicitely supplying the necessary parameters 
 [EV parameters for optimisation models](#conceptual-innovations-supporting-optimisation-models)
-and providing an option to change some stiry parameters [creating new scenarios](#software-innovations) -->
+and providing an option to change some stiry parameters [creating new scenarios](#software-innovations)
 
 
 # Conceptual innovations: Supporting optimisation models
