@@ -47,11 +47,11 @@ Dynamic fit at each time: ....
 
 Situation specifics: ....
 
-ChaProEv was developped to improve these two elements [@COMPETES;@@COMPETES_demand_response]
+ChaProEv was developped to improve these two elements [@COMPETES;@COMPETES_demand_response]
 
 substequently is  [@TradeRES;@TradeRES_scenario_database] [@Mopo] [@TradeRES_scenario_database]
 [@TradeRES] [@SpineOpt] [@Spine_toolbox] [@vRES_Dutch_Power_Systems] [@price_formation]
-
+<!-- 
 
 energy system optimization models
 [@COMPETES;@COMPETES_demand_response;@OPERA;SpineOpt;@Tulipa;@Spine_toolbox], and
@@ -60,7 +60,7 @@ simulation models [@Spine_toolbox;@ESSIM_doc;@ESSIM_repo;@vRES_Dutch_Power_Syste
 ChaProEV has also been used in European-level
 [@TradeRES;@TradeRES_scenario_database;@Mopo]
 and regional-level
-[@TNO_local_impact;@TNO_impact_elektriciteitssysteem;@CE_afspraken] projects.
+[@TNO_local_impact;@TNO_impact_elektriciteitssysteem;@CE_afspraken] projects. -->
 
 <!-- ChaProEV has also integrated well into existing grid models, enabling these models
 to include up-to-date and customisable charging profiles of EVS
