@@ -89,7 +89,9 @@ throug the model below by explicitely supplying the necessary parameters
 and providing an option to change some story parameters [creating new scenarios](#software-innovations)
 
 
-# Conceptual innovations: Supporting optimisation models
+# Conceptual innovations: Supporting optimisation and simualtion models
+
+ChaProEV provides parameters for the model below
 
 ## Basic elements
 A commonly used aggregated EV formulation is [@morales-espana_classifying_2022]: 
