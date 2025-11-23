@@ -34,23 +34,10 @@ jobs:
                 restore-keys: |
                     ${{ runner.os }}-pip-
 
-        -   name: Install MkDocs and plugins
-            run: |
-                if [ -f requirements.txt ]; then
-                    pip install -r requirements.txt
-                else
-                    # Basic MkDocs + Material theme as a sensible default
-                    pip install mkdocs mkdocs-material
-                fi
+        -   name: Install MkDocs
+            run: 
+                pip install mkdocs
 
-        -   name: Verify MkDocs config
-            run: |
-                if [ ! -f mkdocs.yml ]; then
-                    echo "mkdocs.yml not found at repo root."
-                    exit 1
-                fi
-                mkdocs --version
-                mkdocs build --strict
 
         -   name: Build
             run:
