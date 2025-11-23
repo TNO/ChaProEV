@@ -82,9 +82,9 @@ charge of the plugged EVs to the grid. Variables $p_{t}^{\mathrm{G2V}}$/$p_{t}^{
 the total number of EVs; and $\alpha$ (p.u.) is the share of controllable
 EVs providing demand response to the system. 
 
-
+<!-- 
 Section \ref{boundary_output}
-defines the remaining parameters (profiles).
+defines the remaining parameters (profiles). -->
 
 
 \autoref{eq:EV-soc}-\autoref{eq:v2G-limits} model the demand
