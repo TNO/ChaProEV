@@ -70,7 +70,7 @@ as well as new and custom types of constraints for optimisation models
 which helps use the flexibility EVs provide to the system with G2V and V2G.
  -->
 
-plenned/possible [@Tulipa;@OPERA;@@TIMES-Europe;@PyPSA]
+plenned/possible [@Tulipa;@OPERA;@TIMES-Europe;@PyPSA]
 
 
 
