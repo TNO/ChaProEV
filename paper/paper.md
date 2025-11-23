@@ -33,6 +33,10 @@ ChaProEV is
 
 # Statement of need
 
+Battery-electric vehicles (BEVs) as the fleets of EVS are poised to grow sharply in the future and
+have a strong impact on the electric grid [@TNO_local_impact, TNO_impact_elektriciteitssysteem].
+
+
 - Profiles are good and useful, but optimisation modes might also
 need soem underlying parameters to do optimisation computations as well
 - Provide optimisation models with the boundary conditions they need
