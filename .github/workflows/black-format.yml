@@ -1,5 +1,5 @@
 
-name: Check Code Formatting with Black
+name: Format code with Black
 
 on:
   push:
