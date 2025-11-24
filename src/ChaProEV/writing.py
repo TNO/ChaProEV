@@ -14,10 +14,10 @@ from itertools import repeat
 from multiprocessing import Pool
 
 import pandas as pd
-from tqdm.rich import tqdm
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
+from tqdm.rich import tqdm
 
 
 @cook.function_timer
@@ -47,43 +47,59 @@ def extra_end_outputs(case_name: str, general_parameters: Box) -> None:
         for output_pickle_file in output_pickle_files
     ]
 
-    set_amount_of_processes: bool = (
-        general_parameters.parallel_processing.set_amount_of_processes
+    do_parallel_processing_for_pickle_saves: bool = (
+        general_parameters.parallel_processing.do_parallel_processing_for_pickle_saves  # noqa: E501
     )
-    if set_amount_of_processes:
-        number_of_parallel_processes: int | None = (
-            general_parameters.parallel_processing.amount_for_pickle_saves
-        )
 
+    if do_parallel_processing_for_pickle_saves:
+        set_amount_of_processes: bool = (
+            general_parameters.parallel_processing.set_amount_of_processes
+        )
+        if set_amount_of_processes:
+            number_of_parallel_processes: int | None = (
+                general_parameters.parallel_processing.amount_for_pickle_saves
+            )
+
+        else:
+            number_of_parallel_processes = None
+
+        saving_pool_inputs: (
+            ty.Iterator[tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
+        ) = zip(
+            tables_to_save,
+            output_table_names,
+            repeat(groupfile_name),
+            repeat(output_folder),
+            repeat(general_parameters.files.dataframe_outputs),
+        )
+        # the ty.Any alternative is there because transforming it with the
+        # progress bar makes mypy think it change is type
+        progress_bars_parameters: Box = general_parameters.progress_bars
+        display_saving_pool_run: bool = (
+            progress_bars_parameters.display_saving_pool_run
+        )
+        saving_pool_run_description: str = (
+            progress_bars_parameters.saving_pool_run_description
+        )
+        if display_saving_pool_run:
+            saving_pool_inputs = tqdm(
+                saving_pool_inputs,
+                desc=saving_pool_run_description,
+                total=len(tables_to_save),
+            )
+        with Pool(number_of_parallel_processes) as saving_pool:
+            saving_pool.starmap(cook.save_dataframe, saving_pool_inputs)
     else:
-        number_of_parallel_processes = None
-
-    saving_pool_inputs: (
-        ty.Iterator[tuple[pd.DataFrame, str, str, str, Box]] | ty.Any
-    ) = zip(
-        tables_to_save,
-        output_table_names,
-        repeat(groupfile_name),
-        repeat(output_folder),
-        repeat(general_parameters.files.dataframe_outputs),
-    )
-    # the ty.Any alternative is there because transforming it with the
-    # progress bar makes mypy think it change is type
-    progress_bars_parameters: Box = general_parameters.progress_bars
-    display_saving_pool_run: bool = (
-        progress_bars_parameters.display_saving_pool_run
-    )
-    saving_pool_run_description: str = (
-        progress_bars_parameters.saving_pool_run_description
-    )
-    if display_saving_pool_run:
-        saving_pool_inputs = tqdm(
-            saving_pool_inputs,
-            desc=saving_pool_run_description,
-            total=len(tables_to_save),
-        )
-    with Pool(number_of_parallel_processes) as saving_pool:
-        saving_pool.starmap(cook.save_dataframe, saving_pool_inputs)
+        for table_to_save, output_table_name in zip(
+            tables_to_save, output_table_names
+        ):
+            cook.save_dataframe(
+                table_to_save,
+                output_table_name,
+                groupfile_name,
+                output_folder,
+                general_parameters.files.dataframe_outputs,
+            )
 
 
 def write_scenario_parameters(
@@ -93,9 +109,9 @@ def write_scenario_parameters(
     This function writes the scenario parameters to the output files (either
     as separate files, or as tables/sheets in groupfiles.)
     '''
-    scenario_parameter_categories: list[
-        str
-    ] = scenario.scenario_parameter_categories
+    scenario_parameter_categories: list[str] = (
+        scenario.scenario_parameter_categories
+    )
 
     scenario_name: str = scenario.name
     # groupfile_root: str = scenario['files']['groupfile_root']
