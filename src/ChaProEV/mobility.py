@@ -631,7 +631,7 @@ def get_car_trip_probabilities_per_day_type(
     )
 
     maximal_fill_percentage_leisure_trips_on_non_work_weekdays: float = (
-        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays
+        mobility_module_parameters.maximal_fill_percentage_leisure_trips_on_non_work_weekdays  # noqa: E501
     )
 
     # Some useful quantities telling us how many of which day type there are
