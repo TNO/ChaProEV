@@ -1,5 +1,5 @@
 ---
-title: 'ChaProEV: Generating Charging Profiles for Electric Vehicles'
+title: 'ChaProEV: Generating Charging Profiles for Electric Vehicles that support optimisation and simulation models'
 tags:
   - Python
   - Battery-Electric Vehicles
