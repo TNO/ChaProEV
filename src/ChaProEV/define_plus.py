@@ -279,6 +279,13 @@ class Trip:
 
         return Trip(start_time_hours=start_time_hours)
 
+    Create Transition class (put holifday there)
+    Add leisure holiday trips 
+    remove holiday trips 
+    Add base locations (locations that have is_base=True)
+        
+    
+    Add Transitions first then trips (drwan per base adn day type in mobility)
     # add location per time unity (minute?)
     # set base location for all times and change them with trips
     # holiday chnages for the holiday duration in days
