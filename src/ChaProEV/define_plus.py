@@ -1,0 +1,248 @@
+from dataclasses import dataclass
+from box import Box
+from ETS_CookBook import ETS_CookBook as cook
+from rich import print
+from pathlib import Path
+import numpy as np
+import polars as pl
+
+@dataclass
+class Location:
+    '''
+    This class defines the locations where the vehicles are
+    and their properties,  from a scenario
+    file that contains a list of instances and their properties.
+    '''
+
+    connectivity: float
+    charging_power_kW: float
+    charger_efficiency: float
+    discharge_power_kW: float
+    proportion_of_discharge_to_network: float
+    time_modulation_factors: list[float]
+    latitude: float
+    longitude: float
+    charging_price_eur_kWh: float
+    charging_desirability: float
+
+    @staticmethod
+    def read_parameters(location_parameters: Box) -> Location:
+        connectivity: float = location_parameters.connectivity
+        charging_power_kW: float = location_parameters.charging_power_kW
+        charger_efficiency: float = location_parameters.charger_efficiency
+        discharge_power_kW: float = location_parameters.discharge_power_kW
+        proportion_of_discharge_to_network: float = (
+            location_parameters.proportion_of_discharge_to_network
+        )
+        time_modulation_factors: list[
+            float
+        ] = location_parameters.time_modulation_factors
+        latitude: float = location_parameters.latitude
+        longitude: float = location_parameters.longitude
+        charging_price_eur_kWh: float = (
+            location_parameters.charging_price_eur_kWh
+        )
+        charging_desirability: float = (
+            location_parameters.charging_desirability
+        )
+        return Location(
+            connectivity=connectivity,
+            charging_power_kW=charging_power_kW,
+            charger_efficiency=charger_efficiency,
+            discharge_power_kW=discharge_power_kW,
+            proportion_of_discharge_to_network=proportion_of_discharge_to_network,  # noqa:E501
+            time_modulation_factors=time_modulation_factors,
+            latitude=latitude,
+            longitude=longitude,
+            charging_price_eur_kWh=charging_price_eur_kWh,
+            charging_desirability=charging_desirability,
+        )
+
+
+@dataclass
+class Leg:
+    '''
+    This class defines the legs and their properties, from a scenario
+    file that contains a list of instances and their properties.
+    Legs are point-to-point vehicle movements (i.e. movements where
+    the vehicle goes from a start location and ends/stops at an end location).
+    '''
+
+    distance_km: float
+    duration_hours: float
+    start_location: str
+    end_location: str
+
+    @staticmethod
+    def read_parameters(leg_parameters: Box) -> Leg:
+        distance_km: float = leg_parameters.distance_km
+        duration_hours: float = leg_parameters.duration_hours
+        start_location: str = leg_parameters.start_location
+        end_location: str = leg_parameters.end_location
+
+        return Leg(
+            distance_km=distance_km,
+            duration_hours=duration_hours,
+            start_location=start_location,
+            end_location=end_location,
+        )
+
+
+@dataclass
+class Trip:
+    '''
+    This class defines the trips and their properties, from a scenario
+    file that contains a list of instances and their properties.
+    Trips are collections of legs that take place on a given day.
+    It contains two series. One for the time steps (in hours from midnight
+    for the day of the trip) and one for the location names where the vehicle
+    is (including 'driving').
+    '''
+
+    time_steps: pl.Series
+    location_names: pl.Series
+
+
+    round things to the time resolution
+    Add repetitions thing (maybe with a function placeholder first!)
+    first create a list of legs (leg_names)
+    a list of time between legs 
+    and a list of driving start_time_hours
+
+    draw moments when at other base or something?
+
+    strt with lists and then convert to Series (or keep list?)
+
+    location_names  append leg_duration X 'driving'
+    location_names append time_between X end_location of previous Leg
+
+    lesiure during holiday? (but then exclude work and weekend)
+
+
+    this gives the trip duration 
+    then time series and location series
+
+    @staticmethod
+    def get_trip_duration_hours(
+        legs: list[str], time_between_legs_hours: float,
+        repeated_sequence: list[str],
+        repetition_amounts: int,
+
+    ) -> float:
+        return trip_duration_hours
+
+    @staticmethod
+    def get_start_time_hours(
+        *,
+        start_time_hours_mean: float,
+        start_time_hours_standard_deviation: float,
+    ) -> float:
+        start_time_hours: float = np.random.normal(
+            loc=start_time_hours_mean,
+            scale=start_time_hours_standard_deviation,
+        )
+        return start_time_hours
+
+    @staticmethod
+    def define_user_trip(trip_parameters: Box) -> Trip:
+        '''
+        Creates a trip version for the user. It creates a vesion of the trip
+        for a user by drawing a start time.
+        '''
+        start_time_hours_mean: float = trip_parameters.start_time_hours_mean
+        start_time_hours_standard_deviation: float = (
+            trip_parameters.start_time_hours_standard_deviation
+        )
+        start_time_hours: float = Trip.get_start_time_hours(
+            start_time_hours_mean=start_time_hours_mean,
+            start_time_hours_standard_deviation=start_time_hours_standard_deviation,  # noqa: E501
+        )
+
+        return Trip(start_time_hours=start_time_hours)
+
+    # add location per time unity (minute?)
+    # set base location for all times and change them with trips
+    # holiday chnages for the holiday duration in days
+    # Get trip duration from parameters
+    # Then have a series of trip moments (hours from midnight)
+    # and series of location_names (of the same size)
+
+
+if __name__ == '__main__':
+    scenario_path: Path = Path('scenarios/plus/test.toml')
+    scenario: Box = cook.parameters_from_TOML(scenario_path)
+    locations_definitions: Box = scenario.locations
+
+    locations: dict[str, Location] = {
+        location_name: Location.read_parameters(location_parameters)
+        for location_name, location_parameters in locations_definitions.items()
+    }
+
+    legs_definitions: Box = scenario.legs
+
+    legs: dict[str, Leg] = {
+        leg_name: Leg.read_parameters(leg_parameters)
+        for leg_name, leg_parameters in legs_definitions.items()
+    }
+    trips_definitions: Box = scenario.trips
+    user_trips: dict[str, Trip] = {
+        trip_name: Trip.define_user_trip(trip_parameters)
+        for trip_name, trip_parameters in trips_definitions.items()
+    }
+
+    print(locations)
+    print(legs)
+    print(user_trips)
+
+
+# @dataclass
+# class Extrapolate:
+#     do_run: bool
+#     column_prefix: str
+#     input_start_year: int
+#     input_end_year: int
+#     extrapolation_end_year: int
+#     initial_guess_maximum: float
+#     initial_guess_exponent_factor: float
+#     initial_guess_midpoint: float
+#     increase_proportion: bool
+#     extra_increase_proportion: float
+#     maxfev: int
+
+#     @staticmethod
+#     def read_parameters(extrapolation_settings: box.Box) -> Extrapolate:
+#         do_run: bool = extrapolation_settings.do_run
+#         column_prefix: str = extrapolation_settings.column_prefix
+#         input_start_year: int = extrapolation_settings.input_start_year
+#         input_end_year: int = extrapolation_settings.input_end_year
+#         extrapolation_end_year: int = (
+#             extrapolation_settings.extrapolation_end_year
+#         )
+#         initial_guess_maximum: float = (
+#             extrapolation_settings.initial_guess_maximum
+#         )
+#         initial_guess_exponent_factor: float = (
+#             extrapolation_settings.initial_guess_exponent_factor
+#         )
+#         initial_guess_midpoint: float = (
+#             extrapolation_settings.initial_guess_midpoint
+#         )
+#         increase_proportion: bool = extrapolation_settings.increase_proportion
+#         extra_increase_proportion: float = (
+#             extrapolation_settings.extra_increase_proportion
+#         )
+#         maxfev: int = extrapolation_settings.maxfev
+
+#         return Extrapolate(
+#             do_run=do_run,
+#             column_prefix=column_prefix,
+#             input_start_year=input_start_year,
+#             input_end_year=input_end_year,
+#             extrapolation_end_year=extrapolation_end_year,
+#             initial_guess_maximum=initial_guess_maximum,
+#             initial_guess_exponent_factor=initial_guess_exponent_factor,
+#             initial_guess_midpoint=initial_guess_midpoint,
+#             increase_proportion=increase_proportion,
+#             extra_increase_proportion=extra_increase_proportion,
+#             maxfev=maxfev,
+#         )

@@ -22,6 +22,9 @@ requirements.txt
 requirements_obsolete.txt
 siec.csv
 todo.txt
+.github/workflows/black-format.yml
+.github/workflows/deploy-docs.yml
+.github/workflows/draft-pdf.yml
 .vscode/ltex.dictionary.en-US.txt
 .vscode/settings.json
 chaproev-1.3.0/.flake8
@@ -96,6 +99,13 @@ non-road/Mopo/NL_domestic-aviation_2050_Aviation gasoline.toml
 non-road/Mopo/growth_factors.csv
 non-road/Mopo/scenario_demands.csv
 non-road/Mopo/scenarios.toml
+paper/ChaProEV_workflow.png
+paper/Legs.png
+paper/Locations.png
+paper/Trips.png
+paper/paper.bib
+paper/paper.md
+paper/paper.pdf
 scenarios/Mopo/Latvia_car_own_driveway_2050.toml
 scenarios/Mopo/Netherlands_urban_car_2030.toml
 scenarios/Mopo/Switzerland_car_own_driveway_2050.toml
@@ -115,6 +125,7 @@ src/ChaProEV/__init__.py
 src/ChaProEV/charging.py
 src/ChaProEV/consumption.py
 src/ChaProEV/define.py
+src/ChaProEV/define_plus.py
 src/ChaProEV/make_variants.py
 src/ChaProEV/mobility.py
 src/ChaProEV/non_road.py

@@ -188,9 +188,9 @@ def get_charging_framework(
         ].set_index(['Time Tag'])
         battery_spaces[location_name][float(0)] = float(0)
 
-        battery_spaces[location_name].loc[
-            run_range[0], 0
-        ] = location_split.loc[run_range[0]][location_name]
+        battery_spaces[location_name].loc[run_range[0], 0] = (
+            location_split.loc[run_range[0]][location_name]
+        )
     total_battery_space_per_location: pd.DataFrame = pd.DataFrame(
         index=run_range, columns=location_names
     )
@@ -228,9 +228,9 @@ def get_charging_framework(
     )
     charge_drawn_from_network.index.name = 'Time Tag'
 
-    mobility_location_tuples: list[
-        tuple[str, str]
-    ] = mobility.get_mobility_location_tuples(scenario)
+    mobility_location_tuples: list[tuple[str, str]] = (
+        mobility.get_mobility_location_tuples(scenario)
+    )
     mobility_locations_index: pd.MultiIndex = pd.MultiIndex.from_tuples(
         mobility_location_tuples, names=['Origin', 'Destination']
     )
@@ -461,9 +461,9 @@ def impact_of_arrivals(
                     arriving_battery_space
                     not in battery_spaces[end_location].columns.values
                 ):
-                    battery_spaces[end_location][
-                        arriving_battery_space
-                    ] = float(0)
+                    battery_spaces[end_location][arriving_battery_space] = (
+                        float(0)
+                    )
 
                 battery_spaces[end_location].loc[
                     time_tag, arriving_battery_space
@@ -526,9 +526,9 @@ def travel_space_occupation(
             and (time_tag.hour == day_start_hour)
             and not use_spillover
         ):
-            battery_spaces[location_to_compute].loc[
-                time_tag, 0
-            ] = location_split.loc[time_tag][location_to_compute]
+            battery_spaces[location_to_compute].loc[time_tag, 0] = (
+                location_split.loc[time_tag][location_to_compute]
+            )
 
         # We need to look at the impact of arrivals first
         # because if we look at departures first, we might go wrong,
@@ -656,7 +656,9 @@ def compute_charging_events(
         location_charging_power: float = float(
             charging_location_parameters.charging_power
         )
-        location_modulated_charging_power: float = location_charging_power * float(
+        location_modulated_charging_power: (
+            float
+        ) = location_charging_power * float(
             charging_modulation.loc[time_tag][
                 charging_location
             ]  # type: ignore
@@ -836,9 +838,9 @@ def copy_day_type_profiles_to_whole_run(
         columns=['Day Type'],
         index=battery_spaces[location_names[0]].index,
     )
-    filter_for_battery_spaces[
-        'Hours from day start'
-    ] = run_hours_from_day_start
+    filter_for_battery_spaces['Hours from day start'] = (
+        run_hours_from_day_start
+    )
     day_types: list[str] = scenario.mobility_module.day_types
 
     for day_type in day_types:
@@ -927,12 +929,10 @@ def copy_day_type_profiles_to_whole_run(
         non_empty_day_end_battery_spaces: pd.DataFrame = (
             day_end_battery_spaces.drop(columns=float(0))
         )
-        day_ends_with_spillover_battery_spaces[
-            location_name
-        ] = non_empty_day_end_battery_spaces.loc[
-            non_empty_day_end_battery_spaces.sum(axis=1) > zero_threshold
-        ].index.get_level_values(
-            'Time Tag'
+        day_ends_with_spillover_battery_spaces[location_name] = (
+            non_empty_day_end_battery_spaces.loc[
+                non_empty_day_end_battery_spaces.sum(axis=1) > zero_threshold
+            ].index.get_level_values('Time Tag')
         )
 
     # We look at the battery spillover spaces
@@ -940,9 +940,9 @@ def copy_day_type_profiles_to_whole_run(
         # The get charging framework created a spillover Dataframe
         # with battery spaces starting aat the inital location split.
         # We don't need it for spillover (as it is zero)
-        spillover_battery_spaces[
-            spillover_location
-        ] = spillover_battery_spaces[spillover_location].drop(float(0), axis=1)
+        spillover_battery_spaces[spillover_location] = (
+            spillover_battery_spaces[spillover_location].drop(float(0), axis=1)
+        )
 
         for day_end_time_tag in day_ends_with_spillover_battery_spaces[
             spillover_location
@@ -1128,10 +1128,10 @@ def copy_day_type_profiles_to_whole_run(
                     float(0)
                     in spillover_battery_spaces[spillover_location].columns
                 ):
-                    spillover_battery_spaces[
-                        spillover_location
-                    ] = spillover_battery_spaces[spillover_location].drop(
-                        float(0), axis=1
+                    spillover_battery_spaces[spillover_location] = (
+                        spillover_battery_spaces[spillover_location].drop(
+                            float(0), axis=1
+                        )
                     )
 
                 charge_drawn_by_vehicles.loc[
@@ -1233,9 +1233,9 @@ def write_output(
     charge_drawn_from_network_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_from_network.index
     )
-    charge_drawn_from_network_total[
-        'Total Charge Drawn (kWh)'
-    ] = charge_drawn_from_network.sum(axis=1)
+    charge_drawn_from_network_total['Total Charge Drawn (kWh)'] = (
+        charge_drawn_from_network.sum(axis=1)
+    )
 
     charging_costs_total: pd.Series = charging_costs.sum(axis=1)
     percentage_of_maximal_delivered_power_used_per_location: pd.DataFrame = (
@@ -1313,9 +1313,9 @@ def write_output(
     charge_drawn_by_vehicles_total: pd.DataFrame = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
-    charge_drawn_by_vehicles_total[
-        'Total Charge Drawn (kWh)'
-    ] = charge_drawn_by_vehicles.sum(axis=1)
+    charge_drawn_by_vehicles_total['Total Charge Drawn (kWh)'] = (
+        charge_drawn_by_vehicles.sum(axis=1)
+    )
     percentage_of_maximal_delivered_power_used_per_location = pd.DataFrame(
         index=charge_drawn_by_vehicles.index
     )
@@ -1335,9 +1335,9 @@ def write_output(
         sum_of_battery_spaces_this_location: pd.Series[float] = battery_spaces[
             location_name
         ].sum(axis=1)
-        sum_of_battery_spaces[
-            location_name
-        ] = sum_of_battery_spaces_this_location.values
+        sum_of_battery_spaces[location_name] = (
+            sum_of_battery_spaces_this_location.values
+        )
     if pickle_interim_files:
         sum_of_battery_spaces.to_pickle(
             f'{output_folder}/{scenario.name}_sum_of_battery_spaces.pkl'
@@ -1557,9 +1557,9 @@ def get_charging_profile(
                 * float(battery_space)
             ).values
 
-        total_battery_space_per_location[
-            location_name
-        ] = location_total_battery_space
+        total_battery_space_per_location[location_name] = (
+            location_total_battery_space
+        )
     charging_costs: pd.DataFrame = charge_drawn_from_network.copy()
     for location in scenario.locations:
         charging_costs[location] *= scenario.locations[location].charging_price
@@ -1611,11 +1611,11 @@ def charging_amounts_in_charging_sessions(
         int
     ) / general_parameters.time.SECONDS_PER_HOUR
 
-    charging_sessions_with_charged_amounts[
-        'Target charge (kWh)'
-    ] = charging_sessions_with_charged_amounts[
-        'Demand for incoming leg (kWh) (to vehicle)'
-    ]
+    charging_sessions_with_charged_amounts['Target charge (kWh)'] = (
+        charging_sessions_with_charged_amounts[
+            'Demand for incoming leg (kWh) (to vehicle)'
+        ]
+    )
     charging_sessions_with_charged_amounts[
         'Maximal Possible Charge to Vehicles (kWh)'
     ] = (
@@ -1624,9 +1624,9 @@ def charging_amounts_in_charging_sessions(
             'Charging Power to Vehicles (kW)'
         ]
     )
-    charging_sessions_with_charged_amounts[
-        'Modulation factor'
-    ] = session_modulation(charging_sessions_with_charged_amounts).values
+    charging_sessions_with_charged_amounts['Modulation factor'] = (
+        session_modulation(charging_sessions_with_charged_amounts).values
+    )
     charging_sessions_with_charged_amounts[
         'Available Charge to Vehicles (kWh)'
     ] = charging_sessions_with_charged_amounts['Modulation factor'].multiply(
@@ -1634,15 +1634,13 @@ def charging_amounts_in_charging_sessions(
             'Maximal Possible Charge to Vehicles (kWh)'
         ]
     )
-    charging_sessions_with_charged_amounts[
-        'Charge to Vehicles (kWh)'
-    ] = charging_sessions_with_charged_amounts[
-        [
-            'Available Charge to Vehicles (kWh)',
-            'Target charge (kWh)',
-        ]
-    ].min(
-        axis=1
+    charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] = (
+        charging_sessions_with_charged_amounts[
+            [
+                'Available Charge to Vehicles (kWh)',
+                'Target charge (kWh)',
+            ]
+        ].min(axis=1)
     )
     charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
         charging_sessions_with_charged_amounts['Target charge (kWh)']
@@ -1676,15 +1674,13 @@ def charging_amounts_in_charging_sessions(
             + rolled_deficit
         )
 
-        charging_sessions_with_charged_amounts[
-            'Charge to Vehicles (kWh)'
-        ] = charging_sessions_with_charged_amounts[
-            [
-                'Available Charge to Vehicles (kWh)',
-                'Target charge (kWh)',
-            ]
-        ].min(
-            axis=1
+        charging_sessions_with_charged_amounts['Charge to Vehicles (kWh)'] = (
+            charging_sessions_with_charged_amounts[
+                [
+                    'Available Charge to Vehicles (kWh)',
+                    'Target charge (kWh)',
+                ]
+            ].min(axis=1)
         )
         charging_sessions_with_charged_amounts['Charge deficit (kWh)'] = (
             charging_sessions_with_charged_amounts['Target charge (kWh)']

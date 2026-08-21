@@ -1,0 +1,274 @@
+
+[locations]
+# Add locations following the syntax below:
+# [location.code] <--use the the code/alias you want for the location
+# and put the desired properties below
+[locations.home]
+connectivity = 1
+charging_power_kW = 6
+charger_efficiency = 0.8
+latitude = 52
+longitude = 6.2
+charging_price_eur_kWh = 0.25
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 6
+proportion_of_discharge_to_network = 0.8
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.work]
+connectivity = 0.25
+charging_power_kW = 14 # kW
+charger_efficiency = 0.9
+latitude = 52.1
+longitude = 5.8
+charging_price_eur_kWh = 0  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.leisure]
+connectivity = 0.25
+charging_power_kW = 14
+charger_efficiency = 0.9
+latitude = 52.1
+longitude = 6.2
+charging_price_eur_kWh = 0.35
+charging_desirability = 0.25
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.weekend]
+connectivity = 0.125
+charging_power_kW = 14
+charger_efficiency = 0.9
+latitude = 51.8
+longitude = 6.2
+charging_price_eur_kWh = 0.35
+charging_desirability = 0.1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.holiday]
+connectivity = 1
+charging_power_kW = 14
+charger_efficiency = 0.9
+latitude = 53.0
+longitude = 6.2
+charging_price_eur_kWh = 0.35
+charging_desirability = 0.2
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+
+
+
+[legs]
+# You can add legs here by copying existing legs,
+# changing the name of the leg (in [legs.go_to_work], go_to_work is
+# the name of the leg) and changing the relevant values
+# Note that you need to change the leg name in all parts where it occurs
+# (i.e. also in [legs.go_to_work.locations],[legs.go_to_work.road_types],
+# etc.
+[legs.go_to_work]
+distance_km = 19.2
+duration_hours = 0.25
+start_location = 'home'
+end_location = 'work'
+
+[legs.come_from_work]
+distance_km = 19.2
+duration_hours = 0.25
+start_location = 'home'
+end_location = 'work'
+
+
+[legs.home_to_leisure]
+distance_km = 5.2
+duration_hours = 0.12
+start_location = 'home'
+end_location = 'leisure'
+
+
+[legs.leisure_to_home]
+distance_km = 5.2
+duration_hours = 0.12
+start_location = 'leisure'
+end_location = 'home'
+
+
+
+[legs.work_to_leisure]
+distance_km = 21.0
+duration_hours = 0.48
+start_location = 'work'
+end_location = 'leisure'
+
+
+[legs.leisure_to_work]
+distance_km = 21
+duration_hours = 0.48
+start_location = 'leisure'
+end_location = 'work'
+
+
+[legs.home_to_weekend]
+distance_km = 87.3
+duration_hours = 1
+start_location = 'home'
+end_location = 'weekend'
+
+
+[legs.weekend_to_home]
+distance_km = 87.3
+duration_hours = 1
+start_location = 'weekend'
+end_location = 'home'
+
+
+
+[legs.home_to_holiday]
+distance_km = 174.6
+duration_hours = 2
+start_location = 'home'
+end_location = 'holiday'
+
+
+[legs.holiday_to_home]
+distance_km = 174.6
+duration_hours = 2
+start_location = 'leisure'
+end_location = 'holiday'
+
+[trips]
+[trips.commute_to_work]
+legs = ['go_to_work', 'come_from_work']
+time_between_legs_hours = [9]
+# This is the time spent at each interim location (same units as use
+# generally, so currently hours). The length of this list is one less than
+# the amount of legs
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 8
+start_time_hours_standard_deviation = 2
+
+
+[trips.commute_to_work_and_leisure]
+legs = ['go_to_work','work_to_leisure', 'leisure_to_work', 'come_from_work']
+time_between_legs_hours = [3, 2, 4]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 8
+start_time_hours_standard_deviation = 2
+
+
+[trips.leisure_only]
+legs = ['home_to_leisure', 'leisure_to_home']
+time_between_legs_hours = [2]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
+[trips.weekend_trip]
+legs = ['home_to_weekend', 'weekend_to_home']
+time_between_legs_hours = [4]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
+[trips.holiday_outward]
+legs = ['home_to_holiday']
+time_between_legs_hours = []
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
+
+[trips.holiday_back]
+legs = ['holiday_to_home']
+time_between_legs_hours = []
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
+[trips.stay_put_home]
+legs = []
+time_between_legs_hours = []
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 6.2
+start_time_hours_standard_deviation = 0.6
+
+
+
+[trips.stay_put_holiday]
+legs = []
+time_between_legs_hours = []
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 6.2
+start_time_hours_standard_deviation = 0.6
+
+
+[time]

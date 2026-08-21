@@ -16,9 +16,14 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: OS Independent',
 ]
-dynamic = ['dependencies']
-[tool.setuptools.dynamic]
-dependencies = {file = ['requirements.txt']}
+dependencies = [
+    "ets-cookbook>=1.2.8",
+    "polars>=1.43.2",
+    "python-box>=7.4.1",
+]
+# dynamic = ['dependencies']
+# [tool.setuptools.dynamic]
+# dependencies = {file = ['requirements.txt']}
 
 [tool.setuptools.package-data]
 'ETS_CookBook' = ['py.typed']
