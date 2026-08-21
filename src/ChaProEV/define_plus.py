@@ -5,6 +5,111 @@ from rich import print
 from pathlib import Path
 import numpy as np
 import polars as pl
+from datetime import date, datetime
+
+
+@dataclass
+class TimeRange:
+    '''
+    The time ranges we use (boith for dates and time stamps), both
+    for computation and display
+    '''
+
+    run_dates: pl.Series | pl.Expr
+    display_dates: pl.Series | pl.Expr
+    run_stamps: pl.Series | pl.Expr
+    display_stamps: pl.Series | pl.Expr
+
+    @staticmethod
+    def set_ranges(run_parameters: Box) -> TimeRange:
+        start: Box = run_parameters.start
+        end: Box = run_parameters.end
+        display_start: Box = run_parameters.display_start
+        display_end: Box = run_parameters.display_end
+        run_frequency_settings: Box = run_parameters.frequency
+        display_frequency_settings: Box = run_parameters.display_frequency
+
+        run_frequency: str = (
+            f'{run_frequency_settings.size}{run_frequency_settings.type}'
+        )
+        display_frequency: str = f'{display_frequency_settings.size}{display_frequency_settings.type}'  # noqa:E501
+
+        start_date: date = date(
+            year=start.year, month=start.month, day=start.day
+        )
+        end_date: date = date(year=end.year, month=end.month, day=end.day)
+        display_start_date: date = date(
+            year=display_start.year,
+            month=display_start.month,
+            day=display_start.day,
+        )
+        display_end_date: date = date(
+            year=display_end.year, month=display_end.month, day=display_end.day
+        )
+
+        start_datetime: datetime = datetime(
+            year=start.year,
+            month=start.month,
+            day=start.day,
+            hour=start.hour,
+            minute=start.minute,
+        )
+        end_datetime: datetime = datetime(
+            year=end.year,
+            month=end.month,
+            day=end.day,
+            hour=end.hour,
+            minute=end.minute,
+        )
+        display_start_datetime: datetime = datetime(
+            year=display_start.year,
+            month=display_start.month,
+            day=display_start.day,
+            hour=display_start.hour,
+            minute=display_start.minute,
+        )
+        display_end_datetime: datetime = datetime(
+            year=display_end.year,
+            month=display_end.month,
+            day=display_end.day,
+            hour=display_end.hour,
+            minute=display_end.minute,
+        )
+
+        run_dates: pl.Series | pl.Expr = pl.date_range(
+            start=start_date,
+            end=end_date,
+            eager=True,
+            closed='left',
+        )
+        display_dates: pl.Series | pl.Expr = pl.date_range(
+            display_start_date,
+            end=display_end_date,
+            eager=True,
+            closed='left',
+        )
+        run_stamps: pl.Series | pl.Expr = pl.datetime_range(
+            start=start_datetime,
+            end=end_datetime,
+            interval=run_frequency,
+            eager=True,
+            closed='left',
+        )
+        display_stamps: pl.Series | pl.Expr = pl.datetime_range(
+            start=display_start_datetime,
+            end=display_end_datetime,
+            interval=display_frequency,
+            eager=True,
+            closed='left',
+        )
+
+        return TimeRange(
+            run_dates=run_dates,
+            display_dates=display_dates,
+            run_stamps=run_stamps,
+            display_stamps=display_stamps,
+        )
+
 
 @dataclass
 class Location:
@@ -99,53 +204,51 @@ class Trip:
     is (including 'driving').
     '''
 
-    time_steps: pl.Series
-    location_names: pl.Series
+    start_time_hours: float
+    # time_steps: pl.Series
+    # location_names: pl.Series
 
+    # round things to the time resolution
+    # Add repetitions thing (maybe with a function placeholder first!)
+    # first create a list of legs (leg_names)
+    # a list of time between legs
+    # and a list of driving start_time_hours
 
-    round things to the time resolution
-    Add repetitions thing (maybe with a function placeholder first!)
-    first create a list of legs (leg_names)
-    a list of time between legs 
-    and a list of driving start_time_hours
+    # holiday trip flips home --> holiday (and adds 'driving' at start and end)
+    # AdD holiday to leisure
 
+    # Maybe organise it per base.
+    # Each base has a list of trips
 
-    holiday trip flips home --> holiday (and adds 'driving' at start and end)
-    AdD holiday to leisure
+    # First do for first base for whole year
 
-    Maybe organise it per base.
-    Each base has a list of trips  
+    # Then redo for times at each further base (for less time),
+    # Need to set dates at each base
+    # and draw trips fir these dates
+    # plus transitions between bases  (so holiday outwrad anbd back are not trips
+    # but transitions
+    # )
 
-    First do for first base for whole year
+    # draw moments when at other base or something?
 
-    Then redo for times at each further base (for less time),
-    Need to set dates at each base 
-    and draw trips fir these dates 
-    plus transitions between bases  (so holiday outwrad anbd back are not trips 
-    but transitions                                 
-    )
+    # strt with lists and then convert to Series (or keep list?)
 
-    draw moments when at other base or something?
+    # location_names  append leg_duration X 'driving'
+    # location_names append time_between X end_location of previous Leg
 
-    strt with lists and then convert to Series (or keep list?)
+    # lesiure during holiday? (but then exclude work and weekend)
 
-    location_names  append leg_duration X 'driving'
-    location_names append time_between X end_location of previous Leg
+    # this gives the trip duration
+    # then time series and location series
 
-    lesiure during holiday? (but then exclude work and weekend)
+    # @staticmethod
+    # def get_trip_duration_hours(
+    #     legs: list[str], time_between_legs_hours: float,
+    #     repeated_sequence: list[str],
+    #     repetition_amounts: int,
 
-
-    this gives the trip duration 
-    then time series and location series
-
-    @staticmethod
-    def get_trip_duration_hours(
-        legs: list[str], time_between_legs_hours: float,
-        repeated_sequence: list[str],
-        repetition_amounts: int,
-
-    ) -> float:
-        return trip_duration_hours
+    # ) -> float:
+    #     return trip_duration_hours
 
     @staticmethod
     def get_start_time_hours(
@@ -187,6 +290,14 @@ class Trip:
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
+
+    run_parameters: Box = scenario.run
+
+    time_ranges: TimeRange = TimeRange.set_ranges(
+        run_parameters=run_parameters
+    )
+    print(time_ranges.display_stamps)
+    exit()
     locations_definitions: Box = scenario.locations
 
     locations: dict[str, Location] = {

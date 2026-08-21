@@ -271,4 +271,43 @@ start_time_hours_mean = 6.2
 start_time_hours_standard_deviation = 0.6
 
 
-[time]
+
+
+[run]
+[run.start]
+year = 2014
+month = 12
+day = 31
+hour = 5
+minute = 0
+[run.end]  # This is is not included in the run time
+year = 2016
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_start]
+year = 2015
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_end]  # This is is not included in the display time
+year = 2016
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.frequency]
+size = 1  # Put the size of the interval here
+type = 'm'  # 'min'
+# Put the interval type here, use 'h' for hours, 'min' for minutes,
+# 's' for seconds, 'd' for days. For more info and other types, see here:
+# Or combine them: “3d12h4m25s” # 3 days, 12 hours, 4 minutes, and 25 seconds
+# https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
+[run.display_frequency]
+size = 1  # Put the size of the interval here
+type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for minutes,
+# 's' for seconds, 'd' for days. For more info and other types, see here:
+# Or combine them: “3d12h4m25s” # 3 days, 12 hours, 4 minutes, and 25 seconds
+# https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
