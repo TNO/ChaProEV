@@ -109,6 +109,22 @@ class Trip:
     a list of time between legs 
     and a list of driving start_time_hours
 
+
+    holiday trip flips home --> holiday (and adds 'driving' at start and end)
+    AdD holiday to leisure
+
+    Maybe organise it per base.
+    Each base has a list of trips  
+
+    First do for first base for whole year
+
+    Then redo for times at each further base (for less time),
+    Need to set dates at each base 
+    and draw trips fir these dates 
+    plus transitions between bases  (so holiday outwrad anbd back are not trips 
+    but transitions                                 
+    )
+
     draw moments when at other base or something?
 
     strt with lists and then convert to Series (or keep list?)
