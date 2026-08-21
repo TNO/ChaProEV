@@ -118,7 +118,7 @@ class Location:
     and their properties,  from a scenario
     file that contains a list of instances and their properties.
     '''
-
+    base: bool
     connectivity: float
     charging_power_kW: float
     charger_efficiency: float
@@ -132,6 +132,7 @@ class Location:
 
     @staticmethod
     def read_parameters(location_parameters: Box) -> Location:
+        base: bool = location_parameters.base
         connectivity: float = location_parameters.connectivity
         charging_power_kW: float = location_parameters.charging_power_kW
         charger_efficiency: float = location_parameters.charger_efficiency
@@ -151,6 +152,7 @@ class Location:
             location_parameters.charging_desirability
         )
         return Location(
+            base=base,
             connectivity=connectivity,
             charging_power_kW=charging_power_kW,
             charger_efficiency=charger_efficiency,
@@ -279,13 +281,13 @@ class Trip:
 
         return Trip(start_time_hours=start_time_hours)
 
-    Create Transition class (put holifday there)
-    Add leisure holiday trips 
-    remove holiday trips 
-    Add base locations (locations that have is_base=True)
+    # Create Transition class (put holifday there)
+    # Add leisure holiday trips 
+    # remove holiday trips 
+    # Add base locations (locations that have is_base=True)
         
     
-    Add Transitions first then trips (drwan per base adn day type in mobility)
+    # Add Transitions first then trips (drwan per base adn day type in mobility)
     # add location per time unity (minute?)
     # set base location for all times and change them with trips
     # holiday chnages for the holiday duration in days
@@ -303,13 +305,17 @@ if __name__ == '__main__':
     time_ranges: TimeRange = TimeRange.set_ranges(
         run_parameters=run_parameters
     )
-    print(time_ranges.display_stamps)
-    exit()
     locations_definitions: Box = scenario.locations
 
     locations: dict[str, Location] = {
         location_name: Location.read_parameters(location_parameters)
         for location_name, location_parameters in locations_definitions.items()
+    }
+
+    base_locations: dict[str, Location] = {
+        location_name: Location.read_parameters(location_parameters)
+        for location_name, location_parameters in locations_definitions.items()
+        if location_parameters.base
     }
 
     legs_definitions: Box = scenario.legs
@@ -325,6 +331,8 @@ if __name__ == '__main__':
     }
 
     print(locations)
+    print(base_locations)
+    exit()
     print(legs)
     print(user_trips)
 

@@ -4,6 +4,7 @@
 # [location.code] <--use the the code/alias you want for the location
 # and put the desired properties below
 [locations.home]
+base = true
 connectivity = 1
 charging_power_kW = 6
 charger_efficiency = 0.8
@@ -20,6 +21,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
 [locations.work]
+base = false
 connectivity = 0.25
 charging_power_kW = 14 # kW
 charger_efficiency = 0.9
@@ -36,6 +38,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
 [locations.leisure]
+base = false
 connectivity = 0.25
 charging_power_kW = 14
 charger_efficiency = 0.9
@@ -52,6 +55,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
 [locations.weekend]
+base = false
 connectivity = 0.125
 charging_power_kW = 14
 charger_efficiency = 0.9
@@ -68,6 +72,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
 [locations.holiday]
+base = true
 connectivity = 1
 charging_power_kW = 14
 charger_efficiency = 0.9
