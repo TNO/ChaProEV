@@ -5,7 +5,42 @@ from rich import print
 from pathlib import Path
 import numpy as np
 import polars as pl
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+
+
+@dataclass
+class TripStep:
+    '''
+    Steps in a trip. Contains travel legs and parked moments
+    '''
+
+    start_hour: float  # In hourts from midnight
+    end_hour: float  # In hours from midnight
+    location_name: str
+    length_kilometers: float
+    duration_hours: float
+    speed_kph: float
+
+    @staticmethod
+    def get_step(
+        start_time_hours: float,
+        duration_hours: float,
+        location_name: str,
+        leg_length_kilometers: float,
+    ) -> TripStep:
+        
+        if duration_hours == 0:
+            speed_kph: float = 0
+        else:
+            speed_kph = leg_length_kilometers / duration_hours
+        return TripStep(
+            start_hour=start_time_hours,
+            end_hour=start_time_hours + duration_hours,
+            location_name=location_name,
+            length_kilometers=leg_length_kilometers,
+            duration_hours=duration_hours,
+            speed_kph=speed_kph
+        )
 
 
 @dataclass
@@ -118,6 +153,7 @@ class Location:
     and their properties,  from a scenario
     file that contains a list of instances and their properties.
     '''
+
     base: bool
     connectivity: float
     charging_power_kW: float
@@ -206,9 +242,16 @@ class Trip:
     is (including 'driving').
     '''
 
-    start_time_hours: float
+    base: str
+    trip_steps: list[TripStep]
+    # start_time_hours: float
     # time_steps: pl.Series
     # location_names: pl.Series
+
+    # Add BaseTransitions
+    # start_base end_base distance duration
+
+    # elsewhere: range of dates where it can occur and drawn (first, time at second)
 
     # round things to the time resolution
     # Add repetitions thing (maybe with a function placeholder first!)
@@ -265,7 +308,67 @@ class Trip:
         return start_time_hours
 
     @staticmethod
-    def define_user_trip(trip_parameters: Box) -> Trip:
+    def get_steps(
+        *,
+        start_time_hours: float,
+        leg_names: list[str],
+        time_between_legs_hours: list[float],
+        legs: dict[str, Leg],
+        driving_location_name: str,
+    ) -> list[TripStep]:
+        step_start_time: float = start_time_hours
+
+        trip_steps: list[TripStep] = []
+        for leg_name, parked_hours in zip(leg_names, time_between_legs_hours):
+            leg_duration_hours: float = legs[leg_name].duration_hours
+            leg_length_kilometers: float = legs[leg_name].distance_km
+            driving_step: TripStep = TripStep.get_step(
+                start_time_hours=step_start_time,
+                duration_hours=leg_duration_hours,
+                location_name=driving_location_name,
+                leg_length_kilometers=leg_length_kilometers,
+            )
+            trip_steps.append(driving_step)
+            parking_location_name: str = legs[leg_name].end_location
+            step_start_time += leg_duration_hours
+            parking_step: TripStep = TripStep.get_step(
+                start_time_hours=step_start_time,
+                duration_hours=parked_hours,
+                location_name=parking_location_name,
+                leg_length_kilometers=0,
+            )
+            trip_steps.append(parking_step)
+            step_start_time += parked_hours
+
+        if len(leg_names) > 0 :
+            last_leg_name: str = leg_names[-1]
+            # The last leg brings us to the base and does
+            # not have a corrersponding parking time, by defintion
+            print('[magenta] Document legs and parked times')
+            last_step: TripStep = TripStep.get_step(
+                start_time_hours=step_start_time,
+                duration_hours=legs[last_leg_name].duration_hours,
+                location_name=driving_location_name,
+                leg_length_kilometers=legs[last_leg_name].distance_km,
+            )
+
+            trip_steps.append(last_step)
+        return trip_steps
+
+    @staticmethod
+    def get_leg_info(trip_parameters: Box) -> tuple[list[str], list[float]]:
+        leg_names: list[str] = trip_parameters.legs
+        time_between_legs_hours: list[
+            float
+        ] = trip_parameters.time_between_legs_hours
+        print('[magenta]Add repetitions stuff')
+
+        return leg_names, time_between_legs_hours
+
+    @staticmethod
+    def define_user_trip(
+        trip_parameters: Box, legs: dict[str, Leg], driving_location_name: str
+    ) -> Trip:
         '''
         Creates a trip version for the user. It creates a vesion of the trip
         for a user by drawing a start time.
@@ -278,15 +381,27 @@ class Trip:
             start_time_hours_mean=start_time_hours_mean,
             start_time_hours_standard_deviation=start_time_hours_standard_deviation,  # noqa: E501
         )
+        base: str = trip_parameters.base
 
-        return Trip(start_time_hours=start_time_hours)
+        leg_names, time_between_legs_hours = Trip.get_leg_info(
+            trip_parameters=trip_parameters
+        )
+
+        trip_steps: list[TripStep] = Trip.get_steps(
+            start_time_hours=start_time_hours,
+            leg_names=leg_names,
+            time_between_legs_hours=time_between_legs_hours,
+            legs=legs,
+            driving_location_name=driving_location_name,
+        )
+
+        return Trip(base=base, trip_steps=trip_steps)
 
     # Create Transition class (put holifday there)
-    # Add leisure holiday trips 
-    # remove holiday trips 
+    # Add leisure holiday trips
+    # remove holiday trips
     # Add base locations (locations that have is_base=True)
-        
-    
+
     # Add Transitions first then trips (drwan per base adn day type in mobility)
     # add location per time unity (minute?)
     # set base location for all times and change them with trips
@@ -299,9 +414,9 @@ class Trip:
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
+    driving_location_name: str = scenario.general.driving_location_name
 
     run_parameters: Box = scenario.run
-
     time_ranges: TimeRange = TimeRange.set_ranges(
         run_parameters=run_parameters
     )
@@ -326,16 +441,30 @@ if __name__ == '__main__':
     }
     trips_definitions: Box = scenario.trips
     user_trips: dict[str, Trip] = {
-        trip_name: Trip.define_user_trip(trip_parameters)
+        trip_name: Trip.define_user_trip(
+            trip_parameters=trip_parameters,
+            legs=legs,
+            driving_location_name=driving_location_name,
+        )
         for trip_name, trip_parameters in trips_definitions.items()
     }
-
+    base_trips: dict[str, dict[str, Trip]] = {}
+    for base_name in base_locations.keys():
+        base_trips[base_name] = {
+            trip_name: trip
+            for trip_name, trip in user_trips.items()
+            if trip.base == base_name
+        }
+    print(base_trips)
+    exit()
     print(locations)
     print(base_locations)
     exit()
     print(legs)
     print(user_trips)
+    print('Draw trips for base pool  ')
 
+# transitions are back an d foreth?
 
 # @dataclass
 # class Extrapolate:

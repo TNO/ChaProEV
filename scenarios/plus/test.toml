@@ -107,8 +107,8 @@ end_location = 'work'
 [legs.come_from_work]
 distance_km = 19.2
 duration_hours = 0.25
-start_location = 'home'
-end_location = 'work'
+start_location = 'work'
+end_location = 'home'
 
 
 [legs.home_to_leisure]
@@ -140,6 +140,20 @@ start_location = 'leisure'
 end_location = 'work'
 
 
+[legs.holiday_to_leisure]
+distance_km = 10
+duration_hours = 0.4
+start_location = 'holiday'
+end_location = 'leisure'
+
+
+[legs.leisure_to_holiday]
+distance_km = 10
+duration_hours = 0.4
+start_location = 'leisure'
+end_location = 'holiday'
+
+
 [legs.home_to_weekend]
 distance_km = 87.3
 duration_hours = 1
@@ -155,21 +169,10 @@ end_location = 'home'
 
 
 
-[legs.home_to_holiday]
-distance_km = 174.6
-duration_hours = 2
-start_location = 'home'
-end_location = 'holiday'
-
-
-[legs.holiday_to_home]
-distance_km = 174.6
-duration_hours = 2
-start_location = 'leisure'
-end_location = 'holiday'
 
 [trips]
 [trips.commute_to_work]
+base = 'home'
 legs = ['go_to_work', 'come_from_work']
 time_between_legs_hours = [9]
 # This is the time spent at each interim location (same units as use
@@ -184,6 +187,7 @@ start_time_hours_standard_deviation = 2
 
 
 [trips.commute_to_work_and_leisure]
+base = 'home'
 legs = ['go_to_work','work_to_leisure', 'leisure_to_work', 'come_from_work']
 time_between_legs_hours = [3, 2, 4]
 # This is the time spent at each interim location (same units as used
@@ -197,6 +201,7 @@ start_time_hours_standard_deviation = 2
 
 
 [trips.leisure_only]
+base = 'home'
 legs = ['home_to_leisure', 'leisure_to_home']
 time_between_legs_hours = [2]
 # This is the time spent at each interim location (same units as used
@@ -209,7 +214,23 @@ start_time_hours_mean = 12
 start_time_hours_standard_deviation = 4
 
 
+
+[trips.holiday_leisure_trip]
+base = 'holiday'
+legs = ['holiday_to_leisure', 'leisure_to_holiday']
+time_between_legs_hours = [4]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
 [trips.weekend_trip]
+base = 'home'
 legs = ['home_to_weekend', 'weekend_to_home']
 time_between_legs_hours = [4]
 # This is the time spent at each interim location (same units as used
@@ -222,34 +243,10 @@ start_time_hours_mean = 12
 start_time_hours_standard_deviation = 4
 
 
-[trips.holiday_outward]
-legs = ['home_to_holiday']
-time_between_legs_hours = []
-# This is the time spent at each interim location (same units as used
-# general
-percentage_station_users = 0
-repeated_sequence = []
-repetition_amounts = [0]
-time_between_repetitions_hours = [0]
-start_time_hours_mean = 12
-start_time_hours_standard_deviation = 4
-
-
-
-[trips.holiday_back]
-legs = ['holiday_to_home']
-time_between_legs_hours = []
-# This is the time spent at each interim location (same units as used
-# general
-percentage_station_users = 0
-repeated_sequence = []
-repetition_amounts = [0]
-time_between_repetitions_hours = [0]
-start_time_hours_mean = 12
-start_time_hours_standard_deviation = 4
 
 
 [trips.stay_put_home]
+base = 'home'
 legs = []
 time_between_legs_hours = []
 # This is the time spent at each interim location (same units as used
@@ -264,6 +261,7 @@ start_time_hours_standard_deviation = 0.6
 
 
 [trips.stay_put_holiday]
+base = 'holiday'
 legs = []
 time_between_legs_hours = []
 # This is the time spent at each interim location (same units as used
@@ -274,6 +272,27 @@ repetition_amounts = [0]
 time_between_repetitions_hours = [0]
 start_time_hours_mean = 6.2
 start_time_hours_standard_deviation = 0.6
+
+
+
+
+
+[base_shifts]
+[base_shifts.holiday_outward]
+start_base = 'home'
+end_base = 'holiday'
+distance_km = 174.6
+duration_hours = 2
+
+
+
+
+[base_shifts.holiday_back]
+start_base = 'holiday'
+end_base = 'home'
+distance_km = 174.6
+duration_hours = 2
+
 
 
 
@@ -316,3 +335,7 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 # 's' for seconds, 'd' for days. For more info and other types, see here:
 # Or combine them: “3d12h4m25s” # 3 days, 12 hours, 4 minutes, and 25 seconds
 # https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
+
+
+[general]
+driving_location_name = 'road'
