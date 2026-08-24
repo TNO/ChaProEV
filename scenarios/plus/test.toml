@@ -339,3 +339,24 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 
 [general]
 driving_location_name = 'road'
+
+[time]
+SECONDS_PER_HOUR = 3600
+HOURS_IN_A_DAY = 24
+MONTHS_IN_A_YEAR = 12
+MAX_DAYS_IN_A_MONTH = 31
+DAYS_IN_A_YEAR = 365.25
+DAYS_IN_A_WEEK = 7
+weekend_day_numbers = [6, 7]
+first_hour_number = 1
+# Put 0 if you start counting at 0, 1 if you start counting at 1
+# The SPINE toolbox uses 1
+# This is only for the hour number list (and related lists)
+
+holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53]
+# We need to provide the number of holliday weeks seprately,
+# as counting the elements of the list above might not work, such as
+# when the above list contains weeks 1 and 53 (which just represent
+# the fact that years don't necessarily start and/or end at the start/end
+# of a week).
+number_of_holiday_weeks = 10

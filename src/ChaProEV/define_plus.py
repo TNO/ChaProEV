@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+from datetime import date, datetime
+from pathlib import Path
+
+import numpy as np
+import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
-from pathlib import Path
-import numpy as np
-import polars as pl
-from datetime import date, datetime, timedelta
 
 
 @dataclass
@@ -28,7 +29,6 @@ class TripStep:
         location_name: str,
         leg_length_kilometers: float,
     ) -> TripStep:
-        
         if duration_hours == 0:
             speed_kph: float = 0
         else:
@@ -39,7 +39,7 @@ class TripStep:
             location_name=location_name,
             length_kilometers=leg_length_kilometers,
             duration_hours=duration_hours,
-            speed_kph=speed_kph
+            speed_kph=speed_kph,
         )
 
 
@@ -54,9 +54,10 @@ class TimeRange:
     display_dates: pl.Series | pl.Expr
     run_stamps: pl.Series | pl.Expr
     display_stamps: pl.Series | pl.Expr
+    day_types: pl.Series
 
     @staticmethod
-    def set_ranges(run_parameters: Box) -> TimeRange:
+    def set_ranges(run_parameters: Box, time_parameters: Box) -> TimeRange:
         start: Box = run_parameters.start
         end: Box = run_parameters.end
         display_start: Box = run_parameters.display_start
@@ -138,11 +139,36 @@ class TimeRange:
             closed='left',
         )
 
+        day_types: pl.Series = pl.DataFrame({'date': run_dates}).with_columns(
+            pl.concat_str(
+                [
+                    pl.when(
+                        pl.col('date')
+                        .dt.weekday()
+                        .is_in(time_parameters.weekend_day_numbers)
+                    )
+                    .then(pl.lit('weekend'))
+                    .otherwise(pl.lit('weekday')),
+                    pl.lit('_in_'),
+                    pl.when(
+                        pl.col('date').dt.week().is_in(
+                            time_parameters.holiday_weeks
+                        )
+                    )
+                    .then(pl.lit('holiday'))
+                    .otherwise(pl.lit('work')),
+                    pl.lit('_week'),
+                ]
+            ).alias('day_type')
+        )['day_type']
+
+
         return TimeRange(
             run_dates=run_dates,
             display_dates=display_dates,
             run_stamps=run_stamps,
             display_stamps=display_stamps,
+            day_types=day_types
         )
 
 
@@ -340,7 +366,7 @@ class Trip:
             trip_steps.append(parking_step)
             step_start_time += parked_hours
 
-        if len(leg_names) > 0 :
+        if len(leg_names) > 0:
             last_leg_name: str = leg_names[-1]
             # The last leg brings us to the base and does
             # not have a corrersponding parking time, by defintion
@@ -418,7 +444,7 @@ if __name__ == '__main__':
 
     run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
-        run_parameters=run_parameters
+        run_parameters=run_parameters, time_parameters=scenario.time
     )
     locations_definitions: Box = scenario.locations
 
@@ -455,65 +481,5 @@ if __name__ == '__main__':
             for trip_name, trip in user_trips.items()
             if trip.base == base_name
         }
-    print(base_trips)
-    exit()
-    print(locations)
-    print(base_locations)
-    exit()
-    print(legs)
-    print(user_trips)
-    print('Draw trips for base pool  ')
+    
 
-# transitions are back an d foreth?
-
-# @dataclass
-# class Extrapolate:
-#     do_run: bool
-#     column_prefix: str
-#     input_start_year: int
-#     input_end_year: int
-#     extrapolation_end_year: int
-#     initial_guess_maximum: float
-#     initial_guess_exponent_factor: float
-#     initial_guess_midpoint: float
-#     increase_proportion: bool
-#     extra_increase_proportion: float
-#     maxfev: int
-
-#     @staticmethod
-#     def read_parameters(extrapolation_settings: box.Box) -> Extrapolate:
-#         do_run: bool = extrapolation_settings.do_run
-#         column_prefix: str = extrapolation_settings.column_prefix
-#         input_start_year: int = extrapolation_settings.input_start_year
-#         input_end_year: int = extrapolation_settings.input_end_year
-#         extrapolation_end_year: int = (
-#             extrapolation_settings.extrapolation_end_year
-#         )
-#         initial_guess_maximum: float = (
-#             extrapolation_settings.initial_guess_maximum
-#         )
-#         initial_guess_exponent_factor: float = (
-#             extrapolation_settings.initial_guess_exponent_factor
-#         )
-#         initial_guess_midpoint: float = (
-#             extrapolation_settings.initial_guess_midpoint
-#         )
-#         increase_proportion: bool = extrapolation_settings.increase_proportion
-#         extra_increase_proportion: float = (
-#             extrapolation_settings.extra_increase_proportion
-#         )
-#         maxfev: int = extrapolation_settings.maxfev
-
-#         return Extrapolate(
-#             do_run=do_run,
-#             column_prefix=column_prefix,
-#             input_start_year=input_start_year,
-#             input_end_year=input_end_year,
-#             extrapolation_end_year=extrapolation_end_year,
-#             initial_guess_maximum=initial_guess_maximum,
-#             initial_guess_exponent_factor=initial_guess_exponent_factor,
-#             initial_guess_midpoint=initial_guess_midpoint,
-#             increase_proportion=increase_proportion,
-#             extra_increase_proportion=extra_increase_proportion,
-#             maxfev=maxfev,
-#         )
