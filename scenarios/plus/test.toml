@@ -301,10 +301,10 @@ duration_hours = 2
 use_seed = true
 seed = 1989
 [run.start]
-year = 2014
-month = 12
-day = 31
-hour = 5
+year = 2015
+month = 1
+day = 1
+hour = 0
 minute = 0
 [run.end]  # This is is not included in the run time
 year = 2016
@@ -339,12 +339,22 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 # https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
 
 
+[vehicle]
+name = 'car'
+consumption_kWh_km = 0.14151
+battery_size_kWh = 80
+charge_desire_proportion_trigger = 0.5
+
+[charging]
+adaptive = true
+
 [general]
 driving_location_name = 'road'
-vehicle_name = 'car'
+
 
 [time]
 SECONDS_PER_HOUR = 3600
+MINUTES_PER_HOUR = 60
 HOURS_IN_A_DAY = 24
 MONTHS_IN_A_YEAR = 12
 MAX_DAYS_IN_A_MONTH = 31

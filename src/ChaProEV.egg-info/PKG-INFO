@@ -13,6 +13,7 @@ License-File: LICENCE
 Requires-Dist: ets-cookbook>=1.2.8
 Requires-Dist: polars>=1.43.2
 Requires-Dist: python-box>=7.4.1
+Requires-Dist: tqdm>=4.70.0
 Dynamic: license-file
 
 # **ChaProEV**

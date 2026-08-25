@@ -1,5 +1,6 @@
 .flake8
 .gitignore
+.venv
 ChaProEV.pptx
 ChaProEV.toml
 ChaProEV_test_case_configuration_files.zip
@@ -22,6 +23,7 @@ requirements.txt
 requirements_obsolete.txt
 siec.csv
 todo.txt
+uv.lock
 .github/workflows/black-format.yml
 .github/workflows/deploy-docs.yml
 .github/workflows/draft-pdf.yml
@@ -120,6 +122,7 @@ scenarios/cumulative_test/XX_car.toml
 scenarios/cumulative_test/XX_truck.toml
 scenarios/cumulative_test/XX_van.toml
 scenarios/local_impact_BEVs/baseline.toml
+scenarios/plus/test.toml
 src/ChaProEV/ChaProEV.py
 src/ChaProEV/__init__.py
 src/ChaProEV/charging.py
@@ -128,6 +131,7 @@ src/ChaProEV/define.py
 src/ChaProEV/define_plus.py
 src/ChaProEV/make_variants.py
 src/ChaProEV/mobility.py
+src/ChaProEV/mobility_plus.py
 src/ChaProEV/non_road.py
 src/ChaProEV/profiles.py
 src/ChaProEV/py.typed

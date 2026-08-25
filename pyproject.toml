@@ -20,6 +20,7 @@ dependencies = [
     "ets-cookbook>=1.2.8",
     "polars>=1.43.2",
     "python-box>=7.4.1",
+    "tqdm>=4.70.0",
 ]
 # dynamic = ['dependencies']
 # [tool.setuptools.dynamic]

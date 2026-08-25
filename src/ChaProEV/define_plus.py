@@ -145,10 +145,10 @@ class TimeRange:
     for computation and display
     '''
 
-    run_dates: pl.Series | pl.Expr
-    display_dates: pl.Series | pl.Expr
-    run_stamps: pl.Series | pl.Expr
-    display_stamps: pl.Series | pl.Expr
+    run_dates: pl.Series
+    display_dates: pl.Series
+    run_stamps: pl.Series
+    display_stamps: pl.Series
     day_types: pl.Series
 
     @staticmethod
@@ -207,26 +207,26 @@ class TimeRange:
             minute=display_end.minute,
         )
 
-        run_dates: pl.Series | pl.Expr = pl.date_range(
+        run_dates: pl.Series = pl.date_range(
             start=start_date,
             end=end_date,
             eager=True,
             closed='left',
         )
-        display_dates: pl.Series | pl.Expr = pl.date_range(
+        display_dates: pl.Series = pl.date_range(
             display_start_date,
             end=display_end_date,
             eager=True,
             closed='left',
         )
-        run_stamps: pl.Series | pl.Expr = pl.datetime_range(
+        run_stamps: pl.Series = pl.datetime_range(
             start=start_datetime,
             end=end_datetime,
             interval=run_frequency,
             eager=True,
             closed='left',
         )
-        display_stamps: pl.Series | pl.Expr = pl.datetime_range(
+        display_stamps: pl.Series = pl.datetime_range(
             start=display_start_datetime,
             end=display_end_datetime,
             interval=display_frequency,
@@ -531,9 +531,15 @@ class Trip:
     # and series of location_names (of the same size)
 
 
-if __name__ == '__main__':
-    scenario_path: Path = Path('scenarios/plus/test.toml')
-    scenario: Box = cook.parameters_from_TOML(scenario_path)
+def define_user(
+    scenario: Box,
+) -> tuple[
+    TimeRange,
+    pl.Series,
+    dict[str, dict[str, Trip]],
+    dict[str, Location],
+    np.random.Generator,
+]:
     driving_location_name: str = scenario.general.driving_location_name
 
     run_parameters: Box = scenario.run
@@ -584,12 +590,11 @@ if __name__ == '__main__':
     trip_probabilities_per_day_type: dict[
         str, dict[str, float]
     ] = get_trip_probabilities_per_day_type(
-        vehicle_name=scenario.general.vehicle_name,
+        vehicle_name=scenario.vehicle.name,
         base_name='home',
         activity_parameters=scenario.time,
     )
-    print(trip_probabilities_per_day_type)
-    print(time_ranges.day_types)
+
     run_trips: pl.Series = pl.Series(
         'trip',
         [
@@ -600,9 +605,23 @@ if __name__ == '__main__':
             for day_type in time_ranges.day_types
         ],
     )
+
+    return time_ranges, run_trips, base_trips, locations, random_generator
+
+
+if __name__ == '__main__':
+    scenario_path: Path = Path('scenarios/plus/test.toml')
+    scenario: Box = cook.parameters_from_TOML(scenario_path)
+
+    time_ranges, run_trips, base_trips, random_generator = define_user(
+        scenario=scenario
+    )
+    print(time_ranges.run_stamps)
+    print(time_ranges.run_dates)
     print(run_trips)
 
 
+# Call MArijn!
 
 # IF transition (drawen with given prob) Then redo trip prob only for that
 # With there and bck set butmaybe do later
