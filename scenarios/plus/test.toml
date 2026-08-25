@@ -298,6 +298,8 @@ duration_hours = 2
 
 
 [run]
+use_seed = true
+seed = 1989
 [run.start]
 year = 2014
 month = 12
@@ -339,6 +341,7 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 
 [general]
 driving_location_name = 'road'
+vehicle_name = 'car'
 
 [time]
 SECONDS_PER_HOUR = 3600

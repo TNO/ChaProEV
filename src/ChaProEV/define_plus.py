@@ -9,6 +9,101 @@ from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
 
+def get_other_vehicles_trip_probabilities_per_day_type(
+    base_name: str, activity_parameters: Box
+) -> dict[str, dict[str, float]]:
+    raise NotImplementedError
+
+
+def get_car_trip_probabilities_per_day_type(
+    base_name: str, activity_parameters: Box
+) -> dict[str, dict[str, float]]:
+    trip_probabilities_per_day_type: dict[str, dict[str, float]] = {}
+    print('[magenta] Implement this!')
+    trip_probabilities_per_day_type['weekday_in_work_week'] = {}
+    trip_probabilities_per_day_type['weekday_in_work_week'][
+        'commute_to_work'
+    ] = 0.6
+    trip_probabilities_per_day_type['weekday_in_work_week'][
+        'commute_to_work_and_leisure'
+    ] = 0.2
+    trip_probabilities_per_day_type['weekday_in_work_week'][
+        'leisure_only'
+    ] = 0.15
+    trip_probabilities_per_day_type['weekday_in_work_week']['weekend_trip'] = 0
+    trip_probabilities_per_day_type['weekday_in_work_week'][
+        'stay_put_home'
+    ] = 0.05
+    trip_probabilities_per_day_type['weekend_in_work_week'] = {}
+    trip_probabilities_per_day_type['weekend_in_work_week'][
+        'commute_to_work'
+    ] = 0
+    trip_probabilities_per_day_type['weekend_in_work_week'][
+        'commute_to_work_and_leisure'
+    ] = 0
+    trip_probabilities_per_day_type['weekend_in_work_week'][
+        'leisure_only'
+    ] = 0.5
+    trip_probabilities_per_day_type['weekend_in_work_week'][
+        'weekend_trip'
+    ] = 0.125
+    trip_probabilities_per_day_type['weekend_in_work_week'][
+        'stay_put_home'
+    ] = 0.375
+    trip_probabilities_per_day_type['weekday_in_holiday_week'] = {}
+    trip_probabilities_per_day_type['weekday_in_holiday_week'][
+        'commute_to_work'
+    ] = 0.3
+    trip_probabilities_per_day_type['weekday_in_holiday_week'][
+        'commute_to_work_and_leisure'
+    ] = 0.1
+    trip_probabilities_per_day_type['weekday_in_holiday_week'][
+        'leisure_only'
+    ] = 0.3
+    trip_probabilities_per_day_type['weekday_in_holiday_week'][
+        'weekend_trip'
+    ] = 0
+    trip_probabilities_per_day_type['weekday_in_holiday_week'][
+        'stay_put_home'
+    ] = 0.3
+    trip_probabilities_per_day_type['weekend_in_holiday_week'] = {}
+    trip_probabilities_per_day_type['weekend_in_holiday_week'][
+        'commute_to_work'
+    ] = 0
+    trip_probabilities_per_day_type['weekend_in_holiday_week'][
+        'commute_to_work_and_leisure'
+    ] = 0
+    trip_probabilities_per_day_type['weekend_in_holiday_week'][
+        'leisure_only'
+    ] = 0.5
+    trip_probabilities_per_day_type['weekend_in_holiday_week'][
+        'weekend_trip'
+    ] = 0.125
+    trip_probabilities_per_day_type['weekend_in_holiday_week'][
+        'stay_put_home'
+    ] = 0.375
+    return trip_probabilities_per_day_type
+
+
+def get_trip_probabilities_per_day_type(
+    vehicle_name: str, base_name: str, activity_parameters: Box
+) -> dict[str, dict[str, float]]:
+    if vehicle_name == 'car':
+        trip_probabilities_per_day_type: dict[
+            str, dict[str, float]
+        ] = get_car_trip_probabilities_per_day_type(
+            base_name, activity_parameters
+        )
+
+    else:
+        trip_probabilities_per_day_type = (
+            get_other_vehicles_trip_probabilities_per_day_type(
+                base_name, activity_parameters
+            )
+        )
+    return trip_probabilities_per_day_type
+
+
 @dataclass
 class TripStep:
     '''
@@ -151,9 +246,9 @@ class TimeRange:
                     .otherwise(pl.lit('weekday')),
                     pl.lit('_in_'),
                     pl.when(
-                        pl.col('date').dt.week().is_in(
-                            time_parameters.holiday_weeks
-                        )
+                        pl.col('date')
+                        .dt.week()
+                        .is_in(time_parameters.holiday_weeks)
                     )
                     .then(pl.lit('holiday'))
                     .otherwise(pl.lit('work')),
@@ -162,13 +257,12 @@ class TimeRange:
             ).alias('day_type')
         )['day_type']
 
-
         return TimeRange(
             run_dates=run_dates,
             display_dates=display_dates,
             run_stamps=run_stamps,
             display_stamps=display_stamps,
-            day_types=day_types
+            day_types=day_types,
         )
 
 
@@ -443,6 +537,11 @@ if __name__ == '__main__':
     driving_location_name: str = scenario.general.driving_location_name
 
     run_parameters: Box = scenario.run
+    if run_parameters.use_seed:
+        run_seed: int | None = run_parameters.seed
+    else:
+        run_seed = None
+    random_generator: np.random.Generator = np.random.default_rng(run_seed)
     time_ranges: TimeRange = TimeRange.set_ranges(
         run_parameters=run_parameters, time_parameters=scenario.time
     )
@@ -481,5 +580,29 @@ if __name__ == '__main__':
             for trip_name, trip in user_trips.items()
             if trip.base == base_name
         }
-    
 
+    trip_probabilities_per_day_type: dict[
+        str, dict[str, float]
+    ] = get_trip_probabilities_per_day_type(
+        vehicle_name=scenario.general.vehicle_name,
+        base_name='home',
+        activity_parameters=scenario.time,
+    )
+    print(trip_probabilities_per_day_type)
+    print(time_ranges.day_types)
+    run_trips: pl.Series = pl.Series(
+        'trip',
+        [
+            random_generator.choice(
+                list(trip_probabilities_per_day_type[day_type].keys()),
+                p=list(trip_probabilities_per_day_type[day_type].values()),
+            )
+            for day_type in time_ranges.day_types
+        ],
+    )
+    print(run_trips)
+
+
+
+# IF transition (drawen with given prob) Then redo trip prob only for that
+# With there and bck set butmaybe do later
