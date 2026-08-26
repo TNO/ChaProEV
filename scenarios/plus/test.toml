@@ -22,7 +22,7 @@ time_modulation_factors = [
 ] # Starts at midinight
 [locations.work]
 base = false
-connectivity = 0.25
+connectivity = 0.5
 charging_power_kW = 14 # kW
 charger_efficiency = 0.9
 latitude = 52.1
@@ -182,7 +182,7 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 8
+start_time_hours_mean = 9.0
 start_time_hours_standard_deviation = 2
 
 
@@ -196,7 +196,7 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 8
+start_time_hours_mean = 9.0
 start_time_hours_standard_deviation = 2
 
 
