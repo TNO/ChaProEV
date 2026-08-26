@@ -7,6 +7,19 @@ import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
+try:
+    import auxiliary  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import auxiliary  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 
 
 def get_other_vehicles_trip_probabilities_per_day_type(
@@ -420,8 +433,9 @@ class Trip:
         *,
         start_time_hours_mean: float,
         start_time_hours_standard_deviation: float,
+        random_generator: np.random.Generator
     ) -> float:
-        start_time_hours: float = np.random.normal(
+        start_time_hours: float = random_generator.normal(
             loc=start_time_hours_mean,
             scale=start_time_hours_standard_deviation,
         )
@@ -487,7 +501,9 @@ class Trip:
 
     @staticmethod
     def define_user_trip(
-        trip_parameters: Box, legs: dict[str, Leg], driving_location_name: str
+        trip_parameters: Box, legs: dict[str, Leg], driving_location_name: str,
+        random_generator: np.random.Generator,
+
     ) -> Trip:
         '''
         Creates a trip version for the user. It creates a vesion of the trip
@@ -500,6 +516,7 @@ class Trip:
         start_time_hours: float = Trip.get_start_time_hours(
             start_time_hours_mean=start_time_hours_mean,
             start_time_hours_standard_deviation=start_time_hours_standard_deviation,  # noqa: E501
+            random_generator=random_generator,
         )
         base: str = trip_parameters.base
 
@@ -533,21 +550,15 @@ class Trip:
 
 def define_user(
     scenario: Box,
+    random_generator: np.random.Generator
 ) -> tuple[
     TimeRange,
     pl.Series,
     dict[str, dict[str, Trip]],
     dict[str, Location],
-    np.random.Generator,
 ]:
     driving_location_name: str = scenario.general.driving_location_name
-
-    run_parameters: Box = scenario.run
-    if run_parameters.use_seed:
-        run_seed: int | None = run_parameters.seed
-    else:
-        run_seed = None
-    random_generator: np.random.Generator = np.random.default_rng(run_seed)
+    run_parameters:Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
         run_parameters=run_parameters, time_parameters=scenario.time
     )
@@ -576,6 +587,7 @@ def define_user(
             trip_parameters=trip_parameters,
             legs=legs,
             driving_location_name=driving_location_name,
+            random_generator=random_generator
         )
         for trip_name, trip_parameters in trips_definitions.items()
     }
@@ -606,15 +618,19 @@ def define_user(
         ],
     )
 
-    return time_ranges, run_trips, base_trips, locations, random_generator
+    return time_ranges, run_trips, base_trips, locations
 
 
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
+    random_generators: auxiliary.RandomGenerators = (
+        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    )
 
-    time_ranges, run_trips, base_trips, random_generator = define_user(
-        scenario=scenario
+
+    time_ranges, run_trips, base_trips, locations = define_user(
+        scenario=scenario, random_generator=random_generators.define
     )
     print(time_ranges.run_stamps)
     print(time_ranges.run_dates)

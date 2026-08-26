@@ -23,6 +23,20 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+try:
+    import auxiliary  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import auxiliary  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
+
 def create_trip_step_record(
     *,
     trip_date: date,
@@ -133,6 +147,7 @@ def compute_mobility_matrix(
             on='Time Stamp',
             how='left',
             suffix='_trip',
+            # maintain_order='left',
         )
         .with_columns(
             pl.coalesce('Location_trip', 'Location').alias('Location'),
@@ -140,7 +155,7 @@ def compute_mobility_matrix(
                 'Kilometers driven'
             ),
         )
-        .drop('Location_trip', 'Kilometers driven_trip')
+        .drop('Location_trip', 'Kilometers driven_trip')  # .sort('Time Stamp')
     )
     mobility_matrix = mobility_matrix.with_columns(
         (
@@ -171,14 +186,20 @@ def compute_mobility_matrix(
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
+    run_parameters: Box = scenario.run
+
+    random_generators: auxiliary.RandomGenerators = (
+        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    )
 
     (
         time_ranges,
         run_trips,
         base_trips,
         locations,
-        random_generator,
-    ) = define_plus.define_user(scenario=scenario)
+    ) = define_plus.define_user(
+        scenario=scenario, random_generator=random_generators.define
+    )
 
     mobility_matrix: pl.DataFrame = compute_mobility_matrix(
         time_ranges=time_ranges,

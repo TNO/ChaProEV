@@ -344,10 +344,10 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 name = 'car'
 consumption_kWh_km = 0.14151
 battery_size_kWh = 80
-charge_desire_proportion_trigger = 0.5
+charge_desire_proportion_trigger = 1
 
 [charging]
-adaptive = true
+adaptive = false
 
 [general]
 driving_location_name = 'road'

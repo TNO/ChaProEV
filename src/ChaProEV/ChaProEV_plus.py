@@ -10,6 +10,19 @@ from rich import print
 import matplotlib.pyplot as plt
 
 try:
+    import auxiliary  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import auxiliary  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
+try:
     import define_plus  # type: ignore
 
     # We need to ignore the type because mypy has its own search path for
@@ -116,14 +129,17 @@ class Charge:
         )
 
 
-def get_charging_quantities(scenario: Box) -> Charge:
+def get_charging_quantities(
+    scenario: Box, random_generators: auxiliary.RandomGenerators
+) -> Charge:
     (
         time_ranges,
         run_trips,
         base_trips,
         locations,
-        random_generator,
-    ) = define_plus.define_user(scenario=scenario)
+    ) = define_plus.define_user(
+        scenario=scenario, random_generator=random_generators.define
+    )
 
     mobility_matrix: pl.DataFrame = mobility_plus.compute_mobility_matrix(
         time_ranges=time_ranges,
@@ -136,19 +152,25 @@ def get_charging_quantities(scenario: Box) -> Charge:
         mobility_matrix=mobility_matrix,
         locations=locations,
         scenario=scenario,
-        random_generator=random_generator,
+        random_generator=random_generators.charging,
     )
 
     return Charge.from_dataframe(charging_dataframe=charging_dataframe)
 
 
 def get_iterated_charging_dataframe(
-    scenario: Box, iterations: int
+    scenario: Box,
+    iterations: int,
+    random_generators: auxiliary.RandomGenerators,
 ) -> pl.DataFrame:
-    cumulative_charge: Charge = get_charging_quantities(scenario)
+    cumulative_charge: Charge = get_charging_quantities(
+        scenario=scenario, random_generators=random_generators
+    )
 
     for _ in range(iterations - 1):
-        iteration_charge: Charge = get_charging_quantities(scenario)
+        iteration_charge: Charge = get_charging_quantities(
+            scenario=scenario, random_generators=random_generators
+        )
         cumulative_charge = cumulative_charge.add_iteration(
             iteration_charge=iteration_charge
         )
@@ -177,11 +199,16 @@ def get_iterated_charging_dataframe(
 
 @cook.function_timer
 def run_ChaProEV(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
+    random_generators: auxiliary.RandomGenerators = (
+        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    )
     iterations: int = scenario.run.iterations
     if iterations < 1:
         raise ValueError('You need at least one iteration')
     charging_dataframe: pl.DataFrame = get_iterated_charging_dataframe(
-        scenario=scenario, iterations=iterations
+        scenario=scenario,
+        iterations=iterations,
+        random_generators=random_generators,
     )
     hourly_values: pl.DataFrame = charging_plus.get_hourly_values(
         charging_dataframe
@@ -193,44 +220,29 @@ def run_ChaProEV(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
-    # charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
-    # print(charging_dataframe)
-    # print(hourly_values)
+
     plt.style.use('fivethirtyeight')
     network_power_figure, network_power_plot = plt.subplots(1, 1)
-    # network_power_plot.bar(
-    #     x=hourly_values['Hour number'],
-    #     height=hourly_values['Average power drawn from network (kW)'],
-    # )
-    st.set_page_config(layout='wide')
-    sidebar = st.sidebar
-    with sidebar:
-        charge_desire_proportion_trigger: float = st.slider(
-            label='Charge proportion trigger percent',
-            min_value=0.0,
-            max_value=1.0,
-            value=scenario.vehicle.charge_desire_proportion_trigger,
-            step=0.01,
-            format='percent',
-            key='charge_desire_proportion_trigger',
-        )
-        adaptive: bool = st.selectbox(
-            label='Use adaptve charging',
-            options=[True, False],
-            key='adaptive'
-        )
-    scenario.charging.adaptive = adaptive
-    scenario.vehicle.charge_desire_proportion_trigger = charge_desire_proportion_trigger
+    
     charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
     network_power_plot.bar(
         x=hourly_values['Hour number'],
         height=hourly_values['Average power drawn from network (kW)'],
     )
-    plot1, plot2 = st.columns(2)
-    with plot1:
-        st.pyplot(network_power_figure)
-        plt.close(network_power_figure)
-    # network_power_figure.savefig('noot.png')
+    network_power_figure.savefig('noot.png')
+    
+    scenario.charging.adaptive = True
+    charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
+    network_power_plot.bar(
+        x=hourly_values['Hour number'],
+        height=hourly_values['Average power drawn from network (kW)'],
+    )
+    network_power_figure.savefig('moot.png')
+    # plot1, plot2 = st.columns(2)
+    # with plot1:
+    #     st.pyplot(network_power_figure)
+    #     plt.close(network_power_figure)
+    
     # hourly_figure, hourly_plots = plt.subplots(2, 2)
     # hourly_plots[0, 0].bar(
     #     x=hourly_values['Hour number'],
@@ -254,3 +266,26 @@ if __name__ == '__main__':
     print('Variance')
     print('Test with tighter proba dist')
     print('Still some overlap issues')
+    # network_power_plot.bar(
+    #     x=hourly_values['Hour number'],
+    #     height=hourly_values['Average power drawn from network (kW)'],
+    # )
+    # st.set_page_config(layout='wide')
+    # sidebar = st.sidebar
+    # with sidebar:
+    #     charge_desire_proportion_trigger: float = st.slider(
+    #         label='Charge proportion trigger percent',
+    #         min_value=0.0,
+    #         max_value=1.0,
+    #         value=scenario.vehicle.charge_desire_proportion_trigger,
+    #         step=0.01,
+    #         format='percent',
+    #         key='charge_desire_proportion_trigger',
+    #     )
+    #     adaptive: bool = st.selectbox(
+    #         label='Use adaptve charging',
+    #         options=[True, False],
+    #         key='adaptive'
+    #     )
+    # scenario.charging.adaptive = adaptive
+    # scenario.vehicle.charge_desire_proportion_trigger = charge_desire_proportion_trigger
