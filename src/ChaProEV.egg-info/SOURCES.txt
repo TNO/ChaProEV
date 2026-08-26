@@ -13,6 +13,7 @@ MOPO_logo_main.svg
 MOPO_logo_main_onwhite.svg
 README-PC-28624.md
 README.md
+cha.csv
 eu-emblem-low-res.jpg
 mkdocs-PC-28624.yml
 mkdocs.yml
@@ -124,8 +125,10 @@ scenarios/cumulative_test/XX_van.toml
 scenarios/local_impact_BEVs/baseline.toml
 scenarios/plus/test.toml
 src/ChaProEV/ChaProEV.py
+src/ChaProEV/ChaProEV_plus.py
 src/ChaProEV/__init__.py
 src/ChaProEV/charging.py
+src/ChaProEV/charging_plus.py
 src/ChaProEV/consumption.py
 src/ChaProEV/define.py
 src/ChaProEV/define_plus.py

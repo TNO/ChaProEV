@@ -19,7 +19,7 @@ def get_car_trip_probabilities_per_day_type(
     base_name: str, activity_parameters: Box
 ) -> dict[str, dict[str, float]]:
     trip_probabilities_per_day_type: dict[str, dict[str, float]] = {}
-    print('[magenta] Implement this!')
+    # print('[magenta] Implement this!')
     trip_probabilities_per_day_type['weekday_in_work_week'] = {}
     trip_probabilities_per_day_type['weekday_in_work_week'][
         'commute_to_work'
@@ -464,7 +464,7 @@ class Trip:
             last_leg_name: str = leg_names[-1]
             # The last leg brings us to the base and does
             # not have a corrersponding parking time, by defintion
-            print('[magenta] Document legs and parked times')
+            # print('[magenta] Document legs and parked times')
             last_step: TripStep = TripStep.get_step(
                 start_time_hours=step_start_time,
                 duration_hours=legs[last_leg_name].duration_hours,
@@ -481,7 +481,7 @@ class Trip:
         time_between_legs_hours: list[
             float
         ] = trip_parameters.time_between_legs_hours
-        print('[magenta]Add repetitions stuff')
+        # print('[magenta]Add repetitions stuff')
 
         return leg_names, time_between_legs_hours
 

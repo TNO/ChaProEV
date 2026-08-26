@@ -300,6 +300,7 @@ duration_hours = 2
 [run]
 use_seed = true
 seed = 1989
+iterations = 12
 [run.start]
 year = 2015
 month = 1

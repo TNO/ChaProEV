@@ -44,7 +44,7 @@ def compute_charging(
     locations: dict[str, define_plus.Location],
     scenario: Box,
     random_generator: np.random.Generator,
-) -> tuple[pl.DataFrame, pl.DataFrame]:
+) -> pl.DataFrame:
     driving_location_name: str = scenario.general.driving_location_name
     battery_capacity_kWh: float = scenario.vehicle.battery_size_kWh
     charge_desire_proportion_trigger: float = (
@@ -79,9 +79,12 @@ def compute_charging(
             mobility_matrix['Location'],
             mobility_matrix['Consumption (kWh)'],
             mobility_matrix['Time at location (hours)'],
+            strict=True
         )
     ):
         current_battery_level_kWh -= consumption
+        if current_battery_level_kWh < 0:
+            raise ValueError('Baatery level is negative!')
 
         if step_index == 0:
             battery_charge_levels_kWh.append(current_battery_level_kWh)
@@ -109,11 +112,6 @@ def compute_charging(
                     can_charge = (
                         random_generator.random() < location.connectivity
                     )
-                    # if wants_to_charge:
-                    #     print(time_stamp)
-                    #     print(can_charge)
-                    #     print(current_battery_level_kWh)
-                    #     input()
 
                     does_charge = wants_to_charge and can_charge
                     battery_space_at_session_start_kWh: float = (
@@ -206,7 +204,13 @@ def compute_charging(
             pl.col('Power drawn from network (kW)') * run_time_resolution_hours
         ).alias('Charge from network (kWh)')
     )
-    charging_averages: pl.DataFrame = (
+    
+    return charging_dataframe
+
+
+def get_hourly_values(charging_dataframe: pl.DataFrame) -> pl.DataFrame:
+
+    hourly_values: pl.DataFrame = (
         charging_dataframe.with_columns(
             pl.col('Time Stamp').dt.hour().alias('Hour number')
         )
@@ -217,18 +221,18 @@ def compute_charging(
             .alias('Average power to vehicle (kW)'),
             pl.col('Power drawn from network (kW)')
             .mean()
-            .alias('Average power drwan from network (kW)'),
+            .alias('Average power drawn from network (kW)'),
             pl.col('Charge to vehicle (kWh)')
             .sum()
             .alias('Cumulative charge to vehicle (kWh)'),
             pl.col('Charge from network (kWh)')
             .sum()
-            .alias('Cumulative charge form network (kWh)'),
+            .alias('Cumulative charge from network (kWh)'),
         )
         .sort('Hour number')
     )
 
-    return charging_dataframe, charging_averages
+    return hourly_values
 
 
 if __name__ == '__main__':
@@ -260,25 +264,4 @@ if __name__ == '__main__':
     print(charging_dataframe['Power to vehicle (kW)'].sum() / 60)
     with pl.Config(tbl_rows=26):
         print(charging_averages)
-    # charging_dataframe.write_csv('cha.csv')
-    # print(
-    #     charging_dataframe.select(
-    #         pl.col("Time Stamp"),
-    #         pl.col("Time Stamp").dt.hour().alias("Hour number"),
-    #     ).head(80)
-    # )
 
-    # NEGAIVCE battery levels!!!
-# wants_to_charge: bool = False
-
-# if charge levl < trigger --> wantes_to_charge True
-
-# if charge level > enough_charge_when_leaving_trigger when leaving
-
-# At road --> location
-# wants_to_charge: bool = charge_levell > scenario.vehicle.charge_desire_trigger
-# can_charge drawn based on connectivity
-
-# if wants_to_charge and can_charge --> trigger carge event
-
-# available power = eithr full (X modulation)  of adaptive (until session or end day?)

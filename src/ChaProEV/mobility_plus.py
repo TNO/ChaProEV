@@ -77,7 +77,7 @@ def compute_mobility_matrix(
     base: str = 'home'
 
     this_base_trips: dict[str, define_plus.Trip] = base_trips[base]
-    print(run_trips)
+    # print(run_trips)
 
     for trip_date, trip_name in zip(
         time_ranges.run_dates, run_trips, strict=True

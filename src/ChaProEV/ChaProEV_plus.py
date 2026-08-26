@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, time
 from pathlib import Path
-
+import streamlit as st
 import numpy as np
 import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
-
+import matplotlib.pyplot as plt
 
 try:
     import define_plus  # type: ignore
@@ -37,7 +37,6 @@ except ModuleNotFoundError:
 # we are importing again
 
 
-
 try:
     import charging_plus  # type: ignore
 
@@ -52,36 +51,206 @@ except ModuleNotFoundError:
 # we are importing again
 
 
+@dataclass
+class Charge:
+    time_stamps: pl.Series
+    power_to_vehicle_kW: np.ndarray
+    power_from_network_kW: np.ndarray
+    charge_to_vehicle_kWh: np.ndarray
+    charge_from_network_kWh: np.ndarray
+
+    @staticmethod
+    def from_dataframe(charging_dataframe: pl.DataFrame) -> Charge:
+        power_to_vehicle_kW: np.ndarray = charging_dataframe[
+            'Power to vehicle (kW)'
+        ].to_numpy()
+        power_from_network_kW: np.ndarray = charging_dataframe[
+            'Power drawn from network (kW)'
+        ].to_numpy()
+        charge_to_vehicle_kWh: np.ndarray = charging_dataframe[
+            'Charge to vehicle (kWh)'
+        ].to_numpy()
+        charge_from_network_kWh: np.ndarray = charging_dataframe[
+            'Charge from network (kWh)'
+        ].to_numpy()
+        time_stamps: pl.Series = charging_dataframe['Time Stamp']
+
+        return Charge(
+            time_stamps=time_stamps,
+            power_to_vehicle_kW=power_to_vehicle_kW,
+            power_from_network_kW=power_from_network_kW,
+            charge_to_vehicle_kWh=charge_to_vehicle_kWh,
+            charge_from_network_kWh=charge_from_network_kWh,
+        )
+
+    def add_iteration(self, iteration_charge: Charge) -> Charge:
+        power_to_vehicle_kW: np.ndarray = (
+            self.power_to_vehicle_kW + iteration_charge.power_to_vehicle_kW
+        )
+        power_from_network_kW: np.ndarray = (
+            self.power_from_network_kW + iteration_charge.power_from_network_kW
+        )
+        charge_from_network_kWh: np.ndarray = (
+            self.charge_from_network_kWh
+            + iteration_charge.charge_from_network_kWh
+        )
+        charge_to_vehicle_kWh: np.ndarray = (
+            self.charge_to_vehicle_kWh + iteration_charge.charge_to_vehicle_kWh
+        )
+
+        return Charge(
+            time_stamps=self.time_stamps,
+            power_to_vehicle_kW=power_to_vehicle_kW,
+            power_from_network_kW=power_from_network_kW,
+            charge_to_vehicle_kWh=charge_to_vehicle_kWh,
+            charge_from_network_kWh=charge_from_network_kWh,
+        )
+
+    def average(self, iterations: int) -> Charge:
+        return Charge(
+            time_stamps=self.time_stamps,
+            power_to_vehicle_kW=self.power_to_vehicle_kW / iterations,
+            power_from_network_kW=self.power_from_network_kW / iterations,
+            charge_to_vehicle_kWh=self.charge_to_vehicle_kWh / iterations,
+            charge_from_network_kWh=self.charge_from_network_kWh / iterations,
+        )
+
+
+def get_charging_quantities(scenario: Box) -> Charge:
+    (
+        time_ranges,
+        run_trips,
+        base_trips,
+        locations,
+        random_generator,
+    ) = define_plus.define_user(scenario=scenario)
+
+    mobility_matrix: pl.DataFrame = mobility_plus.compute_mobility_matrix(
+        time_ranges=time_ranges,
+        run_trips=run_trips,
+        base_trips=base_trips,
+        scenario=scenario,
+    )
+
+    charging_dataframe = charging_plus.compute_charging(
+        mobility_matrix=mobility_matrix,
+        locations=locations,
+        scenario=scenario,
+        random_generator=random_generator,
+    )
+
+    return Charge.from_dataframe(charging_dataframe=charging_dataframe)
+
+
+def get_iterated_charging_dataframe(
+    scenario: Box, iterations: int
+) -> pl.DataFrame:
+    cumulative_charge: Charge = get_charging_quantities(scenario)
+
+    for _ in range(iterations - 1):
+        iteration_charge: Charge = get_charging_quantities(scenario)
+        cumulative_charge = cumulative_charge.add_iteration(
+            iteration_charge=iteration_charge
+        )
+
+    average_charge: Charge = cumulative_charge.average(iterations=iterations)
+    charging_dataframe: pl.DataFrame = pl.DataFrame(
+        {'Time Stamp': cumulative_charge.time_stamps}
+    )
+
+    charging_dataframe = charging_dataframe.with_columns(
+        pl.Series('Power to vehicle (kW)', average_charge.power_to_vehicle_kW),
+        pl.Series(
+            'Power drawn from network (kW)',
+            average_charge.power_from_network_kW,
+        ),
+        pl.Series(
+            'Charge to vehicle (kWh)', average_charge.charge_to_vehicle_kWh
+        ),
+        pl.Series(
+            'Charge from network (kWh)', average_charge.charge_from_network_kWh
+        ),
+    )
+
+    return charging_dataframe
+
+
+@cook.function_timer
+def run_ChaProEV(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
+    iterations: int = scenario.run.iterations
+    if iterations < 1:
+        raise ValueError('You need at least one iteration')
+    charging_dataframe: pl.DataFrame = get_iterated_charging_dataframe(
+        scenario=scenario, iterations=iterations
+    )
+    hourly_values: pl.DataFrame = charging_plus.get_hourly_values(
+        charging_dataframe
+    )
+
+    return charging_dataframe, hourly_values
 
 
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
-
-    for _ in range(1):
-        (
-            time_ranges,
-            run_trips,
-            base_trips,
-            locations,
-            random_generator,
-        ) = define_plus.define_user(scenario=scenario)
-
-        mobility_matrix: pl.DataFrame = mobility_plus.compute_mobility_matrix(
-            time_ranges=time_ranges,
-            run_trips=run_trips,
-            base_trips=base_trips,
-            scenario=scenario,
+    # charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
+    # print(charging_dataframe)
+    # print(hourly_values)
+    plt.style.use('fivethirtyeight')
+    network_power_figure, network_power_plot = plt.subplots(1, 1)
+    # network_power_plot.bar(
+    #     x=hourly_values['Hour number'],
+    #     height=hourly_values['Average power drawn from network (kW)'],
+    # )
+    st.set_page_config(layout='wide')
+    sidebar = st.sidebar
+    with sidebar:
+        charge_desire_proportion_trigger: float = st.slider(
+            label='Charge proportion trigger percent',
+            min_value=0.0,
+            max_value=1.0,
+            value=scenario.vehicle.charge_desire_proportion_trigger,
+            step=0.01,
+            format='percent',
+            key='charge_desire_proportion_trigger',
         )
-
-        charging_dataframe, charging_averages = charging_plus.compute_charging(
-            mobility_matrix=mobility_matrix,
-            locations=locations,
-            scenario=scenario,
-            random_generator=random_generator,
+        adaptive: bool = st.selectbox(
+            label='Use adaptve charging',
+            options=[True, False],
+            key='adaptive'
         )
-        # print(charging_dataframe)
-        print(charging_dataframe['Power to vehicle (kW)'].sum() / 60)
-        with pl.Config(tbl_rows=26):
-            print(charging_averages)
-        # input()
+    scenario.charging.adaptive = adaptive
+    scenario.vehicle.charge_desire_proportion_trigger = charge_desire_proportion_trigger
+    charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
+    network_power_plot.bar(
+        x=hourly_values['Hour number'],
+        height=hourly_values['Average power drawn from network (kW)'],
+    )
+    plot1, plot2 = st.columns(2)
+    with plot1:
+        st.pyplot(network_power_figure)
+        plt.close(network_power_figure)
+    # network_power_figure.savefig('noot.png')
+    # hourly_figure, hourly_plots = plt.subplots(2, 2)
+    # hourly_plots[0, 0].bar(
+    #     x=hourly_values['Hour number'],
+    #     height=hourly_values['Average power to vehicle (kW)'],
+    # )
+    # hourly_plots[0, 1].bar(
+    #     x=hourly_values['Hour number'],
+    #     height=hourly_values['Average power drawn from network (kW)'],
+    # )
+    # hourly_plots[1, 0].bar(
+    #     x=hourly_values['Hour number'],
+    #     height=hourly_values['Cumulative charge to vehicle (kWh)'],
+    # )
+    # hourly_plots[1, 1].bar(
+    #     x=hourly_values['Hour number'],
+    #     height=hourly_values['Cumulative charge from network (kWh)'],
+    # )
+    # plt.show()
+    print('[magenta] Implemnt probailities')
+    print('Dashboard')
+    print('Variance')
+    print('Test with tighter proba dist')
+    print('Still some overlap issues')
