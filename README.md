@@ -48,12 +48,14 @@ In that case, the only piece of code you need is as follows (you just need
 to put the name of the folder where you put your case scenarios instead of the
 'Mopo'  example).
 ```python
-from ChaProEV import ChaProEV_run
+from ChaProEV.classic import ChaProEV_run
 
 if __name__ == '__main__':
     case_name: str = 'Mopo'
     ChaProEV_run.run_ChaProEV(case_name)
 ```
+
+(In general, replace classic by the mode you want to use)
 If you installed ChaProEV with pip, then the requirements
 should be installed as well (see requirements.txt file if you have issues
 or use the contact below).
@@ -65,13 +67,14 @@ You can use the examples provided in this repository. You can also
 unzip [this file](https://github.com/TNO/ChaProEV/blob/main/ChaProEV_test_case_configuration_files.zip)
 into your working folder and use 'test_case'  as your case name:
 ```python
-from ChaProEV import ChaProEV_run
+from ChaProEV.classic import ChaProEV_run
 
 if __name__ == '__main__':
     case_name: str = 'test_case'
     ChaProEV_run.run_ChaProEV(case_name)
 ```
 
+(In general, replace classic by the mode you want to use)
 
 
 For examples of running ChaProEV and more configuration files,

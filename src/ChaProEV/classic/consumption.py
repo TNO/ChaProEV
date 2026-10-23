@@ -7,7 +7,7 @@ import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
-from ChaProEV import run_time
+from ChaProEV.classic import run_time
 
 
 def create_consumption_tables(

@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -6,7 +8,7 @@ import streamlit as st
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
-from ChaProEV import ChaProEV_plus
+from ChaProEV.stochastic import ChaProEV_run
 
 
 def make_dashboard() -> None:
@@ -152,10 +154,10 @@ def make_dashboard() -> None:
         * scenario_A.trips.weekend_trip.start_time_hours_standard_deviation
     )
 
-    charging_dataframe_A, hourly_values_A = ChaProEV_plus.run_ChaProEV(
+    charging_dataframe_A, hourly_values_A = ChaProEV_run.run_ChaProEV_scenario(
         scenario=scenario_A
     )
-    charging_dataframe_B, hourly_values_B = ChaProEV_plus.run_ChaProEV(
+    charging_dataframe_B, hourly_values_B = ChaProEV_run.run_ChaProEV_scenario(
         scenario=scenario_B
     )
 
@@ -185,6 +187,13 @@ def make_dashboard() -> None:
     with plot1:
         st.pyplot(network_power_figure)
         plt.close(network_power_figure)
+
+
+def run_dashboard() -> None:
+    app_path: Path = Path(__file__).resolve()
+    subprocess.run(
+        [sys.executable, '-m', 'streamlit', 'run', str(app_path)], check=True
+    )
 
 
 if __name__ == '__main__':

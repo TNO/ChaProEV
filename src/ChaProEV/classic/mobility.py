@@ -22,7 +22,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import define, run_time
+from ChaProEV.classic import run_time, define
 
 
 class ChargingSession:
@@ -1950,9 +1950,9 @@ def get_kilometers_for_next_leg(
 # @cook.function_timer
 def make_mobility_data(
     location_connections: pd.DataFrame,
-    legs: define.Leg,
-    locations: define.Location,
-    trips: define.Trip,
+    legs: list[define.Leg],
+    locations: list[define.Location],
+    trips: list[define.Trip],
     scenario: Box,
     case_name: str,
     general_parameters: Box,

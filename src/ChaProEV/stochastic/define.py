@@ -8,7 +8,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import auxiliary
+from ChaProEV.stochastic import auxiliary
 
 
 def get_other_vehicles_trip_probabilities_per_day_type(

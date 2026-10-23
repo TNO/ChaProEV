@@ -7,13 +7,13 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import auxiliary, define_plus
+from ChaProEV.stochastic import auxiliary, define
 
 
 def create_trip_step_record(
     *,
     trip_date: date,
-    trip_step: define_plus.TripStep,
+    trip_step: define.TripStep,
     run_time_resolution_hours: float,
 ) -> dict[str, object]:
     midnight: datetime = datetime.combine(date=trip_date, time=time.min)
@@ -48,9 +48,9 @@ def create_trip_step_record(
 @cook.function_timer
 def compute_mobility_matrix(
     *,
-    time_ranges: define_plus.TimeRange,
+    time_ranges: define.TimeRange,
     run_trips: pl.Series,
-    base_trips: dict[str, dict[str, define_plus.Trip]],
+    base_trips: dict[str, dict[str, define.Trip]],
     scenario: Box,
 ) -> pl.DataFrame:
     MINUTES_PER_HOUR: int = scenario.time.MINUTES_PER_HOUR
@@ -63,13 +63,13 @@ def compute_mobility_matrix(
     trip_step_records: list[dict[str, object]] = []
     base: str = 'home'
 
-    this_base_trips: dict[str, define_plus.Trip] = base_trips[base]
+    this_base_trips: dict[str, define.Trip] = base_trips[base]
     # print(run_trips)
 
     for trip_date, trip_name in zip(
         time_ranges.run_dates, run_trips, strict=True
     ):
-        trip: define_plus.Trip = this_base_trips[trip_name]
+        trip: define.Trip = this_base_trips[trip_name]
         for trip_step in trip.trip_steps:
             trip_step_record: dict[str, object] = create_trip_step_record(
                 trip_date=trip_date,
@@ -170,7 +170,7 @@ if __name__ == '__main__':
         run_trips,
         base_trips,
         locations,
-    ) = define_plus.define_user(
+    ) = define.define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 

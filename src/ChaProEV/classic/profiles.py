@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 from box import Box
 
-from ChaProEV import run_time
+from ChaProEV.classic import run_time
+
 
 # @cook.function_timer
 def car_home_parking(case_name: str, general_parameters: Box) -> None:
@@ -160,9 +161,9 @@ def car_home_parking(case_name: str, general_parameters: Box) -> None:
                 + (1 - own_driveway_percentage)
                 * on_street_values_from_network_from_sessions[quantity]
             )
-        sessions_values_columns: list[
-            str
-        ] = home_type_parameters.sessions_values_columns
+        sessions_values_columns: list[str] = (
+            home_type_parameters.sessions_values_columns
+        )
         for quantity in sessions_values_columns:
             charging_sessions_own_driveway_values[
                 quantity
@@ -224,13 +225,13 @@ def fleet_profiles(
     distance_header: str = consumption_parameters.distance_header
     fleet_distance_header: str = consumption_parameters.fleet_distance_header
 
-    energy_carriers_consumption_names: list[
-        str
-    ] = consumption_parameters.energy_carriers_consumption_names
+    energy_carriers_consumption_names: list[str] = (
+        consumption_parameters.energy_carriers_consumption_names
+    )
 
-    fleet_energy_carriers_consumption_names: list[
-        str
-    ] = consumption_parameters.fleet_energy_carriers_consumption_names
+    fleet_energy_carriers_consumption_names: list[str] = (
+        consumption_parameters.fleet_energy_carriers_consumption_names
+    )
     energy_carriers: list[str] = consumption_parameters.energy_carriers
     output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
@@ -330,9 +331,9 @@ def fleet_profiles(
                 sessions_dataframe_params: Box = (
                     general_parameters.sessions_dataframe
                 )
-                fleet_display_dataframe_headers: list[
-                    str
-                ] = sessions_dataframe_params.fleet_display_dataframe_headers
+                fleet_display_dataframe_headers: list[str] = (
+                    sessions_dataframe_params.fleet_display_dataframe_headers
+                )
                 fleet_sessions: pd.DataFrame = pd.DataFrame(
                     columns=fleet_display_dataframe_headers,
                     index=reference_sessions.index,
@@ -432,9 +433,9 @@ def make_profile_display_dataframe(
     output_root: str = general_parameters.files.output_root
     output_folder: str = f'{output_root}/{case_name}'
 
-    profile_dataframe_headers: list[
-        str
-    ] = general_parameters.profile_dataframe.headers
+    profile_dataframe_headers: list[str] = (
+        general_parameters.profile_dataframe.headers
+    )
     profile_dataframe: pd.DataFrame = run_time.get_time_stamped_dataframe(
         scenario, general_parameters, locations_as_columns=False
     )
@@ -481,12 +482,12 @@ def make_sessions_display_dataframes(
             .between(display_range[0], display_range[-1])
         ]
     )
-    display_session_headers: list[
-        str
-    ] = general_parameters.sessions_dataframe.display_dataframe_headers
-    display_session_index: list[
-        str
-    ] = general_parameters.sessions_dataframe.display_dataframe_index
+    display_session_headers: list[str] = (
+        general_parameters.sessions_dataframe.display_dataframe_headers
+    )
+    display_session_index: list[str] = (
+        general_parameters.sessions_dataframe.display_dataframe_index
+    )
 
     display_charging_sessions: pd.DataFrame = (
         charging_sessions_with_charged_amounts[
@@ -502,15 +503,15 @@ def make_sessions_display_dataframes(
         / display_charging_sessions['Vehicle Discharge Power (kW)']
     )
 
-    display_charging_sessions[
-        'Effective discharge efficiency'
-    ] = display_charging_sessions['Effective discharge efficiency'].fillna(
-        general_parameters.discharge.no_discharge_efficiency_output
+    display_charging_sessions['Effective discharge efficiency'] = (
+        display_charging_sessions['Effective discharge efficiency'].fillna(
+            general_parameters.discharge.no_discharge_efficiency_output
+        )
     )
-    display_charging_sessions[
-        'Effective charging efficiency'
-    ] = display_charging_sessions['Effective charging efficiency'].fillna(
-        general_parameters.discharge.no_charge_efficiency_output
+    display_charging_sessions['Effective charging efficiency'] = (
+        display_charging_sessions['Effective charging efficiency'].fillna(
+            general_parameters.discharge.no_charge_efficiency_output
+        )
     )
 
     display_charging_sessions.to_pickle(
@@ -544,12 +545,12 @@ def make_display_totals(
     ].sum()
     display_run_totals: pd.Series = pd.Series()
     display_run_totals['Kilometers'] = display_run_kilometrage
-    display_run_totals[
-        'Charge drawn by vehicles (kWh)'
-    ] = display_run_charge_drwan_by_vehicles
-    display_run_totals[
-        'Charge drawn from network (kWh)'
-    ] = display_run_charge_from_network
+    display_run_totals['Charge drawn by vehicles (kWh)'] = (
+        display_run_charge_drwan_by_vehicles
+    )
+    display_run_totals['Charge drawn from network (kWh)'] = (
+        display_run_charge_from_network
+    )
     display_run_totals['Charging costs (€)'] = display_run_charging_costs
     input_root: str = general_parameters.files.input_root
     input_folder: str = f'{input_root}/{case_name}'

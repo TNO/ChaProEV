@@ -1,0 +1,4 @@
+[console_scripts]
+classic = ChaProEV.classic.ChaProEV_run:test_run
+dashboard = ChaProEV.stochastic.dashboard:run_dashboard
+stochastic = ChaProEV.stochastic.ChaProEV_run:test_run

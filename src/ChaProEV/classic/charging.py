@@ -7,7 +7,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import mobility, run_time
+from ChaProEV.classic import mobility, run_time
 
 
 def get_time_modulation(

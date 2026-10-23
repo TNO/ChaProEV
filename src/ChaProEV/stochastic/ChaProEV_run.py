@@ -8,7 +8,13 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import auxiliary, charging_plus, define_plus, mobility_plus
+from ChaProEV.stochastic import (
+    auxiliary,
+    charging,
+    define,
+    mobility,
+    scenarios_module,
+)
 
 
 @dataclass
@@ -84,18 +90,18 @@ def get_charging_quantities(
         run_trips,
         base_trips,
         locations,
-    ) = define_plus.define_user(
+    ) = define.define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 
-    mobility_matrix: pl.DataFrame = mobility_plus.compute_mobility_matrix(
+    mobility_matrix: pl.DataFrame = mobility.compute_mobility_matrix(
         time_ranges=time_ranges,
         run_trips=run_trips,
         base_trips=base_trips,
         scenario=scenario,
     )
 
-    charging_dataframe = charging_plus.compute_charging(
+    charging_dataframe = charging.compute_charging(
         mobility_matrix=mobility_matrix,
         locations=locations,
         scenario=scenario,
@@ -145,7 +151,7 @@ def get_iterated_charging_dataframe(
 
 
 @cook.function_timer
-def run_ChaProEV(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
+def run_ChaProEV_scenario(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
     random_generators: auxiliary.RandomGenerators = (
         auxiliary.RandomGenerators.create_generators(scenario=scenario)
     )
@@ -157,22 +163,30 @@ def run_ChaProEV(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
         iterations=iterations,
         random_generators=random_generators,
     )
-    hourly_values: pl.DataFrame = charging_plus.get_hourly_values(
+    hourly_values: pl.DataFrame = charging.get_hourly_values(
         charging_dataframe
     )
 
     return charging_dataframe, hourly_values
 
 
-if __name__ == '__main__':
+def run_ChaProEV(case_name: str) -> None:
+
+    scenarios: list[Box] = scenarios_module.load_scenarios(case_name=case_name)
+    for scenario in scenarios:
+        run_ChaProEV_scenario(scenario=scenario)
+
+
+def test_run() -> None:
 
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
-
     plt.style.use('fivethirtyeight')
     network_power_figure, network_power_plot = plt.subplots(1, 1)
 
-    charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
+    charging_dataframe, hourly_values = run_ChaProEV_scenario(
+        scenario=scenario
+    )
     network_power_plot.bar(
         x=hourly_values['Hour number'],
         height=hourly_values['Average power drawn from network (kW)'],
@@ -180,12 +194,21 @@ if __name__ == '__main__':
     network_power_figure.savefig('noot.png')
 
     scenario.charging.adaptive = True
-    charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
+    charging_dataframe, hourly_values = run_ChaProEV_scenario(
+        scenario=scenario
+    )
     network_power_plot.bar(
         x=hourly_values['Hour number'],
         height=hourly_values['Average power drawn from network (kW)'],
     )
     network_power_figure.savefig('moot.png')
+
+
+if __name__ == '__main__':
+
+    case_name: str = 'plus'
+    run_ChaProEV(case_name=case_name)
+
     # plot1, plot2 = st.columns(2)
     # with plot1:
     #     st.pyplot(network_power_figure)

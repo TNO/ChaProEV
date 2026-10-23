@@ -6,14 +6,14 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import auxiliary, define_plus, mobility_plus
+from ChaProEV.stochastic import auxiliary, define, mobility
 
 
 @cook.function_timer
 def compute_charging(
     *,
     mobility_matrix: pl.DataFrame,
-    locations: dict[str, define_plus.Location],
+    locations: dict[str, define.Location],
     scenario: Box,
     random_generator: np.random.Generator,
 ) -> pl.DataFrame:
@@ -72,7 +72,7 @@ def compute_charging(
                 previous_location_name = location_name
 
             else:
-                location: define_plus.Location = locations[location_name]
+                location: define.Location = locations[location_name]
                 if (previous_location_name == driving_location_name) and (
                     location_name != driving_location_name
                 ):
@@ -84,13 +84,12 @@ def compute_charging(
                     can_charge = (
                         random_generator.random() < location.connectivity
                     )
-
                     does_charge = wants_to_charge and can_charge
+
+                if does_charge:
                     battery_space_at_session_start_kWh: float = (
                         battery_capacity_kWh - current_battery_level_kWh
                     )
-
-                if does_charge:
                     available_power_kW: float = location.charging_power_kW
                     hour_in_day: int = time_stamp.hour
                     modulation_factor: float = (
@@ -218,11 +217,11 @@ if __name__ == '__main__':
         run_trips,
         base_trips,
         locations,
-    ) = define_plus.define_user(
+    ) = define.define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 
-    mobility_matrix: pl.DataFrame = mobility_plus.compute_mobility_matrix(
+    mobility_matrix: pl.DataFrame = mobility.compute_mobility_matrix(
         time_ranges=time_ranges,
         run_trips=run_trips,
         base_trips=base_trips,

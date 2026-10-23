@@ -19,6 +19,7 @@ to run that function for all class types.
 
 import datetime
 import math
+from typing import TypeVar
 
 import numpy as np
 import pandas as pd
@@ -26,7 +27,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV import run_time
+from ChaProEV.classic import run_time
 
 
 def get_trip_charging_sessions(
@@ -1578,9 +1579,15 @@ class TripChargingSession:
         )
 
 
+ScenarioObject = TypeVar(
+    'ScenarioObject',
+    bound=Leg | Location | Trip,
+)
+
+
 def declare_class_instances(
-    ChosenClass: type, scenario: Box, general_parameters: Box
-) -> list[type]:
+    ChosenClass: type[ScenarioObject], scenario: Box, general_parameters: Box
+) -> list[ScenarioObject]:
     '''
     This function creates the instances of a class (ChosenClass),
     based on a scenario file name where the instances and their properties
@@ -1591,7 +1598,7 @@ def declare_class_instances(
 
     class_instances: list[str] = scenario[class_name]
 
-    instances: list[type] = []
+    instances: list[ScenarioObject] = []
 
     for class_instance in class_instances:
         append_instance: bool = True
@@ -1619,7 +1626,7 @@ def declare_class_instances(
 # @cook.function_timer
 def declare_all_instances(
     scenario: Box, case_name: str, general_parameters: Box
-) -> tuple[pd.DataFrame, list[type], list[type], list[type]]:
+) -> tuple[pd.DataFrame, list[Leg], list[Location], list[Trip]]:
     '''
     This declares all instances of the various objects
     (legs, locations,  trips).
@@ -1627,11 +1634,11 @@ def declare_all_instances(
     scenario_name: str = scenario.name
     file_parameters: Box = general_parameters.files
     output_folder: str = f'{file_parameters.output_root}/{case_name}'
-    locations: list[type] = declare_class_instances(
+    locations: list[Location] = declare_class_instances(
         Location, scenario, general_parameters
     )
 
-    legs: list[type] = declare_class_instances(
+    legs: list[Leg] = declare_class_instances(
         Leg, scenario, general_parameters
     )
 
@@ -1673,7 +1680,7 @@ def declare_all_instances(
             f'{output_folder}/{scenario_name}_location_connections.pkl'
         )
 
-    trips: list[type] = declare_class_instances(
+    trips: list[Trip] = declare_class_instances(
         Trip, scenario, general_parameters
     )
 

@@ -1,8 +1,10 @@
 build>=1.6.1
 ets-cookbook>=1.2.8
+eurostat>=1.1.1
 polars>=1.43.2
 python-box>=7.4.1
 streamlit>=1.62.0
 tomli-w>=1.2.0
 tqdm>=4.70.0
 twine>=7.0.0
+typing>=3.10.0.0

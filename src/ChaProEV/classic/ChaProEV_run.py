@@ -11,7 +11,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from tqdm.rich import tqdm
 
-from ChaProEV import make_variants, profiles, scenarios_module, writing
+from ChaProEV.classic import make_variants, profiles, scenarios_module, writing
 
 
 @cook.function_timer
@@ -67,6 +67,11 @@ def run_ChaProEV(case_name: str) -> None:
         profiles.car_home_parking(case_name, general_parameters)
 
     writing.extra_end_outputs(case_name, general_parameters)
+
+
+def test_run() -> None:
+    case_name: str = 'Mopo'
+    run_ChaProEV(case_name)
 
 
 if __name__ == '__main__':

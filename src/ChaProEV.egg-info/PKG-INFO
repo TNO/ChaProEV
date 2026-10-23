@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: ChaProEV
-Version: 1.3.4
+Version: 2.0.0
 Summary: ChaProEV: Charging Profiles of Electric Vehicles
 Author-email: Omar Usmani <Omar.Usmani@TNO.nl>
 Project-URL: Homepage, https://github.com/TNO/ChaProEV
@@ -12,12 +12,14 @@ Description-Content-Type: text/markdown
 License-File: LICENCE
 Requires-Dist: build>=1.6.1
 Requires-Dist: ets-cookbook>=1.2.8
+Requires-Dist: eurostat>=1.1.1
 Requires-Dist: polars>=1.43.2
 Requires-Dist: python-box>=7.4.1
 Requires-Dist: streamlit>=1.62.0
 Requires-Dist: tomli-w>=1.2.0
 Requires-Dist: tqdm>=4.70.0
 Requires-Dist: twine>=7.0.0
+Requires-Dist: typing>=3.10.0.0
 Dynamic: license-file
 
 # **ChaProEV**
@@ -70,12 +72,14 @@ In that case, the only piece of code you need is as follows (you just need
 to put the name of the folder where you put your case scenarios instead of the
 'Mopo'  example).
 ```python
-from ChaProEV import ChaProEV_run
+from ChaProEV.classic import ChaProEV_run
 
 if __name__ == '__main__':
     case_name: str = 'Mopo'
     ChaProEV_run.run_ChaProEV(case_name)
 ```
+
+(In general, replace classic by the mode you want to use)
 If you installed ChaProEV with pip, then the requirements
 should be installed as well (see requirements.txt file if you have issues
 or use the contact below).
@@ -87,13 +91,14 @@ You can use the examples provided in this repository. You can also
 unzip [this file](https://github.com/TNO/ChaProEV/blob/main/ChaProEV_test_case_configuration_files.zip)
 into your working folder and use 'test_case'  as your case name:
 ```python
-from ChaProEV import ChaProEV_run
+from ChaProEV.classic import ChaProEV_run
 
 if __name__ == '__main__':
     case_name: str = 'test_case'
     ChaProEV_run.run_ChaProEV(case_name)
 ```
 
+(In general, replace classic by the mode you want to use)
 
 
 For examples of running ChaProEV and more configuration files,
