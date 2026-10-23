@@ -1,13 +1,12 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, time
 from pathlib import Path
-import streamlit as st
+
+import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
-import matplotlib.pyplot as plt
 
 try:
     import auxiliary  # type: ignore
@@ -218,20 +217,20 @@ def run_ChaProEV(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
 
 
 if __name__ == '__main__':
-    
+
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
 
     plt.style.use('fivethirtyeight')
     network_power_figure, network_power_plot = plt.subplots(1, 1)
-    
+
     charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
     network_power_plot.bar(
         x=hourly_values['Hour number'],
         height=hourly_values['Average power drawn from network (kW)'],
     )
     network_power_figure.savefig('noot.png')
-    
+
     scenario.charging.adaptive = True
     charging_dataframe, hourly_values = run_ChaProEV(scenario=scenario)
     network_power_plot.bar(
@@ -243,7 +242,6 @@ if __name__ == '__main__':
     # with plot1:
     #     st.pyplot(network_power_figure)
     #     plt.close(network_power_figure)
-    
     # hourly_figure, hourly_plots = plt.subplots(2, 2)
     # hourly_plots[0, 0].bar(
     #     x=hourly_values['Hour number'],
@@ -289,4 +287,5 @@ if __name__ == '__main__':
     #         key='adaptive'
     #     )
     # scenario.charging.adaptive = adaptive
-    # scenario.vehicle.charge_desire_proportion_trigger = charge_desire_proportion_trigger
+    # scenario.vehicle.charge_desire_proportion_trigger
+    # = charge_desire_proportion_trigger

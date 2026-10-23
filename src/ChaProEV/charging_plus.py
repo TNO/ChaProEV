@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-from datetime import date, datetime, timedelta, time
 from pathlib import Path
 
 import numpy as np
@@ -7,7 +5,6 @@ import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
-
 
 try:
     import define_plus  # type: ignore
@@ -278,5 +275,5 @@ if __name__ == '__main__':
     )
     print(charging_dataframe)
     print(charging_dataframe['Power to vehicle (kW)'].sum() / 60)
-    with pl.Config(tbl_rows=26):
-        print(charging_averages)
+    # with pl.Config(tbl_rows=26):
+    #     print(charging_averages)

@@ -7,6 +7,7 @@ import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
+
 try:
     import auxiliary  # type: ignore
 
@@ -19,7 +20,6 @@ except ModuleNotFoundError:
 # So that it works both as a standalone (1st) and as a package (2nd)
 # We need to add to type: ignore thing to avoid MypY thinking
 # we are importing again
-
 
 
 def get_other_vehicles_trip_probabilities_per_day_type(
@@ -102,10 +102,10 @@ def get_trip_probabilities_per_day_type(
     vehicle_name: str, base_name: str, activity_parameters: Box
 ) -> dict[str, dict[str, float]]:
     if vehicle_name == 'car':
-        trip_probabilities_per_day_type: dict[
-            str, dict[str, float]
-        ] = get_car_trip_probabilities_per_day_type(
-            base_name, activity_parameters
+        trip_probabilities_per_day_type: dict[str, dict[str, float]] = (
+            get_car_trip_probabilities_per_day_type(
+                base_name, activity_parameters
+            )
         )
 
     else:
@@ -176,7 +176,9 @@ class TimeRange:
         run_frequency: str = (
             f'{run_frequency_settings.size}{run_frequency_settings.type}'
         )
-        display_frequency: str = f'{display_frequency_settings.size}{display_frequency_settings.type}'  # noqa:E501
+        display_frequency: str = (
+            f'{display_frequency_settings.size}{display_frequency_settings.type}'  # noqa:E501
+        )
 
         start_date: date = date(
             year=start.year, month=start.month, day=start.day
@@ -309,9 +311,9 @@ class Location:
         proportion_of_discharge_to_network: float = (
             location_parameters.proportion_of_discharge_to_network
         )
-        time_modulation_factors: list[
-            float
-        ] = location_parameters.time_modulation_factors
+        time_modulation_factors: list[float] = (
+            location_parameters.time_modulation_factors
+        )
         latitude: float = location_parameters.latitude
         longitude: float = location_parameters.longitude
         charging_price_eur_kWh: float = (
@@ -384,7 +386,8 @@ class Trip:
     # Add BaseTransitions
     # start_base end_base distance duration
 
-    # elsewhere: range of dates where it can occur and drawn (first, time at second)
+    # elsewhere: range of dates where it can occur and drawn
+    # (first, time at second)
 
     # round things to the time resolution
     # Add repetitions thing (maybe with a function placeholder first!)
@@ -403,7 +406,8 @@ class Trip:
     # Then redo for times at each further base (for less time),
     # Need to set dates at each base
     # and draw trips fir these dates
-    # plus transitions between bases  (so holiday outwrad anbd back are not trips
+    # plus transitions between bases
+    # (so holiday outwrad anbd back are not trips
     # but transitions
     # )
 
@@ -433,7 +437,7 @@ class Trip:
         *,
         start_time_hours_mean: float,
         start_time_hours_standard_deviation: float,
-        random_generator: np.random.Generator
+        random_generator: np.random.Generator,
     ) -> float:
         start_time_hours: float = random_generator.normal(
             loc=start_time_hours_mean,
@@ -492,18 +496,19 @@ class Trip:
     @staticmethod
     def get_leg_info(trip_parameters: Box) -> tuple[list[str], list[float]]:
         leg_names: list[str] = trip_parameters.legs
-        time_between_legs_hours: list[
-            float
-        ] = trip_parameters.time_between_legs_hours
+        time_between_legs_hours: list[float] = (
+            trip_parameters.time_between_legs_hours
+        )
         # print('[magenta]Add repetitions stuff')
 
         return leg_names, time_between_legs_hours
 
     @staticmethod
     def define_user_trip(
-        trip_parameters: Box, legs: dict[str, Leg], driving_location_name: str,
+        trip_parameters: Box,
+        legs: dict[str, Leg],
+        driving_location_name: str,
         random_generator: np.random.Generator,
-
     ) -> Trip:
         '''
         Creates a trip version for the user. It creates a vesion of the trip
@@ -539,7 +544,8 @@ class Trip:
     # remove holiday trips
     # Add base locations (locations that have is_base=True)
 
-    # Add Transitions first then trips (drwan per base adn day type in mobility)
+    # Add Transitions first then trips (drwan per base
+    # adn day type in mobility)
     # add location per time unity (minute?)
     # set base location for all times and change them with trips
     # holiday chnages for the holiday duration in days
@@ -548,17 +554,14 @@ class Trip:
     # and series of location_names (of the same size)
 
 
-def define_user(
-    scenario: Box,
-    random_generator: np.random.Generator
-) -> tuple[
+def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
     TimeRange,
     pl.Series,
     dict[str, dict[str, Trip]],
     dict[str, Location],
 ]:
     driving_location_name: str = scenario.general.driving_location_name
-    run_parameters:Box = scenario.run
+    run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
         run_parameters=run_parameters, time_parameters=scenario.time
     )
@@ -587,7 +590,7 @@ def define_user(
             trip_parameters=trip_parameters,
             legs=legs,
             driving_location_name=driving_location_name,
-            random_generator=random_generator
+            random_generator=random_generator,
         )
         for trip_name, trip_parameters in trips_definitions.items()
     }
@@ -599,12 +602,12 @@ def define_user(
             if trip.base == base_name
         }
 
-    trip_probabilities_per_day_type: dict[
-        str, dict[str, float]
-    ] = get_trip_probabilities_per_day_type(
-        vehicle_name=scenario.vehicle.name,
-        base_name='home',
-        activity_parameters=scenario.time,
+    trip_probabilities_per_day_type: dict[str, dict[str, float]] = (
+        get_trip_probabilities_per_day_type(
+            vehicle_name=scenario.vehicle.name,
+            base_name='home',
+            activity_parameters=scenario.time,
+        )
     )
 
     run_trips: pl.Series = pl.Series(
@@ -627,7 +630,6 @@ if __name__ == '__main__':
     random_generators: auxiliary.RandomGenerators = (
         auxiliary.RandomGenerators.create_generators(scenario=scenario)
     )
-
 
     time_ranges, run_trips, base_trips, locations = define_user(
         scenario=scenario, random_generator=random_generators.define

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+
 import numpy as np
 from box import Box
+
 
 @dataclass
 class RandomGenerators:
@@ -17,10 +19,11 @@ class RandomGenerators:
             run_seed = None
 
         seed_sequence: np.random.SeedSequence = np.random.SeedSequence(
-            run_seed)
-        
+            run_seed
+        )
+
         define_seed, mobility_seed, charging_seed = seed_sequence.spawn(3)
-        
+
         return RandomGenerators(
             define=np.random.default_rng(seed=define_seed),
             mobility=np.random.default_rng(seed=mobility_seed),

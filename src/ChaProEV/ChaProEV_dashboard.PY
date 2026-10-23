@@ -1,10 +1,23 @@
-import streamlit as st
-from ETS_CookBook import ETS_CookBook as cook
-import ChaProEV_plus
 from pathlib import Path
-from box import Box
+
+try:
+    import ChaProEV_plus  # type: ignore
+
+    # We need to ignore the type because mypy has its own search path for
+    # imports and does not resolve imports exactly as Python does and it
+    # isn't able to find the module.
+    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
+except ModuleNotFoundError:
+    from ChaProEV import ChaProEV_plus  # type: ignore
+# So that it works both as a standalone (1st) and as a package (2nd)
+# We need to add to type: ignore thing to avoid MypY thinking
+# we are importing again
+
 import matplotlib.pyplot as plt
 import polars as pl
+import streamlit as st
+from box import Box
+from ETS_CookBook import ETS_CookBook as cook
 
 
 def make_dashboard() -> None:
@@ -59,7 +72,7 @@ def make_dashboard() -> None:
             value=scenario.locations.work.connectivity,
             step=0.01,
             format='percent',
-            key='work_connectivity_A'
+            key='work_connectivity_A',
         )
         work_start_hour_A: float = st.slider(
             label='Mean start hour work journeys',
@@ -74,7 +87,9 @@ def make_dashboard() -> None:
     )
     scenario_A.locations.work.connectivity = work_connectivity_A
     scenario_A.trips.commute_to_work.start_time_hours_mean = work_start_hour_A
-    scenario_A.trips.commute_to_work_and_leisure.start_time_hours_mean = work_start_hour_A
+    scenario_A.trips.commute_to_work_and_leisure.start_time_hours_mean = (
+        work_start_hour_A
+    )
 
     with sidebar_B:
         st.title('Scenario B')
@@ -100,7 +115,7 @@ def make_dashboard() -> None:
             value=scenario.locations.work.connectivity,
             step=0.01,
             format='percent',
-            key='work_connectivity_B'
+            key='work_connectivity_B',
         )
         work_start_hour_B: float = st.slider(
             label='Mean start hour work journeys',
@@ -123,23 +138,25 @@ def make_dashboard() -> None:
     )
     scenario_B.locations.work.connectivity = work_connectivity_B
     scenario_B.trips.commute_to_work.start_time_hours_mean = work_start_hour_B
-    scenario_B.trips.commute_to_work_and_leisure.start_time_hours_mean = work_start_hour_B
+    scenario_B.trips.commute_to_work_and_leisure.start_time_hours_mean = (
+        work_start_hour_B
+    )
 
     scenario_B.trips.commute_to_work.start_time_hours_standard_deviation = (
         scale_factor_start_times_standard_deviation
         * scenario_A.trips.commute_to_work.start_time_hours_standard_deviation
     )
-    scenario_B.trips.commute_to_work_and_leisure.start_time_hours_standard_deviation = (
+    scenario_B.trips.commute_to_work_and_leisure.start_time_hours_standard_deviation = (  # noqa: E501
         scale_factor_start_times_standard_deviation
-        * scenario_A.trips.commute_to_work_and_leisure.start_time_hours_standard_deviation
+        * scenario_A.trips.commute_to_work_and_leisure.start_time_hours_standard_deviation  # noqa: E501
     )
     scenario_B.trips.leisure_only.start_time_hours_standard_deviation = (
         scale_factor_start_times_standard_deviation
         * scenario_A.trips.leisure_only.start_time_hours_standard_deviation
     )
-    scenario_B.trips.holiday_leisure_trip.start_time_hours_standard_deviation = (
+    scenario_B.trips.holiday_leisure_trip.start_time_hours_standard_deviation = (  # noqa: E501
         scale_factor_start_times_standard_deviation
-        * scenario_A.trips.holiday_leisure_trip.start_time_hours_standard_deviation
+        * scenario_A.trips.holiday_leisure_trip.start_time_hours_standard_deviation  # noqa: E501
     )
     scenario_B.trips.weekend_trip.start_time_hours_standard_deviation = (
         scale_factor_start_times_standard_deviation
@@ -166,7 +183,7 @@ def make_dashboard() -> None:
         x=hourly_values_A['Hour number'],
         height=hourly_values_A['Average power drawn from network (kW)'],
         label='Scenario A',
-        width=0.5
+        width=0.5,
     )
     network_power_plot.bar(
         x=hourly_values_B['Hour number'],
@@ -182,6 +199,5 @@ def make_dashboard() -> None:
 
 
 if __name__ == '__main__':
-    
 
     make_dashboard()

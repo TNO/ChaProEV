@@ -10,5 +10,6 @@
         "./tests",
         "-p",
         "test_*.py"
-    ]
+    ],
+    "python-envs.pythonProjects": []
 }
