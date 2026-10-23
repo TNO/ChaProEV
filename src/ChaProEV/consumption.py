@@ -7,18 +7,7 @@ import pandas as pd
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
-try:
-    import run_time  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import run_time  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
+from ChaProEV import run_time
 
 
 def create_consumption_tables(
@@ -137,12 +126,12 @@ def create_consumption_tables(
             f'{output_folder}/{scenario_name}_yearly_consumption_table.pkl'
         )
 
-    consumption_tables_frequencies: list[
-        str
-    ] = general_parameters.interim_files.consumption_tables_frequencies
-    save_consumption_table: list[
-        bool
-    ] = general_parameters.interim_files.save_consumption_table
+    consumption_tables_frequencies: list[str] = (
+        general_parameters.interim_files.consumption_tables_frequencies
+    )
+    save_consumption_table: list[bool] = (
+        general_parameters.interim_files.save_consumption_table
+    )
     is_consumption_table_saved: Box = Box(
         dict(zip(consumption_tables_frequencies, save_consumption_table))
     )

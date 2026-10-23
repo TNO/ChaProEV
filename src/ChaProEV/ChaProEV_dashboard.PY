@@ -1,23 +1,12 @@
 from pathlib import Path
 
-try:
-    import ChaProEV_plus  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import ChaProEV_plus  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
 import matplotlib.pyplot as plt
 import polars as pl
 import streamlit as st
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+
+from ChaProEV import ChaProEV_plus
 
 
 def make_dashboard() -> None:

@@ -8,59 +8,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-try:
-    import auxiliary  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import auxiliary  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
-try:
-    import define_plus  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import define_plus  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
-
-try:
-    import mobility_plus  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import mobility_plus  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
-
-try:
-    import charging_plus  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import charging_plus  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
+from ChaProEV import auxiliary, charging_plus, define_plus, mobility_plus
 
 
 @dataclass

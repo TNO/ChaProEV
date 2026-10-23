@@ -11,59 +11,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from tqdm.rich import tqdm
 
-try:
-    import writing  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import writing  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
-
-try:
-    import make_variants  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import make_variants  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
-
-try:
-    import profiles  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import profiles  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
-try:
-    import scenarios_module  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import scenarios_module  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
+from ChaProEV import make_variants, profiles, scenarios_module, writing
 
 
 @cook.function_timer

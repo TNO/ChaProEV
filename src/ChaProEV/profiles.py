@@ -7,19 +7,7 @@ import numpy as np
 import pandas as pd
 from box import Box
 
-try:
-    import run_time  # type: ignore
-
-    # We need to ignore the type because mypy has its own search path for
-    # imports and does not resolve imports exactly as Python does and it
-    # isn't able to find the module.
-    # https://stackoverflow.com/questions/68695851/mypy-cannot-find-implementation-or-library-stub-for-module
-except ModuleNotFoundError:
-    from ChaProEV import run_time  # type: ignore
-# So that it works both as a standalone (1st) and as a package (2nd)
-# We need to add to type: ignore thing to avoid MypY thinking
-# we are importing again
-
+from ChaProEV import run_time
 
 # @cook.function_timer
 def car_home_parking(case_name: str, general_parameters: Box) -> None:
