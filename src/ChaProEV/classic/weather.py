@@ -372,9 +372,9 @@ def get_hourly_values(
                         latitude, longitude
                     ]
 
-                    cumulative_values: list[float] = location_dataframe[
+                    cumulative_values: list[float] = list(location_dataframe[
                         quantity_name
-                    ].values
+                    ].values)
                     shifted_cumulative_values: np.ndarray = np.roll(
                         cumulative_values, -1
                     )

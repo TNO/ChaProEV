@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from itertools import repeat
+from multiprocessing import Pool
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -7,6 +9,7 @@ import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
+from tqdm.rich import tqdm
 
 from ChaProEV.stochastic import (
     auxiliary,
@@ -170,11 +173,45 @@ def run_ChaProEV_scenario(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
     return charging_dataframe, hourly_values
 
 
+@cook.function_timer
 def run_ChaProEV(case_name: str) -> None:
 
+    general_parameters_file_name: Path = Path('ChaProEV.toml')
+    general_parameters: Box = cook.parameters_from_TOML(
+        general_parameters_file_name
+    )
+
+    set_amount_of_processes: bool = (
+        general_parameters.parallel_processing.set_amount_of_processes
+    )
+    if set_amount_of_processes:
+        amount_of_parallel_processes: int | None = (
+            general_parameters.parallel_processing.amount_for_scenarios
+        )
+    else:
+        amount_of_parallel_processes = None
+
     scenarios: list[Box] = scenarios_module.load_scenarios(case_name=case_name)
-    for scenario in scenarios:
-        run_ChaProEV_scenario(scenario=scenario)
+
+    pool_inputs: zip[tuple[Box, str, Box]] | tqdm[tuple[Box, str, Box]] = zip(
+        scenarios, repeat(case_name), repeat(general_parameters)
+    )
+
+    progress_bars_parameters: Box = general_parameters.progress_bars
+    display_scenario_run: bool = progress_bars_parameters.display_scenario_run
+    scenario_run_description: str = (
+        progress_bars_parameters.scenario_run_description
+    )
+
+    if display_scenario_run:
+        pool_inputs = tqdm(
+            pool_inputs,
+            desc=scenario_run_description,
+            total=len(scenarios),
+        )
+
+    with Pool(amount_of_parallel_processes) as scenarios_pool:
+        scenarios_pool.starmap(run_ChaProEV_scenario, pool_inputs)
 
 
 def test_run() -> None:
