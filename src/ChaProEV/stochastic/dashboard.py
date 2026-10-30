@@ -8,7 +8,7 @@ import streamlit as st
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 
-from ChaProEV.stochastic import ChaProEV_run
+from ChaProEV.stochastic.ChaProEV_run import run_ChaProEV_scenario
 
 
 def make_dashboard() -> None:
@@ -154,10 +154,10 @@ def make_dashboard() -> None:
         * scenario_A.trips.weekend_trip.start_time_hours_standard_deviation
     )
 
-    charging_dataframe_A, hourly_values_A = ChaProEV_run.run_ChaProEV_scenario(
+    charging_dataframe_A, hourly_values_A = run_ChaProEV_scenario(
         scenario=scenario_A
     )
-    charging_dataframe_B, hourly_values_B = ChaProEV_run.run_ChaProEV_scenario(
+    charging_dataframe_B, hourly_values_B = run_ChaProEV_scenario(
         scenario=scenario_B
     )
 

@@ -3,6 +3,10 @@ from dataclasses import dataclass
 import numpy as np
 from box import Box
 
+'''
+Auxiliary
+'''
+
 
 @dataclass
 class RandomGenerators:

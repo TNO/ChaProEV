@@ -1,3 +1,6 @@
+Implement holiday trips and base shifts in stochastic
+Look at notes in Class Trip   BaseTransitions
+
 Use integer second steps to avoid 
 
 

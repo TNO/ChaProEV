@@ -11,13 +11,11 @@ from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 from tqdm.rich import tqdm
 
-from ChaProEV.stochastic import (
-    auxiliary,
-    charging,
-    define,
-    mobility,
-    scenarios_module,
-)
+from ChaProEV.stochastic.auxiliary import RandomGenerators
+from ChaProEV.stochastic.charging import compute_charging, get_hourly_values
+from ChaProEV.stochastic.define import define_user
+from ChaProEV.stochastic.mobility import compute_mobility_matrix
+from ChaProEV.stochastic.scenarios_module import load_scenarios
 
 
 @dataclass
@@ -86,25 +84,28 @@ class Charge:
 
 
 def get_charging_quantities(
-    scenario: Box, random_generators: auxiliary.RandomGenerators
+    scenario: Box, random_generators: RandomGenerators
 ) -> Charge:
     (
+        vehicle,
         time_ranges,
         run_trips,
         base_trips,
         locations,
-    ) = define.define_user(
+    ) = define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 
-    mobility_matrix: pl.DataFrame = mobility.compute_mobility_matrix(
+    mobility_matrix: pl.DataFrame = compute_mobility_matrix(
+        vehicle=vehicle,
         time_ranges=time_ranges,
         run_trips=run_trips,
         base_trips=base_trips,
         scenario=scenario,
     )
 
-    charging_dataframe = charging.compute_charging(
+    charging_dataframe = compute_charging(
+        vehicle=vehicle,
         mobility_matrix=mobility_matrix,
         locations=locations,
         scenario=scenario,
@@ -117,7 +118,7 @@ def get_charging_quantities(
 def get_iterated_charging_dataframe(
     scenario: Box,
     iterations: int,
-    random_generators: auxiliary.RandomGenerators,
+    random_generators: RandomGenerators,
 ) -> pl.DataFrame:
     cumulative_charge: Charge = get_charging_quantities(
         scenario=scenario, random_generators=random_generators
@@ -155,8 +156,8 @@ def get_iterated_charging_dataframe(
 
 @cook.function_timer
 def run_ChaProEV_scenario(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
-    random_generators: auxiliary.RandomGenerators = (
-        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    random_generators: RandomGenerators = RandomGenerators.create_generators(
+        scenario=scenario
     )
     iterations: int = scenario.run.iterations
     if iterations < 1:
@@ -166,9 +167,7 @@ def run_ChaProEV_scenario(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
         iterations=iterations,
         random_generators=random_generators,
     )
-    hourly_values: pl.DataFrame = charging.get_hourly_values(
-        charging_dataframe
-    )
+    hourly_values: pl.DataFrame = get_hourly_values(charging_dataframe)
 
     return charging_dataframe, hourly_values
 
@@ -191,7 +190,7 @@ def run_ChaProEV(case_name: str) -> None:
     else:
         amount_of_parallel_processes = None
 
-    scenarios: list[Box] = scenarios_module.load_scenarios(case_name=case_name)
+    scenarios: list[Box] = load_scenarios(case_name=case_name)
 
     pool_inputs: zip[tuple[Box, str, Box]] | tqdm[tuple[Box, str, Box]] = zip(
         scenarios, repeat(case_name), repeat(general_parameters)
@@ -230,7 +229,7 @@ def test_run() -> None:
     )
     network_power_figure.savefig('noot.png')
 
-    scenario.charging.adaptive = True
+    scenario.adaptive = True
     charging_dataframe, hourly_values = run_ChaProEV_scenario(
         scenario=scenario
     )
@@ -294,6 +293,6 @@ if __name__ == '__main__':
     #         options=[True, False],
     #         key='adaptive'
     #     )
-    # scenario.charging.adaptive = adaptive
+    # scenario.adaptive = adaptive
     # scenario.vehicle.charge_desire_proportion_trigger
     # = charge_desire_proportion_trigger

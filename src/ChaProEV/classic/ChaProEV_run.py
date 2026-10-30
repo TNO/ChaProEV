@@ -3,7 +3,7 @@ Author: Omar Usmani (Omar.Usmani@TNO.nl)
 This is where you run the model
 '''
 
-import typing as ty
+
 from itertools import repeat
 from multiprocessing import Pool
 
@@ -40,11 +40,10 @@ def run_ChaProEV(case_name: str) -> None:
     else:
         amount_of_parallel_processes = None
 
-    pool_inputs: ty.Iterator[tuple[Box, str, Box]] | ty.Any = zip(
+    pool_inputs: zip[tuple[Box, str, Box]] | tqdm[tuple[Box, str, Box]] = zip(
         scenarios, repeat(case_name), repeat(general_parameters)
     )
-    # the ty.Any alternative is there because transforming it with the
-    # progress bar makes mypy think it change is type
+
     progress_bars_parameters: Box = general_parameters.progress_bars
     display_scenario_run: bool = progress_bars_parameters.display_scenario_run
     scenario_run_description: str = (

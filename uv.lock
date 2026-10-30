@@ -157,28 +157,22 @@ source = { editable = "." }
 dependencies = [
     { name = "build" },
     { name = "ets-cookbook" },
-    { name = "eurostat" },
     { name = "polars" },
-    { name = "python-box" },
     { name = "streamlit" },
     { name = "tomli-w" },
     { name = "tqdm" },
     { name = "twine" },
-    { name = "typing" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "build", specifier = ">=1.6.1" },
     { name = "ets-cookbook", specifier = ">=1.2.8" },
-    { name = "eurostat", specifier = ">=1.1.1" },
     { name = "polars", specifier = ">=1.43.2" },
-    { name = "python-box", specifier = ">=7.4.1" },
     { name = "streamlit", specifier = ">=1.62.0" },
     { name = "tomli-w", specifier = ">=1.2.0" },
     { name = "tqdm", specifier = ">=4.70.0" },
     { name = "twine", specifier = ">=7.0.0" },
-    { name = "typing", specifier = ">=3.10.0.0" },
 ]
 
 [[package]]
@@ -654,19 +648,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/3b/2a39e0ec12eb3c9147386fcaeb650938f7f9d870080c5388f4eafa2fa76a/ets_cookbook-1.2.8.tar.gz", hash = "sha256:522ae50a4c21e7d53151588025a2e4f49bb4d1fafa48e13c0cc0732f593512c7", size = 3190551, upload-time = "2026-07-28T09:05:28.472Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f8/1a/f2414dcfcef0d619b65b611a8ae1ca28a3ac4239245949c0568f9eec047f/ets_cookbook-1.2.8-py3-none-any.whl", hash = "sha256:d749ab3b6f431ff372ed33b28af52ffb3f094d13b079f04455a5f90d0fd97da5", size = 66400, upload-time = "2026-07-28T09:05:25.859Z" },
-]
-
-[[package]]
-name = "eurostat"
-version = "1.1.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pandas" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c8/f0/5ef71bc8983335f509170f28a3e4c5ef5a6cbe4c42232e341383746f0ccf/eurostat-1.1.1.tar.gz", hash = "sha256:6b70c5278084f603d6e92f481c1893f8ccc96f80d09347a822873a7ee679d54d", size = 22591, upload-time = "2024-06-13T15:26:14.018Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/51/a0/51b4254341558a69002100e1bc9df436c000e03a1ae3488b7e431c61b890/eurostat-1.1.1-py3-none-any.whl", hash = "sha256:67297cbc5aeeded01cd48c18fe27ec6769658ebcafcf517758cf21f711faea11", size = 16095, upload-time = "2024-06-13T15:26:12.116Z" },
 ]
 
 [[package]]
@@ -2777,15 +2758,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/92/3c/58f808a359700f39a967dffede33efeac809262c03303fa3eec6afff8f49/twine-7.0.0.tar.gz", hash = "sha256:85cdb29c518efef867360ae4acd4b0dfd61c8654a22fca08e6f8539f05022177", size = 215032, upload-time = "2026-07-27T15:59:00.825Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/96/08/ddcdc06225eaad6de0e48e1002b06d919dbde20582d0662c7af51308e5d6/twine-7.0.0-py3-none-any.whl", hash = "sha256:b854164df26db268af05f49aa5c0344b10e27a494343ff05b1e0bad3b135f5a7", size = 43204, upload-time = "2026-07-27T15:58:59.26Z" },
-]
-
-[[package]]
-name = "typing"
-version = "3.10.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b0/1b/835d4431805939d2996f8772aca1d2313a57e8860fec0e48e8e7dfe3a477/typing-3.10.0.0.tar.gz", hash = "sha256:13b4ad211f54ddbf93e5901a9967b1e07720c1d1b78d596ac6a439641aa1b130", size = 78962, upload-time = "2021-05-01T18:03:58.186Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/5d/865e17349564eb1772688d8afc5e3081a5964c640d64d1d2880ebaed002d/typing-3.10.0.0-py3-none-any.whl", hash = "sha256:12fbdfbe7d6cca1a42e485229afcb0b0c8259258cfb919b8a5e2a5c953742f89", size = 26320, upload-time = "2021-05-01T18:03:56.398Z" },
 ]
 
 [[package]]

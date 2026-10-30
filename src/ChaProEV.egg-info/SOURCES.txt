@@ -4,6 +4,8 @@ ChaProEV.pptx
 ChaProEV.toml
 ChaProEV_prev.pptx
 ChaProEV_test_case_configuration_files.zip
+Fleet_level.png
+Fleet_level_averages.svg
 Gemfile
 LICENCE
 MOPO_logo_chaproev on wht.svg
@@ -13,8 +15,14 @@ MOPO_logo_main.svg
 MOPO_logo_main_onwhite.svg
 README-PC-28624.md
 README.md
+SToachastic.png
+Stochastic.svg
+behaviour.png
 cha.csv
+charging strategies.png
+charging_infra.png
 eu-emblem-low-res.jpg
+grid_models.png
 mkdocs-PC-28624.yml
 mkdocs.yml
 moot.png
@@ -36,6 +44,8 @@ uv.lock
 chaproev-1.3.0/.flake8
 chaproev-1.3.0/.gitignore
 comparisons/comparison_template.toml
+dist/chaproev-2.0.0-py3-none-any.whl
+dist/chaproev-2.0.0.tar.gz
 docs/ChaProEV_workflow.png
 docs/Legs.png
 docs/Locations.png

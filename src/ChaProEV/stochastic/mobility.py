@@ -7,13 +7,20 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic import auxiliary, define
+from ChaProEV.stochastic.auxiliary import RandomGenerators
+from ChaProEV.stochastic.define import (
+    TimeRange,
+    Trip,
+    TripStep,
+    Vehicle,
+    define_user,
+)
 
 
 def create_trip_step_record(
     *,
     trip_date: date,
-    trip_step: define.TripStep,
+    trip_step: TripStep,
     run_time_resolution_hours: float,
 ) -> dict[str, object]:
     midnight: datetime = datetime.combine(date=trip_date, time=time.min)
@@ -48,10 +55,11 @@ def create_trip_step_record(
 @cook.function_timer
 def compute_mobility_matrix(
     *,
-    time_ranges: define.TimeRange,
+    time_ranges: TimeRange,
     run_trips: pl.Series,
-    base_trips: dict[str, dict[str, define.Trip]],
+    base_trips: dict[str, dict[str, Trip]],
     scenario: Box,
+    vehicle: Vehicle,
 ) -> pl.DataFrame:
     MINUTES_PER_HOUR: int = scenario.time.MINUTES_PER_HOUR
 
@@ -63,13 +71,13 @@ def compute_mobility_matrix(
     trip_step_records: list[dict[str, object]] = []
     base: str = 'home'
 
-    this_base_trips: dict[str, define.Trip] = base_trips[base]
+    this_base_trips: dict[str, Trip] = base_trips[base]
     # print(run_trips)
 
     for trip_date, trip_name in zip(
         time_ranges.run_dates, run_trips, strict=True
     ):
-        trip: define.Trip = this_base_trips[trip_name]
+        trip: Trip = this_base_trips[trip_name]
         for trip_step in trip.trip_steps:
             trip_step_record: dict[str, object] = create_trip_step_record(
                 trip_date=trip_date,
@@ -131,9 +139,9 @@ def compute_mobility_matrix(
         .drop('Location_trip', 'Kilometers driven_trip')  # .sort('Time Stamp')
     )
     mobility_matrix = mobility_matrix.with_columns(
-        (
-            pl.col('Kilometers driven') * scenario.vehicle.consumption_kWh_km
-        ).alias('Consumption (kWh)')
+        (pl.col('Kilometers driven') * vehicle.consumption_kWh_km).alias(
+            'Consumption (kWh)'
+        )
     )
 
     mobility_matrix = (
@@ -161,20 +169,22 @@ if __name__ == '__main__':
     scenario: Box = cook.parameters_from_TOML(scenario_path)
     run_parameters: Box = scenario.run
 
-    random_generators: auxiliary.RandomGenerators = (
-        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    random_generators: RandomGenerators = RandomGenerators.create_generators(
+        scenario=scenario
     )
 
     (
+        vehicle,
         time_ranges,
         run_trips,
         base_trips,
         locations,
-    ) = define.define_user(
+    ) = define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 
     mobility_matrix: pl.DataFrame = compute_mobility_matrix(
+        vehicle=vehicle,
         time_ranges=time_ranges,
         run_trips=run_trips,
         base_trips=base_trips,
@@ -183,6 +193,3 @@ if __name__ == '__main__':
 
     print(mobility_matrix['Kilometers driven'].sum())
     print(mobility_matrix['Consumption (kWh)'].sum())
-    # with pl.Config(tbl_rows=420):
-    #     # print(mobility_matrix)
-    #     print(mobility_matrix.filter(pl.col('Location') == 'road'))

@@ -12,14 +12,11 @@ Description-Content-Type: text/markdown
 License-File: LICENCE
 Requires-Dist: build>=1.6.1
 Requires-Dist: ets-cookbook>=1.2.8
-Requires-Dist: eurostat>=1.1.1
 Requires-Dist: polars>=1.43.2
-Requires-Dist: python-box>=7.4.1
 Requires-Dist: streamlit>=1.62.0
 Requires-Dist: tomli-w>=1.2.0
 Requires-Dist: tqdm>=4.70.0
 Requires-Dist: twine>=7.0.0
-Requires-Dist: typing>=3.10.0.0
 Dynamic: license-file
 
 # **ChaProEV**

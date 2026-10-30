@@ -6,21 +6,24 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic import auxiliary, define, mobility
+from ChaProEV.stochastic.mobility import compute_mobility_matrix
+from ChaProEV.stochastic.auxiliary import RandomGenerators
+from ChaProEV.stochastic.define import Vehicle, Location, define_user
 
 
 @cook.function_timer
 def compute_charging(
     *,
+    vehicle: Vehicle,
     mobility_matrix: pl.DataFrame,
-    locations: dict[str, define.Location],
+    locations: dict[str, Location],
     scenario: Box,
     random_generator: np.random.Generator,
 ) -> pl.DataFrame:
     driving_location_name: str = scenario.general.driving_location_name
-    battery_capacity_kWh: float = scenario.vehicle.battery_size_kWh
+    battery_capacity_kWh: float = vehicle.battery_size_kWh
     charge_desire_proportion_trigger: float = (
-        scenario.vehicle.charge_desire_proportion_trigger
+        vehicle.charge_desire_proportion_trigger
     )
     battery_charge_levels_kWh: list[float] = []
     current_battery_level_kWh: float = battery_capacity_kWh
@@ -72,7 +75,7 @@ def compute_charging(
                 previous_location_name = location_name
 
             else:
-                location: define.Location = locations[location_name]
+                location: Location = locations[location_name]
                 if (previous_location_name == driving_location_name) and (
                     location_name != driving_location_name
                 ):
@@ -208,20 +211,21 @@ def get_hourly_values(charging_dataframe: pl.DataFrame) -> pl.DataFrame:
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
-    random_generators: auxiliary.RandomGenerators = (
-        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    random_generators: RandomGenerators = (
+        RandomGenerators.create_generators(scenario=scenario)
     )
 
     (
+        vehicle,
         time_ranges,
         run_trips,
         base_trips,
         locations,
-    ) = define.define_user(
+    ) = define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 
-    mobility_matrix: pl.DataFrame = mobility.compute_mobility_matrix(
+    mobility_matrix: pl.DataFrame = compute_mobility_matrix(
         time_ranges=time_ranges,
         run_trips=run_trips,
         base_trips=base_trips,

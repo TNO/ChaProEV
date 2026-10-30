@@ -8,7 +8,16 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic import auxiliary
+from ChaProEV.stochastic.auxiliary import RandomGenerators
+
+
+@dataclass
+class Vehicle:
+    name: str
+    consumption_kWh_km: float
+    battery_size_kWh: float
+    charge_desire_proportion_trigger: float
+    has_one_trip_per_day_type: bool
 
 
 def get_other_vehicles_trip_probabilities_per_day_type(
@@ -544,11 +553,20 @@ class Trip:
 
 
 def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
+    Vehicle,
     TimeRange,
     pl.Series,
     dict[str, dict[str, Trip]],
     dict[str, Location],
 ]:
+    vehicle_definition: Box = scenario.vehicle
+    vehicle: Vehicle = Vehicle(
+        name=vehicle_definition.name,
+        consumption_kWh_km=vehicle_definition.consumption_kWh_km,
+        battery_size_kWh=vehicle_definition.battery_size_kWh,
+        charge_desire_proportion_trigger=vehicle_definition.charge_desire_proportion_trigger,  # noqa:E501
+        has_one_trip_per_day_type=vehicle_definition.has_one_trip_per_day_type,
+    )
     driving_location_name: str = scenario.general.driving_location_name
     run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
@@ -593,12 +611,12 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
 
     trip_probabilities_per_day_type: dict[str, dict[str, float]] = (
         get_trip_probabilities_per_day_type(
-            vehicle_name=scenario.vehicle.name,
+            vehicle_name=vehicle.name,
             base_name='home',
             activity_parameters=scenario.time,
         )
     )
-
+    # run trips now and after algorithm adjustment
     run_trips: pl.Series = pl.Series(
         'trip',
         [
@@ -609,26 +627,25 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
             for day_type in time_ranges.day_types
         ],
     )
+    print(run_trips)
 
-    return time_ranges, run_trips, base_trips, locations
+    return vehicle, time_ranges, run_trips, base_trips, locations
 
 
 if __name__ == '__main__':
     scenario_path: Path = Path('scenarios/plus/test.toml')
     scenario: Box = cook.parameters_from_TOML(scenario_path)
-    random_generators: auxiliary.RandomGenerators = (
-        auxiliary.RandomGenerators.create_generators(scenario=scenario)
+    random_generators: RandomGenerators = RandomGenerators.create_generators(
+        scenario=scenario
     )
 
-    time_ranges, run_trips, base_trips, locations = define_user(
+    vehicle, time_ranges, run_trips, base_trips, locations = define_user(
         scenario=scenario, random_generator=random_generators.define
     )
     print(time_ranges.run_stamps)
     print(time_ranges.run_dates)
     print(run_trips)
 
-
-# Call MArijn!
 
 # IF transition (drawen with given prob) Then redo trip prob only for that
 # With there and bck set butmaybe do later
