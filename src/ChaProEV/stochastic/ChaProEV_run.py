@@ -11,10 +11,10 @@ from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 from tqdm.rich import tqdm
 
-from ChaProEV.stochastic.auxiliary import RandomGenerators
 from ChaProEV.stochastic.charging import compute_charging, get_hourly_values
 from ChaProEV.stochastic.define import define_user
 from ChaProEV.stochastic.mobility import compute_mobility_matrix
+from ChaProEV.stochastic.monte_carlo import MonteCarlo, RandomGenerators
 from ChaProEV.stochastic.scenarios_module import load_scenarios
 
 
@@ -92,6 +92,7 @@ def get_charging_quantities(
         run_trips,
         base_trips,
         locations,
+        activity_parameters,
     ) = define_user(
         scenario=scenario, random_generator=random_generators.define
     )
@@ -156,10 +157,16 @@ def get_iterated_charging_dataframe(
 
 @cook.function_timer
 def run_ChaProEV_scenario(scenario: Box) -> tuple[pl.DataFrame, pl.DataFrame]:
-    random_generators: RandomGenerators = RandomGenerators.create_generators(
-        scenario=scenario
+    monte_carlo_definitions: Box = scenario.monte_carlo
+    monte_carlo: MonteCarlo = MonteCarlo(
+        use_seed=monte_carlo_definitions.use_seed,
+        seed=monte_carlo_definitions.seed,
+        iterations=monte_carlo_definitions.iterations,
     )
-    iterations: int = scenario.run.iterations
+    random_generators: RandomGenerators = RandomGenerators.create_generators(
+        monte_carlo=monte_carlo
+    )
+    iterations: int = monte_carlo.iterations
     if iterations < 1:
         raise ValueError('You need at least one iteration')
     charging_dataframe: pl.DataFrame = get_iterated_charging_dataframe(

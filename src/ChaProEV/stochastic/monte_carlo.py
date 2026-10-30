@@ -4,8 +4,15 @@ import numpy as np
 from box import Box
 
 '''
-Auxiliary
+Monte Carlo
 '''
+
+
+@dataclass
+class MonteCarlo:
+    use_seed: bool
+    seed: int
+    iterations: int
 
 
 @dataclass
@@ -15,10 +22,10 @@ class RandomGenerators:
     charging: np.random.Generator
 
     @staticmethod
-    def create_generators(scenario: Box) -> RandomGenerators:
-        run_parameters: Box = scenario.run
-        if run_parameters.use_seed:
-            run_seed: int | None = run_parameters.seed
+    def create_generators(monte_carlo: MonteCarlo) -> RandomGenerators:
+
+        if monte_carlo.use_seed:
+            run_seed: int | None = monte_carlo.seed
         else:
             run_seed = None
 

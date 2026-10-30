@@ -1,3 +1,11 @@
+
+    # Then in mobility matrix put end_base after last steo (or do so also for normal trips)
+
+    # the second pass at trips is only for Trips that are not transition bool
+
+    # This version is actually only for cars and work/leisure (GEneralise???)
+
+
 Implement holiday trips and base shifts in stochastic
 Look at notes in Class Trip   BaseTransitions
 

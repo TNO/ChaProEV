@@ -7,7 +7,7 @@ from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
 from ChaProEV.stochastic.mobility import compute_mobility_matrix
-from ChaProEV.stochastic.auxiliary import RandomGenerators
+from ChaProEV.stochastic.monte_carlo import RandomGenerators
 from ChaProEV.stochastic.define import Vehicle, Location, define_user
 
 
@@ -20,7 +20,7 @@ def compute_charging(
     scenario: Box,
     random_generator: np.random.Generator,
 ) -> pl.DataFrame:
-    driving_location_name: str = scenario.general.driving_location_name
+    driving_location_name: str = vehicle.driving_location_name
     battery_capacity_kWh: float = vehicle.battery_size_kWh
     charge_desire_proportion_trigger: float = (
         vehicle.charge_desire_proportion_trigger

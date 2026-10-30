@@ -1,0 +1,338 @@
+
+[locations]
+# Add locations following the syntax below:
+# [location.code] <--use the the code/alias you want for the location
+# and put the desired properties below
+[locations.home]
+base = true
+connectivity = 1
+charging_power_kW = 6
+charger_efficiency = 0.8
+latitude = 52
+longitude = 6.2
+charging_price_eur_kWh = 0.25
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 6
+proportion_of_discharge_to_network = 0.8
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.work]
+base = false
+connectivity = 0.5
+charging_power_kW = 14 # kW
+charger_efficiency = 0.9
+latitude = 52.1
+longitude = 5.8
+charging_price_eur_kWh = 0  # €/kWh
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.leisure]
+base = false
+connectivity = 0.25
+charging_power_kW = 14
+charger_efficiency = 0.9
+latitude = 52.1
+longitude = 6.2
+charging_price_eur_kWh = 0.35
+charging_desirability = 0.25
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.weekend]
+base = false
+connectivity = 0.125
+charging_power_kW = 14
+charger_efficiency = 0.9
+latitude = 51.8
+longitude = 6.2
+charging_price_eur_kWh = 0.35
+charging_desirability = 0.1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+[locations.holiday]
+base = false
+connectivity = 1
+charging_power_kW = 14
+charger_efficiency = 0.9
+latitude = 53.0
+longitude = 6.2
+charging_price_eur_kWh = 0.35
+charging_desirability = 0.2
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14 # kW
+proportion_of_discharge_to_network = 0.9
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+
+
+
+[legs]
+# You can add legs here by copying existing legs,
+# changing the name of the leg (in [legs.go_to_work], go_to_work is
+# the name of the leg) and changing the relevant values
+# Note that you need to change the leg name in all parts where it occurs
+# (i.e. also in [legs.go_to_work.locations],[legs.go_to_work.road_types],
+# etc.
+[legs.go_to_work]
+distance_km = 19.2
+duration_hours = 0.25
+start_location = 'home'
+end_location = 'work'
+
+[legs.come_from_work]
+distance_km = 19.2
+duration_hours = 0.25
+start_location = 'work'
+end_location = 'home'
+
+
+[legs.home_to_leisure]
+distance_km = 5.2
+duration_hours = 0.12
+start_location = 'home'
+end_location = 'leisure'
+
+
+[legs.leisure_to_home]
+distance_km = 5.2
+duration_hours = 0.12
+start_location = 'leisure'
+end_location = 'home'
+
+
+
+[legs.work_to_leisure]
+distance_km = 21.0
+duration_hours = 0.48
+start_location = 'work'
+end_location = 'leisure'
+
+
+[legs.leisure_to_work]
+distance_km = 21
+duration_hours = 0.48
+start_location = 'leisure'
+end_location = 'work'
+
+
+[legs.holiday_to_leisure]
+distance_km = 10
+duration_hours = 0.4
+start_location = 'holiday'
+end_location = 'leisure'
+
+
+[legs.leisure_to_holiday]
+distance_km = 10
+duration_hours = 0.4
+start_location = 'leisure'
+end_location = 'holiday'
+
+
+[legs.home_to_weekend]
+distance_km = 87.3
+duration_hours = 1
+start_location = 'home'
+end_location = 'weekend'
+
+
+[legs.weekend_to_home]
+distance_km = 87.3
+duration_hours = 1
+start_location = 'weekend'
+end_location = 'home'
+
+
+
+
+[trips]
+[trips.weekday_in_work_week]
+base = 'home'
+legs = ['go_to_work', 'come_from_work']
+time_between_legs_hours = [9]
+# This is the time spent at each interim location (same units as use
+# generally, so currently hours). The length of this list is one less than
+# the amount of legs
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 9.0
+start_time_hours_standard_deviation = 2
+
+
+[trips.weekend_in_work_week]
+base = 'home'
+legs = ['go_to_work','work_to_leisure', 'leisure_to_work', 'come_from_work']
+time_between_legs_hours = [3, 2, 4]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 9.0
+start_time_hours_standard_deviation = 2
+
+
+[trips.weekday_in_holiday_week]
+base = 'home'
+legs = ['home_to_leisure', 'leisure_to_home']
+time_between_legs_hours = [2]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
+
+[trips.weekend_in_holiday_week]
+base = 'home'
+legs = ['holiday_to_leisure', 'leisure_to_holiday']
+time_between_legs_hours = [4]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 12
+start_time_hours_standard_deviation = 4
+
+
+
+
+
+
+
+[base_shifts]
+[base_shifts.holiday_outward]
+start_base = 'home'
+end_base = 'holiday'
+distance_km = 174.6
+duration_hours = 2
+
+
+
+
+[base_shifts.holiday_back]
+start_base = 'holiday'
+end_base = 'home'
+distance_km = 174.6
+duration_hours = 2
+
+
+
+
+
+[monte_carlo]
+use_seed = true
+seed = 1989
+iterations = 12
+[run]
+[run.start]
+year = 2015
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.end]  # This is is not included in the run time
+year = 2016
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_start]
+year = 2015
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.display_end]  # This is is not included in the display time
+year = 2016
+month = 1
+day = 1
+hour = 0
+minute = 0
+[run.frequency]
+size = 1  # Put the size of the interval here
+type = 'm'  # 'min'
+# Put the interval type here, use 'h' for hours, 'min' for minutes,
+# 's' for seconds, 'd' for days. For more info and other types, see here:
+# Or combine them: “3d12h4m25s” # 3 days, 12 hours, 4 minutes, and 25 seconds
+# https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
+[run.display_frequency]
+size = 1  # Put the size of the interval here
+type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for minutes,
+# 's' for seconds, 'd' for days. For more info and other types, see here:
+# Or combine them: “3d12h4m25s” # 3 days, 12 hours, 4 minutes, and 25 seconds
+# https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
+
+
+[vehicle]
+name = 'car'
+consumption_kWh_km = 0.14151
+battery_size_kWh = 80.0
+charge_desire_proportion_trigger = 1.0
+has_one_trip_per_day_type = true
+driving_location_name = 'road'
+
+[charging]
+adaptive = false
+
+
+
+[time]
+SECONDS_PER_HOUR = 3600
+MINUTES_PER_HOUR = 60
+HOURS_IN_A_DAY = 24
+MONTHS_IN_A_YEAR = 12
+MAX_DAYS_IN_A_MONTH = 31
+DAYS_IN_A_YEAR = 365.25
+DAYS_IN_A_WEEK = 7
+first_hour_number = 1
+# Put 0 if you start counting at 0, 1 if you start counting at 1
+# The SPINE toolbox uses 1
+# This is only for the hour number list (and related lists)
+
+
+[activity_parameters]
+weekend_day_numbers = [6, 7]
+
+holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 53]]
+# We need to provide the number of holliday weeks seprately,
+# as counting the elements of the list above might not work, such as
+# when the above list contains weeks 1 and 53 (which just represent
+# the fact that years don't necessarily start and/or end at the start/end
+# of a week).
+number_of_holiday_weeks = 10
+

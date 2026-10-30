@@ -8,7 +8,34 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic.auxiliary import RandomGenerators
+from ChaProEV.stochastic.monte_carlo import RandomGenerators
+
+
+@dataclass
+class ActivityParameters:
+    weekend_day_numbers: list[int]
+    holiday_week_blocks: list[list[int]]
+    number_of_holiday_weeks: int
+    # We need to provide the number of holliday weeks seprately,
+    # as counting the elements of the list above might not work, such as
+    # when the above list contains weeks 1 and 53 (which just represent
+    # the fact that years don't necessarily start and/or end at the start/end
+    # of a week).
+
+    @property
+    def holiday_weeks(self) -> list[int]:
+        return [week for block in self.holiday_week_blocks for week in block]
+
+
+@dataclass
+class BaseTripProbabilities:
+    '''
+    An object to manage trip probabilities per day type.
+    This also depends on the base we use
+    '''
+
+    base: str
+    per_day_type: dict[str, dict[str, float]]
 
 
 @dataclass
@@ -18,16 +45,12 @@ class Vehicle:
     battery_size_kWh: float
     charge_desire_proportion_trigger: float
     has_one_trip_per_day_type: bool
-
-
-def get_other_vehicles_trip_probabilities_per_day_type(
-    base_name: str, activity_parameters: Box
-) -> dict[str, dict[str, float]]:
-    raise NotImplementedError
+    bases: list[str]
+    driving_location_name: str
 
 
 def get_car_trip_probabilities_per_day_type(
-    base_name: str, activity_parameters: Box
+    base: str, activity_parameters: ActivityParameters
 ) -> dict[str, dict[str, float]]:
     trip_probabilities_per_day_type: dict[str, dict[str, float]] = {}
     # print('[magenta] Implement this!')
@@ -96,23 +119,19 @@ def get_car_trip_probabilities_per_day_type(
     return trip_probabilities_per_day_type
 
 
-def get_trip_probabilities_per_day_type(
-    vehicle_name: str, base_name: str, activity_parameters: Box
-) -> dict[str, dict[str, float]]:
-    if vehicle_name == 'car':
-        trip_probabilities_per_day_type: dict[str, dict[str, float]] = (
-            get_car_trip_probabilities_per_day_type(
-                base_name, activity_parameters
-            )
-        )
+def get_trip_probabilities(
+    activity_parameters: Box,
+) -> dict[str, BaseTripProbabilities]:
 
-    else:
-        trip_probabilities_per_day_type = (
-            get_other_vehicles_trip_probabilities_per_day_type(
-                base_name, activity_parameters
-            )
-        )
-    return trip_probabilities_per_day_type
+    trip_probabilities: dict[str, BaseTripProbabilities] = {}
+
+    # We first get the base
+
+    transition_dates: list[date] = []
+    transition_trips: dict[date, str] = {}
+
+    # We then compute the trip probabilities per base
+    return trip_probabilities
 
 
 @dataclass
@@ -163,7 +182,9 @@ class TimeRange:
     day_types: pl.Series
 
     @staticmethod
-    def set_ranges(run_parameters: Box, time_parameters: Box) -> TimeRange:
+    def set_ranges(
+        run_parameters: Box, activity_parameters: ActivityParameters
+    ) -> TimeRange:
         start: Box = run_parameters.start
         end: Box = run_parameters.end
         display_start: Box = run_parameters.display_start
@@ -253,7 +274,7 @@ class TimeRange:
                     pl.when(
                         pl.col('date')
                         .dt.weekday()
-                        .is_in(time_parameters.weekend_day_numbers)
+                        .is_in(activity_parameters.weekend_day_numbers)
                     )
                     .then(pl.lit('weekend'))
                     .otherwise(pl.lit('weekday')),
@@ -261,7 +282,7 @@ class TimeRange:
                     pl.when(
                         pl.col('date')
                         .dt.week()
-                        .is_in(time_parameters.holiday_weeks)
+                        .is_in(activity_parameters.holiday_weeks)
                     )
                     .then(pl.lit('holiday'))
                     .otherwise(pl.lit('work')),
@@ -335,6 +356,36 @@ class Location:
         )
 
 
+def draw_legs_references(
+    *, legs_references: Box, random_generator: np.random.Generator
+) -> Box:
+    '''
+    Draws leg distances and speeds (and gives distances and durations)
+    '''
+    drawn_legs_references: Box = Box()
+    for reference_name, reference in legs_references.items():
+        drawn_legs_references[reference_name] = Box()
+        mean_distance_km: float = reference.mean_distance_km
+        standard_deviation_distance: float = (
+            reference.standard_deviation_distance
+        )
+        mean_speed_kph: float = reference.mean_speed_kph
+        standard_deviation_speed: float = reference.standard_deviation_speed
+        distance_km: float = random_generator.normal(
+            loc=mean_distance_km,
+            scale=standard_deviation_distance,
+        )
+        speed_kph: float = random_generator.normal(
+            loc=mean_speed_kph,
+            scale=standard_deviation_speed,
+        )
+        duration_hours: float = distance_km / speed_kph
+        drawn_legs_references[reference_name].distance_km = distance_km
+        drawn_legs_references[reference_name].duration_hours = duration_hours
+
+    return drawn_legs_references
+
+
 @dataclass
 class Leg:
     '''
@@ -350,11 +401,17 @@ class Leg:
     end_location: str
 
     @staticmethod
-    def read_parameters(leg_parameters: Box) -> Leg:
-        distance_km: float = leg_parameters.distance_km
-        duration_hours: float = leg_parameters.duration_hours
-        start_location: str = leg_parameters.start_location
-        end_location: str = leg_parameters.end_location
+    def set_values(
+        *, this_leg_definition: Box, drawn_legs_references: Box
+    ) -> Leg:
+
+        reference: str = this_leg_definition.reference
+        this_leg_references: Box = drawn_legs_references[reference]
+
+        distance_km: float = this_leg_references.distance_km
+        duration_hours: float = this_leg_references.duration_hours
+        start_location: str = this_leg_definition.start_location
+        end_location: str = this_leg_definition.end_location
 
         return Leg(
             distance_km=distance_km,
@@ -375,7 +432,9 @@ class Trip:
     is (including 'driving').
     '''
 
-    base: str
+    start_base: str
+    end_base: str
+    base_transition: bool
     trip_steps: list[TripStep]
     # start_time_hours: float
     # time_steps: pl.Series
@@ -450,7 +509,7 @@ class Trip:
         leg_names: list[str],
         time_between_legs_hours: list[float],
         legs: dict[str, Leg],
-        driving_location_name: str,
+        vehicle: Vehicle,
     ) -> list[TripStep]:
         step_start_time: float = start_time_hours
 
@@ -461,7 +520,7 @@ class Trip:
             driving_step: TripStep = TripStep.get_step(
                 start_time_hours=step_start_time,
                 duration_hours=leg_duration_hours,
-                location_name=driving_location_name,
+                location_name=vehicle.driving_location_name,
                 leg_length_kilometers=leg_length_kilometers,
             )
             trip_steps.append(driving_step)
@@ -484,7 +543,7 @@ class Trip:
             last_step: TripStep = TripStep.get_step(
                 start_time_hours=step_start_time,
                 duration_hours=legs[last_leg_name].duration_hours,
-                location_name=driving_location_name,
+                location_name=vehicle.driving_location_name,
                 leg_length_kilometers=legs[last_leg_name].distance_km,
             )
 
@@ -505,8 +564,8 @@ class Trip:
     def define_user_trip(
         trip_parameters: Box,
         legs: dict[str, Leg],
-        driving_location_name: str,
         random_generator: np.random.Generator,
+        vehicle: Vehicle,
     ) -> Trip:
         '''
         Creates a trip version for the user. It creates a vesion of the trip
@@ -521,7 +580,9 @@ class Trip:
             start_time_hours_standard_deviation=start_time_hours_standard_deviation,  # noqa: E501
             random_generator=random_generator,
         )
-        base: str = trip_parameters.base
+        start_base: str = trip_parameters.start_base
+        end_base: str = trip_parameters.end_base
+        base_transition: bool = start_base != end_base
 
         leg_names, time_between_legs_hours = Trip.get_leg_info(
             trip_parameters=trip_parameters
@@ -532,10 +593,15 @@ class Trip:
             leg_names=leg_names,
             time_between_legs_hours=time_between_legs_hours,
             legs=legs,
-            driving_location_name=driving_location_name,
+            vehicle=vehicle,
         )
 
-        return Trip(base=base, trip_steps=trip_steps)
+        return Trip(
+            start_base=start_base,
+            end_base=end_base,
+            base_transition=base_transition,
+            trip_steps=trip_steps,
+        )
 
     # Create Transition class (put holifday there)
     # Add leisure holiday trips
@@ -558,19 +624,17 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
     pl.Series,
     dict[str, dict[str, Trip]],
     dict[str, Location],
+    ActivityParameters,
 ]:
-    vehicle_definition: Box = scenario.vehicle
-    vehicle: Vehicle = Vehicle(
-        name=vehicle_definition.name,
-        consumption_kWh_km=vehicle_definition.consumption_kWh_km,
-        battery_size_kWh=vehicle_definition.battery_size_kWh,
-        charge_desire_proportion_trigger=vehicle_definition.charge_desire_proportion_trigger,  # noqa:E501
-        has_one_trip_per_day_type=vehicle_definition.has_one_trip_per_day_type,
+    activity_parameters_definitions: Box = scenario.activity_parameters
+    activity_parameters: ActivityParameters = ActivityParameters(
+        weekend_day_numbers=activity_parameters_definitions.weekend_day_numbers,  # noqa:E501
+        holiday_week_blocks=activity_parameters_definitions.holiday_week_blocks,  # noqa:E501
+        number_of_holiday_weeks=activity_parameters_definitions.number_of_holiday_weeks,  # noqa:E501
     )
-    driving_location_name: str = scenario.general.driving_location_name
     run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
-        run_parameters=run_parameters, time_parameters=scenario.time
+        run_parameters=run_parameters, activity_parameters=activity_parameters
     )
     locations_definitions: Box = scenario.locations
 
@@ -579,40 +643,95 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
         for location_name, location_parameters in locations_definitions.items()
     }
 
-    base_locations: dict[str, Location] = {
-        location_name: Location.read_parameters(location_parameters)
+    bases: list[str] = [
+        location_name
         for location_name, location_parameters in locations_definitions.items()
         if location_parameters.base
-    }
+    ]
+
+    vehicle_definition: Box = scenario.vehicle
+    vehicle: Vehicle = Vehicle(
+        name=vehicle_definition.name,
+        consumption_kWh_km=vehicle_definition.consumption_kWh_km,
+        battery_size_kWh=vehicle_definition.battery_size_kWh,
+        charge_desire_proportion_trigger=vehicle_definition.charge_desire_proportion_trigger,  # noqa:E501
+        has_one_trip_per_day_type=vehicle_definition.has_one_trip_per_day_type,
+        bases=bases,
+        driving_location_name=vehicle_definition.driving_location_name,
+    )
 
     legs_definitions: Box = scenario.legs
+    legs_references: Box = scenario.legs_references
+
+    drawn_legs_references: Box = draw_legs_references(
+        legs_references=legs_references, random_generator=random_generator
+    )
 
     legs: dict[str, Leg] = {
-        leg_name: Leg.read_parameters(leg_parameters)
-        for leg_name, leg_parameters in legs_definitions.items()
+        leg_name: Leg.set_values(
+            this_leg_definition=this_leg_definition,
+            drawn_legs_references=drawn_legs_references,
+        )
+        for leg_name, this_leg_definition in legs_definitions.items()
     }
     trips_definitions: Box = scenario.trips
     user_trips: dict[str, Trip] = {
         trip_name: Trip.define_user_trip(
             trip_parameters=trip_parameters,
             legs=legs,
-            driving_location_name=driving_location_name,
             random_generator=random_generator,
+            vehicle=vehicle,
         )
         for trip_name, trip_parameters in trips_definitions.items()
     }
+
+    # START BASE
+
+    # and end base?
+    # or add transition bool to Trip
+
+    # or have transition = (start_base==end_base) M
+
+
     base_trips: dict[str, dict[str, Trip]] = {}
-    for base_name in base_locations.keys():
-        base_trips[base_name] = {
+    for base in bases:
+        base_trips[base] = {
             trip_name: trip
             for trip_name, trip in user_trips.items()
-            if trip.base == base_name
+            if (trip.start_base == base) and not trip.base_transition
         }
+    print(user_trips)
+    print(base_trips)
+    exit()
+    if vehicle.has_one_trip_per_day_type:
+        possible_day_types: set[str] = set(time_ranges.day_types.unique())
+        trip_names: set[str] = set(user_trips.keys())
+
+        if possible_day_types == trip_names:
+            run_trips: pl.Series = time_ranges.day_types
+            # Trips and day types have the same names, by convention
+        else:
+            raise ValueError(
+                'If you only have one trip per day type, then the'
+                'names of the trips and the names of day types have'
+                'to bethe same.'
+                f'{possible_day_types=}'
+                f'{trip_names=}'
+            )
+
+    else:
+        trip_probabilities: dict[str, BaseTripProbabilities] = (
+            get_trip_probabilities(activity_parameters=activity_parameters)
+        )
+        trip_list: list[str] = []
+    print(run_trips)
+
+    # Make a DF with time_ranges.day_types, is_transition
+    exit()
 
     trip_probabilities_per_day_type: dict[str, dict[str, float]] = (
         get_trip_probabilities_per_day_type(
-            vehicle_name=vehicle.name,
-            base_name='home',
+            vehicle=vehicle,
             activity_parameters=scenario.time,
         )
     )
@@ -628,7 +747,7 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
         ],
     )
     print(run_trips)
-
+    exit()
     return vehicle, time_ranges, run_trips, base_trips, locations
 
 

@@ -90,6 +90,40 @@ time_modulation_factors = [
 ] # Starts at midinight
 
 
+[legs_references]
+# Put the means and standard deviations of distances (in km)
+# between two locations, which you will use as references in the leg 
+# definitions. Do same with speeds
+[legs_references.home_work]
+mean_distance_km = 19.2
+standard_deviation_distance = 5.0
+mean_speed_kph = 80.0
+standard_deviation_speed = 10.0
+[legs_references.home_leisure]
+mean_distance_km = 5.2
+standard_deviation_distance = 1.0
+mean_speed_kph = 50.0
+standard_deviation_speed = 5
+[legs_references.work_leisure]
+mean_distance_km = 21.0
+standard_deviation_distance = 6.0
+mean_speed_kph = 50.0
+standard_deviation_speed = 5.0
+[legs_references.holiday_leisure]
+mean_distance_km = 10.0
+standard_deviation_distance = 3.0
+mean_speed_kph = 50.0
+standard_deviation_speed = 5.0
+[legs_references.home_weekend]
+mean_distance_km = 87.3
+standard_deviation_distance = 20.0
+mean_speed_kph = 100.0
+standard_deviation_speed = 10.0
+[legs_references.home_holiday]
+mean_distance_km = 174.6
+standard_deviation_distance = 60.0
+mean_speed_kph = 100.0
+standard_deviation_speed = 10.0
 
 [legs]
 # You can add legs here by copying existing legs,
@@ -99,80 +133,83 @@ time_modulation_factors = [
 # (i.e. also in [legs.go_to_work.locations],[legs.go_to_work.road_types],
 # etc.
 [legs.go_to_work]
-distance_km = 19.2
-duration_hours = 0.25
+reference = 'home_work'
 start_location = 'home'
 end_location = 'work'
 
 [legs.come_from_work]
-distance_km = 19.2
-duration_hours = 0.25
+reference = 'home_work'
 start_location = 'work'
 end_location = 'home'
 
 
 [legs.home_to_leisure]
-distance_km = 5.2
-duration_hours = 0.12
+reference = 'home_leisure'
 start_location = 'home'
 end_location = 'leisure'
 
 
 [legs.leisure_to_home]
-distance_km = 5.2
-duration_hours = 0.12
+reference = 'home_leisure'
 start_location = 'leisure'
 end_location = 'home'
 
 
 
 [legs.work_to_leisure]
-distance_km = 21.0
-duration_hours = 0.48
+reference = 'work_leisure'
 start_location = 'work'
 end_location = 'leisure'
 
 
 [legs.leisure_to_work]
-distance_km = 21
-duration_hours = 0.48
+reference = 'work_leisure'
 start_location = 'leisure'
 end_location = 'work'
 
 
 [legs.holiday_to_leisure]
-distance_km = 10
-duration_hours = 0.4
+reference = 'holiday_leisure'
 start_location = 'holiday'
 end_location = 'leisure'
 
 
 [legs.leisure_to_holiday]
-distance_km = 10
-duration_hours = 0.4
+reference = 'holiday_leisure'
 start_location = 'leisure'
 end_location = 'holiday'
 
 
 [legs.home_to_weekend]
-distance_km = 87.3
-duration_hours = 1
+reference = 'home_weekend'
 start_location = 'home'
 end_location = 'weekend'
 
 
 [legs.weekend_to_home]
-distance_km = 87.3
-duration_hours = 1
+reference = 'home_weekend'
 start_location = 'weekend'
 end_location = 'home'
 
 
 
+[legs.home_to_holiday]
+reference = 'home_holiday'
+start_location = 'home'
+end_location = 'holiday'
+
+
+
+[legs.holiday_to_home]
+reference = 'home_holiday'
+start_location = 'holiday'
+end_location = 'home'
+
 
 [trips]
 [trips.commute_to_work]
-base = 'home'
+start_base = 'home'
+end_base = 'home'
 legs = ['go_to_work', 'come_from_work']
 time_between_legs_hours = [9]
 # This is the time spent at each interim location (same units as use
@@ -187,7 +224,8 @@ start_time_hours_standard_deviation = 2
 
 
 [trips.commute_to_work_and_leisure]
-base = 'home'
+start_base = 'home'
+end_base = 'home'
 legs = ['go_to_work','work_to_leisure', 'leisure_to_work', 'come_from_work']
 time_between_legs_hours = [3, 2, 4]
 # This is the time spent at each interim location (same units as used
@@ -201,7 +239,8 @@ start_time_hours_standard_deviation = 2
 
 
 [trips.leisure_only]
-base = 'home'
+start_base = 'home'
+end_base = 'home'
 legs = ['home_to_leisure', 'leisure_to_home']
 time_between_legs_hours = [2]
 # This is the time spent at each interim location (same units as used
@@ -216,7 +255,8 @@ start_time_hours_standard_deviation = 4
 
 
 [trips.holiday_leisure_trip]
-base = 'holiday'
+start_base = 'holiday'
+end_base = 'holiday'
 legs = ['holiday_to_leisure', 'leisure_to_holiday']
 time_between_legs_hours = [4]
 # This is the time spent at each interim location (same units as used
@@ -230,7 +270,8 @@ start_time_hours_standard_deviation = 4
 
 
 [trips.weekend_trip]
-base = 'home'
+start_base = 'home'
+end_base = 'home'
 legs = ['home_to_weekend', 'weekend_to_home']
 time_between_legs_hours = [4]
 # This is the time spent at each interim location (same units as used
@@ -246,7 +287,8 @@ start_time_hours_standard_deviation = 4
 
 
 [trips.stay_put_home]
-base = 'home'
+start_base = 'home'
+end_base = 'home'
 legs = []
 time_between_legs_hours = []
 # This is the time spent at each interim location (same units as used
@@ -261,7 +303,8 @@ start_time_hours_standard_deviation = 0.6
 
 
 [trips.stay_put_holiday]
-base = 'holiday'
+start_base = 'holiday'
+end_base = 'holiday'
 legs = []
 time_between_legs_hours = []
 # This is the time spent at each interim location (same units as used
@@ -276,31 +319,43 @@ start_time_hours_standard_deviation = 0.6
 
 
 
-
-[base_shifts]
-[base_shifts.holiday_outward]
+[trips.holiday_outward]
 start_base = 'home'
 end_base = 'holiday'
-distance_km = 174.6
-duration_hours = 2
+legs = ['home_to_holiday']
+time_between_legs_hours = []
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 8
+start_time_hours_standard_deviation = 4
 
 
 
+[trips.holiday_back]
+start_base = 'home'
+end_base = 'holiday'
+legs = ['holiday_to_home']
+time_between_legs_hours = []
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_mean = 8
+start_time_hours_standard_deviation = 4
 
-[base_shifts.holiday_back]
-start_base = 'holiday'
-end_base = 'home'
-distance_km = 174.6
-duration_hours = 2
 
 
-
-
-
-[run]
+[monte_carlo]
 use_seed = true
 seed = 1989
 iterations = 12
+[run]
 [run.start]
 year = 2015
 month = 1
@@ -346,11 +401,11 @@ consumption_kWh_km = 0.14151
 battery_size_kWh = 80.0
 charge_desire_proportion_trigger = 1.0
 has_one_trip_per_day_type = false
+driving_location_name = 'road'
+
 [charging]
 adaptive = false
 
-[general]
-driving_location_name = 'road'
 
 
 [time]
@@ -361,16 +416,20 @@ MONTHS_IN_A_YEAR = 12
 MAX_DAYS_IN_A_MONTH = 31
 DAYS_IN_A_YEAR = 365.25
 DAYS_IN_A_WEEK = 7
-weekend_day_numbers = [6, 7]
 first_hour_number = 1
 # Put 0 if you start counting at 0, 1 if you start counting at 1
 # The SPINE toolbox uses 1
 # This is only for the hour number list (and related lists)
 
-holiday_weeks = [1, 8, 18, 28, 29, 30, 31, 32, 33, 42, 51, 52, 53]
+
+[activity_parameters]
+weekend_day_numbers = [6, 7]
+
+holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 53]]
 # We need to provide the number of holliday weeks seprately,
 # as counting the elements of the list above might not work, such as
 # when the above list contains weeks 1 and 53 (which just represent
 # the fact that years don't necessarily start and/or end at the start/end
 # of a week).
 number_of_holiday_weeks = 10
+
