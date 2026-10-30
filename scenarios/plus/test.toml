@@ -419,9 +419,9 @@ first_hour_number = 1
 # Put 0 if you start counting at 0, 1 if you start counting at 1
 # The SPINE toolbox uses 1
 # This is only for the hour number list (and related lists)
+first_week_index = 1
+last_week_index = 53
 weekend_day_numbers = [6, 7]
-
-[activity_parameters]
 holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 53]]
 # We need to provide the number of holliday weeks seprately,
 # as counting the elements of the list above might not work, such as
@@ -429,7 +429,23 @@ holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 
 # the fact that years don't necessarily start and/or end at the start/end
 # of a week).
 number_of_holiday_weeks = 10
+
+
+[activity_parameters]
 work_week_duration_hours = 40.0
-worked_hours_per_work_week = 31.0
-worked_hours_per_year = 1434
+work_day_duration_hours = 8.0
+worked_hours_per_work_week_mean = 32.1
+worked_hours_per_work_week_standard_deviation = 4.2
+worked_hours_per_year_mean = 1449
+worked_hours_per_year_standard_deviation = 100
+
+possible_amounts_of_holiday_trips = [0, 1, 2, 3]
+holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]
+commute_days_indices = [1, 2, 3, 4, 5]
+weekday_commute_factor = [0.07, 0.4, 0.1, 0.4, 0.03] # Adds up to one. 
+commute_to_work_ratio_mean = 0.75
+commute_to_work_ratio_standard_deviation = 0.2
+
+
+
 

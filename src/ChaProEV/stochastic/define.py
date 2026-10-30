@@ -31,10 +31,26 @@ class TimeConstants:
     DAYS_IN_A_WEEK: int
     WEEKS_IN_A_YEAR: float
     first_hour_number: int
+    first_week_index: int
+    last_week_index: int
     weekend_day_numbers: list[int]
+    holiday_weeks: list[int]
+    holiday_week_blocks: list[list[int]]
+    number_of_holiday_weeks: int
+    # We need to provide the number of holliday weeks seprately,
+    # as counting the elements of the list above might not work, such as
+    # when the above list contains weeks 1 and 53 (which just represent
+    # the fact that years don't necessarily start and/or end at the start/end
+    # of a week).x
 
     @staticmethod
     def read_parameters(time_parameters: Box) -> TimeConstants:
+        holiday_week_blocks: list[list[int]] = (
+            time_parameters.holiday_week_blocks
+        )
+        holiday_weeks: list[int] = [
+            week for block in holiday_week_blocks for week in block
+        ]
         return TimeConstants(
             SECONDS_PER_HOUR=time_parameters.SECONDS_PER_HOUR,
             MINUTES_PER_HOUR=time_parameters.MINUTES_PER_HOUR,
@@ -46,44 +62,174 @@ class TimeConstants:
             WEEKS_IN_A_YEAR=time_parameters.DAYS_IN_A_YEAR
             / time_parameters.DAYS_IN_A_WEEK,
             first_hour_number=time_parameters.first_hour_number,
+            first_week_index=time_parameters.first_week_index,
+            last_week_index=time_parameters.last_week_index,
             weekend_day_numbers=time_parameters.weekend_day_numbers,
+            holiday_weeks=holiday_weeks,
+            holiday_week_blocks=holiday_week_blocks,
+            number_of_holiday_weeks=time_parameters.number_of_holiday_weeks,  # noqa:E501
         )
 
 
 @dataclass
 class ActivityParameters:
-    holidaty_weeks: list[int]
-    holiday_week_blocks: list[list[int]]
-    number_of_holiday_weeks: int
-    # We need to provide the number of holliday weeks seprately,
-    # as counting the elements of the list above might not work, such as
-    # when the above list contains weeks 1 and 53 (which just represent
-    # the fact that years don't necessarily start and/or end at the start/end
-    # of a week).
-    work_week_duration_hours: float
+
     worked_hours_per_work_week: float
     worked_hours_per_year: float
+    worked_days_per_work_week: int
+    worked_weeks_per_year: int
+    worked_weeks: list[int]
+    non_worked_weeks: list[int]
+    commute_days_per_week: int
+    commuting_days: list[int]
+    holiday_trip_weeks: list[int]
 
     @staticmethod
-    def read_parameters(activity_definitions: Box) -> ActivityParameters:
-        holiday_week_blocks: list[list[int]] = (
-            activity_definitions.holiday_week_blocks
-        )
-        holiday_weeks: list[int] = [
-            week for block in holiday_week_blocks for week in block
-        ]
-        return ActivityParameters(
-            holidaty_weeks=holiday_weeks,
-            holiday_week_blocks=holiday_week_blocks,
-            number_of_holiday_weeks=activity_definitions.number_of_holiday_weeks,  # noqa:E501
-            work_week_duration_hours=activity_definitions.work_week_duration_hours,  # noqa:E501
-            worked_hours_per_work_week=activity_definitions.worked_hours_per_work_week,  # noqa:E501
-            worked_hours_per_year=activity_definitions.worked_hours_per_year,
+    def set_activities(
+        activity_definitions: Box,
+        random_generator: np.random.Generator,
+        time_constants: TimeConstants,
+    ) -> ActivityParameters:
+
+        week_indices: list[int] = list(
+            range(
+                time_constants.first_week_index,
+                time_constants.last_week_index + 1,
+            )
         )
 
-    @property
-    def holiday_weeks(self) -> list[int]:
-        return [week for block in self.holiday_week_blocks for week in block]
+        worked_hours_per_work_week_mean: float = (
+            activity_definitions.worked_hours_per_work_week_mean
+        )
+        worked_hours_per_work_week_standard_deviation: float = (
+            activity_definitions.worked_hours_per_work_week_standard_deviation
+        )
+        worked_hours_per_work_week: float = random_generator.normal(
+            loc=worked_hours_per_work_week_mean,
+            scale=worked_hours_per_work_week_standard_deviation,
+        )
+        worked_days_per_work_week: int = round(
+            worked_hours_per_work_week
+            / activity_definitions.work_day_duration_hours
+        )
+        worked_hours_per_year_mean: float = (
+            activity_definitions.worked_hours_per_year_mean
+        )
+        worked_hours_per_year_standard_deviation: float = (
+            activity_definitions.worked_hours_per_year_standard_deviation
+        )
+        worked_hours_per_year: float = random_generator.normal(
+            loc=worked_hours_per_year_mean,
+            scale=worked_hours_per_year_standard_deviation,
+        )
+
+        worked_weeks_per_year: int = round(
+            worked_hours_per_year / worked_hours_per_work_week
+        )
+
+        non_worked_weeks: list[int] = sorted(
+            list(
+                random_generator.choice(
+                    time_constants.holiday_weeks,
+                    size=(len(week_indices) - worked_weeks_per_year),
+                    replace=False,
+                )
+            )
+        )
+        worked_weeks: list[int] = [
+            week_index
+            for week_index in week_indices
+            if week_index not in non_worked_weeks
+        ]
+        commute_to_work_ratio_mean: float = (
+            activity_definitions.commute_to_work_ratio_mean
+        )
+        commute_to_work_ratio_standard_deviation: float = (
+            activity_definitions.commute_to_work_ratio_standard_deviation
+        )
+
+        commute_to_work_ratio: float = random_generator.normal(
+            loc=commute_to_work_ratio_mean,
+            scale=commute_to_work_ratio_standard_deviation,
+        )
+
+        commute_days_per_week: int = round(
+            commute_to_work_ratio * worked_days_per_work_week
+        )
+
+        commute_days_indices: list[int] = (
+            activity_definitions.commute_days_indices
+        )
+        weekday_commute_factor: list[float] = (
+            activity_definitions.weekday_commute_factor
+        )
+
+        commuting_days: list[int] = sorted(
+            list(
+                random_generator.choice(
+                    commute_days_indices,
+                    commute_days_per_week,
+                    p=weekday_commute_factor,
+                    replace=False,
+                )
+            )
+        )
+
+        possible_amounts_of_holiday_trips: list[int] = (
+            activity_definitions.possible_amounts_of_holiday_trips
+        )
+        holiday_trips_probabilities: list[float] = (
+            activity_definitions.holiday_trips_probabilities
+        )
+        amount_of_holiday_trips_taken: int = int(
+            random_generator.choice(
+                possible_amounts_of_holiday_trips,
+                p=holiday_trips_probabilities,
+            )
+        )
+        holiday_trip_weeks: list[int] = sorted(
+            list(
+                random_generator.choice(
+                    non_worked_weeks,
+                    size=amount_of_holiday_trips_taken,
+                    replace=False,
+                )
+            )
+        )
+
+        # Draw holiday trip day in weekend before and weekend of
+
+        # draw if leisure (weekday and weekend: for WE not in holiday weekends or before, as travel)
+        # THEN draw weekend and override
+
+        # Fro draw weekend: draw weekday indices (not in holiday weekends or before, as travel)
+
+
+        # IF work and leisure --> draw between the two trip types
+
+        work_day_duration_hours: float = (
+            activity_definitions.work_day_duration_hours
+        )
+        worked_days_per_year: float = (
+            worked_hours_per_year / work_day_duration_hours
+        )
+        number_of_holiday_weeks: int = time_constants.number_of_holiday_weeks
+        WEEKS_IN_A_YEAR: float = time_constants.WEEKS_IN_A_YEAR
+        working_week_days: int = time_constants.DAYS_IN_A_WEEK - len(
+            time_constants.weekend_day_numbers
+        )
+
+        return ActivityParameters(
+            worked_hours_per_work_week=worked_hours_per_work_week,
+            worked_hours_per_year=worked_hours_per_year,
+            worked_days_per_work_week=worked_days_per_work_week,
+            worked_weeks_per_year=worked_weeks_per_year,
+            worked_weeks=worked_weeks,
+            non_worked_weeks=non_worked_weeks,
+            commute_days_per_week=commute_days_per_week,
+            commuting_days=commuting_days,
+            holiday_trip_weeks=holiday_trip_weeks,
+        )
 
 
 @dataclass
@@ -102,109 +248,131 @@ class Vehicle:
     name: str
     consumption_kWh_km: float
     battery_size_kWh: float
-    charge_desire_proportion_trigger: float
     has_one_trip_per_day_type: bool
     bases: list[str]
     driving_location_name: str
 
 
-def get_car_trip_probabilities_per_day_type(
-    base: str, activity_parameters: ActivityParameters
-) -> dict[str, dict[str, float]]:
-    trip_probabilities_per_day_type: dict[str, dict[str, float]] = {}
-    # print('[magenta] Implement this!')
-    trip_probabilities_per_day_type['weekday_in_work_week'] = {}
-    trip_probabilities_per_day_type['weekday_in_work_week'][
-        'commute_to_work'
-    ] = 0.6
-    trip_probabilities_per_day_type['weekday_in_work_week'][
-        'commute_to_work_and_leisure'
-    ] = 0.2
-    trip_probabilities_per_day_type['weekday_in_work_week'][
-        'leisure_only'
-    ] = 0.15
-    trip_probabilities_per_day_type['weekday_in_work_week']['weekend_trip'] = 0
-    trip_probabilities_per_day_type['weekday_in_work_week'][
-        'stay_put_home'
-    ] = 0.05
-    trip_probabilities_per_day_type['weekend_in_work_week'] = {}
-    trip_probabilities_per_day_type['weekend_in_work_week'][
-        'commute_to_work'
-    ] = 0
-    trip_probabilities_per_day_type['weekend_in_work_week'][
-        'commute_to_work_and_leisure'
-    ] = 0
-    trip_probabilities_per_day_type['weekend_in_work_week'][
-        'leisure_only'
-    ] = 0.5
-    trip_probabilities_per_day_type['weekend_in_work_week'][
-        'weekend_trip'
-    ] = 0.125
-    trip_probabilities_per_day_type['weekend_in_work_week'][
-        'stay_put_home'
-    ] = 0.375
-    trip_probabilities_per_day_type['weekday_in_holiday_week'] = {}
-    trip_probabilities_per_day_type['weekday_in_holiday_week'][
-        'commute_to_work'
-    ] = 0.3
-    trip_probabilities_per_day_type['weekday_in_holiday_week'][
-        'commute_to_work_and_leisure'
-    ] = 0.1
-    trip_probabilities_per_day_type['weekday_in_holiday_week'][
-        'leisure_only'
-    ] = 0.3
-    trip_probabilities_per_day_type['weekday_in_holiday_week'][
-        'weekend_trip'
-    ] = 0
-    trip_probabilities_per_day_type['weekday_in_holiday_week'][
-        'stay_put_home'
-    ] = 0.3
-    trip_probabilities_per_day_type['weekend_in_holiday_week'] = {}
-    trip_probabilities_per_day_type['weekend_in_holiday_week'][
-        'commute_to_work'
-    ] = 0
-    trip_probabilities_per_day_type['weekend_in_holiday_week'][
-        'commute_to_work_and_leisure'
-    ] = 0
-    trip_probabilities_per_day_type['weekend_in_holiday_week'][
-        'leisure_only'
-    ] = 0.5
-    trip_probabilities_per_day_type['weekend_in_holiday_week'][
-        'weekend_trip'
-    ] = 0.125
-    trip_probabilities_per_day_type['weekend_in_holiday_week'][
-        'stay_put_home'
-    ] = 0.375
-    return trip_probabilities_per_day_type
+# def get_car_trip_probabilities_per_day_type(
+#     base: str, activity_parameters: ActivityParameters
+# ) -> dict[str, dict[str, float]]:
+#     trip_probabilities_per_day_type: dict[str, dict[str, float]] = {}
+#     # print('[magenta] Implement this!')
+#     trip_probabilities_per_day_type['weekday_in_work_week'] = {}
+#     trip_probabilities_per_day_type['weekday_in_work_week'][
+#         'commute_to_work'
+#     ] = 0.6
+#     trip_probabilities_per_day_type['weekday_in_work_week'][
+#         'commute_to_work_and_leisure'
+#     ] = 0.2
+#     trip_probabilities_per_day_type['weekday_in_work_week'][
+#         'leisure_only'
+#     ] = 0.15
+#     trip_probabilities_per_day_type['weekday_in_work_week']['weekend_trip'] = 0
+#     trip_probabilities_per_day_type['weekday_in_work_week'][
+#         'stay_put_home'
+#     ] = 0.05
+#     trip_probabilities_per_day_type['weekend_in_work_week'] = {}
+#     trip_probabilities_per_day_type['weekend_in_work_week'][
+#         'commute_to_work'
+#     ] = 0
+#     trip_probabilities_per_day_type['weekend_in_work_week'][
+#         'commute_to_work_and_leisure'
+#     ] = 0
+#     trip_probabilities_per_day_type['weekend_in_work_week'][
+#         'leisure_only'
+#     ] = 0.5
+#     trip_probabilities_per_day_type['weekend_in_work_week'][
+#         'weekend_trip'
+#     ] = 0.125
+#     trip_probabilities_per_day_type['weekend_in_work_week'][
+#         'stay_put_home'
+#     ] = 0.375
+#     trip_probabilities_per_day_type['weekday_in_holiday_week'] = {}
+#     trip_probabilities_per_day_type['weekday_in_holiday_week'][
+#         'commute_to_work'
+#     ] = 0.3
+#     trip_probabilities_per_day_type['weekday_in_holiday_week'][
+#         'commute_to_work_and_leisure'
+#     ] = 0.1
+#     trip_probabilities_per_day_type['weekday_in_holiday_week'][
+#         'leisure_only'
+#     ] = 0.3
+#     trip_probabilities_per_day_type['weekday_in_holiday_week'][
+#         'weekend_trip'
+#     ] = 0
+#     trip_probabilities_per_day_type['weekday_in_holiday_week'][
+#         'stay_put_home'
+#     ] = 0.3
+#     trip_probabilities_per_day_type['weekend_in_holiday_week'] = {}
+#     trip_probabilities_per_day_type['weekend_in_holiday_week'][
+#         'commute_to_work'
+#     ] = 0
+#     trip_probabilities_per_day_type['weekend_in_holiday_week'][
+#         'commute_to_work_and_leisure'
+#     ] = 0
+#     trip_probabilities_per_day_type['weekend_in_holiday_week'][
+#         'leisure_only'
+#     ] = 0.5
+#     trip_probabilities_per_day_type['weekend_in_holiday_week'][
+#         'weekend_trip'
+#     ] = 0.125
+#     trip_probabilities_per_day_type['weekend_in_holiday_week'][
+#         'stay_put_home'
+#     ] = 0.375
+#     return trip_probabilities_per_day_type
 
 
-def get_trip_probabilities(
-    activity_parameters: ActivityParameters,
-    random_generator: np.random.Generator,
-) -> dict[str, BaseTripProbabilities]:
+# def get_trip_probabilities(
+#     activity_parameters: ActivityParameters,
+#     random_generator: np.random.Generator,
+# ) -> dict[str, BaseTripProbabilities]:
 
-    trip_probabilities: dict[str, BaseTripProbabilities] = {}
+#     trip_probabilities: dict[str, BaseTripProbabilities] = {}
 
-    base = 'home'
-    base = 'holiday'
-    # relevant  day types
+#     base = 'home'
+#     base = 'holiday'
+#     # relevant  day types
 
-    # holiday trip can be in week-end and such,
-    # so still prob for leisure from holiday in work weekend
-    # draw going to work, going to leisure per day type
+#     # holiday trip can be in week-end and such,
+#     # so still prob for leisure from holiday in work weekend
+#     # draw going to work, going to leisure per day type
 
-    # We first get the base
-    goo = random_generator.choice([True, False], p=[0.43, 0.57])
-    print(goo)
-    goo = random_generator.choice([True, False], p=[0.43, 0.57])
-    print(goo)
-    exit()
+#     # We first get the base
 
-    transition_dates: list[date] = []
-    transition_trips: dict[date, str] = {}
+#     # 1) Set start bases (with transitions)
+#     # 2) Keep track of dates with transitions
+#     # 3) Iterate through dates. If not in kept_track --> draw (based on base) otherwise, use transition
 
-    # We then compute the trip probabilities per base
-    return trip_probabilities
+#     # def draw_trip(date: date, base: base, activity_parameters: ActivityParameters) -> str
+
+#     # Compute amount_of_non_working_weeks
+#     # Draw this amount in holiday weeks : In these, there is no going o work.
+#     # Draw possible holiday trips in these weeks. choose([0, 1, 2, ...], p=[.....])
+#     # The transition needs to be in one of these
+
+#     # THe rest have the same prob of going to work.
+
+#     # Add a home working factor? Higher on some days of the week?
+#     # Draw N non-working weeks in holiday weeks (based on yeralu work). There gong_to_work is always false
+
+#     # Base transitions --> changes base, but also sets trip and bans others from settin trip
+#     # is BaseTripProbabilities still needed if we draw stuff?
+#     # DO IT IN FUNC Thta selcts trip per day, not as prob!
+#     # Do go to work
+#     # Do go to leisure
+
+#     # goo = random_generator.choice([True, False], p=[0.43, 0.57])
+#     # print(goo)
+#     # goo = random_generator.choice([True, False], p=[0.43, 0.57])
+#     # print(goo)
+#     exit()
+
+#     transition_dates: list[date] = []
+#     transition_trips: dict[date, str] = {}
+
+#     # We then compute the trip probabilities per base
+#     return trip_probabilities
 
 
 @dataclass
@@ -260,7 +428,6 @@ class TimeRange:
     @staticmethod
     def set_ranges(
         run_parameters: Box,
-        activity_parameters: ActivityParameters,
         time_constants: TimeConstants,
     ) -> TimeRange:
         start: Box = run_parameters.start
@@ -360,7 +527,7 @@ class TimeRange:
                     pl.when(
                         pl.col('date')
                         .dt.week()
-                        .is_in(activity_parameters.holiday_weeks)
+                        .is_in(time_constants.holiday_weeks)
                     )
                     .then(pl.lit('holiday'))
                     .otherwise(pl.lit('work')),
@@ -715,16 +882,10 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
     time_constants: TimeConstants = TimeConstants.read_parameters(
         scenario.time
     )
-    activity_definitions: Box = scenario.activity_parameters
-    activity_parameters: ActivityParameters = (
-        ActivityParameters.read_parameters(
-            activity_definitions=activity_definitions
-        )
-    )
+
     run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
         run_parameters=run_parameters,
-        activity_parameters=activity_parameters,
         time_constants=time_constants,
     )
     locations_definitions: Box = scenario.locations
@@ -745,7 +906,6 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
         name=vehicle_definition.name,
         consumption_kWh_km=vehicle_definition.consumption_kWh_km,
         battery_size_kWh=vehicle_definition.battery_size_kWh,
-        charge_desire_proportion_trigger=vehicle_definition.charge_desire_proportion_trigger,  # noqa:E501
         has_one_trip_per_day_type=vehicle_definition.has_one_trip_per_day_type,
         bases=bases,
         driving_location_name=vehicle_definition.driving_location_name,
@@ -810,6 +970,16 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
             )
 
     else:
+        activity_definitions: Box = scenario.activity_parameters
+        activity_parameters: ActivityParameters = (
+            ActivityParameters.set_activities(
+                activity_definitions=activity_definitions,
+                random_generator=random_generator,
+                time_constants=time_constants,
+            )
+        )
+        print(activity_parameters)
+        exit()
         trip_probabilities: dict[str, BaseTripProbabilities] = (
             get_trip_probabilities(
                 activity_parameters=activity_parameters,
