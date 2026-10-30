@@ -1,19 +1,58 @@
 from dataclasses import dataclass
 from datetime import date, datetime
-from pathlib import Path
 
 import numpy as np
 import polars as pl
 from box import Box
-from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic.monte_carlo import RandomGenerators
+
+@dataclass
+class ChargingBehaviour:
+    adaptive: bool
+    charge_desire_proportion_trigger: float
+
+    @staticmethod
+    def read_parameters(charging_parameters: Box) -> ChargingBehaviour:
+        return ChargingBehaviour(
+            adaptive=charging_parameters.adaptive,
+            charge_desire_proportion_trigger=charging_parameters.charge_desire_proportion_trigger,  # noqa:E501
+        )
+
+
+@dataclass
+class TimeConstants:
+    SECONDS_PER_HOUR: int
+    MINUTES_PER_HOUR: int
+    HOURS_IN_A_DAY: int
+    MONTHS_IN_A_YEAR: int
+    MAX_DAYS_IN_A_MONTH: int
+    DAYS_IN_A_YEAR: float
+    DAYS_IN_A_WEEK: int
+    WEEKS_IN_A_YEAR: float
+    first_hour_number: int
+    weekend_day_numbers: list[int]
+
+    @staticmethod
+    def read_parameters(time_parameters: Box) -> TimeConstants:
+        return TimeConstants(
+            SECONDS_PER_HOUR=time_parameters.SECONDS_PER_HOUR,
+            MINUTES_PER_HOUR=time_parameters.MINUTES_PER_HOUR,
+            HOURS_IN_A_DAY=time_parameters.HOURS_IN_A_DAY,
+            MONTHS_IN_A_YEAR=time_parameters.MONTHS_IN_A_YEAR,
+            MAX_DAYS_IN_A_MONTH=time_parameters.MAX_DAYS_IN_A_MONTH,
+            DAYS_IN_A_YEAR=time_parameters.DAYS_IN_A_YEAR,
+            DAYS_IN_A_WEEK=time_parameters.DAYS_IN_A_WEEK,
+            WEEKS_IN_A_YEAR=time_parameters.DAYS_IN_A_YEAR
+            / time_parameters.DAYS_IN_A_WEEK,
+            first_hour_number=time_parameters.first_hour_number,
+            weekend_day_numbers=time_parameters.weekend_day_numbers,
+        )
 
 
 @dataclass
 class ActivityParameters:
-    weekend_day_numbers: list[int]
+    holidaty_weeks: list[int]
     holiday_week_blocks: list[list[int]]
     number_of_holiday_weeks: int
     # We need to provide the number of holliday weeks seprately,
@@ -21,6 +60,26 @@ class ActivityParameters:
     # when the above list contains weeks 1 and 53 (which just represent
     # the fact that years don't necessarily start and/or end at the start/end
     # of a week).
+    work_week_duration_hours: float
+    worked_hours_per_work_week: float
+    worked_hours_per_year: float
+
+    @staticmethod
+    def read_parameters(activity_definitions: Box) -> ActivityParameters:
+        holiday_week_blocks: list[list[int]] = (
+            activity_definitions.holiday_week_blocks
+        )
+        holiday_weeks: list[int] = [
+            week for block in holiday_week_blocks for week in block
+        ]
+        return ActivityParameters(
+            holidaty_weeks=holiday_weeks,
+            holiday_week_blocks=holiday_week_blocks,
+            number_of_holiday_weeks=activity_definitions.number_of_holiday_weeks,  # noqa:E501
+            work_week_duration_hours=activity_definitions.work_week_duration_hours,  # noqa:E501
+            worked_hours_per_work_week=activity_definitions.worked_hours_per_work_week,  # noqa:E501
+            worked_hours_per_year=activity_definitions.worked_hours_per_year,
+        )
 
     @property
     def holiday_weeks(self) -> list[int]:
@@ -120,12 +179,26 @@ def get_car_trip_probabilities_per_day_type(
 
 
 def get_trip_probabilities(
-    activity_parameters: Box,
+    activity_parameters: ActivityParameters,
+    random_generator: np.random.Generator,
 ) -> dict[str, BaseTripProbabilities]:
 
     trip_probabilities: dict[str, BaseTripProbabilities] = {}
 
+    base = 'home'
+    base = 'holiday'
+    # relevant  day types
+
+    # holiday trip can be in week-end and such,
+    # so still prob for leisure from holiday in work weekend
+    # draw going to work, going to leisure per day type
+
     # We first get the base
+    goo = random_generator.choice([True, False], p=[0.43, 0.57])
+    print(goo)
+    goo = random_generator.choice([True, False], p=[0.43, 0.57])
+    print(goo)
+    exit()
 
     transition_dates: list[date] = []
     transition_trips: dict[date, str] = {}
@@ -180,10 +253,15 @@ class TimeRange:
     run_stamps: pl.Series
     display_stamps: pl.Series
     day_types: pl.Series
+    frequency: str
+    frequency_type: str
+    frequency_size: int
 
     @staticmethod
     def set_ranges(
-        run_parameters: Box, activity_parameters: ActivityParameters
+        run_parameters: Box,
+        activity_parameters: ActivityParameters,
+        time_constants: TimeConstants,
     ) -> TimeRange:
         start: Box = run_parameters.start
         end: Box = run_parameters.end
@@ -274,7 +352,7 @@ class TimeRange:
                     pl.when(
                         pl.col('date')
                         .dt.weekday()
-                        .is_in(activity_parameters.weekend_day_numbers)
+                        .is_in(time_constants.weekend_day_numbers)
                     )
                     .then(pl.lit('weekend'))
                     .otherwise(pl.lit('weekday')),
@@ -297,6 +375,9 @@ class TimeRange:
             run_stamps=run_stamps,
             display_stamps=display_stamps,
             day_types=day_types,
+            frequency=run_frequency,
+            frequency_type=run_frequency_settings.type,
+            frequency_size=run_frequency_settings.size,
         )
 
 
@@ -619,22 +700,32 @@ class Trip:
 
 
 def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
+    ChargingBehaviour,
     Vehicle,
     TimeRange,
     pl.Series,
     dict[str, dict[str, Trip]],
     dict[str, Location],
     ActivityParameters,
+    TimeConstants,
 ]:
-    activity_parameters_definitions: Box = scenario.activity_parameters
-    activity_parameters: ActivityParameters = ActivityParameters(
-        weekend_day_numbers=activity_parameters_definitions.weekend_day_numbers,  # noqa:E501
-        holiday_week_blocks=activity_parameters_definitions.holiday_week_blocks,  # noqa:E501
-        number_of_holiday_weeks=activity_parameters_definitions.number_of_holiday_weeks,  # noqa:E501
+    charging_behaviour: ChargingBehaviour = ChargingBehaviour.read_parameters(
+        scenario.charging
+    )
+    time_constants: TimeConstants = TimeConstants.read_parameters(
+        scenario.time
+    )
+    activity_definitions: Box = scenario.activity_parameters
+    activity_parameters: ActivityParameters = (
+        ActivityParameters.read_parameters(
+            activity_definitions=activity_definitions
+        )
     )
     run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
-        run_parameters=run_parameters, activity_parameters=activity_parameters
+        run_parameters=run_parameters,
+        activity_parameters=activity_parameters,
+        time_constants=time_constants,
     )
     locations_definitions: Box = scenario.locations
 
@@ -692,7 +783,6 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
 
     # or have transition = (start_base==end_base) M
 
-
     base_trips: dict[str, dict[str, Trip]] = {}
     for base in bases:
         base_trips[base] = {
@@ -702,7 +792,7 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
         }
     print(user_trips)
     print(base_trips)
-    exit()
+
     if vehicle.has_one_trip_per_day_type:
         possible_day_types: set[str] = set(time_ranges.day_types.unique())
         trip_names: set[str] = set(user_trips.keys())
@@ -721,13 +811,20 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
 
     else:
         trip_probabilities: dict[str, BaseTripProbabilities] = (
-            get_trip_probabilities(activity_parameters=activity_parameters)
+            get_trip_probabilities(
+                activity_parameters=activity_parameters,
+                random_generator=random_generator,
+            )
         )
         trip_list: list[str] = []
+    exit()
     print(run_trips)
 
     # Make a DF with time_ranges.day_types, is_transition
     exit()
+    # first draw tarnsitions so that we know what base is.
+
+    # base trip trip_probabilities are YES/YES, etc.
 
     trip_probabilities_per_day_type: dict[str, dict[str, float]] = (
         get_trip_probabilities_per_day_type(
@@ -748,22 +845,16 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
     )
     print(run_trips)
     exit()
-    return vehicle, time_ranges, run_trips, base_trips, locations
-
-
-if __name__ == '__main__':
-    scenario_path: Path = Path('scenarios/plus/test.toml')
-    scenario: Box = cook.parameters_from_TOML(scenario_path)
-    random_generators: RandomGenerators = RandomGenerators.create_generators(
-        scenario=scenario
+    return (
+        charging_behaviour,
+        vehicle,
+        time_ranges,
+        run_trips,
+        base_trips,
+        locations,
+        activity_parameters,
+        time_constants,
     )
-
-    vehicle, time_ranges, run_trips, base_trips, locations = define_user(
-        scenario=scenario, random_generator=random_generators.define
-    )
-    print(time_ranges.run_stamps)
-    print(time_ranges.run_dates)
-    print(run_trips)
 
 
 # IF transition (drawen with given prob) Then redo trip prob only for that

@@ -87,30 +87,33 @@ def get_charging_quantities(
     scenario: Box, random_generators: RandomGenerators
 ) -> Charge:
     (
+        charging_behaviour,
         vehicle,
         time_ranges,
         run_trips,
         base_trips,
         locations,
         activity_parameters,
+        time_constants,
     ) = define_user(
         scenario=scenario, random_generator=random_generators.define
     )
 
     mobility_matrix: pl.DataFrame = compute_mobility_matrix(
         vehicle=vehicle,
-        time_ranges=time_ranges,
         run_trips=run_trips,
         base_trips=base_trips,
-        scenario=scenario,
+        time_ranges=time_ranges,
     )
 
     charging_dataframe = compute_charging(
+        charging_behaviour=charging_behaviour,
         vehicle=vehicle,
         mobility_matrix=mobility_matrix,
         locations=locations,
-        scenario=scenario,
         random_generator=random_generators.charging,
+        time_ranges=time_ranges,
+        time_constants=time_constants,
     )
 
     return Charge.from_dataframe(charging_dataframe=charging_dataframe)

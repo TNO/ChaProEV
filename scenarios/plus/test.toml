@@ -399,13 +399,12 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 name = 'car'
 consumption_kWh_km = 0.14151
 battery_size_kWh = 80.0
-charge_desire_proportion_trigger = 1.0
 has_one_trip_per_day_type = false
 driving_location_name = 'road'
 
 [charging]
 adaptive = false
-
+charge_desire_proportion_trigger = 1.0
 
 
 [time]
@@ -420,11 +419,9 @@ first_hour_number = 1
 # Put 0 if you start counting at 0, 1 if you start counting at 1
 # The SPINE toolbox uses 1
 # This is only for the hour number list (and related lists)
-
-
-[activity_parameters]
 weekend_day_numbers = [6, 7]
 
+[activity_parameters]
 holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 53]]
 # We need to provide the number of holliday weeks seprately,
 # as counting the elements of the list above might not work, such as
@@ -432,4 +429,7 @@ holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 
 # the fact that years don't necessarily start and/or end at the start/end
 # of a week).
 number_of_holiday_weeks = 10
+work_week_duration_hours = 40.0
+worked_hours_per_work_week = 31.0
+worked_hours_per_year = 1434
 

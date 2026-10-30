@@ -1,40 +1,42 @@
-from pathlib import Path
-
 import numpy as np
 import polars as pl
-from box import Box
 from ETS_CookBook import ETS_CookBook as cook
-from rich import print
 
-from ChaProEV.stochastic.mobility import compute_mobility_matrix
-from ChaProEV.stochastic.monte_carlo import RandomGenerators
-from ChaProEV.stochastic.define import Vehicle, Location, define_user
+from ChaProEV.stochastic.define import (
+    ChargingBehaviour,
+    Location,
+    TimeConstants,
+    TimeRange,
+    Vehicle,
+)
 
 
 @cook.function_timer
 def compute_charging(
     *,
+    charging_behaviour: ChargingBehaviour,
     vehicle: Vehicle,
     mobility_matrix: pl.DataFrame,
     locations: dict[str, Location],
-    scenario: Box,
     random_generator: np.random.Generator,
+    time_ranges=TimeRange,
+    time_constants=TimeConstants,
 ) -> pl.DataFrame:
     driving_location_name: str = vehicle.driving_location_name
     battery_capacity_kWh: float = vehicle.battery_size_kWh
     charge_desire_proportion_trigger: float = (
-        vehicle.charge_desire_proportion_trigger
+        charging_behaviour.charge_desire_proportion_trigger
     )
     battery_charge_levels_kWh: list[float] = []
     current_battery_level_kWh: float = battery_capacity_kWh
     power_drawn_from_network_kW: list[float] = []
     power_to_vehicle_kW: list[float] = []
 
-    MINUTES_PER_HOUR: int = scenario.time.MINUTES_PER_HOUR
+    MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
 
-    if scenario.run.frequency.type != 'm':
+    if time_ranges.frequency_type != 'm':
         raise ValueError('You need to use minutes for the frequency!')
-    run_frequency_size: int = scenario.run.frequency.size
+    run_frequency_size: int = time_ranges.frequency_size
     run_time_resolution_hours: float = run_frequency_size / MINUTES_PER_HOUR
 
     wants_to_charge: bool = False
@@ -104,7 +106,7 @@ def compute_charging(
                         available_power_kW * location.charger_efficiency
                     )
 
-                    if scenario.charging.adaptive:
+                    if charging_behaviour.adaptive:
                         desired_power_to_vehicle_kW: float = (
                             battery_space_at_session_start_kWh
                             / hours_at_location
@@ -206,39 +208,3 @@ def get_hourly_values(charging_dataframe: pl.DataFrame) -> pl.DataFrame:
     )
 
     return hourly_values
-
-
-if __name__ == '__main__':
-    scenario_path: Path = Path('scenarios/plus/test.toml')
-    scenario: Box = cook.parameters_from_TOML(scenario_path)
-    random_generators: RandomGenerators = (
-        RandomGenerators.create_generators(scenario=scenario)
-    )
-
-    (
-        vehicle,
-        time_ranges,
-        run_trips,
-        base_trips,
-        locations,
-    ) = define_user(
-        scenario=scenario, random_generator=random_generators.define
-    )
-
-    mobility_matrix: pl.DataFrame = compute_mobility_matrix(
-        time_ranges=time_ranges,
-        run_trips=run_trips,
-        base_trips=base_trips,
-        scenario=scenario,
-    )
-
-    charging_dataframe = compute_charging(
-        mobility_matrix=mobility_matrix,
-        locations=locations,
-        scenario=scenario,
-        random_generator=random_generators.charging,
-    )
-    print(charging_dataframe)
-    print(charging_dataframe['Power to vehicle (kW)'].sum() / 60)
-    # with pl.Config(tbl_rows=26):
-    #     print(charging_averages)

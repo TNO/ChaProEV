@@ -1,19 +1,16 @@
 from datetime import date, datetime, time, timedelta
-from pathlib import Path
 
 import numpy as np
 import polars as pl
-from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic.monte_carlo import RandomGenerators
 from ChaProEV.stochastic.define import (
+    TimeConstants,
     TimeRange,
     Trip,
     TripStep,
     Vehicle,
-    define_user,
 )
 
 
@@ -55,17 +52,16 @@ def create_trip_step_record(
 @cook.function_timer
 def compute_mobility_matrix(
     *,
-    time_ranges: TimeRange,
     run_trips: pl.Series,
     base_trips: dict[str, dict[str, Trip]],
-    scenario: Box,
     vehicle: Vehicle,
+    time_ranges: TimeRange,
 ) -> pl.DataFrame:
-    MINUTES_PER_HOUR: int = scenario.time.MINUTES_PER_HOUR
+    MINUTES_PER_HOUR: int = TimeConstants.MINUTES_PER_HOUR
 
-    if scenario.run.frequency.type != 'm':
+    if time_ranges.frequency_type != 'm':
         raise ValueError('You need to use minutes for the frequency!')
-    run_frequency_size: int = scenario.run.frequency.size
+    run_frequency_size: int = time_ranges.frequency_size
     run_time_resolution_hours: float = run_frequency_size / MINUTES_PER_HOUR
 
     trip_step_records: list[dict[str, object]] = []
@@ -103,7 +99,7 @@ def compute_mobility_matrix(
             pl.datetime_ranges(
                 start='Step start',
                 end='Step end',
-                interval=f'{run_frequency_size}{scenario.run.frequency.type}',
+                interval=f'{run_frequency_size}{time_ranges.frequency_type}',
                 closed='left',
             ).alias('Time Stamp')
         )
@@ -163,34 +159,3 @@ def compute_mobility_matrix(
         .drop('location_run_ID', 'location_run_rows')
     )
     return mobility_matrix
-
-
-if __name__ == '__main__':
-    scenario_path: Path = Path('scenarios/plus/test.toml')
-    scenario: Box = cook.parameters_from_TOML(scenario_path)
-    run_parameters: Box = scenario.run
-
-    random_generators: RandomGenerators = RandomGenerators.create_generators(
-        scenario=scenario
-    )
-
-    (
-        vehicle,
-        time_ranges,
-        run_trips,
-        base_trips,
-        locations,
-    ) = define_user(
-        scenario=scenario, random_generator=random_generators.define
-    )
-
-    mobility_matrix: pl.DataFrame = compute_mobility_matrix(
-        vehicle=vehicle,
-        time_ranges=time_ranges,
-        run_trips=run_trips,
-        base_trips=base_trips,
-        scenario=scenario,
-    )
-
-    print(mobility_matrix['Kilometers driven'].sum())
-    print(mobility_matrix['Consumption (kWh)'].sum())

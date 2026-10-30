@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 import numpy as np
-from box import Box
 
 '''
 Monte Carlo
