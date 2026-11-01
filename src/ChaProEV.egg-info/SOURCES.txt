@@ -134,6 +134,7 @@ scenarios/cumulative_test/XX_car.toml
 scenarios/cumulative_test/XX_truck.toml
 scenarios/cumulative_test/XX_van.toml
 scenarios/local_impact_BEVs/baseline.toml
+scenarios/plus/test copy.toml
 scenarios/plus/test.toml
 src/ChaProEV/__init__.py
 src/ChaProEV/py.typed
@@ -163,12 +164,13 @@ src/ChaProEV/classic/scenarios_module.py
 src/ChaProEV/classic/weather.py
 src/ChaProEV/classic/writing.py
 src/ChaProEV/stochastic/ChaProEV_run.py
-src/ChaProEV/stochastic/auxiliary.py
 src/ChaProEV/stochastic/charging.py
 src/ChaProEV/stochastic/dashboard.py
 src/ChaProEV/stochastic/define.py
 src/ChaProEV/stochastic/mobility.py
+src/ChaProEV/stochastic/monte_carlo.py
 src/ChaProEV/stochastic/scenarios_module.py
+src/ChaProEV/stochastic_new/ChaProEV_run.py
 test_bus_moility_matrices/bus_weekday_in_holiday_week.csv
 test_bus_moility_matrices/bus_weekday_in_workweek.csv
 test_bus_moility_matrices/bus_weekend_in_holiday_week.csv
