@@ -12,7 +12,6 @@ class MonteCarlo:
 @dataclass
 class RandomGenerators:
     define: np.random.Generator
-    mobility: np.random.Generator
     charging: np.random.Generator
 
     @staticmethod
@@ -27,10 +26,9 @@ class RandomGenerators:
             run_seed
         )
 
-        define_seed, mobility_seed, charging_seed = seed_sequence.spawn(3)
+        define_seed, charging_seed = seed_sequence.spawn(2)
 
         return RandomGenerators(
             define=np.random.default_rng(seed=define_seed),
-            mobility=np.random.default_rng(seed=mobility_seed),
             charging=np.random.default_rng(seed=charging_seed),
         )

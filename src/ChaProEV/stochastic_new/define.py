@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import polars as pl
 from box import Box
 
 
@@ -18,7 +19,7 @@ class Vehicle:
 
     @staticmethod
     def draw(
-        *, vehicle_settings: Box, define_generator: np.random.Generator
+        *, vehicle_settings: Box, random_generator: np.random.Generator
     ) -> Vehicle:
         name: str = vehicle_settings.name
         has_one_trip_per_day_type: bool = (
@@ -36,7 +37,7 @@ class Vehicle:
         battery_size_kWh_standard_deviation: float = (
             vehicle_settings.battery_size_kWh_standard_deviation
         )
-        consumption_kWh_km: float = define_generator.normal(
+        consumption_kWh_km: float = random_generator.normal(
             loc=consumption_kWh_km_mean,
             scale=consumption_kWh_km_standard_deviation,
         )
@@ -46,7 +47,7 @@ class Vehicle:
                 f'Check {consumption_kWh_km_mean=} and '
                 f'{consumption_kWh_km_standard_deviation=}'
             )
-        battery_size_kWh: float = define_generator.normal(
+        battery_size_kWh: float = random_generator.normal(
             loc=battery_size_kWh_mean,
             scale=battery_size_kWh_standard_deviation,
         )
@@ -89,7 +90,7 @@ class Location:
 
     @staticmethod
     def draw(
-        *, location_parameters: Box, define_generator: np.random.Generator
+        *, location_parameters: Box, random_generator: np.random.Generator
     ) -> Location:
         base: bool = location_parameters.base
         latitude: float = location_parameters.latitude
@@ -111,7 +112,7 @@ class Location:
             if not np.isclose(sum(variant_weights), 1.0):
                 raise ValueError(f'{variant_weights=} must add up to 1.0')
             chosen_variant: str = str(
-                define_generator.choice(variants, p=variant_weights)
+                random_generator.choice(variants, p=variant_weights)
             )
             if chosen_variant not in location_parameters:
                 raise KeyError(
@@ -154,7 +155,7 @@ class Location:
 
 
 def draw_legs_references(
-    *, legs_references: Box, define_generator: np.random.Generator
+    *, legs_references: Box, random_generator: np.random.Generator
 ) -> Box:
     '''
     Draws leg distances and speeds and calculates durations.
@@ -171,7 +172,7 @@ def draw_legs_references(
         )
         mean_speed_kph: float = reference.mean_speed_kph
         standard_deviation_speed: float = reference.standard_deviation_speed
-        distance_km: float = define_generator.normal(
+        distance_km: float = random_generator.normal(
             loc=mean_distance_km,
             scale=standard_deviation_distance,
         )
@@ -181,7 +182,7 @@ def draw_legs_references(
                 f'Please check {mean_distance_km=} and '
                 f'{standard_deviation_distance=}'
             )
-        speed_kph: float = define_generator.normal(
+        speed_kph: float = random_generator.normal(
             loc=mean_speed_kph,
             scale=standard_deviation_speed,
         )
@@ -239,21 +240,34 @@ class User:
     vehicle: Vehicle
     locations: dict[str, Location]
     legs: dict[str, Leg]
+    # trips: dict[str, Trip]
+    # run_trips: pl.Series
+    # mobility: pl.DataFrame <-because computing
+    # charging_behaviour: ChargingBehaviour
+    # charge: pl.DataFrame <- because computing in prev version,
+    # using it to store the sum, but we can do it by summing the DFs we keep
+    # metrics: Metrics
+    # For charge, simply put the schema. Maybe also for mobility,
+    # though the computation of mobility is straightforward,
+    # so maybe set schema as for mobility and then compute?
+    # Do charge compuation and mobility computation
+    # need to be class methods? Probably not for charge.
+    # Metrics set to None. Then assert at the end?
 
     @staticmethod
     def draw_characteristics(
-        *, scenario: Box, define_generator: np.random.Generator
+        *, scenario: Box, random_generator: np.random.Generator
     ) -> tuple[Vehicle, dict[str, Location], dict[str, Leg]]:
         vehicle_settings: Box = scenario.vehicle
         vehicle: Vehicle = Vehicle.draw(
             vehicle_settings=vehicle_settings,
-            define_generator=define_generator,
+            random_generator=random_generator,
         )
         locations_parameters: Box = scenario.locations
         locations: dict[str, Location] = {
             location_name: Location.draw(
                 location_parameters=location_parameters,
-                define_generator=define_generator,
+                random_generator=random_generator,
             )
             for location_name, location_parameters in (
                 locations_parameters.items()
@@ -264,7 +278,7 @@ class User:
         legs_references: Box = scenario.legs_references
 
         drawn_legs_references: Box = draw_legs_references(
-            legs_references=legs_references, define_generator=define_generator
+            legs_references=legs_references, random_generator=random_generator
         )
         legs: dict[str, Leg] = {
             leg_name: Leg.set_values(
@@ -277,18 +291,18 @@ class User:
 
     @staticmethod
     def create(
-        *, scenario: Box, define_generator: np.random.Generator
+        *, scenario: Box, random_generator: np.random.Generator
     ) -> User:
         ID: uuid.UUID = uuid.uuid4()
         vehicle, locations, legs = User.draw_characteristics(
-            scenario=scenario, define_generator=define_generator
+            scenario=scenario, random_generator=random_generator
         )
         # create empty charging and metrics
         return User(ID=ID, vehicle=vehicle, locations=locations, legs=legs)
 
 
 def create_users(
-    *, scenario: Box, define_generator: np.random.Generator
+    *, scenario: Box, random_generator: np.random.Generator
 ) -> list[User]:
 
     users_settings: Box = scenario.users
@@ -302,7 +316,7 @@ def create_users(
         )
 
     users_pool: list[User] = [
-        User.create(scenario=scenario, define_generator=define_generator)
+        User.create(scenario=scenario, random_generator=random_generator)
         for _ in range(users_pool_size)
     ]
     if users_settings.pickle_users_pool:
@@ -328,7 +342,7 @@ def read_users_pool(*, scenario: Box) -> list[User]:
 
 
 def get_users_pool(
-    *, scenario: Box, define_generator: np.random.Generator
+    *, scenario: Box, random_generator: np.random.Generator
 ) -> list[User]:
 
     users_settings: Box = scenario.users
@@ -337,6 +351,6 @@ def get_users_pool(
         users_pool: list[User] = read_users_pool(scenario=scenario)
     else:
         users_pool: list[User] = create_users(
-            scenario=scenario, define_generator=define_generator
+            scenario=scenario, random_generator=random_generator
         )
     return users_pool

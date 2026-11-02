@@ -20,6 +20,7 @@ def test_run() -> None:
     scenario.name = scenario_name
     scenario.case_name = case_name
     run_scenario(scenario)
+    print('[magenta] Document pickling as a cache of sorts with warnings')
 
 
 @cook.function_timer
@@ -35,7 +36,7 @@ def run_scenario(scenario: Box) -> None:
     )
 
     users_pool: list[User] = get_users_pool(
-        scenario=scenario, define_generator=random_generators.define
+        scenario=scenario, random_generator=random_generators.define
     )
     print(users_pool)
 
