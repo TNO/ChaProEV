@@ -5,28 +5,60 @@
 # and put the desired properties below
 [locations.home]
 base = true
-connectivity = 1
-charging_power_kW = 6
-charger_efficiency = 0.8
 latitude = 52
 longitude = 6.2
+has_variants = true
+variants = ['own_driveway', 'street_parking']
+variant_weights = [0.25, 0.75]
+[locations.home.own_driveway]
+connectivity = 1
+charging_power_kW = 6.0
+charger_efficiency = 0.8
 charging_price_eur_kWh = 0.25
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
-discharge_power_kW = 6
+discharge_power_kW = 6.0
 proportion_of_discharge_to_network = 0.8
+discharging_reward_eur_kWh = 0.25
+discharging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+
 time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
+
+[locations.home.street_parking]
+connectivity = 0.25
+charging_power_kW = 14.0
+charger_efficiency = 0.9
+charging_price_eur_kWh = 0.35
+charging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 14.0
+proportion_of_discharge_to_network = 0.9
+discharging_reward_eur_kWh = 0.25
+discharging_desirability = 1
+# An indicator (0-1) of how much people like to charge at this location
+
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midinight
+
+
+
 [locations.work]
 base = false
+latitude = 52.1
+longitude = 5.8
+has_variants = false
+
 connectivity = 0.5
 charging_power_kW = 14 # kW
 charger_efficiency = 0.9
-latitude = 52.1
-longitude = 5.8
 charging_price_eur_kWh = 0  # €/kWh
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
@@ -39,11 +71,13 @@ time_modulation_factors = [
 ] # Starts at midinight
 [locations.leisure]
 base = false
+latitude = 52.1
+longitude = 6.2
+has_variants = false
+
 connectivity = 0.25
 charging_power_kW = 14
 charger_efficiency = 0.9
-latitude = 52.1
-longitude = 6.2
 charging_price_eur_kWh = 0.35
 charging_desirability = 0.25
 # An indicator (0-1) of how much people like to charge at this location
@@ -54,13 +88,16 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
+
 [locations.weekend]
 base = false
+latitude = 51.8
+longitude = 6.2
+has_variants = false
+
 connectivity = 0.125
 charging_power_kW = 14
 charger_efficiency = 0.9
-latitude = 51.8
-longitude = 6.2
 charging_price_eur_kWh = 0.35
 charging_desirability = 0.1
 # An indicator (0-1) of how much people like to charge at this location
@@ -71,13 +108,16 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midinight
+
 [locations.holiday]
 base = true
+latitude = 53.0
+longitude = 6.2
+has_variants=false
+
 connectivity = 1
 charging_power_kW = 14
 charger_efficiency = 0.9
-latitude = 53.0
-longitude = 6.2
 charging_price_eur_kWh = 0.35
 charging_desirability = 0.2
 # An indicator (0-1) of how much people like to charge at this location
@@ -353,7 +393,7 @@ start_time_hours_standard_deviation = 4
 [users]
 users_pool_size = 12
 read_from_file = false
-pickle_users_pool = false
+pickle_users_pool = true
 
 [monte_carlo]
 use_seed = true
@@ -400,10 +440,13 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 
 [vehicle]
 name = 'car'
-consumption_kWh_km = 0.14151
-battery_size_kWh = 80.0
+consumption_kWh_km_mean = 0.20
+consumption_kWh_km_standard_deviation = 0.03
+battery_size_kWh_mean = 80.0
+battery_size_kWh_standard_deviation = 20.0
 has_one_trip_per_day_type = false
 driving_location_name = 'road'
+bases = ['home', 'holiday']
 
 [charging]
 adaptive = false

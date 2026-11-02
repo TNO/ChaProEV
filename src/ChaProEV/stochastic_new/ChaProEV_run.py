@@ -12,7 +12,10 @@ def test_run() -> None:
 
     scenario_name: str = 'cars'
     case_name: str = 'plus'
-    scenario_path: Path = Path(f'scenarios/{case_name}/{scenario_name}.toml')
+    scenario_path: Path = (
+        Path('scenarios') / case_name / f'{scenario_name}.toml'
+    )
+
     scenario: Box = cook.parameters_from_TOML(scenario_path)
     scenario.name = scenario_name
     scenario.case_name = case_name
