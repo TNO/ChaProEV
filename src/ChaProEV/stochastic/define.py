@@ -964,7 +964,7 @@ def define_user(scenario: Box, random_generator: np.random.Generator) -> tuple[
             raise ValueError(
                 'If you only have one trip per day type, then the'
                 'names of the trips and the names of day types have'
-                'to bethe same.'
+                'to be the same.'
                 f'{possible_day_types=}'
                 f'{trip_names=}'
             )

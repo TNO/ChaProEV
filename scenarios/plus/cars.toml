@@ -376,8 +376,8 @@ start_time_hours_standard_deviation = 3.0
 
 
 [trips.holiday_back]
-start_base = 'home'
-end_base = 'holiday'
+start_base = 'holiday'
+end_base = 'home'
 legs = ['holiday_to_home']
 time_between_legs_hours = []
 # This is the time spent at each interim location (same units as used

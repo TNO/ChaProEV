@@ -159,9 +159,7 @@ def draw_legs_references(
 ) -> Box:
     '''
     Draws leg distances and speeds and calculates durations.
-    Outward and return legs that share a reference have the same
-    distance and duration.
-    We assume that legs outward and back have the same characteristics,
+    We assume that legs outward and back have the same distance and duration.
     '''
     drawn_legs_references: Box = Box()
     for reference_name, reference in legs_references.items():
@@ -299,7 +297,7 @@ class Trip:
         )
         if start_time_hours < 0 or start_time_hours >= 24:
             raise ValueError(
-                f'Drawn {start_time_hours=} is negative or  >=24, '
+                f'Drawn {start_time_hours=} is negative or >=24, '
                 'making the trip start in another day. '
                 f'Please check/adjust {start_time_hours_mean=} '
                 f'and {start_time_hours_standard_deviation=}'
@@ -331,7 +329,7 @@ class Trip:
         if any(parked_hours < 0 for parked_hours in time_between_legs_hours):
             raise ValueError(
                 f'{time_between_legs_hours=} contains one or more '
-                'negative parking durations'
+                'negative parking durations.'
             )
 
         trip_steps: list[TripStep] = []
@@ -342,16 +340,6 @@ class Trip:
             raise KeyError(
                 f'{unknown_leg_names=} are not defined in scenario.legs.'
             )
-        for leg_name in leg_names:
-            leg: Leg = legs[leg_name]
-            if leg.duration_hours <= 0:
-                raise ValueError(
-                    f'{leg.duration_hours=} for {leg_name=} must be >0'
-                )
-            if leg.distance_km <= 0:
-                raise ValueError(
-                    f'{leg.distance_km=} for {leg_name=} must be >0'
-                )
         for previous_leg_name, next_leg_name in zip(
             leg_names,
             leg_names[1:],
@@ -370,15 +358,11 @@ class Trip:
             leg_names,
             time_between_legs_hours,
             strict=False,
-            # The time between hours has one less element than leg names,
+            # time_between_legs_hours has one less element than leg_names,
             # by design
         ):
             leg_duration_hours: float = legs[leg_name].duration_hours
             leg_length_kilometers: float = legs[leg_name].distance_km
-            if leg_duration_hours < 0:
-                raise ValueError(f'{leg_duration_hours=} is negative!')
-            if leg_length_kilometers < 0:
-                raise ValueError(f'{leg_length_kilometers=} is negative!')
             driving_step: TripStep = TripStep.get_step(
                 start_time_hours=step_start_time,
                 duration_hours=leg_duration_hours,
@@ -398,13 +382,6 @@ class Trip:
             step_start_time += parked_hours
 
         if len(leg_names) > 0:
-            if any(
-                parked_hours < 0 for parked_hours in time_between_legs_hours
-            ):
-                raise ValueError(
-                    f'{time_between_legs_hours=} contains one or more '
-                    'negative parking durations.'
-                )
             last_leg_name: str = leg_names[-1]
             # The last leg brings us to the base and does
             # not have a corresponding parking time, by definition
@@ -463,6 +440,28 @@ class Trip:
             legs=legs,
             vehicle=vehicle,
         )
+        if not leg_names and start_base != end_base:
+            raise ValueError(
+                f'A trip without legs cannot move between bases: '
+                f'{start_base=}, {end_base=}.'
+            )
+        if leg_names:
+            first_leg_name: str = leg_names[0]
+            last_leg_name: str = leg_names[-1]
+
+            if legs[first_leg_name].start_location != start_base:
+                raise ValueError(
+                    f'{first_leg_name=} starts at '
+                    f'{legs[first_leg_name].start_location!r}, '
+                    f'which does not match {start_base=}.'
+                )
+
+            if legs[last_leg_name].end_location != end_base:
+                raise ValueError(
+                    f'{last_leg_name=} ends at '
+                    f'{legs[last_leg_name].end_location!r}, '
+                    f'which does not match {end_base=}.'
+                )
 
         return Trip(
             start_base=start_base,
