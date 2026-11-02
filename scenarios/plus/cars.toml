@@ -479,8 +479,11 @@ first_hour_number = 1
 first_week_index = 1
 last_week_index = 53
 weekend_day_numbers = [6, 7]
+# Monday=1, Sunday =7
 holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 53]]
-# We need to provide the number of holliday weeks seprately,
+# These will repeat from year to year in case of a multi-year run
+
+# We need to provide the number of holiday weeks seprately,
 # as counting the elements of the list above might not work, such as
 # when the above list contains weeks 1 and 53 (which just represent
 # the fact that years don't necessarily start and/or end at the start/end

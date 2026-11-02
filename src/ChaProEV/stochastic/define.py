@@ -37,7 +37,7 @@ class TimeConstants:
     holiday_weeks: list[int]
     holiday_week_blocks: list[list[int]]
     number_of_holiday_weeks: int
-    # We need to provide the number of holliday weeks seprately,
+    # We need to provide the number of holliday weeks separately,
     # as counting the elements of the list above might not work, such as
     # when the above list contains weeks 1 and 53 (which just represent
     # the fact that years don't necessarily start and/or end at the start/end

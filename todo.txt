@@ -10,6 +10,9 @@
 
 print('[magenta]Add repetitions stuff') in Trip.get_leg_info
 
+
+7. Decide whether the run frequency must divide a day evenly
+
 Implement holiday trips and base shifts in stochastic
 Look at notes in Class Trip   BaseTransitions
 
