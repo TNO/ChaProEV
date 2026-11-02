@@ -45,7 +45,7 @@ def make_dashboard() -> None:
             label='Charge proportion trigger percent',
             min_value=0.0,
             max_value=1.0,
-            value=scenario.vehicle.charge_desire_proportion_trigger,
+            value=scenario.charging.charge_desire_proportion_trigger,
             step=0.01,
             format='percent',
             key='charge_desire_proportion_trigger_A',
@@ -73,7 +73,7 @@ def make_dashboard() -> None:
             key='work_start_hour_A',
         )
     scenario_A.charging.adaptive = adaptive_A
-    scenario_A.vehicle.charge_desire_proportion_trigger = (
+    scenario_A.charging.charge_desire_proportion_trigger = (
         charge_desire_proportion_trigger_A
     )
     scenario_A.locations.work.connectivity = work_connectivity_A
@@ -88,7 +88,7 @@ def make_dashboard() -> None:
             label='Charge proportion trigger percent',
             min_value=0.0,
             max_value=1.0,
-            value=scenario.vehicle.charge_desire_proportion_trigger,
+            value=scenario.charging.charge_desire_proportion_trigger,
             step=0.01,
             format='percent',
             key='charge_desire_proportion_trigger_B',

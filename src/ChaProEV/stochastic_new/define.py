@@ -797,7 +797,73 @@ class ChargingBehaviour:
 
 @dataclass
 class Activities:
-    name: str
+    '''
+    Tells us in which week or day number activities (commute,
+    holiday trips, weekend trips, leisure trips) occur.
+    For commuting, we look at weekday numbers (1= Monday, 7= Sunday).
+    The same holds for leisure trips.
+    Weekend trips and holiday trips get a week number (1 to 53)
+
+    '''
+
+    holiday_trip_week_numbers: list[int]
+    weekend_trip_week_numbers: list[int]
+    leisure_trip_weekday_numbers: list[int]
+    commuting_weekday_numbers: list[int]
+
+    @staticmethod
+    def draw_holiday_trip_week_numbers(
+        *,
+        holiday_parameters: Box,
+        commuting_parameters: Box,
+        random_generator: np.random.Generator,
+        time_constants: TimeConstants,
+    ) -> tuple[list[int], list[int]]:
+
+        holiday_trip_week_numbers: list[int] = []
+
+        working_weeks: list[int] = []
+
+        return holiday_trip_week_numbers, working_weeks
+
+    @staticmethod
+    def draw_weekend_trip_week_numbers(
+        *,
+        holiday_trip_week_numbers: list[int],
+        weekend_parameters: Box,
+        random_generator: np.random.Generator,
+        time_constants: TimeConstants,
+    ) -> list[int]:
+
+        weekend_trip_week_numbers: list[int] = []
+
+        return weekend_trip_week_numbers
+
+    @staticmethod
+    def draw_leisure_trip_weekday_numbers(
+        *,
+        weekend_trip_week_numbers: list[int],
+        leisure_parameters: Box,
+        random_generator: np.random.Generator,
+        time_constants: TimeConstants,
+    ) -> list[int]:
+
+        leisure_trip_days: list[int] = []
+
+        return leisure_trip_days
+
+    @staticmethod
+    def draw_commuting_weekday_numbers(
+        *,
+        working_weeks: list[int],
+        commuting_parameters: Box,
+        random_generator: np.random.Generator,
+        time_constants: TimeConstants,
+    ) -> list[int]:
+
+        commuting_weekday_numbers: list[int] = []
+
+        return commuting_weekday_numbers
 
     @staticmethod
     def draw(
@@ -806,8 +872,53 @@ class Activities:
         random_generator: np.random.Generator,
         time_constants: TimeConstants,
     ) -> Activities:
-        raise NotImplementedError('Implement activities')
-        # return Activities(name='Test')
+
+        commuting_parameters: Box = activity_parameters.commuting
+        holiday_parameters: Box = activity_parameters.holiday
+        weekend_parameters: Box = activity_parameters.weekend
+        leisure_parameters: Box = activity_parameters.leisure
+
+        holiday_trip_week_numbers, working_weeks = (
+            Activities.draw_holiday_trip_week_numbers(
+                holiday_parameters=holiday_parameters,
+                commuting_parameters=commuting_parameters,
+                random_generator=random_generator,
+                time_constants=time_constants,
+            )
+        )
+
+        weekend_trip_week_numbers: list[int] = (
+            Activities.draw_weekend_trip_week_numbers(
+                holiday_trip_week_numbers=holiday_trip_week_numbers,
+                weekend_parameters=weekend_parameters,
+                random_generator=random_generator,
+                time_constants=time_constants,
+            )
+        )
+        leisure_trip_weekday_numbers: list[int] = (
+            Activities.draw_leisure_trip_weekday_numbers(
+                weekend_trip_week_numbers=weekend_trip_week_numbers,
+                leisure_parameters=leisure_parameters,
+                random_generator=random_generator,
+                time_constants=time_constants,
+            )
+        )
+
+        commuting_weekday_numbers: list[int] = (
+            Activities.draw_commuting_weekday_numbers(
+                working_weeks=working_weeks,
+                commuting_parameters=commuting_parameters,
+                random_generator=random_generator,
+                time_constants=time_constants,
+            )
+        )
+
+        return Activities(
+            commuting_weekday_numbers=commuting_weekday_numbers,
+            holiday_trip_week_numbers=holiday_trip_week_numbers,
+            weekend_trip_week_numbers=weekend_trip_week_numbers,
+            leisure_trip_weekday_numbers=leisure_trip_weekday_numbers,
+        )
 
 
 @dataclass

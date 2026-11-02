@@ -492,6 +492,15 @@ number_of_holiday_weeks = 10
 
 
 [activity_parameters]
+[activity_parameters.commuting]
+[activity_parameters.leisure]
+[activity_parameters.holiday]
+
+possible_amounts_of_holiday_trips = [0, 1, 2, 3]
+holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]
+[activity_parameters.weekend]
+
+
 work_week_duration_hours = 40.0
 work_day_duration_hours = 8.0
 worked_hours_per_work_week_mean = 32.1
@@ -499,8 +508,6 @@ worked_hours_per_work_week_standard_deviation = 4.2
 worked_hours_per_year_mean = 1449
 worked_hours_per_year_standard_deviation = 100
 
-possible_amounts_of_holiday_trips = [0, 1, 2, 3]
-holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]
 commute_days_indices = [1, 2, 3, 4, 5]
 weekday_commute_factor = [0.07, 0.4, 0.1, 0.4, 0.03] # Adds up to one. 
 commute_to_work_ratio_mean = 0.75

@@ -38,7 +38,8 @@ def run_scenario(scenario: Box) -> None:
     users_pool: list[User] = get_users_pool(
         scenario=scenario, random_generator=random_generators.define
     )
-    print(users_pool)
+    for user in users_pool:
+        print(user.activities)
 
 
 @cook.function_timer
