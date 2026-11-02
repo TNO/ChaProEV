@@ -448,10 +448,21 @@ has_one_trip_per_day_type = false
 driving_location_name = 'road'
 bases = ['home', 'holiday']
 
-[charging]
-adaptive = false
-charge_desire_proportion_trigger = 1.0
-
+[charging_behaviour]
+adaptive_proportion = 0.8 
+# Proportion of users using adaptive charging.
+# Must be between 0.0 and 1.0 (inclusive)
+charge_desire_proportion_trigger_mean = 0.5
+# Must be between 0.0 and 1.0 (inclusive)
+# If set at exactly 0.0 or 1.0, then the standard deviation
+# will be ignored.
+charge_desire_proportion_trigger_standard_deviation = 0.09
+# Note that this needs to be smaller than sqrt (mean X (1-mean)) 
+# (and non-negative).
+# Set it to zero to only use the mean.
+# Values close to the maximum produce an increasingly U-shaped distribution
+# with draws concentrated around 0.0 and 1.0
+# https://en.wikipedia.org/wiki/Beta_distribution
 
 [time]
 SECONDS_PER_HOUR = 3600

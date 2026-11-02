@@ -178,7 +178,8 @@ def draw_legs_references(
         )
         if distance_km <= 0:
             raise ValueError(
-                f'{distance_km=} for {reference_name=} is negative or zero. '
+                f'Drawn {distance_km=} for {reference_name=} '
+                'is negative or zero. '
                 f'Please check {mean_distance_km=} and '
                 f'{standard_deviation_distance=}'
             )
@@ -188,7 +189,8 @@ def draw_legs_references(
         )
         if speed_kph <= 0:
             raise ValueError(
-                f'{speed_kph=} for {reference_name=} is negative or zero. '
+                f'Drawn {speed_kph=} for {reference_name=} '
+                'is negative or zero. '
                 f'Please check {mean_speed_kph=} and '
                 f'{standard_deviation_speed=}'
             )
@@ -235,15 +237,112 @@ class Leg:
 
 
 @dataclass
+class ChargingBehaviour:
+    adaptive: bool
+    charge_desire_proportion_trigger: float
+
+    @staticmethod
+    def draw(
+        *,
+        charging_behaviour_parameters: Box,
+        random_generator: np.random.Generator,
+    ) -> ChargingBehaviour:
+        adaptive_proportion: float = (
+            charging_behaviour_parameters.adaptive_proportion
+        )
+        if not 0.0 <= adaptive_proportion <= 1.0:
+            raise ValueError(
+                f'{adaptive_proportion=} must be between 0.0 '
+                'and 1.0 (inclusive)'
+            )
+        adaptive: bool = bool(
+            random_generator.choice(
+                [True, False], p=[adaptive_proportion, 1 - adaptive_proportion]
+            )
+        )
+        charge_desire_proportion_trigger_mean: float = (
+            charging_behaviour_parameters.charge_desire_proportion_trigger_mean
+        )
+        if not 0.0 <= charge_desire_proportion_trigger_mean <= 1.0:
+            raise ValueError(
+                f'{charge_desire_proportion_trigger_mean=} must be between '
+                '0.0 and 1.0 (inclusive)'
+            )
+        charge_desire_proportion_trigger_standard_deviation: float = (
+            charging_behaviour_parameters.charge_desire_proportion_trigger_standard_deviation  # noqa: E501
+        )
+        if charge_desire_proportion_trigger_standard_deviation < 0:
+            raise ValueError(
+                f'{charge_desire_proportion_trigger_standard_deviation=} '
+                'cannot be negative.'
+            )
+
+        if (
+            charge_desire_proportion_trigger_standard_deviation == 0
+            or charge_desire_proportion_trigger_mean == 0.0
+            or charge_desire_proportion_trigger_mean == 1.0
+            # If set at exactly 0.0 or 1.0, the standard deviation
+            # will be ignored.
+        ):
+            charge_desire_proportion_trigger: float = (
+                charge_desire_proportion_trigger_mean
+            )
+        else:
+            # We use a beta distribution
+            # https://en.wikipedia.org/wiki/Beta_distribution
+
+            maximum_standard_deviation: float = np.sqrt(
+                charge_desire_proportion_trigger_mean
+                * (1 - charge_desire_proportion_trigger_mean)
+            )
+            if (
+                charge_desire_proportion_trigger_standard_deviation
+                >= maximum_standard_deviation
+            ):
+                raise ValueError(
+                    f'{charge_desire_proportion_trigger_standard_deviation=} '
+                    f'is too large for '
+                    f'{charge_desire_proportion_trigger_mean=}.'
+                    f' It must be smaller than {maximum_standard_deviation=}.'
+                )
+
+            trigger_variance: float = (
+                charge_desire_proportion_trigger_standard_deviation**2
+            )
+            trigger_common: float = (
+                charge_desire_proportion_trigger_mean
+                * (1 - charge_desire_proportion_trigger_mean)
+                / trigger_variance
+            ) - 1
+
+            trigger_alpha: float = (
+                charge_desire_proportion_trigger_mean * trigger_common
+            )
+            trigger_beta: float = (
+                1 - charge_desire_proportion_trigger_mean
+            ) * trigger_common
+
+            charge_desire_proportion_trigger = random_generator.beta(
+                trigger_alpha, trigger_beta
+            )
+
+        return ChargingBehaviour(
+            adaptive=adaptive,
+            charge_desire_proportion_trigger=charge_desire_proportion_trigger,
+        )
+
+
+@dataclass
 class User:
     ID: uuid.UUID
     vehicle: Vehicle
     locations: dict[str, Location]
     legs: dict[str, Leg]
     # trips: dict[str, Trip]
+    # activities: Activities
     # run_trips: pl.Series
     # mobility: pl.DataFrame <-because computing
-    # charging_behaviour: ChargingBehaviour
+    charging_behaviour: ChargingBehaviour
     # charge: pl.DataFrame <- because computing in prev version,
     # using it to store the sum, but we can do it by summing the DFs we keep
     # metrics: Metrics
@@ -257,7 +356,9 @@ class User:
     @staticmethod
     def draw_characteristics(
         *, scenario: Box, random_generator: np.random.Generator
-    ) -> tuple[Vehicle, dict[str, Location], dict[str, Leg]]:
+    ) -> tuple[
+        Vehicle, dict[str, Location], dict[str, Leg], ChargingBehaviour
+    ]:
         vehicle_settings: Box = scenario.vehicle
         vehicle: Vehicle = Vehicle.draw(
             vehicle_settings=vehicle_settings,
@@ -287,18 +388,33 @@ class User:
             )
             for leg_name, this_leg_definition in legs_definitions.items()
         }
-        return vehicle, locations, legs
+        charging_behaviour_parameters: Box = scenario.charging_behaviour
+        charging_behaviour: ChargingBehaviour = ChargingBehaviour.draw(
+            charging_behaviour_parameters=charging_behaviour_parameters,
+            random_generator=random_generator,
+        )
+        return vehicle, locations, legs, charging_behaviour
 
     @staticmethod
     def create(
         *, scenario: Box, random_generator: np.random.Generator
     ) -> User:
         ID: uuid.UUID = uuid.uuid4()
-        vehicle, locations, legs = User.draw_characteristics(
-            scenario=scenario, random_generator=random_generator
+        vehicle, locations, legs, charging_behaviour = (
+            User.draw_characteristics(
+                scenario=scenario, random_generator=random_generator
+            )
         )
+        # Create empties
+        # Compute mobility
         # create empty charging and metrics
-        return User(ID=ID, vehicle=vehicle, locations=locations, legs=legs)
+        return User(
+            ID=ID,
+            vehicle=vehicle,
+            locations=locations,
+            legs=legs,
+            charging_behaviour=charging_behaviour,
+        )
 
 
 def create_users(
