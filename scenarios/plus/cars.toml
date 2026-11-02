@@ -480,7 +480,7 @@ first_week_index = 1
 last_week_index = 53
 weekend_day_numbers = [6, 7]
 # Monday=1, Sunday =7
-holiday_week_blocks = [[1], [8], [18], [28, 29, 30, 31, 32, 33], [42], [51, 52, 53]]
+holiday_weeks = [1, 8, 18,  28, 29, 30, 31, 32, 33, 42, 51, 52]
 # These will repeat from year to year in case of a multi-year run
 
 # We need to provide the number of holiday weeks seprately,
@@ -493,25 +493,46 @@ number_of_holiday_weeks = 10
 
 [activity_parameters]
 [activity_parameters.commuting]
+commute_days_indices = [1, 2, 3, 4, 5]
+weekday_commute_factor = [0.07, 0.4, 0.1, 0.4, 0.03] # Adds up to one. 
+[activity_parameters.commuting.work_days]
+
+[activity_parameters.commuting.work_days.2]
+probability = 0.05
+possible_amounts_commute_days = [0, 1, 2]
+commute_days_probabilities = [0.05, 0.25, 0.7]
+
+
+[activity_parameters.commuting.work_days.3]
+probability = 0.15
+possible_amounts_commute_days = [0, 1, 2, 3]
+commute_days_probabilities = [0.05, 0.25, 0.25, 0.45]
+
+
+
+[activity_parameters.commuting.work_days.4]
+probability = 0.6
+possible_amounts_commute_days = [0, 1, 2, 3, 4]
+commute_days_probabilities = [0.05, 0.1, 0.15, 0.45, 0.25]
+
+
+[activity_parameters.commuting.work_days.5]
+probability = 0.2
+possible_amounts_commute_days = [0, 1, 2, 3, 4, 5]
+commute_days_probabilities = [0.05, 0.1, 0.15, 0.2, 0.3, 0.2]
+
 [activity_parameters.leisure]
 [activity_parameters.holiday]
 
+possible_amount_of_non_working_weeks = [4, 5, 6, 7, 8]
+probabilities_for_amount_of_non_working_weeks = [0.1, 0.2, 0.5, 0.1, 0.1]
+
 possible_amounts_of_holiday_trips = [0, 1, 2, 3]
 holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]
+increase_factor_holiday_trip_in_holiday_weeks = 4.2
 [activity_parameters.weekend]
 
 
-work_week_duration_hours = 40.0
-work_day_duration_hours = 8.0
-worked_hours_per_work_week_mean = 32.1
-worked_hours_per_work_week_standard_deviation = 4.2
-worked_hours_per_year_mean = 1449
-worked_hours_per_year_standard_deviation = 100
-
-commute_days_indices = [1, 2, 3, 4, 5]
-weekday_commute_factor = [0.07, 0.4, 0.1, 0.4, 0.03] # Adds up to one. 
-commute_to_work_ratio_mean = 0.75
-commute_to_work_ratio_standard_deviation = 0.2
 
 
 

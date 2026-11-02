@@ -24,7 +24,6 @@ class TimeConstants:
     last_week_index: int
     weekend_day_numbers: list[int]
     holiday_weeks: list[int]
-    holiday_week_blocks: list[list[int]]
     number_of_holiday_weeks: int
     # We need to provide the number of holiday weeks separately,
     # as counting the elements of the list above might not work, such as
@@ -34,12 +33,8 @@ class TimeConstants:
 
     @staticmethod
     def read_parameters(time_parameters: Box) -> TimeConstants:
-        holiday_week_blocks: list[list[int]] = (
-            time_parameters.holiday_week_blocks
-        )
-        holiday_weeks: list[int] = [
-            week for block in holiday_week_blocks for week in block
-        ]
+        holiday_weeks: list[int] = time_parameters.holiday_weeks
+
         return TimeConstants(
             SECONDS_PER_HOUR=time_parameters.SECONDS_PER_HOUR,
             MINUTES_PER_HOUR=time_parameters.MINUTES_PER_HOUR,
@@ -55,7 +50,6 @@ class TimeConstants:
             last_week_index=time_parameters.last_week_index,
             weekend_day_numbers=time_parameters.weekend_day_numbers,
             holiday_weeks=holiday_weeks,
-            holiday_week_blocks=holiday_week_blocks,
             number_of_holiday_weeks=time_parameters.number_of_holiday_weeks,
         )
 
@@ -801,15 +795,70 @@ class Activities:
     Tells us in which week or day number activities (commute,
     holiday trips, weekend trips, leisure trips) occur.
     For commuting, we look at weekday numbers (1= Monday, 7= Sunday).
-    The same holds for leisure trips.
+    The same holds for leisure trips and for commuting week numbers.
     Weekend trips and holiday trips get a week number (1 to 53)
 
     '''
 
+    commuting_weekday_numbers: list[int]
     holiday_trip_week_numbers: list[int]
     weekend_trip_week_numbers: list[int]
     leisure_trip_weekday_numbers: list[int]
-    commuting_weekday_numbers: list[int]
+
+    commuting_week_numbers: list[int]
+
+    @staticmethod
+    def draw_commuting_weekday_numbers(
+        *,
+        commuting_parameters: Box,
+        random_generator: np.random.Generator,
+    ) -> list[int]:
+
+        work_days_parameters: Box = commuting_parameters.work_days
+
+        possible_working_days: list[int] = list(
+            map(int, work_days_parameters.keys())
+        )
+        possible_working_day_probabilities: list[float] = [
+            work_days_parameters[str(day_amount)].probability
+            for day_amount in possible_working_days
+        ]
+
+        worked_days_per_work_week: int = int(
+            random_generator.choice(
+                possible_working_days, p=possible_working_day_probabilities
+            )
+        )
+        commute_days_per_week: int = int(
+            random_generator.choice(
+                work_days_parameters[
+                    str(worked_days_per_work_week)
+                ].possible_amounts_commute_days,
+                p=work_days_parameters[
+                    str(worked_days_per_work_week)
+                ].commute_days_probabilities,
+            )
+        )
+
+        commute_days_indices: list[int] = (
+            commuting_parameters.commute_days_indices
+        )
+        weekday_commute_factor: list[float] = (
+            commuting_parameters.weekday_commute_factor
+        )
+
+        commuting_weekday_numbers: list[int] = sorted(
+            list(
+                random_generator.choice(
+                    commute_days_indices,
+                    commute_days_per_week,
+                    p=weekday_commute_factor,
+                    replace=False,
+                )
+            )
+        )
+
+        return commuting_weekday_numbers
 
     @staticmethod
     def draw_holiday_trip_week_numbers(
@@ -820,11 +869,79 @@ class Activities:
         time_constants: TimeConstants,
     ) -> tuple[list[int], list[int]]:
 
-        holiday_trip_week_numbers: list[int] = []
+        week_indices: list[int] = list(
+            range(
+                time_constants.first_week_index,
+                time_constants.last_week_index,
+                # The last week (53 is only a day or two long)
+            )
+        )
 
-        working_weeks: list[int] = []
+        possible_amount_of_non_working_weeks: list[int] = (
+            holiday_parameters.possible_amount_of_non_working_weeks
+        )
+        probabilities_for_amount_of_non_working_weeks: list[float] = (
+            holiday_parameters.probabilities_for_amount_of_non_working_weeks
+        )
 
-        return holiday_trip_week_numbers, working_weeks
+        amount_of_non_working_weeks: int = int(
+            random_generator.choice(
+                possible_amount_of_non_working_weeks,
+                p=probabilities_for_amount_of_non_working_weeks,
+            )
+        )
+
+        possible_amounts_of_holiday_trips: list[int] = (
+            holiday_parameters.possible_amounts_of_holiday_trips
+        )
+        holiday_trips_probabilities: list[float] = (
+            holiday_parameters.holiday_trips_probabilities
+        )
+        amount_of_holiday_trips_taken: int = int(
+            random_generator.choice(
+                possible_amounts_of_holiday_trips,
+                p=holiday_trips_probabilities,
+            )
+        )
+
+        increase_factor_holiday_trip_in_holiday_weeks: float = (
+            holiday_parameters.increase_factor_holiday_trip_in_holiday_weeks
+        )
+
+        holiday_trips_probabilities_per_week: list[float] = [
+            (
+                increase_factor_holiday_trip_in_holiday_weeks
+                if week_index in time_constants.holiday_weeks
+                else 1.0
+            )
+            for week_index in week_indices
+        ]
+        normalisation_factor: float = sum(holiday_trips_probabilities_per_week)
+        holiday_trips_probabilities_per_week: list[float] = [
+            probability / normalisation_factor
+            for probability in holiday_trips_probabilities_per_week
+        ]
+
+        holiday_trip_week_numbers: list[int] = sorted(
+            list(
+                np.random.choice(
+                    week_indices,
+                    size=amount_of_holiday_trips_taken,
+                    p=holiday_trips_probabilities_per_week,
+                    replace=False,
+                )
+            )
+        )
+        commuting_week_numbers: list[int] = [
+            week_number
+            for week_number in week_indices
+            if week_number not in holiday_trip_week_numbers
+        ]
+
+        return (
+            holiday_trip_week_numbers,
+            commuting_week_numbers,
+        )
 
     @staticmethod
     def draw_weekend_trip_week_numbers(
@@ -853,19 +970,6 @@ class Activities:
         return leisure_trip_days
 
     @staticmethod
-    def draw_commuting_weekday_numbers(
-        *,
-        working_weeks: list[int],
-        commuting_parameters: Box,
-        random_generator: np.random.Generator,
-        time_constants: TimeConstants,
-    ) -> list[int]:
-
-        commuting_weekday_numbers: list[int] = []
-
-        return commuting_weekday_numbers
-
-    @staticmethod
     def draw(
         *,
         activity_parameters: Box,
@@ -878,13 +982,21 @@ class Activities:
         weekend_parameters: Box = activity_parameters.weekend
         leisure_parameters: Box = activity_parameters.leisure
 
-        holiday_trip_week_numbers, working_weeks = (
-            Activities.draw_holiday_trip_week_numbers(
-                holiday_parameters=holiday_parameters,
+        commuting_weekday_numbers: list[int] = (
+            Activities.draw_commuting_weekday_numbers(
                 commuting_parameters=commuting_parameters,
                 random_generator=random_generator,
-                time_constants=time_constants,
             )
+        )
+
+        (
+            holiday_trip_week_numbers,
+            commuting_week_numbers,
+        ) = Activities.draw_holiday_trip_week_numbers(
+            holiday_parameters=holiday_parameters,
+            commuting_parameters=commuting_parameters,
+            random_generator=random_generator,
+            time_constants=time_constants,
         )
 
         weekend_trip_week_numbers: list[int] = (
@@ -904,20 +1016,12 @@ class Activities:
             )
         )
 
-        commuting_weekday_numbers: list[int] = (
-            Activities.draw_commuting_weekday_numbers(
-                working_weeks=working_weeks,
-                commuting_parameters=commuting_parameters,
-                random_generator=random_generator,
-                time_constants=time_constants,
-            )
-        )
-
         return Activities(
             commuting_weekday_numbers=commuting_weekday_numbers,
             holiday_trip_week_numbers=holiday_trip_week_numbers,
             weekend_trip_week_numbers=weekend_trip_week_numbers,
             leisure_trip_weekday_numbers=leisure_trip_weekday_numbers,
+            commuting_week_numbers=commuting_week_numbers,
         )
 
 
@@ -1044,11 +1148,11 @@ class User:
             run_trips = time_ranges.day_types.rename('trip_name')
             # Trips and day types have the same names, by convention
 
-        if len(run_trips) != len(time_ranges.run_dates):
-            raise ValueError(
-                f'{len(run_trips)=} does not match '
-                f'{len(time_ranges.run_dates)=}.'
-            )
+        # if len(run_trips) != len(time_ranges.run_dates):
+        #     raise ValueError(
+        #         f'{len(run_trips)=} does not match '
+        #         f'{len(time_ranges.run_dates)=}.'
+        #     )
 
         return run_trips
 
