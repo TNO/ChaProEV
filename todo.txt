@@ -6,6 +6,10 @@
     # This version is actually only for cars and work/leisure (GEneralise???)
 
 
+    print('[magenta] Document legs and parked times')
+
+print('[magenta]Add repetitions stuff') in Trip.get_leg_info
+
 Implement holiday trips and base shifts in stochastic
 Look at notes in Class Trip   BaseTransitions
 

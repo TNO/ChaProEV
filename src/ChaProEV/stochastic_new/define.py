@@ -237,6 +237,242 @@ class Leg:
 
 
 @dataclass
+class TripStep:
+    '''
+    Steps in a trip. Contains travel legs and parked moments
+    '''
+
+    start_hour: float  # In hours from midnight
+    end_hour: float  # In hours from midnight
+    location_name: str
+    length_kilometers: float
+    duration_hours: float
+    speed_kph: float
+
+    @staticmethod
+    def get_step(
+        start_time_hours: float,
+        duration_hours: float,
+        location_name: str,
+        leg_length_kilometers: float,
+    ) -> TripStep:
+        if duration_hours == 0:
+            speed_kph: float = 0
+        else:
+            speed_kph = leg_length_kilometers / duration_hours
+        return TripStep(
+            start_hour=start_time_hours,
+            end_hour=start_time_hours + duration_hours,
+            location_name=location_name,
+            length_kilometers=leg_length_kilometers,
+            duration_hours=duration_hours,
+            speed_kph=speed_kph,
+        )
+
+
+@dataclass
+class Trip:
+    '''
+    A collection of travel and parking steps that takes place on a given day.
+    Each trip starts and ends at a base. Its steps contain times expressed
+    as hours from midnight on the trip day.
+    '''
+
+    start_base: str
+    end_base: str
+    base_transition: bool
+    trip_steps: list[TripStep]
+
+    @staticmethod
+    def draw_start_time_hours(
+        *,
+        start_time_hours_mean: float,
+        start_time_hours_standard_deviation: float,
+        random_generator: np.random.Generator,
+    ) -> float:
+        '''
+        Draws the start time of the trip.
+        '''
+        start_time_hours: float = random_generator.normal(
+            loc=start_time_hours_mean,
+            scale=start_time_hours_standard_deviation,
+        )
+        if start_time_hours < 0 or start_time_hours >= 24:
+            raise ValueError(
+                f'Drawn {start_time_hours=} is negative or  >=24, '
+                'making the trip start in another day. '
+                f'Please check/adjust {start_time_hours_mean=} '
+                f'and {start_time_hours_standard_deviation=}'
+            )
+        return start_time_hours
+
+    @staticmethod
+    def get_steps(
+        *,
+        start_time_hours: float,
+        leg_names: list[str],
+        time_between_legs_hours: list[float],
+        legs: dict[str, Leg],
+        vehicle: Vehicle,
+    ) -> list[TripStep]:
+        step_start_time: float = start_time_hours
+        expected_number_of_parking_durations: int = max(len(leg_names) - 1, 0)
+
+        if (
+            len(time_between_legs_hours)
+            != expected_number_of_parking_durations
+        ):
+            raise ValueError(
+                f'{len(leg_names)=} requires '
+                f'{expected_number_of_parking_durations} values in '
+                f'time_between_legs_hours, but '
+                f'{len(time_between_legs_hours)} were provided.'
+            )
+        if any(parked_hours < 0 for parked_hours in time_between_legs_hours):
+            raise ValueError(
+                f'{time_between_legs_hours=} contains one or more '
+                'negative parking durations'
+            )
+
+        trip_steps: list[TripStep] = []
+        unknown_leg_names = [
+            leg_name for leg_name in leg_names if leg_name not in legs
+        ]
+        if unknown_leg_names:
+            raise KeyError(
+                f'{unknown_leg_names=} are not defined in scenario.legs.'
+            )
+        for leg_name in leg_names:
+            leg: Leg = legs[leg_name]
+            if leg.duration_hours <= 0:
+                raise ValueError(
+                    f'{leg.duration_hours=} for {leg_name=} must be >0'
+                )
+            if leg.distance_km <= 0:
+                raise ValueError(
+                    f'{leg.distance_km=} for {leg_name=} must be >0'
+                )
+        for previous_leg_name, next_leg_name in zip(
+            leg_names,
+            leg_names[1:],
+        ):
+            previous_end_location = legs[previous_leg_name].end_location
+            next_start_location = legs[next_leg_name].start_location
+
+            if previous_end_location != next_start_location:
+                raise ValueError(
+                    f'{previous_leg_name=} ends at '
+                    f'{previous_end_location!r}, but {next_leg_name=} starts '
+                    f'at {next_start_location!r}.'
+                )
+
+        for leg_name, parked_hours in zip(
+            leg_names,
+            time_between_legs_hours,
+            strict=False,
+            # The time between hours has one less element than leg names,
+            # by design
+        ):
+            leg_duration_hours: float = legs[leg_name].duration_hours
+            leg_length_kilometers: float = legs[leg_name].distance_km
+            if leg_duration_hours < 0:
+                raise ValueError(f'{leg_duration_hours=} is negative!')
+            if leg_length_kilometers < 0:
+                raise ValueError(f'{leg_length_kilometers=} is negative!')
+            driving_step: TripStep = TripStep.get_step(
+                start_time_hours=step_start_time,
+                duration_hours=leg_duration_hours,
+                location_name=vehicle.driving_location_name,
+                leg_length_kilometers=leg_length_kilometers,
+            )
+            trip_steps.append(driving_step)
+            parking_location_name: str = legs[leg_name].end_location
+            step_start_time += leg_duration_hours
+            parking_step: TripStep = TripStep.get_step(
+                start_time_hours=step_start_time,
+                duration_hours=parked_hours,
+                location_name=parking_location_name,
+                leg_length_kilometers=0,
+            )
+            trip_steps.append(parking_step)
+            step_start_time += parked_hours
+
+        if len(leg_names) > 0:
+            if any(
+                parked_hours < 0 for parked_hours in time_between_legs_hours
+            ):
+                raise ValueError(
+                    f'{time_between_legs_hours=} contains one or more '
+                    'negative parking durations.'
+                )
+            last_leg_name: str = leg_names[-1]
+            # The last leg brings us to the base and does
+            # not have a corresponding parking time, by definition
+            last_step: TripStep = TripStep.get_step(
+                start_time_hours=step_start_time,
+                duration_hours=legs[last_leg_name].duration_hours,
+                location_name=vehicle.driving_location_name,
+                leg_length_kilometers=legs[last_leg_name].distance_km,
+            )
+
+            trip_steps.append(last_step)
+        return trip_steps
+
+    @staticmethod
+    def get_leg_info(trip_parameters: Box) -> tuple[list[str], list[float]]:
+        leg_names: list[str] = trip_parameters.legs
+        time_between_legs_hours: list[float] = (
+            trip_parameters.time_between_legs_hours
+        )
+        return leg_names, time_between_legs_hours
+
+    @staticmethod
+    def draw(
+        *,
+        trip_parameters: Box,
+        legs: dict[str, Leg],
+        random_generator: np.random.Generator,
+        vehicle: Vehicle,
+    ) -> Trip:
+        '''
+        Creates a user-specific trip by drawing its start time.
+        '''
+        start_time_hours_mean: float = trip_parameters.start_time_hours_mean
+        start_time_hours_standard_deviation: float = (
+            trip_parameters.start_time_hours_standard_deviation
+        )
+        start_time_hours: float = Trip.draw_start_time_hours(
+            start_time_hours_mean=start_time_hours_mean,
+            start_time_hours_standard_deviation=(
+                start_time_hours_standard_deviation
+            ),
+            random_generator=random_generator,
+        )
+        start_base: str = trip_parameters.start_base
+        end_base: str = trip_parameters.end_base
+        base_transition: bool = start_base != end_base
+
+        leg_names, time_between_legs_hours = Trip.get_leg_info(
+            trip_parameters=trip_parameters
+        )
+
+        trip_steps: list[TripStep] = Trip.get_steps(
+            start_time_hours=start_time_hours,
+            leg_names=leg_names,
+            time_between_legs_hours=time_between_legs_hours,
+            legs=legs,
+            vehicle=vehicle,
+        )
+
+        return Trip(
+            start_base=start_base,
+            end_base=end_base,
+            base_transition=base_transition,
+            trip_steps=trip_steps,
+        )
+
+
+@dataclass
 class ChargingBehaviour:
     adaptive: bool
     charge_desire_proportion_trigger: float
@@ -332,13 +568,20 @@ class ChargingBehaviour:
         )
 
 
+# @dataclass
+# class Activities:
+#     name: str
+
+
 @dataclass
 class User:
     ID: uuid.UUID
     vehicle: Vehicle
     locations: dict[str, Location]
     legs: dict[str, Leg]
-    # trips: dict[str, Trip]
+    trips: dict[str, Trip]
+    # activities: Activities | None
+    # Also time stuff (but is not drawn)
     # activities: Activities
     # run_trips: pl.Series
     # mobility: pl.DataFrame <-because computing
@@ -357,7 +600,11 @@ class User:
     def draw_characteristics(
         *, scenario: Box, random_generator: np.random.Generator
     ) -> tuple[
-        Vehicle, dict[str, Location], dict[str, Leg], ChargingBehaviour
+        Vehicle,
+        dict[str, Location],
+        dict[str, Leg],
+        dict[str, Trip],
+        ChargingBehaviour,
     ]:
         vehicle_settings: Box = scenario.vehicle
         vehicle: Vehicle = Vehicle.draw(
@@ -388,19 +635,32 @@ class User:
             )
             for leg_name, this_leg_definition in legs_definitions.items()
         }
+
+        trips_parameters: Box = scenario.trips
+        trips: dict[str, Trip] = {
+            trip_name: Trip.draw(
+                trip_parameters=trip_parameters,
+                legs=legs,
+                random_generator=random_generator,
+                vehicle=vehicle,
+            )
+            for trip_name, trip_parameters in trips_parameters.items()
+        }
+
         charging_behaviour_parameters: Box = scenario.charging_behaviour
         charging_behaviour: ChargingBehaviour = ChargingBehaviour.draw(
             charging_behaviour_parameters=charging_behaviour_parameters,
             random_generator=random_generator,
         )
-        return vehicle, locations, legs, charging_behaviour
+        # still do Activities (for cars, otherwise irrelevant)
+        return vehicle, locations, legs, trips, charging_behaviour
 
     @staticmethod
     def create(
         *, scenario: Box, random_generator: np.random.Generator
     ) -> User:
         ID: uuid.UUID = uuid.uuid4()
-        vehicle, locations, legs, charging_behaviour = (
+        vehicle, locations, legs, trips, charging_behaviour = (
             User.draw_characteristics(
                 scenario=scenario, random_generator=random_generator
             )
@@ -413,6 +673,7 @@ class User:
             vehicle=vehicle,
             locations=locations,
             legs=legs,
+            trips=trips,
             charging_behaviour=charging_behaviour,
         )
 

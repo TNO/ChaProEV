@@ -289,7 +289,7 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 12
+start_time_hours_mean = 12.0
 start_time_hours_standard_deviation = 4
 
 
@@ -305,7 +305,7 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 12
+start_time_hours_mean = 12.0
 start_time_hours_standard_deviation = 4
 
 
@@ -320,7 +320,7 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 12
+start_time_hours_mean = 12.0
 start_time_hours_standard_deviation = 4
 
 
@@ -370,8 +370,8 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 8
-start_time_hours_standard_deviation = 4
+start_time_hours_mean = 8.0
+start_time_hours_standard_deviation = 3.0
 
 
 
@@ -386,8 +386,8 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 8
-start_time_hours_standard_deviation = 4
+start_time_hours_mean = 8.0
+start_time_hours_standard_deviation = 3.0
 
 
 [users]
