@@ -27,7 +27,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
-] # Starts at midinight
+] # Starts at midnight
 
 [locations.home.street_parking]
 connectivity = 0.25
@@ -46,7 +46,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
-] # Starts at midinight
+] # Starts at midnight
 
 
 
@@ -68,7 +68,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
-] # Starts at midinight
+] # Starts at midnight
 [locations.leisure]
 base = false
 latitude = 52.1
@@ -87,7 +87,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
-] # Starts at midinight
+] # Starts at midnight
 
 [locations.weekend]
 base = false
@@ -107,7 +107,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
-] # Starts at midinight
+] # Starts at midnight
 
 [locations.holiday]
 base = true
@@ -127,7 +127,7 @@ time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
-] # Starts at midinight
+] # Starts at midnight
 
 
 [legs_references]
@@ -135,35 +135,52 @@ time_modulation_factors = [
 # between two locations, which you will use as references in the leg 
 # definitions. Do same with speeds
 [legs_references.home_work]
-mean_distance_km = 19.2
-standard_deviation_distance = 5.0
-mean_speed_kph = 80.0
-standard_deviation_speed = 10.0
+distance_km_min = 15.0
+distance_km_typical =  19.2
+distance_km_max = 25.0
+speed_kph_min = 60.0
+speed_kph_typical = 80.0
+speed_kph_max = 90.0
+
 [legs_references.home_leisure]
-mean_distance_km = 5.2
-standard_deviation_distance = 1.0
-mean_speed_kph = 50.0
-standard_deviation_speed = 5
+distance_km_min = 3.0
+distance_km_typical =  5.2
+distance_km_max = 12.0
+speed_kph_min = 30.0
+speed_kph_typical = 50.0
+speed_kph_max = 60.0
+
 [legs_references.work_leisure]
-mean_distance_km = 21.0
-standard_deviation_distance = 6.0
-mean_speed_kph = 50.0
-standard_deviation_speed = 5.0
+distance_km_min = 15.0
+distance_km_typical =  21.0
+distance_km_max = 30.0
+speed_kph_min = 40.0
+speed_kph_typical = 50.0
+speed_kph_max = 60.0
+
 [legs_references.holiday_leisure]
-mean_distance_km = 10.0
-standard_deviation_distance = 3.0
-mean_speed_kph = 50.0
-standard_deviation_speed = 5.0
+distance_km_min = 7.0
+distance_km_typical =  10.0
+distance_km_max = 12.0
+speed_kph_min = 30.0
+speed_kph_typical = 50.0
+speed_kph_max = 60.0
+
 [legs_references.home_weekend]
-mean_distance_km = 87.3
-standard_deviation_distance = 20.0
-mean_speed_kph = 100.0
-standard_deviation_speed = 10.0
+distance_km_min = 50.0
+distance_km_typical =  87.3
+distance_km_max = 100.0
+speed_kph_min = 80.0
+speed_kph_typical = 100.0
+speed_kph_max = 110.0
+
 [legs_references.home_holiday]
-mean_distance_km = 174.6
-standard_deviation_distance = 60.0
-mean_speed_kph = 100.0
-standard_deviation_speed = 10.0
+distance_km_min = 130.0
+distance_km_typical =  174.6
+distance_km_max = 200.0
+speed_kph_min = 80.0
+speed_kph_typical = 100.0
+speed_kph_max = 110.0
 
 [legs]
 # You can add legs here by copying existing legs,
@@ -259,8 +276,10 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 9.0
-start_time_hours_standard_deviation = 2
+start_time_hours_min = 6.5
+start_time_hours_typical = 8.0
+start_time_hours_max = 9.0
+
 
 
 [trips.commute_to_work_and_leisure]
@@ -274,8 +293,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 9.0
-start_time_hours_standard_deviation = 2
+start_time_hours_min = 6.5
+start_time_hours_typical = 8.0
+start_time_hours_max = 9.0
 
 
 [trips.leisure_only]
@@ -289,8 +309,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 12.0
-start_time_hours_standard_deviation = 4
+start_time_hours_min = 8.0
+start_time_hours_typical = 12.0
+start_time_hours_max = 16.0
 
 
 
@@ -305,8 +326,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 12.0
-start_time_hours_standard_deviation = 4
+start_time_hours_min = 8.0
+start_time_hours_typical = 12.0
+start_time_hours_max = 16.0
 
 
 [trips.weekend_trip]
@@ -320,8 +342,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 12.0
-start_time_hours_standard_deviation = 4
+start_time_hours_min = 10.0
+start_time_hours_typical = 12.0
+start_time_hours_max = 14.0
 
 
 
@@ -337,8 +360,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 6.2
-start_time_hours_standard_deviation = 0.6
+start_time_hours_min = 6.0
+start_time_hours_typical = 7.0
+start_time_hours_max = 8.0
 
 
 
@@ -353,8 +377,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 6.2
-start_time_hours_standard_deviation = 0.6
+start_time_hours_min = 6.0
+start_time_hours_typical = 7.0
+start_time_hours_max = 8.0
 
 
 
@@ -370,8 +395,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 8.0
-start_time_hours_standard_deviation = 3.0
+start_time_hours_min = 5.5
+start_time_hours_typical = 8.0
+start_time_hours_max = 9.0
 
 
 
@@ -386,8 +412,9 @@ percentage_station_users = 0
 repeated_sequence = []
 repetition_amounts = [0]
 time_between_repetitions_hours = [0]
-start_time_hours_mean = 8.0
-start_time_hours_standard_deviation = 3.0
+start_time_hours_min = 5.5
+start_time_hours_typical = 8.0
+start_time_hours_max = 9.0
 
 
 [users]
@@ -398,6 +425,7 @@ pickle_users_pool = true
 [monte_carlo]
 use_seed = true
 seed = 1989
+beta_shape = 4.0
 [run]
 [run.start]
 year = 2015
@@ -440,10 +468,14 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 
 [vehicle]
 name = 'car'
-consumption_kWh_km_mean = 0.20
-consumption_kWh_km_standard_deviation = 0.03
-battery_size_kWh_mean = 80.0
-battery_size_kWh_standard_deviation = 20.0
+consumption_kWh_km_min = 0.15
+consumption_kWh_km_typical = 0.20
+consumption_kWh_km_max = 0.25
+
+battery_size_kWh_min = 70.0
+battery_size_kWh_typical = 80.0
+battery_size_kWh_max = 100.0
+
 has_one_trip_per_day_type = false
 driving_location_name = 'road'
 bases = ['home', 'holiday']
@@ -452,17 +484,10 @@ bases = ['home', 'holiday']
 adaptive_proportion = 0.8 
 # Proportion of users using adaptive charging.
 # Must be between 0.0 and 1.0 (inclusive)
-charge_desire_proportion_trigger_mean = 0.5
-# Must be between 0.0 and 1.0 (inclusive)
-# If set at exactly 0.0 or 1.0, then the standard deviation
-# will be ignored.
-charge_desire_proportion_trigger_standard_deviation = 0.09
-# Note that this needs to be smaller than sqrt (mean X (1-mean)) 
-# (and non-negative).
-# Set it to zero to only use the mean.
-# Values close to the maximum produce an increasingly U-shaped distribution
-# with draws concentrated around 0.0 and 1.0
-# https://en.wikipedia.org/wiki/Beta_distribution
+charge_desire_proportion_trigger_min = 0.4
+charge_desire_proportion_trigger_typical = 0.5
+charge_desire_proportion_trigger_max = 0.6
+
 
 [time]
 SECONDS_PER_HOUR = 3600
@@ -526,6 +551,7 @@ commute_days_probabilities = [0.05, 0.1, 0.15, 0.2, 0.3, 0.2]
 
 possible_amount_of_non_working_weeks = [4, 5, 6, 7, 8]
 probabilities_for_amount_of_non_working_weeks = [0.1, 0.2, 0.5, 0.1, 0.1]
+increase_factor_working_in_work_week = 10.0
 
 possible_amounts_of_holiday_trips = [0, 1, 2, 3]
 holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]

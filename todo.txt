@@ -13,6 +13,36 @@ print('[magenta]Add repetitions stuff') in Trip.get_leg_info
 
 7. Decide whether the run frequency must divide a day evenly
 
+
+One conceptual note about week 53
+
+You currently construct:
+
+Python
+range(
+time_constants.first_week_index,
+time_constants.last_week_index,
+)
+
+With first_week_index = 1 and last_week_index = 53, this produces weeks 1 through 52 and deliberately excludes week 53. Your comment confirms that this is intentional:
+
+Python
+# The last week (53 is only a day or two long)
+
+That is internally consistent.
+
+However, your model can classify dates as ISO week 53 through:
+
+Python
+pl.col('date').dt.week()
+
+while no user can ever have week 53 in:
+
+Python
+commuting_week_numbers
+holiday_trip_week_numbers
+
+That may be intentional if week 53 is treated as a partial boundary week outside the repeating activity schedule. Just ensure get_run_trips() explicitly handles dates in week 53 rather than expecting them in one of these drawn lists.
 Implement holiday trips and base shifts in stochastic
 Look at notes in Class Trip   BaseTransitions
 

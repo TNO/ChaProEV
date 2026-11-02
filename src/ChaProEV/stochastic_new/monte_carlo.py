@@ -32,3 +32,34 @@ class RandomGenerators:
             define=np.random.default_rng(seed=define_seed),
             charging=np.random.default_rng(seed=charging_seed),
         )
+
+
+def draw_beta_value(
+    *,
+    minimum: float,
+    typical: float,
+    # The central value: half of the draws are below it and half are above it.
+    maximum: float,
+    random_generator: np.random.Generator,
+    shape: float,
+) -> float:
+    '''
+    Draws a bounded value using a symmetric beta distribution.
+
+    The typical value is the median: half of the draws are below it
+    and half are above it.
+    '''
+    if shape <= 0:
+        raise ValueError(f'{shape=} must be greater than zero.')
+    if not minimum <= typical <= maximum:
+        raise ValueError(
+            f'You need to have {minimum=} <= {typical=} <= {maximum}.'
+        )
+    if minimum == maximum:
+        return minimum
+    draw: float = random_generator.beta(a=shape, b=shape)
+
+    if draw <= 0.5:
+        return minimum + 2 * (draw * (typical - minimum))
+    else:
+        return typical + 2 * (draw - 0.5) * (maximum - typical)

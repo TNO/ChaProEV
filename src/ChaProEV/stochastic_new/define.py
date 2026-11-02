@@ -8,6 +8,8 @@ import numpy as np
 import polars as pl
 from box import Box
 
+from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
+
 
 @dataclass
 class TimeConstants:
@@ -241,7 +243,10 @@ class Vehicle:
 
     @staticmethod
     def draw(
-        *, vehicle_settings: Box, random_generator: np.random.Generator
+        *,
+        vehicle_settings: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
     ) -> Vehicle:
         name: str = vehicle_settings.name
         has_one_trip_per_day_type: bool = (
@@ -249,36 +254,41 @@ class Vehicle:
         )
         driving_location_name: str = vehicle_settings.driving_location_name
         bases: list[str] = vehicle_settings.bases
-        consumption_kWh_km_mean: float = (
-            vehicle_settings.consumption_kWh_km_mean
+
+        consumption_kWh_km_min: float = vehicle_settings.consumption_kWh_km_min
+        consumption_kWh_km_typical: float = (
+            vehicle_settings.consumption_kWh_km_typical
         )
-        consumption_kWh_km_standard_deviation: float = (
-            vehicle_settings.consumption_kWh_km_standard_deviation
-        )
-        battery_size_kWh_mean: float = vehicle_settings.battery_size_kWh_mean
-        battery_size_kWh_standard_deviation: float = (
-            vehicle_settings.battery_size_kWh_standard_deviation
-        )
-        consumption_kWh_km: float = random_generator.normal(
-            loc=consumption_kWh_km_mean,
-            scale=consumption_kWh_km_standard_deviation,
-        )
-        if consumption_kWh_km <= 0:
+        consumption_kWh_km_max: float = vehicle_settings.consumption_kWh_km_max
+        if consumption_kWh_km_min <= 0:
             raise ValueError(
-                f'Drawn {consumption_kWh_km=} is negative or zero. '
-                f'Check {consumption_kWh_km_mean=} and '
-                f'{consumption_kWh_km_standard_deviation=}'
+                f'{consumption_kWh_km_min=} must be larger than zero. '
             )
-        battery_size_kWh: float = random_generator.normal(
-            loc=battery_size_kWh_mean,
-            scale=battery_size_kWh_standard_deviation,
+        consumption_kWh_km: float = draw_beta_value(
+            minimum=consumption_kWh_km_min,
+            typical=consumption_kWh_km_typical,
+            maximum=consumption_kWh_km_max,
+            random_generator=random_generator,
+            shape=beta_shape,
         )
-        if battery_size_kWh <= 0:
+
+        battery_size_kWh_min: float = vehicle_settings.battery_size_kWh_min
+        battery_size_kWh_typical: float = (
+            vehicle_settings.battery_size_kWh_typical
+        )
+        battery_size_kWh_max: float = vehicle_settings.battery_size_kWh_max
+
+        if battery_size_kWh_min <= 0:
             raise ValueError(
-                f'Drawn {battery_size_kWh=} is negative or zero. '
-                f'Check {battery_size_kWh_mean=} and '
-                f'{battery_size_kWh_standard_deviation=}'
+                f'{battery_size_kWh_min=} must be larger than zero.'
             )
+        battery_size_kWh: float = draw_beta_value(
+            minimum=battery_size_kWh_min,
+            typical=battery_size_kWh_typical,
+            maximum=battery_size_kWh_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
 
         return Vehicle(
             name=name,
@@ -377,7 +387,10 @@ class Location:
 
 
 def draw_legs_references(
-    *, legs_references: Box, random_generator: np.random.Generator
+    *,
+    legs_references: Box,
+    random_generator: np.random.Generator,
+    beta_shape: float,
 ) -> Box:
     '''
     Draws leg distances and speeds and calculates durations.
@@ -386,34 +399,39 @@ def draw_legs_references(
     drawn_legs_references: Box = Box()
     for reference_name, reference in legs_references.items():
         drawn_legs_references[reference_name] = Box()
-        mean_distance_km: float = reference.mean_distance_km
-        standard_deviation_distance: float = (
-            reference.standard_deviation_distance
-        )
-        mean_speed_kph: float = reference.mean_speed_kph
-        standard_deviation_speed: float = reference.standard_deviation_speed
-        distance_km: float = random_generator.normal(
-            loc=mean_distance_km,
-            scale=standard_deviation_distance,
-        )
-        if distance_km <= 0:
+
+        distance_km_min: float = reference.distance_km_min
+        distance_km_typical: float = reference.distance_km_typical
+        distance_km_max: float = reference.distance_km_max
+        if distance_km_min <= 0:
             raise ValueError(
-                f'Drawn {distance_km=} for {reference_name=} '
+                f'{distance_km_min=} for {reference_name=} '
                 'is negative or zero. '
-                f'Please check {mean_distance_km=} and '
-                f'{standard_deviation_distance=}'
             )
-        speed_kph: float = random_generator.normal(
-            loc=mean_speed_kph,
-            scale=standard_deviation_speed,
+        distance_km: float = draw_beta_value(
+            minimum=distance_km_min,
+            typical=distance_km_typical,
+            maximum=distance_km_max,
+            random_generator=random_generator,
+            shape=beta_shape,
         )
-        if speed_kph <= 0:
+
+        speed_kph_min: float = reference.speed_kph_min
+        speed_kph_typical: float = reference.speed_kph_typical
+        speed_kph_max: float = reference.speed_kph_max
+        if speed_kph_min <= 0:
             raise ValueError(
-                f'Drawn {speed_kph=} for {reference_name=} '
+                f'{speed_kph_min=} for {reference_name=} '
                 'is negative or zero. '
-                f'Please check {mean_speed_kph=} and '
-                f'{standard_deviation_speed=}'
             )
+        speed_kph: float = draw_beta_value(
+            minimum=speed_kph_min,
+            typical=speed_kph_typical,
+            maximum=speed_kph_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
         duration_hours: float = distance_km / speed_kph
         drawn_legs_references[reference_name].distance_km = distance_km
         drawn_legs_references[reference_name].duration_hours = duration_hours
@@ -502,29 +520,6 @@ class Trip:
     end_base: str
     base_transition: bool
     trip_steps: list[TripStep]
-
-    @staticmethod
-    def draw_start_time_hours(
-        *,
-        start_time_hours_mean: float,
-        start_time_hours_standard_deviation: float,
-        random_generator: np.random.Generator,
-    ) -> float:
-        '''
-        Draws the start time of the trip.
-        '''
-        start_time_hours: float = random_generator.normal(
-            loc=start_time_hours_mean,
-            scale=start_time_hours_standard_deviation,
-        )
-        if start_time_hours < 0 or start_time_hours >= 24:
-            raise ValueError(
-                f'Drawn {start_time_hours=} is negative or >=24, '
-                'making the trip start in another day. '
-                f'Please check/adjust {start_time_hours_mean=} '
-                f'and {start_time_hours_standard_deviation=}'
-            )
-        return start_time_hours
 
     @staticmethod
     def get_steps(
@@ -631,22 +626,30 @@ class Trip:
         trip_parameters: Box,
         legs: dict[str, Leg],
         random_generator: np.random.Generator,
+        beta_shape: float,
         vehicle: Vehicle,
     ) -> Trip:
         '''
         Creates a user-specific trip by drawing its start time.
         '''
-        start_time_hours_mean: float = trip_parameters.start_time_hours_mean
-        start_time_hours_standard_deviation: float = (
-            trip_parameters.start_time_hours_standard_deviation
+        start_time_hours_min: float = trip_parameters.start_time_hours_min
+        start_time_hours_typical: float = (
+            trip_parameters.start_time_hours_typical
         )
-        start_time_hours: float = Trip.draw_start_time_hours(
-            start_time_hours_mean=start_time_hours_mean,
-            start_time_hours_standard_deviation=(
-                start_time_hours_standard_deviation
-            ),
+        start_time_hours_max: float = trip_parameters.start_time_hours_max
+        if start_time_hours_min < 0 or start_time_hours_max >= 24:
+            raise ValueError(
+                f'Trip start-time bounds must fall within [0.0, 24.0). '
+                f'{start_time_hours_min=}, {start_time_hours_max=}.'
+            )
+        start_time_hours: float = draw_beta_value(
+            minimum=start_time_hours_min,
+            typical=start_time_hours_typical,
+            maximum=start_time_hours_max,
             random_generator=random_generator,
+            shape=beta_shape,
         )
+
         start_base: str = trip_parameters.start_base
         end_base: str = trip_parameters.end_base
         base_transition: bool = start_base != end_base
@@ -703,6 +706,7 @@ class ChargingBehaviour:
         *,
         charging_behaviour_parameters: Box,
         random_generator: np.random.Generator,
+        beta_shape: float,
     ) -> ChargingBehaviour:
         adaptive_proportion: float = (
             charging_behaviour_parameters.adaptive_proportion
@@ -712,76 +716,37 @@ class ChargingBehaviour:
                 f'{adaptive_proportion=} must be between 0.0 '
                 'and 1.0 (inclusive)'
             )
+
+        charge_desire_proportion_trigger_min: float = (
+            charging_behaviour_parameters.charge_desire_proportion_trigger_min
+        )
+        charge_desire_proportion_trigger_typical: float = (
+            charging_behaviour_parameters.charge_desire_proportion_trigger_typical  # noqa:E501
+        )
+        charge_desire_proportion_trigger_max: float = (
+            charging_behaviour_parameters.charge_desire_proportion_trigger_max
+        )
+        if (
+            charge_desire_proportion_trigger_min < 0.0
+            or charge_desire_proportion_trigger_max > 1.0
+        ):
+            raise ValueError(
+                'The charge_desire_proportion_trigger needs to be between 0.0 '
+                'and 1.0 (inclusive).'
+            )
+
         adaptive: bool = bool(
             random_generator.choice(
                 [True, False], p=[adaptive_proportion, 1 - adaptive_proportion]
             )
         )
-        charge_desire_proportion_trigger_mean: float = (
-            charging_behaviour_parameters.charge_desire_proportion_trigger_mean
+        charge_desire_proportion_trigger: float = draw_beta_value(
+            minimum=charge_desire_proportion_trigger_min,
+            typical=charge_desire_proportion_trigger_typical,
+            maximum=charge_desire_proportion_trigger_max,
+            random_generator=random_generator,
+            shape=beta_shape,
         )
-        if not 0.0 <= charge_desire_proportion_trigger_mean <= 1.0:
-            raise ValueError(
-                f'{charge_desire_proportion_trigger_mean=} must be between '
-                '0.0 and 1.0 (inclusive)'
-            )
-        charge_desire_proportion_trigger_standard_deviation: float = (
-            charging_behaviour_parameters.charge_desire_proportion_trigger_standard_deviation  # noqa: E501
-        )
-        if charge_desire_proportion_trigger_standard_deviation < 0:
-            raise ValueError(
-                f'{charge_desire_proportion_trigger_standard_deviation=} '
-                'cannot be negative.'
-            )
-
-        if (
-            charge_desire_proportion_trigger_standard_deviation == 0
-            or charge_desire_proportion_trigger_mean == 0.0
-            or charge_desire_proportion_trigger_mean == 1.0
-            # If set at exactly 0.0 or 1.0, the standard deviation
-            # will be ignored.
-        ):
-            charge_desire_proportion_trigger: float = (
-                charge_desire_proportion_trigger_mean
-            )
-        else:
-            # We use a beta distribution
-            # https://en.wikipedia.org/wiki/Beta_distribution
-
-            maximum_standard_deviation: float = np.sqrt(
-                charge_desire_proportion_trigger_mean
-                * (1 - charge_desire_proportion_trigger_mean)
-            )
-            if (
-                charge_desire_proportion_trigger_standard_deviation
-                >= maximum_standard_deviation
-            ):
-                raise ValueError(
-                    f'{charge_desire_proportion_trigger_standard_deviation=} '
-                    f'is too large for '
-                    f'{charge_desire_proportion_trigger_mean=}.'
-                    f' It must be smaller than {maximum_standard_deviation=}.'
-                )
-
-            trigger_variance: float = (
-                charge_desire_proportion_trigger_standard_deviation**2
-            )
-            trigger_common: float = (
-                charge_desire_proportion_trigger_mean
-                * (1 - charge_desire_proportion_trigger_mean)
-                / trigger_variance
-            ) - 1
-
-            trigger_alpha: float = (
-                charge_desire_proportion_trigger_mean * trigger_common
-            )
-            trigger_beta: float = (
-                1 - charge_desire_proportion_trigger_mean
-            ) * trigger_common
-
-            charge_desire_proportion_trigger = random_generator.beta(
-                trigger_alpha, trigger_beta
-            )
 
         return ChargingBehaviour(
             adaptive=adaptive,
@@ -823,38 +788,79 @@ class Activities:
             work_days_parameters[str(day_amount)].probability
             for day_amount in possible_working_days
         ]
+        if not np.isclose(sum(possible_working_day_probabilities), 1.0):
+            raise ValueError(
+                f'{possible_working_day_probabilities=} must add up to 1.0.'
+            )
 
         worked_days_per_work_week: int = int(
             random_generator.choice(
                 possible_working_days, p=possible_working_day_probabilities
             )
         )
+        possible_amounts_commute_days: list[int] = work_days_parameters[
+            str(worked_days_per_work_week)
+        ].possible_amounts_commute_days
+        if any(amount < 0 for amount in possible_amounts_commute_days):
+            raise ValueError(
+                f'All of {possible_amounts_commute_days=} ' 'must be >= zero.'
+            )
+        commute_days_probabilities: list[float] = work_days_parameters[
+            str(worked_days_per_work_week)
+        ].commute_days_probabilities
+        if not np.isclose(sum(commute_days_probabilities), 1.0):
+            raise ValueError(
+                f'{commute_days_probabilities=} must add up to 1.0.'
+            )
+        if len(possible_amounts_commute_days) != len(
+            commute_days_probabilities
+        ):
+            raise ValueError(
+                f'{possible_amounts_commute_days=} and '
+                f'{commute_days_probabilities=} '
+                'must be of the same length'
+            )
         commute_days_per_week: int = int(
             random_generator.choice(
-                work_days_parameters[
-                    str(worked_days_per_work_week)
-                ].possible_amounts_commute_days,
-                p=work_days_parameters[
-                    str(worked_days_per_work_week)
-                ].commute_days_probabilities,
+                possible_amounts_commute_days,
+                p=commute_days_probabilities,
             )
         )
 
         commute_days_indices: list[int] = (
             commuting_parameters.commute_days_indices
         )
+        if any(
+            day_number < 1 or day_number > 7
+            for day_number in commute_days_indices
+        ):
+            raise ValueError(
+                f'{commute_days_indices=} contains an invalid weekday number.'
+            )
         weekday_commute_factor: list[float] = (
             commuting_parameters.weekday_commute_factor
         )
+        if not np.isclose(sum(weekday_commute_factor), 1.0):
+            raise ValueError(f'{weekday_commute_factor=} must add up to 1.0.')
+        if len(commute_days_indices) != len(weekday_commute_factor):
+            raise ValueError(
+                f'{commute_days_indices=} and {weekday_commute_factor=} '
+                'must be of the same length'
+            )
+
+        if commute_days_per_week > len(commute_days_indices):
+            raise ValueError(
+                f'{commute_days_per_week=} exceeds the number of available '
+                f'commute weekdays: {len(commute_days_indices)}.'
+            )
 
         commuting_weekday_numbers: list[int] = sorted(
-            list(
-                random_generator.choice(
-                    commute_days_indices,
-                    commute_days_per_week,
-                    p=weekday_commute_factor,
-                    replace=False,
-                )
+            int(day_number)
+            for day_number in random_generator.choice(
+                commute_days_indices,
+                size=commute_days_per_week,
+                p=weekday_commute_factor,
+                replace=False,
             )
         )
 
@@ -864,7 +870,6 @@ class Activities:
     def draw_holiday_trip_week_numbers(
         *,
         holiday_parameters: Box,
-        commuting_parameters: Box,
         random_generator: np.random.Generator,
         time_constants: TimeConstants,
     ) -> tuple[list[int], list[int]]:
@@ -880,9 +885,31 @@ class Activities:
         possible_amount_of_non_working_weeks: list[int] = (
             holiday_parameters.possible_amount_of_non_working_weeks
         )
+        if any(amount < 0 for amount in possible_amount_of_non_working_weeks):
+            raise ValueError(
+                f'All of {possible_amount_of_non_working_weeks=} '
+                'must be >= zero.'
+            )
         probabilities_for_amount_of_non_working_weeks: list[float] = (
             holiday_parameters.probabilities_for_amount_of_non_working_weeks
         )
+        if len(possible_amount_of_non_working_weeks) != len(
+            probabilities_for_amount_of_non_working_weeks
+        ):
+            raise ValueError(
+                f'{possible_amount_of_non_working_weeks=} and '
+                f'{probabilities_for_amount_of_non_working_weeks=} '
+                'must be of the same length.'
+            )
+
+        if not np.isclose(
+            sum(probabilities_for_amount_of_non_working_weeks),
+            1.0,
+        ):
+            raise ValueError(
+                f'The sum of {probabilities_for_amount_of_non_working_weeks=} '
+                ' be 1.0'
+            )
 
         amount_of_non_working_weeks: int = int(
             random_generator.choice(
@@ -890,53 +917,129 @@ class Activities:
                 p=probabilities_for_amount_of_non_working_weeks,
             )
         )
+        if not 0 <= amount_of_non_working_weeks <= len(week_indices):
+            raise ValueError(
+                f'{amount_of_non_working_weeks=} must be between 0 and '
+                f'{len(week_indices)}.'
+            )
+        amount_of_working_weeks: int = int(
+            len(week_indices) - amount_of_non_working_weeks
+        )
+
+        increase_factor_working_in_work_week: float = (
+            holiday_parameters.increase_factor_working_in_work_week
+        )
+        if increase_factor_working_in_work_week <= 0:
+            raise ValueError(
+                f'{increase_factor_working_in_work_week=} '
+                'must be greater than zero.'
+            )
+        work_probabilities_per_week: list[float] = [
+            (
+                increase_factor_working_in_work_week
+                if week_index not in time_constants.holiday_weeks
+                else 1.0
+            )
+            for week_index in week_indices
+        ]
+        normalisation_factor_work: float = sum(work_probabilities_per_week)
+        work_probabilities_per_week: list[float] = [
+            probability / normalisation_factor_work
+            for probability in work_probabilities_per_week
+        ]
+
+        commuting_week_numbers: list[int] = sorted(
+            int(week_number)
+            for week_number in random_generator.choice(
+                week_indices,
+                size=amount_of_working_weeks,
+                p=work_probabilities_per_week,
+                replace=False,
+            )
+        )
+
+        non_working_week_indices: list[int] = sorted(
+            [
+                week_index
+                for week_index in week_indices
+                if week_index not in commuting_week_numbers
+            ]
+        )
 
         possible_amounts_of_holiday_trips: list[int] = (
             holiday_parameters.possible_amounts_of_holiday_trips
         )
+        if any(amount < 0 for amount in possible_amounts_of_holiday_trips):
+            raise ValueError(
+                f'All of {possible_amounts_of_holiday_trips=} '
+                'must be >= zero.'
+            )
         holiday_trips_probabilities: list[float] = (
             holiday_parameters.holiday_trips_probabilities
         )
+        if len(possible_amounts_of_holiday_trips) != len(
+            holiday_trips_probabilities
+        ):
+            raise ValueError(
+                f'{possible_amounts_of_holiday_trips=} and '
+                f'{holiday_trips_probabilities=} must have the same length.'
+            )
+
+        if not np.isclose(sum(holiday_trips_probabilities), 1.0):
+            raise ValueError(
+                f'The sum of {holiday_trips_probabilities=} must be one.'
+            )
+
         amount_of_holiday_trips_taken: int = int(
             random_generator.choice(
                 possible_amounts_of_holiday_trips,
                 p=holiday_trips_probabilities,
             )
         )
-
-        increase_factor_holiday_trip_in_holiday_weeks: float = (
-            holiday_parameters.increase_factor_holiday_trip_in_holiday_weeks
-        )
-
-        holiday_trips_probabilities_per_week: list[float] = [
-            (
-                increase_factor_holiday_trip_in_holiday_weeks
-                if week_index in time_constants.holiday_weeks
-                else 1.0
+        if amount_of_holiday_trips_taken > len(non_working_week_indices):
+            raise ValueError(
+                f'{amount_of_holiday_trips_taken=} exceeds the number of '
+                f'available non-working weeks: '
+                f'{len(non_working_week_indices)}.'
             )
-            for week_index in week_indices
-        ]
-        normalisation_factor: float = sum(holiday_trips_probabilities_per_week)
-        holiday_trips_probabilities_per_week: list[float] = [
-            probability / normalisation_factor
-            for probability in holiday_trips_probabilities_per_week
-        ]
 
-        holiday_trip_week_numbers: list[int] = sorted(
-            list(
-                np.random.choice(
-                    week_indices,
+        if amount_of_holiday_trips_taken == 0:
+            holiday_trip_week_numbers: list[int] = []
+        else:
+            increase_factor_holiday_trip_in_holiday_weeks: float = (
+                holiday_parameters.increase_factor_holiday_trip_in_holiday_weeks  # noqa: E501
+            )
+            if increase_factor_holiday_trip_in_holiday_weeks <= 0:
+                raise ValueError(
+                    f'{increase_factor_holiday_trip_in_holiday_weeks=} '
+                    'must be greater than zero.'
+                )
+
+            holiday_trips_probabilities_per_week: list[float] = [
+                (
+                    increase_factor_holiday_trip_in_holiday_weeks
+                    if week_index in time_constants.holiday_weeks
+                    else 1.0
+                )
+                for week_index in non_working_week_indices
+            ]
+            normalisation_factor_holiday_trip: float = sum(
+                holiday_trips_probabilities_per_week
+            )
+            holiday_trips_probabilities_per_week: list[float] = [
+                probability / normalisation_factor_holiday_trip
+                for probability in holiday_trips_probabilities_per_week
+            ]
+
+            holiday_trip_week_numbers: list[int] = sorted(
+                int(week_number)
+                for week_number in random_generator.choice(
+                    non_working_week_indices,
                     size=amount_of_holiday_trips_taken,
                     p=holiday_trips_probabilities_per_week,
                     replace=False,
                 )
             )
-        )
-        commuting_week_numbers: list[int] = [
-            week_number
-            for week_number in week_indices
-            if week_number not in holiday_trip_week_numbers
-        ]
 
         return (
             holiday_trip_week_numbers,
@@ -994,7 +1097,6 @@ class Activities:
             commuting_week_numbers,
         ) = Activities.draw_holiday_trip_week_numbers(
             holiday_parameters=holiday_parameters,
-            commuting_parameters=commuting_parameters,
             random_generator=random_generator,
             time_constants=time_constants,
         )
@@ -1060,10 +1162,12 @@ class User:
         Activities | None,
         ChargingBehaviour,
     ]:
+        beta_shape: float = scenario.monte_carlo.beta_shape
         vehicle_settings: Box = scenario.vehicle
         vehicle: Vehicle = Vehicle.draw(
             vehicle_settings=vehicle_settings,
             random_generator=random_generator,
+            beta_shape=beta_shape,
         )
         locations_parameters: Box = scenario.locations
         locations: dict[str, Location] = {
@@ -1080,7 +1184,9 @@ class User:
         legs_references: Box = scenario.legs_references
 
         drawn_legs_references: Box = draw_legs_references(
-            legs_references=legs_references, random_generator=random_generator
+            legs_references=legs_references,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
         )
         legs: dict[str, Leg] = {
             leg_name: Leg.set_values(
@@ -1096,6 +1202,7 @@ class User:
                 trip_parameters=trip_parameters,
                 legs=legs,
                 random_generator=random_generator,
+                beta_shape=beta_shape,
                 vehicle=vehicle,
             )
             for trip_name, trip_parameters in trips_parameters.items()
@@ -1114,6 +1221,7 @@ class User:
         charging_behaviour: ChargingBehaviour = ChargingBehaviour.draw(
             charging_behaviour_parameters=charging_behaviour_parameters,
             random_generator=random_generator,
+            beta_shape=beta_shape,
         )
         return vehicle, locations, legs, trips, activities, charging_behaviour
 
