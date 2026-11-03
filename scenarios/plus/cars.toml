@@ -560,10 +560,16 @@ increase_factor_working_in_work_week = 10.0
 possible_amounts_of_holiday_trips = [0, 1, 2, 3]
 holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]
 increase_factor_holiday_trip_in_holiday_weeks = 4.2
+possible_weekday_indices_outward = [5, 6, 7]
+outward_day_probabilities = [0.25, 0.65, 0.1]
+possible_weekday_indices_back = [5, 6, 7]
+back_day_probabilities = [0.1, 0.45, 0.45]
 [activity_parameters.weekend]
 amounts_of_weekend_trips_min = 0
 amounts_of_weekend_trips_typical = 12
 amounts_of_weekend_trips_max = 36
+weekday_options = [6, 7]
+weekday_probabilities = [0.5, 0.5]
 
 
 

@@ -8,228 +8,9 @@ import numpy as np
 import polars as pl
 from box import Box
 
+from ChaProEV.stochastic_new.activities import Activities
 from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
-
-
-@dataclass
-class TimeConstants:
-    SECONDS_PER_HOUR: int
-    MINUTES_PER_HOUR: int
-    HOURS_IN_A_DAY: int
-    MONTHS_IN_A_YEAR: int
-    MAX_DAYS_IN_A_MONTH: int
-    DAYS_IN_A_YEAR: float
-    DAYS_IN_A_WEEK: int
-    WEEKS_IN_A_YEAR: float
-    first_hour_number: int
-    first_week_index: int
-    last_week_index: int
-    weekend_day_numbers: list[int]
-    holiday_weeks: list[int]
-    number_of_holiday_weeks: int
-    # We need to provide the number of holiday weeks separately,
-    # as counting the elements of the list above might not work, such as
-    # when the above list contains weeks 1 and 53 (which just represent
-    # the fact that years don't necessarily start and/or end at the start/end
-    # of a week).
-
-    @staticmethod
-    def read_parameters(time_parameters: Box) -> TimeConstants:
-        holiday_weeks: list[int] = time_parameters.holiday_weeks
-
-        return TimeConstants(
-            SECONDS_PER_HOUR=time_parameters.SECONDS_PER_HOUR,
-            MINUTES_PER_HOUR=time_parameters.MINUTES_PER_HOUR,
-            HOURS_IN_A_DAY=time_parameters.HOURS_IN_A_DAY,
-            MONTHS_IN_A_YEAR=time_parameters.MONTHS_IN_A_YEAR,
-            MAX_DAYS_IN_A_MONTH=time_parameters.MAX_DAYS_IN_A_MONTH,
-            DAYS_IN_A_YEAR=time_parameters.DAYS_IN_A_YEAR,
-            DAYS_IN_A_WEEK=time_parameters.DAYS_IN_A_WEEK,
-            WEEKS_IN_A_YEAR=time_parameters.DAYS_IN_A_YEAR
-            / time_parameters.DAYS_IN_A_WEEK,
-            first_hour_number=time_parameters.first_hour_number,
-            first_week_index=time_parameters.first_week_index,
-            last_week_index=time_parameters.last_week_index,
-            weekend_day_numbers=time_parameters.weekend_day_numbers,
-            holiday_weeks=holiday_weeks,
-            number_of_holiday_weeks=time_parameters.number_of_holiday_weeks,
-        )
-
-
-@dataclass
-class TimeRange:
-    '''
-    The time ranges used for dates and timestamps, both for
-    computation and display.
-
-    '''
-
-    run_dates: pl.Series
-    display_dates: pl.Series
-    run_stamps: pl.Series
-    display_stamps: pl.Series
-    day_types: pl.Series
-    frequency: str
-    frequency_type: str
-    frequency_size: int
-
-    @staticmethod
-    def set_ranges(
-        run_parameters: Box,
-        time_constants: TimeConstants,
-    ) -> TimeRange:
-        start: Box = run_parameters.start
-        end: Box = run_parameters.end
-
-        if (
-            start.hour != 0
-            or start.minute != 0
-            or end.hour != 0
-            or end.minute != 0
-        ):
-            raise ValueError(
-                'The run must start and end at midnight because trips are '
-                'assigned per complete run day. The display period may have '
-                'different start and end times, but the underlying run must '
-                'be extended to start and end at midnight.'
-            )
-
-        display_start: Box = run_parameters.display_start
-        display_end: Box = run_parameters.display_end
-        run_frequency_settings: Box = run_parameters.frequency
-        display_frequency_settings: Box = run_parameters.display_frequency
-
-        run_frequency: str = (
-            f'{run_frequency_settings.size}{run_frequency_settings.type}'
-        )
-        display_frequency: str = (
-            f'{display_frequency_settings.size}'
-            f'{display_frequency_settings.type}'
-        )
-        if (
-            run_frequency_settings.size <= 0
-            or display_frequency_settings.size <= 0
-        ):
-            raise ValueError(
-                f'Both {run_frequency_settings.size=} and '
-                f'{display_frequency_settings.size=} must be positive.'
-            )
-
-        start_date: date = date(
-            year=start.year, month=start.month, day=start.day
-        )
-        end_date: date = date(year=end.year, month=end.month, day=end.day)
-
-        start_datetime: datetime = datetime(
-            year=start.year,
-            month=start.month,
-            day=start.day,
-            hour=start.hour,
-            minute=start.minute,
-        )
-        end_datetime: datetime = datetime(
-            year=end.year,
-            month=end.month,
-            day=end.day,
-            hour=end.hour,
-            minute=end.minute,
-        )
-        display_start_datetime: datetime = datetime(
-            year=display_start.year,
-            month=display_start.month,
-            day=display_start.day,
-            hour=display_start.hour,
-            minute=display_start.minute,
-        )
-        display_end_datetime: datetime = datetime(
-            year=display_end.year,
-            month=display_end.month,
-            day=display_end.day,
-            hour=display_end.hour,
-            minute=display_end.minute,
-        )
-        if start_datetime >= end_datetime:
-            raise ValueError(
-                f'{start_datetime=} must be before {end_datetime=}'
-            )
-        if display_start_datetime >= display_end_datetime:
-            raise ValueError(
-                f'{display_start_datetime=} must be before '
-                f'{display_end_datetime=}'
-            )
-
-        if display_start_datetime < start_datetime:
-            raise ValueError(
-                f'{display_start_datetime=} must be later or '
-                f'at the same time as {start_datetime=}'
-            )
-        if display_end_datetime > end_datetime:
-            raise ValueError(
-                f'{display_end_datetime=} must be earlier or '
-                f'at the same time as {end_datetime=}'
-            )
-
-        run_dates: pl.Series = pl.date_range(
-            start=start_date,
-            end=end_date,
-            eager=True,
-            closed='left',
-        ).rename('date')
-
-        run_stamps: pl.Series = pl.datetime_range(
-            start=start_datetime,
-            end=end_datetime,
-            interval=run_frequency,
-            eager=True,
-            closed='left',
-        ).rename('timestamp')
-        display_stamps: pl.Series = pl.datetime_range(
-            start=display_start_datetime,
-            end=display_end_datetime,
-            interval=display_frequency,
-            eager=True,
-            closed='left',
-        ).rename('timestamp')
-        display_dates: pl.Series = (
-            display_stamps.dt.date().unique(maintain_order=True).rename('date')
-        )
-        # Derived from display_stamps because a display range with non-midnight
-        # boundaries may cover more dates than an equivalent closed-left
-        # date range.
-
-        day_types: pl.Series = pl.DataFrame({'date': run_dates}).with_columns(
-            pl.concat_str(
-                [
-                    pl.when(
-                        pl.col('date')
-                        .dt.weekday()
-                        .is_in(time_constants.weekend_day_numbers)
-                    )
-                    .then(pl.lit('weekend'))
-                    .otherwise(pl.lit('weekday')),
-                    pl.lit('_in_'),
-                    pl.when(
-                        pl.col('date')
-                        .dt.week()
-                        .is_in(time_constants.holiday_weeks)
-                    )
-                    .then(pl.lit('holiday'))
-                    .otherwise(pl.lit('work')),
-                    pl.lit('_week'),
-                ]
-            ).alias('day_type')
-        )['day_type']
-
-        return TimeRange(
-            run_dates=run_dates,
-            display_dates=display_dates,
-            run_stamps=run_stamps,
-            display_stamps=display_stamps,
-            day_types=day_types,
-            frequency=run_frequency,
-            frequency_type=run_frequency_settings.type,
-            frequency_size=run_frequency_settings.size,
-        )
+from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
 
 @dataclass
@@ -755,502 +536,6 @@ class ChargingBehaviour:
 
 
 @dataclass
-class Activities:
-    '''
-    Tells us in which week or day number activities (commute,
-    holiday trips, weekend trips, leisure trips) occur.
-    For commuting, we look at weekday numbers (1= Monday, 7= Sunday).
-    The same holds for leisure trips and for commuting week numbers.
-    Weekend trips and holiday trips get a week number (1 to 53)
-
-    '''
-
-    commuting_weekday_numbers: list[int]
-    holiday_trip_week_numbers: list[int]
-    weekend_trip_week_numbers: list[int]
-    leisure_trip_weekday_numbers: list[int]
-    commuting_week_numbers: list[int]
-
-    @staticmethod
-    def draw_commuting_weekday_numbers(
-        *,
-        commuting_parameters: Box,
-        random_generator: np.random.Generator,
-    ) -> list[int]:
-
-        work_days_parameters: Box = commuting_parameters.work_days
-
-        possible_working_days: list[int] = list(
-            map(int, work_days_parameters.keys())
-        )
-        possible_working_day_probabilities: list[float] = [
-            work_days_parameters[str(day_amount)].probability
-            for day_amount in possible_working_days
-        ]
-        if not np.isclose(sum(possible_working_day_probabilities), 1.0):
-            raise ValueError(
-                f'{possible_working_day_probabilities=} must add up to 1.0.'
-            )
-
-        worked_days_per_work_week: int = int(
-            random_generator.choice(
-                possible_working_days, p=possible_working_day_probabilities
-            )
-        )
-        possible_amounts_commute_days: list[int] = work_days_parameters[
-            str(worked_days_per_work_week)
-        ].possible_amounts_commute_days
-        if any(amount < 0 for amount in possible_amounts_commute_days):
-            raise ValueError(
-                f'All of {possible_amounts_commute_days=} ' 'must be >= zero.'
-            )
-        commute_days_probabilities: list[float] = work_days_parameters[
-            str(worked_days_per_work_week)
-        ].commute_days_probabilities
-        if not np.isclose(sum(commute_days_probabilities), 1.0):
-            raise ValueError(
-                f'{commute_days_probabilities=} must add up to 1.0.'
-            )
-        if len(possible_amounts_commute_days) != len(
-            commute_days_probabilities
-        ):
-            raise ValueError(
-                f'{possible_amounts_commute_days=} and '
-                f'{commute_days_probabilities=} '
-                'must be of the same length'
-            )
-        commute_days_per_week: int = int(
-            random_generator.choice(
-                possible_amounts_commute_days,
-                p=commute_days_probabilities,
-            )
-        )
-
-        commute_days_indices: list[int] = (
-            commuting_parameters.commute_days_indices
-        )
-        if any(
-            day_number < 1 or day_number > 7
-            for day_number in commute_days_indices
-        ):
-            raise ValueError(
-                f'{commute_days_indices=} contains an invalid weekday number.'
-            )
-        weekday_commute_factor: list[float] = (
-            commuting_parameters.weekday_commute_factor
-        )
-        if not np.isclose(sum(weekday_commute_factor), 1.0):
-            raise ValueError(f'{weekday_commute_factor=} must add up to 1.0.')
-        if len(commute_days_indices) != len(weekday_commute_factor):
-            raise ValueError(
-                f'{commute_days_indices=} and {weekday_commute_factor=} '
-                'must be of the same length'
-            )
-
-        if commute_days_per_week > len(commute_days_indices):
-            raise ValueError(
-                f'{commute_days_per_week=} exceeds the number of available '
-                f'commute weekdays: {len(commute_days_indices)}.'
-            )
-
-        commuting_weekday_numbers: list[int] = sorted(
-            int(day_number)
-            for day_number in random_generator.choice(
-                commute_days_indices,
-                size=commute_days_per_week,
-                p=weekday_commute_factor,
-                replace=False,
-            )
-        )
-
-        return commuting_weekday_numbers
-
-    @staticmethod
-    def draw_holiday_trip_week_numbers(
-        *,
-        holiday_parameters: Box,
-        random_generator: np.random.Generator,
-        time_constants: TimeConstants,
-    ) -> tuple[list[int], list[int], list[int]]:
-
-        week_indices: list[int] = list(
-            range(
-                time_constants.first_week_index,
-                time_constants.last_week_index,
-                # The last week (53 is only a day or two long)
-            )
-        )
-
-        possible_amount_of_non_working_weeks: list[int] = (
-            holiday_parameters.possible_amount_of_non_working_weeks
-        )
-        if any(amount < 0 for amount in possible_amount_of_non_working_weeks):
-            raise ValueError(
-                f'All of {possible_amount_of_non_working_weeks=} '
-                'must be >= zero.'
-            )
-        probabilities_for_amount_of_non_working_weeks: list[float] = (
-            holiday_parameters.probabilities_for_amount_of_non_working_weeks
-        )
-        if len(possible_amount_of_non_working_weeks) != len(
-            probabilities_for_amount_of_non_working_weeks
-        ):
-            raise ValueError(
-                f'{possible_amount_of_non_working_weeks=} and '
-                f'{probabilities_for_amount_of_non_working_weeks=} '
-                'must be of the same length.'
-            )
-
-        if not np.isclose(
-            sum(probabilities_for_amount_of_non_working_weeks),
-            1.0,
-        ):
-            raise ValueError(
-                f'The sum of {probabilities_for_amount_of_non_working_weeks=} '
-                ' be 1.0'
-            )
-
-        amount_of_non_working_weeks: int = int(
-            random_generator.choice(
-                possible_amount_of_non_working_weeks,
-                p=probabilities_for_amount_of_non_working_weeks,
-            )
-        )
-        if not 0 <= amount_of_non_working_weeks <= len(week_indices):
-            raise ValueError(
-                f'{amount_of_non_working_weeks=} must be between 0 and '
-                f'{len(week_indices)}.'
-            )
-        amount_of_working_weeks: int = int(
-            len(week_indices) - amount_of_non_working_weeks
-        )
-
-        increase_factor_working_in_work_week: float = (
-            holiday_parameters.increase_factor_working_in_work_week
-        )
-        if increase_factor_working_in_work_week <= 0:
-            raise ValueError(
-                f'{increase_factor_working_in_work_week=} '
-                'must be greater than zero.'
-            )
-        work_probabilities_per_week: list[float] = [
-            (
-                increase_factor_working_in_work_week
-                if week_index not in time_constants.holiday_weeks
-                else 1.0
-            )
-            for week_index in week_indices
-        ]
-        normalisation_factor_work: float = sum(work_probabilities_per_week)
-        work_probabilities_per_week: list[float] = [
-            probability / normalisation_factor_work
-            for probability in work_probabilities_per_week
-        ]
-
-        commuting_week_numbers: list[int] = sorted(
-            int(week_number)
-            for week_number in random_generator.choice(
-                week_indices,
-                size=amount_of_working_weeks,
-                p=work_probabilities_per_week,
-                replace=False,
-            )
-        )
-
-        non_working_week_indices: list[int] = sorted(
-            [
-                week_index
-                for week_index in week_indices
-                if week_index not in commuting_week_numbers
-            ]
-        )
-
-        possible_amounts_of_holiday_trips: list[int] = (
-            holiday_parameters.possible_amounts_of_holiday_trips
-        )
-        if any(amount < 0 for amount in possible_amounts_of_holiday_trips):
-            raise ValueError(
-                f'All of {possible_amounts_of_holiday_trips=} '
-                'must be >= zero.'
-            )
-        holiday_trips_probabilities: list[float] = (
-            holiday_parameters.holiday_trips_probabilities
-        )
-        if len(possible_amounts_of_holiday_trips) != len(
-            holiday_trips_probabilities
-        ):
-            raise ValueError(
-                f'{possible_amounts_of_holiday_trips=} and '
-                f'{holiday_trips_probabilities=} must have the same length.'
-            )
-
-        if not np.isclose(sum(holiday_trips_probabilities), 1.0):
-            raise ValueError(
-                f'The sum of {holiday_trips_probabilities=} must be one.'
-            )
-
-        amount_of_holiday_trips_taken: int = int(
-            random_generator.choice(
-                possible_amounts_of_holiday_trips,
-                p=holiday_trips_probabilities,
-            )
-        )
-        if amount_of_holiday_trips_taken > len(non_working_week_indices):
-            raise ValueError(
-                f'{amount_of_holiday_trips_taken=} exceeds the number of '
-                f'available non-working weeks: '
-                f'{len(non_working_week_indices)}.'
-            )
-
-        if amount_of_holiday_trips_taken == 0:
-            holiday_trip_week_numbers: list[int] = []
-        else:
-            increase_factor_holiday_trip_in_holiday_weeks: float = (
-                holiday_parameters.increase_factor_holiday_trip_in_holiday_weeks  # noqa: E501
-            )
-            if increase_factor_holiday_trip_in_holiday_weeks <= 0:
-                raise ValueError(
-                    f'{increase_factor_holiday_trip_in_holiday_weeks=} '
-                    'must be greater than zero.'
-                )
-
-            holiday_trips_probabilities_per_week: list[float] = [
-                (
-                    0.0
-                    if week_index == time_constants.first_week_index
-                    # We want to avoid holiday trips in the first week
-                    # of the year, as the journey outward might be in the
-                    # year before.
-                    else (
-                        increase_factor_holiday_trip_in_holiday_weeks
-                        if week_index in time_constants.holiday_weeks
-                        else 1.0
-                    )
-                )
-                for week_index in non_working_week_indices
-            ]
-            normalisation_factor_holiday_trip: float = sum(
-                holiday_trips_probabilities_per_week
-            )
-            holiday_trips_probabilities_per_week: list[float] = [
-                probability / normalisation_factor_holiday_trip
-                for probability in holiday_trips_probabilities_per_week
-            ]
-
-            holiday_trip_week_numbers: list[int] = sorted(
-                int(week_number)
-                for week_number in random_generator.choice(
-                    non_working_week_indices,
-                    size=amount_of_holiday_trips_taken,
-                    p=holiday_trips_probabilities_per_week,
-                    replace=False,
-                )
-            )
-
-        return (
-            holiday_trip_week_numbers,
-            commuting_week_numbers,
-            week_indices,
-        )
-
-    @staticmethod
-    def draw_weekend_trip_week_numbers(
-        *,
-        holiday_trip_week_numbers: list[int],
-        weekend_parameters: Box,
-        random_generator: np.random.Generator,
-        beta_shape: float,
-        week_indices: list[int],
-    ) -> list[int]:
-
-        amounts_of_weekend_trips_min: float = (
-            weekend_parameters.amounts_of_weekend_trips_min
-        )
-        amounts_of_weekend_trips_typical: float = (
-            weekend_parameters.amounts_of_weekend_trips_typical
-        )
-        amounts_of_weekend_trips_max: float = (
-            weekend_parameters.amounts_of_weekend_trips_max
-        )
-
-        if amounts_of_weekend_trips_min < 0:
-            raise ValueError(f'{amounts_of_weekend_trips_min=} must be >=0.')
-
-        amounts_of_weekend_trips: int = round(
-            draw_beta_value(
-                minimum=amounts_of_weekend_trips_min,
-                typical=amounts_of_weekend_trips_typical,
-                maximum=amounts_of_weekend_trips_max,
-                random_generator=random_generator,
-                shape=beta_shape,
-            )
-        )
-        holiday_trip_week_before_numbers: list[int] = [
-            week_number - 1 for week_number in holiday_trip_week_numbers
-        ]
-        weeks_without_a_weekend_trip: list[int] = sorted(
-            list(
-                set(
-                    holiday_trip_week_numbers
-                    + holiday_trip_week_before_numbers
-                )
-            )
-        )
-        if amounts_of_weekend_trips > (
-            len(week_indices) - len(weeks_without_a_weekend_trip)
-        ):
-            raise ValueError(
-                f'There are not enough weeks for {amounts_of_weekend_trips=}.'
-                f'You either have too many of these, of too many '
-                f'{holiday_trip_week_numbers=}.'
-            )
-        possible_weekend_trip_week_numbers: list[int] = [
-            week_number
-            for week_number in week_indices
-            if week_number not in weeks_without_a_weekend_trip
-        ]
-
-        weekend_trip_week_numbers: list[int] = sorted(
-            int(week_number)
-            for week_number in random_generator.choice(
-                possible_weekend_trip_week_numbers,
-                size=amounts_of_weekend_trips,
-                replace=False,
-            )
-        )
-
-        return weekend_trip_week_numbers
-
-    @staticmethod
-    def draw_leisure_trip_weekday_numbers(
-        *,
-        leisure_parameters: Box,
-        random_generator: np.random.Generator,
-    ) -> list[int]:
-        '''
-        Draws on which week days leisure trips occur.
-        Note that if there are two such trips on a weekend where either
-        a holiday trip or a weekend trip occur, then one of the two leisure
-        trips will be overwritten. Also note that if one leisure trip
-        occurs on such a weekend, it takes precedence and forces the weekend
-        trip or the holiday trip to be on the other weekend day.
-        '''
-
-        possible_amounts_leisure_trips: list[int] = (
-            leisure_parameters.possible_amounts_leisure_trips
-        )
-        amount_probabilities: list[float] = (
-            leisure_parameters.amount_probabilities
-        )
-        day_indices: list[int] = leisure_parameters.day_indices
-        day_weights: list[float] = leisure_parameters.day_weights
-        if len(possible_amounts_leisure_trips) != len(amount_probabilities):
-            raise ValueError(
-                f'{possible_amounts_leisure_trips=} and '
-                f'{amount_probabilities=} must have the same length.'
-            )
-
-        if len(day_indices) != len(day_weights):
-            raise ValueError(
-                f'{day_indices=} and {day_weights=} '
-                'must have the same length.'
-            )
-        if any(
-            probability < 0 for probability in amount_probabilities
-        ) or not np.isclose(sum(amount_probabilities), 1.0):
-            raise ValueError(
-                f'{amount_probabilities=} must be >=0.0 and sum to 1.0'
-            )
-        if any(day_weight < 0 for day_weight in day_weights) or not np.isclose(
-            sum(day_weights), 1.0
-        ):
-            raise ValueError(f'{day_weights=} must be >=0.0 and sum to 1.0')
-
-        amount_of_leisure_trips: int = int(
-            random_generator.choice(
-                possible_amounts_leisure_trips, p=amount_probabilities
-            )
-        )
-        if amount_of_leisure_trips > len(day_indices):
-            raise ValueError(
-                f'{amount_of_leisure_trips=} exceeds the number of available '
-                f'leisure weekdays: {len(day_indices)}.'
-            )
-
-        if any(amount < 0 for amount in possible_amounts_leisure_trips):
-            raise ValueError(
-                f'{possible_amounts_leisure_trips=} cannot contain '
-                'negative values.'
-            )
-        leisure_trip_weekday_numbers: list[int] = sorted(
-            int(day_index)
-            for day_index in random_generator.choice(
-                day_indices,
-                size=amount_of_leisure_trips,
-                p=day_weights,
-                replace=False,
-            )
-        )
-
-        return leisure_trip_weekday_numbers
-
-    @staticmethod
-    def draw(
-        *,
-        activity_parameters: Box,
-        random_generator: np.random.Generator,
-        beta_shape: float,
-        time_constants: TimeConstants,
-    ) -> Activities:
-
-        commuting_parameters: Box = activity_parameters.commuting
-        holiday_parameters: Box = activity_parameters.holiday
-        weekend_parameters: Box = activity_parameters.weekend
-        leisure_parameters: Box = activity_parameters.leisure
-
-        commuting_weekday_numbers: list[int] = (
-            Activities.draw_commuting_weekday_numbers(
-                commuting_parameters=commuting_parameters,
-                random_generator=random_generator,
-            )
-        )
-
-        (
-            holiday_trip_week_numbers,
-            commuting_week_numbers,
-            week_indices,
-        ) = Activities.draw_holiday_trip_week_numbers(
-            holiday_parameters=holiday_parameters,
-            random_generator=random_generator,
-            time_constants=time_constants,
-        )
-
-        weekend_trip_week_numbers: list[int] = (
-            Activities.draw_weekend_trip_week_numbers(
-                holiday_trip_week_numbers=holiday_trip_week_numbers,
-                weekend_parameters=weekend_parameters,
-                random_generator=random_generator,
-                beta_shape=beta_shape,
-                week_indices=week_indices,
-            )
-        )
-        leisure_trip_weekday_numbers: list[int] = (
-            Activities.draw_leisure_trip_weekday_numbers(
-                leisure_parameters=leisure_parameters,
-                random_generator=random_generator,
-            )
-        )
-
-        return Activities(
-            commuting_weekday_numbers=commuting_weekday_numbers,
-            holiday_trip_week_numbers=holiday_trip_week_numbers,
-            weekend_trip_week_numbers=weekend_trip_week_numbers,
-            leisure_trip_weekday_numbers=leisure_trip_weekday_numbers,
-            commuting_week_numbers=commuting_week_numbers,
-        )
-
-
-@dataclass
 class User:
     ID: uuid.UUID
     vehicle: Vehicle
@@ -1350,19 +635,119 @@ class User:
         return vehicle, locations, legs, trips, activities, charging_behaviour
 
     @staticmethod
+    def get_activity_run_trips(
+        *,
+        activities: Activities,
+        trips: dict[str, Trip],
+        time_ranges: TimeRange,
+        time_constants: TimeConstants,
+    ) -> pl.Series:
+
+        run_trips_df: pl.DataFrame = pl.DataFrame([time_ranges.run_dates])
+        run_trips_df = run_trips_df.with_columns(
+            (pl.col('date').dt.weekday()).alias('Week day'),
+            (pl.col('date').dt.week()).alias('Week number'),
+        )
+        run_trips_df = run_trips_df.with_columns(
+            (
+                pl.when(
+                    pl.col('Week day').is_in(
+                        activities.commuting_weekday_numbers
+                    )
+                    & pl.col('Week number').is_in(
+                        activities.commuting_week_numbers
+                    )
+                )
+                .then(True)
+                .otherwise(False)
+            ).alias('Commute to work')
+        )
+        run_trips_df = run_trips_df.with_columns(
+            (
+                pl.when(
+                    pl.col('Week day').is_in(
+                        activities.leisure_trip_weekday_numbers
+                    )
+                )
+                .then(True)
+                .otherwise(False)
+            ).alias('Possible leisure trip')
+        )
+
+        run_trips_df = run_trips_df.with_columns(
+            (
+                pl.when(
+                    pl.col('Week day').is_in(
+                        time_constants.weekend_day_numbers
+                    )
+                    & pl.col('Week number').is_in(
+                        activities.holiday_trip_week_before_numbers
+                    )
+                )
+                .then(True)
+                .otherwise(False)
+            ).alias('Holiday outward weekend'),
+            (
+                pl.when(
+                    pl.col('Week day').is_in(
+                        time_constants.weekend_day_numbers
+                    )
+                    & pl.col('Week number').is_in(
+                        activities.holiday_trip_week_numbers
+                    )
+                )
+                .then(True)
+                .otherwise(False)
+            ).alias('Holiday back weekend'),
+        )
+        run_trips_df = run_trips_df.with_columns(
+            (
+                pl.when(
+                    pl.col('Week day').is_in(
+                        time_constants.weekend_day_numbers
+                    )
+                    & pl.col('Week number').is_in(
+                        activities.weekend_trip_week_numbers
+                    )
+                )
+                .then(True)
+                .otherwise(False)
+            ).alias('Weekend trip'),
+        )
+        run_trips_df = run_trips_df.with_columns(
+            pl.lit('Mazinger').alias('trip_name')
+        )
+        # SKip leisure on compting weekends? To avoid Sat/SUn issue but maybe feasible)
+        # for each WE HOLIDAY trip, draw weekday (in WE) with a proportion in TOML. If both are leisure, this wins
+        # If only one is leisure, leisure wins
+        # Then add that too logic here.
+        # Also ste base (home most o fthe time, hliday on holiday weeks)
+        # Maybe drop base concept altogehter and just have a hliday week check to get leisure on holiday
+        # NO! Base is needed for MObility Matrix
+        # Then chain tests Holiday then WE theh Coomute and Leisure together Rest isstay put
+        # print(run_trips_df)
+        # exit()
+        return run_trips_df['trip_name']
+
+    @staticmethod
     def get_run_trips(
         *,
         activities: Activities | None,
         trips: dict[str, Trip],
         time_ranges: TimeRange,
+        time_constants: TimeConstants,
     ) -> pl.Series:
         '''
         Tells us which trip occurs on each day of our run.
         '''
         if activities is not None:
-            run_trips: pl.Series = pl.Series(
-                name='trip_name', values=[], dtype=pl.String
+            run_trips: pl.Series = User.get_activity_run_trips(
+                activities=activities,
+                trips=trips,
+                time_ranges=time_ranges,
+                time_constants=time_constants,
             )
+
         else:
             possible_day_types: set[str] = set(
                 time_ranges.day_types.unique().to_list()
@@ -1380,11 +765,11 @@ class User:
             run_trips = time_ranges.day_types.rename('trip_name')
             # Trips and day types have the same names, by convention
 
-        # if len(run_trips) != len(time_ranges.run_dates):
-        #     raise ValueError(
-        #         f'{len(run_trips)=} does not match '
-        #         f'{len(time_ranges.run_dates)=}.'
-        #     )
+        if len(run_trips) != len(time_ranges.run_dates):
+            raise ValueError(
+                f'{len(run_trips)=} does not match '
+                f'{len(time_ranges.run_dates)=}.'
+            )
 
         return run_trips
 
@@ -1406,7 +791,10 @@ class User:
             )
         )
         run_trips: pl.Series = User.get_run_trips(
-            activities=activities, trips=trips, time_ranges=time_ranges
+            activities=activities,
+            trips=trips,
+            time_ranges=time_ranges,
+            time_constants=time_constants,
         )
 
         # Create empties
