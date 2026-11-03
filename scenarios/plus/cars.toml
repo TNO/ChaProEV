@@ -557,7 +557,9 @@ possible_amounts_of_holiday_trips = [0, 1, 2, 3]
 holiday_trips_probabilities = [0.2, 0.7, 0.08, 0.02]
 increase_factor_holiday_trip_in_holiday_weeks = 4.2
 [activity_parameters.weekend]
-
+amounts_of_weekend_trips_min = 0
+amounts_of_weekend_trips_typical = 12
+amounts_of_weekend_trips_max = 36
 
 
 

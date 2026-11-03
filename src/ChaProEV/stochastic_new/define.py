@@ -769,7 +769,6 @@ class Activities:
     holiday_trip_week_numbers: list[int]
     weekend_trip_week_numbers: list[int]
     leisure_trip_weekday_numbers: list[int]
-
     commuting_week_numbers: list[int]
 
     @staticmethod
@@ -872,7 +871,7 @@ class Activities:
         holiday_parameters: Box,
         random_generator: np.random.Generator,
         time_constants: TimeConstants,
-    ) -> tuple[list[int], list[int]]:
+    ) -> tuple[list[int], list[int], list[int]]:
 
         week_indices: list[int] = list(
             range(
@@ -1017,9 +1016,16 @@ class Activities:
 
             holiday_trips_probabilities_per_week: list[float] = [
                 (
-                    increase_factor_holiday_trip_in_holiday_weeks
-                    if week_index in time_constants.holiday_weeks
-                    else 1.0
+                    0.0
+                    if week_index == time_constants.first_week_index
+                    # We want to avoid holiday trips in the first week
+                    # of the year, as the journey outward might be in the
+                    # year before.
+                    else (
+                        increase_factor_holiday_trip_in_holiday_weeks
+                        if week_index in time_constants.holiday_weeks
+                        else 1.0
+                    )
                 )
                 for week_index in non_working_week_indices
             ]
@@ -1044,6 +1050,7 @@ class Activities:
         return (
             holiday_trip_week_numbers,
             commuting_week_numbers,
+            week_indices,
         )
 
     @staticmethod
@@ -1052,10 +1059,66 @@ class Activities:
         holiday_trip_week_numbers: list[int],
         weekend_parameters: Box,
         random_generator: np.random.Generator,
+        beta_shape: float,
         time_constants: TimeConstants,
+        week_indices: list[int],
     ) -> list[int]:
 
-        weekend_trip_week_numbers: list[int] = []
+        amounts_of_weekend_trips_min: float = (
+            weekend_parameters.amounts_of_weekend_trips_min
+        )
+        amounts_of_weekend_trips_typical: float = (
+            weekend_parameters.amounts_of_weekend_trips_typical
+        )
+        amounts_of_weekend_trips_max: float = (
+            weekend_parameters.amounts_of_weekend_trips_max
+        )
+
+        if amounts_of_weekend_trips_min < 0:
+            raise ValueError(f'{amounts_of_weekend_trips_min=} must be >=0.')
+
+        amounts_of_weekend_trips: int = round(
+            draw_beta_value(
+                minimum=amounts_of_weekend_trips_min,
+                typical=amounts_of_weekend_trips_typical,
+                maximum=amounts_of_weekend_trips_max,
+                random_generator=random_generator,
+                shape=beta_shape,
+            )
+        )
+        holiday_trip_week_before_numbers: list[int] = [
+            week_number - 1 for week_number in holiday_trip_week_numbers
+        ]
+        weeks_without_a_weekend_trip: list[int] = sorted(
+            list(
+                set(
+                    holiday_trip_week_numbers
+                    + holiday_trip_week_before_numbers
+                )
+            )
+        )
+        if amounts_of_weekend_trips > (
+            len(week_indices) - len(weeks_without_a_weekend_trip)
+        ):
+            raise ValueError(
+                f'There are not enough weeks for {amounts_of_weekend_trips=}.'
+                f'You either have too many of these, of too many '
+                f'{holiday_trip_week_numbers=}.'
+            )
+        possible_weekend_trip_week_numbers: list[int] = [
+            week_number
+            for week_number in week_indices
+            if week_number not in weeks_without_a_weekend_trip
+        ]
+
+        weekend_trip_week_numbers: list[int] = sorted(
+            int(week_number)
+            for week_number in random_generator.choice(
+                possible_weekend_trip_week_numbers,
+                size=amounts_of_weekend_trips,
+                replace=False,
+            )
+        )
 
         return weekend_trip_week_numbers
 
@@ -1077,6 +1140,7 @@ class Activities:
         *,
         activity_parameters: Box,
         random_generator: np.random.Generator,
+        beta_shape: float,
         time_constants: TimeConstants,
     ) -> Activities:
 
@@ -1095,6 +1159,7 @@ class Activities:
         (
             holiday_trip_week_numbers,
             commuting_week_numbers,
+            week_indices,
         ) = Activities.draw_holiday_trip_week_numbers(
             holiday_parameters=holiday_parameters,
             random_generator=random_generator,
@@ -1106,7 +1171,9 @@ class Activities:
                 holiday_trip_week_numbers=holiday_trip_week_numbers,
                 weekend_parameters=weekend_parameters,
                 random_generator=random_generator,
+                beta_shape=beta_shape,
                 time_constants=time_constants,
+                week_indices=week_indices,
             )
         )
         leisure_trip_weekday_numbers: list[int] = (
@@ -1214,6 +1281,7 @@ class User:
             activities = Activities.draw(
                 activity_parameters=activity_parameters,
                 random_generator=random_generator,
+                beta_shape=beta_shape,
                 time_constants=time_constants,
             )
 
