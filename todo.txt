@@ -16,6 +16,9 @@ print('[magenta]Add repetitions stuff') in Trip.get_leg_info
 
 One conceptual note about week 53
 
+
+Also issues with multi-year runs
+
 You currently construct:
 
 Python

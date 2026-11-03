@@ -651,11 +651,11 @@ class User:
                 run_date
                 for run_date in run_dates
                 if (run_date.isoweekday() == weekday)
-                and (run_date.isocalendar()[1] == week)
+                and (run_date.isocalendar().week == week)
             ]
             trip_dates += this_trip_dates
 
-        return trip_dates
+        return sorted(trip_dates)
 
     @staticmethod
     def get_away_dates(
@@ -712,7 +712,8 @@ class User:
         # Then working days
         if (
             run_date.isoweekday() in activities.commuting_weekday_numbers
-            and run_date.isocalendar()[1] in activities.commuting_week_numbers
+            and run_date.isocalendar().week
+            in activities.commuting_week_numbers
         ):
             if (
                 run_date.isoweekday()
@@ -727,6 +728,27 @@ class User:
                 work_and_leisure_trip_split: list[float] = (
                     activity_trip_settings.work_and_leisure_trip_split
                 )
+
+                if len(work_and_leisure_trips) != len(
+                    work_and_leisure_trip_split
+                ):
+                    raise ValueError(
+                        f'{work_and_leisure_trips=} and '
+                        f'{work_and_leisure_trip_split=} must have the '
+                        'same length.'
+                    )
+
+                if any(
+                    probability < 0
+                    for probability in work_and_leisure_trip_split
+                ) or not np.isclose(
+                    sum(work_and_leisure_trip_split),
+                    1.0,
+                ):
+                    raise ValueError(
+                        f'{work_and_leisure_trip_split=} must be non-negative '
+                        'and sum to 1.0.'
+                    )
                 chosen_combined_trip: str = random_generator.choice(
                     work_and_leisure_trips, p=work_and_leisure_trip_split
                 )
@@ -794,7 +816,6 @@ class User:
         activities: Activities | None,
         trips: dict[str, Trip],
         time_ranges: TimeRange,
-        time_constants: TimeConstants,
         scenario: Box,
         random_generator: np.random.Generator,
     ) -> pl.Series:
@@ -832,6 +853,23 @@ class User:
                 f'{len(time_ranges.run_dates)=}.'
             )
 
+        if len(run_trips) != len(time_ranges.run_dates):
+            raise ValueError(
+                f'{len(run_trips)=} does not match '
+                f'{len(time_ranges.run_dates)=}.'
+            )
+
+        selected_trip_names: set[str] = set(run_trips.unique().to_list())
+        trip_names: set[str] = set(trips)
+
+        missing_trip_names: set[str] = selected_trip_names - trip_names
+
+        if missing_trip_names:
+            raise ValueError(
+                f'{missing_trip_names=} occur in run_trips but are not '
+                'defined in scenario.trips.'
+            )
+
         return run_trips
 
     @staticmethod
@@ -855,7 +893,6 @@ class User:
             activities=activities,
             trips=trips,
             time_ranges=time_ranges,
-            time_constants=time_constants,
             scenario=scenario,
             random_generator=random_generator,
         )
