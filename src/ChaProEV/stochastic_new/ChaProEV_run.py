@@ -40,13 +40,7 @@ def run_scenario(scenario: Box) -> None:
     )
     for user in users_pool:
         print(user.ID)
-        print(user.activities.commuting_weekday_numbers)
-        print(user.activities.leisure_trip_weekday_numbers)
-        print(user.activities.holiday_trip_week_numbers)
-        print(user.activities.weekday_occurrences_holiday_trips_outward)
-        print(user.activities.weekday_occurrences_holiday_trips_back)
-        print(user.activities.weekend_trip_week_numbers)
-        print(user.activities.weekday_occurrences_weekend_trips)
+        # print(user.run_trips)
 
 
 @cook.function_timer

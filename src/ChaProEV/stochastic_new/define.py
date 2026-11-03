@@ -1,7 +1,7 @@
 import pickle
 import uuid
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -635,99 +635,158 @@ class User:
         return vehicle, locations, legs, trips, activities, charging_behaviour
 
     @staticmethod
+    def get_trip_dates_set_trips(
+        *,
+        run_dates: list[date],
+        weekday_numbers: list[int],
+        week_numbers: list[int],
+    ) -> list[date]:
+
+        trip_dates: list[date] = []
+        for (
+            weekday,
+            week,
+        ) in zip(weekday_numbers, week_numbers, strict=True):
+            this_trip_dates: list[date] = [
+                run_date
+                for run_date in run_dates
+                if (run_date.isoweekday() == weekday)
+                and (run_date.isocalendar()[1] == week)
+            ]
+            trip_dates += this_trip_dates
+
+        return trip_dates
+
+    @staticmethod
+    def get_away_dates(
+        run_dates: list[date],
+        holiday_outward_trip_dates: list[date],
+        holiday_back_trip_dates: list[date],
+    ) -> list[date]:
+        away_dates: list[date] = []
+        for (
+            outward_date,
+            back_date,
+        ) in zip(
+            holiday_outward_trip_dates, holiday_back_trip_dates, strict=True
+        ):
+            this_trip_away_dates: list[date] = [
+                run_date
+                for run_date in run_dates
+                if outward_date < run_date < back_date
+            ]
+            away_dates += this_trip_away_dates
+        return away_dates
+
+    @staticmethod
+    def get_trip_from_date(
+        *,
+        run_date: date,
+        activities: Activities,
+        holiday_outward_trip_dates: list[date],
+        holiday_back_trip_dates: list[date],
+        weekend_trip_dates: list[date],
+        away_dates: list[date],
+        activity_trip_settings: Box,
+        random_generator: np.random.Generator,
+    ) -> str:
+
+        # Start with trips that have dates already
+        if run_date in holiday_outward_trip_dates:
+            return activity_trip_settings.holiday_outward_trip
+        if run_date in holiday_back_trip_dates:
+            return activity_trip_settings.holiday_back_trip
+        if run_date in weekend_trip_dates:
+            return activity_trip_settings.weekend_trip
+
+        # Then trips in days away/on holiday
+        if run_date in away_dates:
+            if (
+                run_date.isoweekday()
+                in activities.leisure_trip_weekday_numbers
+            ):
+                return activity_trip_settings.away_leisure_trip
+            else:
+                return activity_trip_settings.default_trip_away
+
+        # Then working days
+        if (
+            run_date.isoweekday() in activities.commuting_weekday_numbers
+            and run_date.isocalendar()[1] in activities.commuting_week_numbers
+        ):
+            if (
+                run_date.isoweekday()
+                not in activities.leisure_trip_weekday_numbers
+            ):
+                return activity_trip_settings.work_only_trip
+            else:
+                # Work and leisure
+                work_and_leisure_trips: list[str] = (
+                    activity_trip_settings.work_and_leisure_trips
+                )
+                work_and_leisure_trip_split: list[float] = (
+                    activity_trip_settings.work_and_leisure_trip_split
+                )
+                chosen_combined_trip: str = random_generator.choice(
+                    work_and_leisure_trips, p=work_and_leisure_trip_split
+                )
+                return chosen_combined_trip
+
+        if run_date.isoweekday() in activities.leisure_trip_weekday_numbers:
+            return activity_trip_settings.leisure_only_at_home_trip
+
+        return activity_trip_settings.default_trip
+
+    @staticmethod
     def get_activity_run_trips(
         *,
         activities: Activities,
-        trips: dict[str, Trip],
         time_ranges: TimeRange,
-        time_constants: TimeConstants,
+        activity_trip_settings: Box,
+        random_generator: np.random.Generator,
     ) -> pl.Series:
 
-        run_trips_df: pl.DataFrame = pl.DataFrame([time_ranges.run_dates])
-        run_trips_df = run_trips_df.with_columns(
-            (pl.col('date').dt.weekday()).alias('Week day'),
-            (pl.col('date').dt.week()).alias('Week number'),
-        )
-        run_trips_df = run_trips_df.with_columns(
-            (
-                pl.when(
-                    pl.col('Week day').is_in(
-                        activities.commuting_weekday_numbers
-                    )
-                    & pl.col('Week number').is_in(
-                        activities.commuting_week_numbers
-                    )
-                )
-                .then(True)
-                .otherwise(False)
-            ).alias('Commute to work')
-        )
-        run_trips_df = run_trips_df.with_columns(
-            (
-                pl.when(
-                    pl.col('Week day').is_in(
-                        activities.leisure_trip_weekday_numbers
-                    )
-                )
-                .then(True)
-                .otherwise(False)
-            ).alias('Possible leisure trip')
+        run_dates: list[date] = list(time_ranges.run_dates)
+        holiday_outward_trip_dates: list[date] = User.get_trip_dates_set_trips(
+            run_dates=run_dates,
+            week_numbers=activities.holiday_trip_week_before_numbers,
+            weekday_numbers=(
+                activities.weekday_occurrences_holiday_trips_outward
+            ),
         )
 
-        run_trips_df = run_trips_df.with_columns(
-            (
-                pl.when(
-                    pl.col('Week day').is_in(
-                        time_constants.weekend_day_numbers
-                    )
-                    & pl.col('Week number').is_in(
-                        activities.holiday_trip_week_before_numbers
-                    )
-                )
-                .then(True)
-                .otherwise(False)
-            ).alias('Holiday outward weekend'),
-            (
-                pl.when(
-                    pl.col('Week day').is_in(
-                        time_constants.weekend_day_numbers
-                    )
-                    & pl.col('Week number').is_in(
-                        activities.holiday_trip_week_numbers
-                    )
-                )
-                .then(True)
-                .otherwise(False)
-            ).alias('Holiday back weekend'),
+        holiday_back_trip_dates: list[date] = User.get_trip_dates_set_trips(
+            run_dates=run_dates,
+            week_numbers=activities.holiday_trip_week_numbers,
+            weekday_numbers=activities.weekday_occurrences_holiday_trips_back,
         )
-        run_trips_df = run_trips_df.with_columns(
-            (
-                pl.when(
-                    pl.col('Week day').is_in(
-                        time_constants.weekend_day_numbers
-                    )
-                    & pl.col('Week number').is_in(
-                        activities.weekend_trip_week_numbers
-                    )
-                )
-                .then(True)
-                .otherwise(False)
-            ).alias('Weekend trip'),
+
+        weekend_trip_dates: list[date] = User.get_trip_dates_set_trips(
+            run_dates=run_dates,
+            week_numbers=activities.weekend_trip_week_numbers,
+            weekday_numbers=activities.weekday_occurrences_weekend_trips,
         )
-        run_trips_df = run_trips_df.with_columns(
-            pl.lit('Mazinger').alias('trip_name')
+        away_dates: list[date] = User.get_away_dates(
+            run_dates=run_dates,
+            holiday_outward_trip_dates=holiday_outward_trip_dates,
+            holiday_back_trip_dates=holiday_back_trip_dates,
         )
-        # SKip leisure on compting weekends? To avoid Sat/SUn issue but maybe feasible)
-        # for each WE HOLIDAY trip, draw weekday (in WE) with a proportion in TOML. If both are leisure, this wins
-        # If only one is leisure, leisure wins
-        # Then add that too logic here.
-        # Also ste base (home most o fthe time, hliday on holiday weeks)
-        # Maybe drop base concept altogehter and just have a hliday week check to get leisure on holiday
-        # NO! Base is needed for MObility Matrix
-        # Then chain tests Holiday then WE theh Coomute and Leisure together Rest isstay put
-        # print(run_trips_df)
-        # exit()
-        return run_trips_df['trip_name']
+
+        run_trip_list: list[str] = [
+            User.get_trip_from_date(
+                run_date=run_date,
+                activities=activities,
+                holiday_outward_trip_dates=holiday_outward_trip_dates,
+                holiday_back_trip_dates=holiday_back_trip_dates,
+                weekend_trip_dates=weekend_trip_dates,
+                away_dates=away_dates,
+                activity_trip_settings=activity_trip_settings,
+                random_generator=random_generator,
+            )
+            for run_date in run_dates
+        ]
+        run_trips: pl.Series = pl.Series('trip_name', run_trip_list)
+        return run_trips
 
     @staticmethod
     def get_run_trips(
@@ -736,6 +795,8 @@ class User:
         trips: dict[str, Trip],
         time_ranges: TimeRange,
         time_constants: TimeConstants,
+        scenario: Box,
+        random_generator: np.random.Generator,
     ) -> pl.Series:
         '''
         Tells us which trip occurs on each day of our run.
@@ -743,9 +804,9 @@ class User:
         if activities is not None:
             run_trips: pl.Series = User.get_activity_run_trips(
                 activities=activities,
-                trips=trips,
                 time_ranges=time_ranges,
-                time_constants=time_constants,
+                activity_trip_settings=scenario.activity_parameters.trips,
+                random_generator=random_generator,
             )
 
         else:
@@ -795,6 +856,8 @@ class User:
             trips=trips,
             time_ranges=time_ranges,
             time_constants=time_constants,
+            scenario=scenario,
+            random_generator=random_generator,
         )
 
         # Create empties

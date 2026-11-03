@@ -282,11 +282,27 @@ start_time_hours_max = 9.0
 
 
 
-[trips.commute_to_work_and_leisure]
+[trips.commute_to_work_and_leisure_lunch]
 start_base = 'home'
 end_base = 'home'
 legs = ['go_to_work','work_to_leisure', 'leisure_to_work', 'come_from_work']
 time_between_legs_hours = [3, 2, 4]
+# This is the time spent at each interim location (same units as used
+# general
+percentage_station_users = 0
+repeated_sequence = []
+repetition_amounts = [0]
+time_between_repetitions_hours = [0]
+start_time_hours_min = 6.5
+start_time_hours_typical = 8.0
+start_time_hours_max = 9.0
+
+
+[trips.commute_to_work_and_leisure_evening]
+start_base = 'home'
+end_base = 'home'
+legs = ['go_to_work', 'come_from_work', 'home_to_leisure', 'leisure_to_home']
+time_between_legs_hours = [9, 3, 2]
 # This is the time spent at each interim location (same units as used
 # general
 percentage_station_users = 0
@@ -418,6 +434,7 @@ start_time_hours_max = 9.0
 
 
 [users]
+
 users_pool_size = 12
 read_from_file = false
 pickle_users_pool = true
@@ -517,6 +534,17 @@ number_of_holiday_weeks = 10
 
 
 [activity_parameters]
+[activity_parameters.trips]
+default_trip = 'stay_put_home'
+default_trip_away = 'stay_put_holiday'
+holiday_outward_trip = 'holiday_outward'
+holiday_back_trip = 'holiday_back'
+weekend_trip = 'weekend_trip'
+work_only_trip = 'commute_to_work'
+leisure_only_at_home_trip = 'leisure_only'
+away_leisure_trip  = 'holiday_leisure_trip'
+work_and_leisure_trips = ['commute_to_work_and_leisure_lunch', 'commute_to_work_and_leisure_evening']
+work_and_leisure_trip_split = [0.2, 0.8]
 [activity_parameters.commuting]
 commute_days_indices = [1, 2, 3, 4, 5]
 weekday_commute_factor = [0.07, 0.4, 0.1, 0.4, 0.03] # Adds up to one. 
