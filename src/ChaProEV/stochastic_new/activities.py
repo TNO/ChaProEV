@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from datetime import date
 
 import numpy as np
 from box import Box
 
 from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
-from ChaProEV.stochastic_new.time import TimeConstants
+from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
 
 @dataclass
@@ -26,6 +27,10 @@ class Activities:
     weekday_occurrences_holiday_trips_outward: list[int]
     weekday_occurrences_holiday_trips_back: list[int]
     weekday_occurrences_weekend_trips: list[int]
+    holiday_outward_trip_dates: list[date]
+    holiday_back_trip_dates: list[date]
+    weekend_trip_dates: list[date]
+    away_dates: list[date]
 
     @staticmethod
     def draw_commuting_weekday_numbers(
@@ -630,12 +635,57 @@ class Activities:
         return weekday_occurrences
 
     @staticmethod
+    def get_trip_dates_set_trips(
+        *,
+        run_dates: list[date],
+        weekday_numbers: list[int],
+        week_numbers: list[int],
+    ) -> list[date]:
+
+        trip_dates: list[date] = []
+        for (
+            weekday,
+            week,
+        ) in zip(weekday_numbers, week_numbers, strict=True):
+            this_trip_dates: list[date] = [
+                run_date
+                for run_date in run_dates
+                if (run_date.isoweekday() == weekday)
+                and (run_date.isocalendar().week == week)
+            ]
+            trip_dates += this_trip_dates
+
+        return sorted(trip_dates)
+
+    @staticmethod
+    def get_away_dates(
+        run_dates: list[date],
+        holiday_outward_trip_dates: list[date],
+        holiday_back_trip_dates: list[date],
+    ) -> list[date]:
+        away_dates: list[date] = []
+        for (
+            outward_date,
+            back_date,
+        ) in zip(
+            holiday_outward_trip_dates, holiday_back_trip_dates, strict=True
+        ):
+            this_trip_away_dates: list[date] = [
+                run_date
+                for run_date in run_dates
+                if outward_date < run_date < back_date
+            ]
+            away_dates += this_trip_away_dates
+        return away_dates
+
+    @staticmethod
     def draw(
         *,
         activity_parameters: Box,
         random_generator: np.random.Generator,
         beta_shape: float,
         time_constants: TimeConstants,
+        time_ranges: TimeRange,
     ) -> Activities:
 
         commuting_parameters: Box = activity_parameters.commuting
@@ -717,6 +767,33 @@ class Activities:
                 random_generator=random_generator,
             )
         )
+        run_dates: list[date] = list(time_ranges.run_dates)
+        holiday_outward_trip_dates: list[date] = (
+            Activities.get_trip_dates_set_trips(
+                run_dates=run_dates,
+                week_numbers=holiday_trip_week_before_numbers,
+                weekday_numbers=(weekday_occurrences_holiday_trips_outward),
+            )
+        )
+
+        holiday_back_trip_dates: list[date] = (
+            Activities.get_trip_dates_set_trips(
+                run_dates=run_dates,
+                week_numbers=holiday_trip_week_numbers,
+                weekday_numbers=weekday_occurrences_holiday_trips_back,
+            )
+        )
+
+        weekend_trip_dates: list[date] = Activities.get_trip_dates_set_trips(
+            run_dates=run_dates,
+            week_numbers=weekend_trip_week_numbers,
+            weekday_numbers=weekday_occurrences_weekend_trips,
+        )
+        away_dates: list[date] = Activities.get_away_dates(
+            run_dates=run_dates,
+            holiday_outward_trip_dates=holiday_outward_trip_dates,
+            holiday_back_trip_dates=holiday_back_trip_dates,
+        )
 
         return Activities(
             commuting_weekday_numbers=commuting_weekday_numbers,
@@ -734,4 +811,8 @@ class Activities:
             weekday_occurrences_weekend_trips=(
                 weekday_occurrences_weekend_trips
             ),
+            holiday_outward_trip_dates=holiday_outward_trip_dates,
+            holiday_back_trip_dates=holiday_back_trip_dates,
+            weekend_trip_dates=weekend_trip_dates,
+            away_dates=away_dates,
         )

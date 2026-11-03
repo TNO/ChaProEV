@@ -1,7 +1,7 @@
 import pickle
 import uuid
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -19,7 +19,6 @@ class Vehicle:
     consumption_kWh_km: float
     battery_size_kWh: float
     has_one_trip_per_day_type: bool
-    bases: list[str]
     driving_location_name: str
 
     @staticmethod
@@ -34,7 +33,6 @@ class Vehicle:
             vehicle_settings.has_one_trip_per_day_type
         )
         driving_location_name: str = vehicle_settings.driving_location_name
-        bases: list[str] = vehicle_settings.bases
 
         consumption_kWh_km_min: float = vehicle_settings.consumption_kWh_km_min
         consumption_kWh_km_typical: float = (
@@ -76,7 +74,6 @@ class Vehicle:
             consumption_kWh_km=consumption_kWh_km,
             battery_size_kWh=battery_size_kWh,
             has_one_trip_per_day_type=has_one_trip_per_day_type,
-            bases=bases,
             driving_location_name=driving_location_name,
         )
 
@@ -544,7 +541,7 @@ class User:
     trips: dict[str, Trip]
     activities: Activities | None
     run_trips: pl.Series
-    # mobility: pl.DataFrame <-because computing
+    mobility: pl.DataFrame
     charging_behaviour: ChargingBehaviour
     # charge: pl.DataFrame <- because computing in prev version,
     # using it to store the sum, but we can do it by summing the DFs we keep
@@ -562,6 +559,7 @@ class User:
         scenario: Box,
         random_generator: np.random.Generator,
         time_constants: TimeConstants,
+        time_ranges: TimeRange,
     ) -> tuple[
         Vehicle,
         dict[str, Location],
@@ -624,6 +622,7 @@ class User:
                 random_generator=random_generator,
                 beta_shape=beta_shape,
                 time_constants=time_constants,
+                time_ranges=time_ranges,
             )
 
         charging_behaviour_parameters: Box = scenario.charging_behaviour
@@ -635,72 +634,24 @@ class User:
         return vehicle, locations, legs, trips, activities, charging_behaviour
 
     @staticmethod
-    def get_trip_dates_set_trips(
-        *,
-        run_dates: list[date],
-        weekday_numbers: list[int],
-        week_numbers: list[int],
-    ) -> list[date]:
-
-        trip_dates: list[date] = []
-        for (
-            weekday,
-            week,
-        ) in zip(weekday_numbers, week_numbers, strict=True):
-            this_trip_dates: list[date] = [
-                run_date
-                for run_date in run_dates
-                if (run_date.isoweekday() == weekday)
-                and (run_date.isocalendar().week == week)
-            ]
-            trip_dates += this_trip_dates
-
-        return sorted(trip_dates)
-
-    @staticmethod
-    def get_away_dates(
-        run_dates: list[date],
-        holiday_outward_trip_dates: list[date],
-        holiday_back_trip_dates: list[date],
-    ) -> list[date]:
-        away_dates: list[date] = []
-        for (
-            outward_date,
-            back_date,
-        ) in zip(
-            holiday_outward_trip_dates, holiday_back_trip_dates, strict=True
-        ):
-            this_trip_away_dates: list[date] = [
-                run_date
-                for run_date in run_dates
-                if outward_date < run_date < back_date
-            ]
-            away_dates += this_trip_away_dates
-        return away_dates
-
-    @staticmethod
     def get_trip_from_date(
         *,
         run_date: date,
         activities: Activities,
-        holiday_outward_trip_dates: list[date],
-        holiday_back_trip_dates: list[date],
-        weekend_trip_dates: list[date],
-        away_dates: list[date],
         activity_trip_settings: Box,
         random_generator: np.random.Generator,
     ) -> str:
 
         # Start with trips that have dates already
-        if run_date in holiday_outward_trip_dates:
+        if run_date in activities.holiday_outward_trip_dates:
             return activity_trip_settings.holiday_outward_trip
-        if run_date in holiday_back_trip_dates:
+        if run_date in activities.holiday_back_trip_dates:
             return activity_trip_settings.holiday_back_trip
-        if run_date in weekend_trip_dates:
+        if run_date in activities.weekend_trip_dates:
             return activity_trip_settings.weekend_trip
 
         # Then trips in days away/on holiday
-        if run_date in away_dates:
+        if run_date in activities.away_dates:
             if (
                 run_date.isoweekday()
                 in activities.leisure_trip_weekday_numbers
@@ -769,39 +720,11 @@ class User:
     ) -> pl.Series:
 
         run_dates: list[date] = list(time_ranges.run_dates)
-        holiday_outward_trip_dates: list[date] = User.get_trip_dates_set_trips(
-            run_dates=run_dates,
-            week_numbers=activities.holiday_trip_week_before_numbers,
-            weekday_numbers=(
-                activities.weekday_occurrences_holiday_trips_outward
-            ),
-        )
-
-        holiday_back_trip_dates: list[date] = User.get_trip_dates_set_trips(
-            run_dates=run_dates,
-            week_numbers=activities.holiday_trip_week_numbers,
-            weekday_numbers=activities.weekday_occurrences_holiday_trips_back,
-        )
-
-        weekend_trip_dates: list[date] = User.get_trip_dates_set_trips(
-            run_dates=run_dates,
-            week_numbers=activities.weekend_trip_week_numbers,
-            weekday_numbers=activities.weekday_occurrences_weekend_trips,
-        )
-        away_dates: list[date] = User.get_away_dates(
-            run_dates=run_dates,
-            holiday_outward_trip_dates=holiday_outward_trip_dates,
-            holiday_back_trip_dates=holiday_back_trip_dates,
-        )
 
         run_trip_list: list[str] = [
             User.get_trip_from_date(
                 run_date=run_date,
                 activities=activities,
-                holiday_outward_trip_dates=holiday_outward_trip_dates,
-                holiday_back_trip_dates=holiday_back_trip_dates,
-                weekend_trip_dates=weekend_trip_dates,
-                away_dates=away_dates,
                 activity_trip_settings=activity_trip_settings,
                 random_generator=random_generator,
             )
@@ -853,12 +776,6 @@ class User:
                 f'{len(time_ranges.run_dates)=}.'
             )
 
-        if len(run_trips) != len(time_ranges.run_dates):
-            raise ValueError(
-                f'{len(run_trips)=} does not match '
-                f'{len(time_ranges.run_dates)=}.'
-            )
-
         selected_trip_names: set[str] = set(run_trips.unique().to_list())
         trip_names: set[str] = set(trips)
 
@@ -871,6 +788,233 @@ class User:
             )
 
         return run_trips
+
+    @staticmethod
+    def create_trip_step_record(
+        *,
+        trip_date: date,
+        trip_step: TripStep,
+        run_time_resolution_hours: float,
+    ) -> dict[str, object]:
+        midnight: datetime = datetime.combine(date=trip_date, time=time.min)
+
+        start_step: int = int(
+            np.floor(trip_step.start_hour / run_time_resolution_hours + 0.5)
+        )
+        # Using floor + 0.5 raather than round to consistently round up instead
+        # of having rounding changingon evenness of value
+        end_step: int = int(
+            np.floor(trip_step.end_hour / run_time_resolution_hours + 0.5)
+        )
+        # Using floor + 0.5 raather than round to consistently round up instead
+        # of having rounding changingon evenness of value
+        number_of_steps: int = max(1, end_step - start_step)
+
+        step_start: datetime = midnight + timedelta(
+            hours=start_step * run_time_resolution_hours
+        )
+        step_end: datetime = midnight + timedelta(
+            hours=(start_step + number_of_steps) * run_time_resolution_hours
+        )
+
+        return {
+            'Step start': step_start,
+            'Step end': step_end,
+            'Location': trip_step.location_name,
+            'Kilometers driven': trip_step.length_kilometers / number_of_steps,
+        }
+
+    @staticmethod
+    def get_mobility_matrix(
+        *,
+        run_trips: pl.Series,
+        time_ranges: TimeRange,
+        mobility_settings: Box,
+        activities: Activities | None,
+        vehicle: Vehicle,
+        time_constants: TimeConstants,
+        trips: dict[str, Trip],
+    ) -> pl.DataFrame:
+        MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
+
+        if time_ranges.frequency_type != 'm':
+            raise ValueError('You need to use minutes for the frequency!')
+        run_frequency_size: int = time_ranges.frequency_size
+        run_time_resolution_hours: float = (
+            run_frequency_size / MINUTES_PER_HOUR
+        )
+
+        time_index_name: str = mobility_settings.time_index_name
+        location_header: str = mobility_settings.location_header
+        driven_header: str = mobility_settings.driven_header
+        consumption_header: str = mobility_settings.consumption_header
+        base: str = mobility_settings.base
+
+        # We initialise the mobility matrix
+        mobility_matrix: pl.DataFrame = time_ranges.run_stamps.to_frame(
+            time_index_name
+        ).with_columns(
+            pl.lit(base).alias(location_header),
+            pl.lit(0.0).alias(driven_header),
+        )
+
+        # We assign the away location to away days and back days
+        # (who start away)
+        if activities is not None:
+            away_location: str = mobility_settings.away_location
+            mobility_matrix = mobility_matrix.with_columns(
+                pl.when(
+                    (pl.col(time_index_name).dt.date()).is_in(
+                        activities.away_dates
+                        + activities.holiday_back_trip_dates
+                    )
+                )
+                .then(pl.lit(away_location))
+                .otherwise(pl.col(location_header))
+                .alias(location_header)
+            )
+        trip_step_records: list[dict[str, object]] = []
+        for trip_date, trip_name in zip(
+            time_ranges.run_dates, run_trips, strict=True
+        ):
+            trip: Trip = trips[trip_name]
+            for step_index, trip_step in enumerate(trip.trip_steps):
+                trip_step_record: dict[str, object] = (
+                    User.create_trip_step_record(
+                        trip_date=trip_date,
+                        trip_step=trip_step,
+                        run_time_resolution_hours=run_time_resolution_hours,
+                    )
+                )
+
+                trip_step_records.append(trip_step_record)
+
+                # We want to manage the case where there is a base change
+                # (only for vehicles that have activities, such as cars)
+                # happens. We want to add a trip step after the last one
+
+                # We check that we went through all the trip steps
+                if step_index == len(trip.trip_steps) - 1:
+                    # We check that there are acivities
+                    if activities is not None:
+                        base_transfer_trips: list[str] = (
+                            mobility_settings.base_transfer_trips
+                        )
+                        transfer_end_locations: list[str] = (
+                            mobility_settings.transfer_end_locations
+                        )
+                        end_location_dict: dict[str, str] = dict(
+                            zip(base_transfer_trips, transfer_end_locations)
+                        )
+                        # We check that it is a base transfer
+                        if trip_name in base_transfer_trips:
+                            end_location: str = end_location_dict[trip_name]
+                            # We check that we haven't crossesd midnight
+                            # (if so, then the location already is given by
+                            # the new base, since we set that when changing the
+                            # location on away and holiday back trips
+
+                            if (
+                                trip_step_record['Step end'].date()
+                                == trip_date
+                            ):
+
+                                extra_trip_step: TripStep = TripStep(
+                                    start_hour=trip_step.end_hour,
+                                    end_hour=24.0,
+                                    location_name=end_location,
+                                    length_kilometers=0.0,
+                                    duration_hours=24.0 - trip_step.end_hour,
+                                    speed_kph=0.0,
+                                )
+                                extra_trip_step_record: dict[str, object] = (
+                                    User.create_trip_step_record(
+                                        trip_date=trip_date,
+                                        trip_step=extra_trip_step,
+                                        run_time_resolution_hours=(
+                                            run_time_resolution_hours
+                                        ),
+                                    )
+                                )
+                                trip_step_records.append(
+                                    extra_trip_step_record
+                                )
+
+        if not trip_step_records:
+            return mobility_matrix
+
+        trip_steps: pl.DataFrame = pl.DataFrame(trip_step_records)
+        trip_step_stamps: pl.DataFrame = (
+            trip_steps.with_columns(
+                pl.datetime_ranges(
+                    start='Step start',
+                    end='Step end',
+                    interval=(
+                        f'{run_frequency_size}{time_ranges.frequency_type}'
+                    ),
+                    closed='left',
+                ).alias(time_index_name)
+            )
+            .explode(time_index_name)
+            .select(time_index_name, location_header, driven_header)
+        )
+
+        duplicate_time_stamps: pl.DataFrame = (
+            trip_step_stamps.group_by(time_index_name)
+            .len()
+            .filter(pl.col('len') > 1)
+        )
+
+        if duplicate_time_stamps.height > 0:
+            raise ValueError(
+                'Multiple trip steps modify the same time stamp.',
+                'You need to resolve overlaps explicitely',
+            )
+
+        mobility_matrix = (
+            mobility_matrix.join(
+                trip_step_stamps,
+                on=time_index_name,
+                how='left',
+                suffix='_trip',
+                # maintain_order='left',
+            )
+            .with_columns(
+                pl.coalesce('Location_trip', location_header).alias(
+                    location_header
+                ),
+                pl.coalesce('Kilometers driven_trip', driven_header).alias(
+                    driven_header
+                ),
+            )
+            .drop(
+                'Location_trip', 'Kilometers driven_trip'
+            )  # .sort(time_index_name)
+        )
+        mobility_matrix = mobility_matrix.with_columns(
+            (pl.col(driven_header) * vehicle.consumption_kWh_km).alias(
+                consumption_header
+            )
+        )
+        mobility_matrix = (
+            mobility_matrix.with_columns(
+                (pl.col(location_header) != pl.col(location_header).shift(1))
+                .fill_null(True)
+                .cum_sum()
+                .alias('location_run_ID')
+            )
+            .with_columns(
+                pl.len().over('location_run_ID').alias('location_run_rows')
+            )
+            .with_columns(
+                (
+                    pl.col('location_run_rows') * run_time_resolution_hours
+                ).alias('Time at location (hours)')
+            )
+            .drop('location_run_ID', 'location_run_rows')
+        )
+
+        return mobility_matrix
 
     @staticmethod
     def create(
@@ -887,6 +1031,7 @@ class User:
                 scenario=scenario,
                 random_generator=random_generator,
                 time_constants=time_constants,
+                time_ranges=time_ranges,
             )
         )
         run_trips: pl.Series = User.get_run_trips(
@@ -896,9 +1041,20 @@ class User:
             scenario=scenario,
             random_generator=random_generator,
         )
+        mobility_settings: Box = scenario.mobility
+
+        mobility: pl.DataFrame = User.get_mobility_matrix(
+            run_trips=run_trips,
+            time_ranges=time_ranges,
+            mobility_settings=mobility_settings,
+            activities=activities,
+            vehicle=vehicle,
+            time_constants=time_constants,
+            trips=trips,
+        )
 
         # Create empties
-        # Compute mobility
+
         # create empty charging and metrics
         return User(
             ID=ID,
@@ -909,6 +1065,7 @@ class User:
             activities=activities,
             run_trips=run_trips,
             charging_behaviour=charging_behaviour,
+            mobility=mobility,
         )
 
 

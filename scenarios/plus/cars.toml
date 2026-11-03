@@ -437,7 +437,7 @@ start_time_hours_max = 9.0
 
 users_pool_size = 12
 read_from_file = false
-pickle_users_pool = true
+pickle_users_pool = false
 
 [monte_carlo]
 use_seed = true
@@ -495,7 +495,7 @@ battery_size_kWh_max = 100.0
 
 has_one_trip_per_day_type = false
 driving_location_name = 'road'
-bases = ['home', 'holiday']
+
 
 [charging_behaviour]
 adaptive_proportion = 0.8 
@@ -602,4 +602,14 @@ weekday_probabilities = [0.5, 0.5]
 
 
 
-
+[mobility]
+time_index_name = 'Time Stamp'
+location_header = 'Location'
+driven_header = 'Kilometers driven'
+consumption_header = 'Consumption (kWh)'
+base = 'home'
+# The below are for cars, who have activities and have an away location.
+# For other vehicles, you can put anything.
+away_location = 'holiday' 
+base_transfer_trips = ['holiday_outward', 'holiday_back']
+transfer_end_locations = ['holiday', 'home']
