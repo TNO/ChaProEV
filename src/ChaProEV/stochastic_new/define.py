@@ -1,6 +1,6 @@
 import pickle
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
@@ -11,6 +11,23 @@ from box import Box
 from ChaProEV.stochastic_new.activities import Activities
 from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
 from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
+
+
+@dataclass
+class RunMetrics:
+    kilometrage: float = 0.0
+    consumption_kWh: float = 0.0
+    purchased_electricity_kWh: float = 0.0
+    charge_spending_eur: float = 0.0
+    electricity_sold_kWh: float = 0.0
+    discharge_income_eur: float = 0.0
+    average_hourly_power_from_network_kW: pl.Series = field(
+        default_factory=lambda: pl.Series(
+            'Average hourly power from network (kW)',
+            [0.0] * 24,
+            dtype=pl.Float64,
+        )
+    )
 
 
 @dataclass
@@ -543,15 +560,8 @@ class User:
     run_trips: pl.Series
     mobility: pl.DataFrame
     charging_behaviour: ChargingBehaviour
-    # charge: pl.DataFrame <- because computing in prev version,
-    # using it to store the sum, but we can do it by summing the DFs we keep
-    # metrics: Metrics
-    # For charge, simply put the schema. Maybe also for mobility,
-    # though the computation of mobility is straightforward,
-    # so maybe set schema as for mobility and then compute?
-    # Do charge compuation and mobility computation
-    # need to be class methods? Probably not for charge.
-    # Metrics set to None. Then assert at the end?
+    charge: pl.DataFrame
+    run_metrics: RunMetrics
 
     @staticmethod
     def draw_characteristics(
@@ -1020,6 +1030,31 @@ class User:
         return mobility_matrix
 
     @staticmethod
+    def create_charging_dataframe(*, time_ranges: TimeRange) -> pl.DataFrame:
+        charging_dataframe = pl.DataFrame(
+            {
+                'Time Stamp': time_ranges.run_stamps,
+            },
+            schema={
+                'Time Stamp': pl.Datetime('us'),
+            },
+        )
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.lit(None, dtype=pl.Float64).alias('Battery charge level (kWh)'),
+            pl.lit(None, dtype=pl.Float64).alias('Power to vehicle (kW)'),
+            pl.lit(None, dtype=pl.Float64).alias(
+                'Power drawn from network (kW)'
+            ),
+            pl.lit(None, dtype=pl.Float64).alias('Charge to vehicle (kWh)'),
+            pl.lit(None, dtype=pl.Float64).alias(
+                'Charge drawn from network (kWh)'
+            ),
+        )
+
+        return charging_dataframe
+
+    @staticmethod
     def create(
         *,
         scenario: Box,
@@ -1056,9 +1091,16 @@ class User:
             trips=trips,
         )
 
-        # Create empties
+        charge: pl.DataFrame = User.create_charging_dataframe(
+            time_ranges=time_ranges
+        )
 
-        # create empty charging and metrics
+        run_metrics: RunMetrics = RunMetrics(
+            kilometrage=mobility[mobility_settings.driven_header].sum(),
+            consumption_kWh=mobility[
+                mobility_settings.consumption_header
+            ].sum(),
+        )
         return User(
             ID=ID,
             vehicle=vehicle,
@@ -1069,6 +1111,8 @@ class User:
             run_trips=run_trips,
             charging_behaviour=charging_behaviour,
             mobility=mobility,
+            charge=charge,
+            run_metrics=run_metrics,
         )
 
 

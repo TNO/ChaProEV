@@ -1,11 +1,76 @@
+from dataclasses import dataclass
 from pathlib import Path
+from statistics import fmean
 
+import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
 from ChaProEV.stochastic_new.define import User, get_users_pool
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
+
+
+@dataclass
+class UsersPoolStatistics:
+    average_kilometrage: float
+    average_consumption_kWh: float
+    average_purchased_electricity_kWh: float
+    average_charge_spending_eur: float
+    average_electricity_sold_kWh: float
+    average_discharge_income_eur: float
+    pool_average_hourly_power_from_network_kW: pl.Series
+
+    @staticmethod
+    def compute(*, users_pool: list[User]) -> UsersPoolStatistics:
+        average_kilometrage: float = fmean(
+            user.run_metrics.kilometrage for user in users_pool
+        )
+
+        average_consumption_kWh: float = fmean(
+            user.run_metrics.consumption_kWh for user in users_pool
+        )
+
+        average_purchased_electricity_kWh: float = fmean(
+            user.run_metrics.purchased_electricity_kWh for user in users_pool
+        )
+        average_charge_spending_eur: float = fmean(
+            user.run_metrics.charge_spending_eur for user in users_pool
+        )
+
+        average_electricity_sold_kWh: float = fmean(
+            user.run_metrics.electricity_sold_kWh for user in users_pool
+        )
+
+        average_discharge_income_eur: float = fmean(
+            user.run_metrics.discharge_income_eur for user in users_pool
+        )
+        pool_average_hourly_power_from_network_kW: pl.Series = (
+            pl.DataFrame(
+                [
+                    user.run_metrics.average_hourly_power_from_network_kW.rename(  # noqa: E501
+                        str(user_index)
+                    )
+                    for user_index, user in enumerate(users_pool)
+                ]
+            )
+            .mean_horizontal()
+            .rename('Average hourly power from network (kW)')
+        )
+
+        return UsersPoolStatistics(
+            average_kilometrage=average_kilometrage,
+            average_consumption_kWh=average_consumption_kWh,
+            average_purchased_electricity_kWh=(
+                average_purchased_electricity_kWh
+            ),
+            average_charge_spending_eur=average_charge_spending_eur,
+            average_electricity_sold_kWh=average_electricity_sold_kWh,
+            average_discharge_income_eur=average_discharge_income_eur,
+            pool_average_hourly_power_from_network_kW=(
+                pool_average_hourly_power_from_network_kW
+            ),
+        )
 
 
 def test_run() -> None:
@@ -38,9 +103,11 @@ def run_scenario(scenario: Box) -> None:
     users_pool: list[User] = get_users_pool(
         scenario=scenario, random_generator=random_generators.define
     )
-    for user in users_pool:
-        print(user.ID)
-        # print(user.run_trips)
+
+    users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
+        users_pool=users_pool
+    )
+    print(users_pool_statistics)
 
 
 @cook.function_timer
