@@ -607,6 +607,7 @@ time_index_name = 'Time Stamp'
 location_header = 'Location'
 driven_header = 'Kilometers driven'
 consumption_header = 'Consumption (kWh)'
+time_at_location_header = 'Time at location (hours)'
 base = 'home'
 # The below are for cars, who have activities and have an away location.
 # For other vehicles, you can put anything.

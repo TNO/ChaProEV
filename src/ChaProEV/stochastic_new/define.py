@@ -848,6 +848,9 @@ class User:
         location_header: str = mobility_settings.location_header
         driven_header: str = mobility_settings.driven_header
         consumption_header: str = mobility_settings.consumption_header
+        time_at_location_header: str = (
+            mobility_settings.time_at_location_header
+        )
         base: str = mobility_settings.base
 
         # We initialise the mobility matrix
@@ -1009,7 +1012,7 @@ class User:
             .with_columns(
                 (
                     pl.col('location_run_rows') * run_time_resolution_hours
-                ).alias('Time at location (hours)')
+                ).alias(time_at_location_header)
             )
             .drop('location_run_ID', 'location_run_rows')
         )
