@@ -1060,7 +1060,6 @@ class Activities:
         weekend_parameters: Box,
         random_generator: np.random.Generator,
         beta_shape: float,
-        time_constants: TimeConstants,
         week_indices: list[int],
     ) -> list[int]:
 
@@ -1125,15 +1124,75 @@ class Activities:
     @staticmethod
     def draw_leisure_trip_weekday_numbers(
         *,
-        weekend_trip_week_numbers: list[int],
         leisure_parameters: Box,
         random_generator: np.random.Generator,
-        time_constants: TimeConstants,
     ) -> list[int]:
+        '''
+        Draws on which week days leisure trips occur.
+        Note that if there are two such trips on a weekend where either
+        a holiday trip or a weekend trip occur, then one of the two leisure
+        trips will be overwritten. Also note that if one leisure trip
+        occurs on such a weekend, it takes precedence and forces the weekend
+        trip or the holiday trip to be on the other weekend day.
+        '''
 
-        leisure_trip_days: list[int] = []
+        possible_amounts_leisure_trips: list[int] = (
+            leisure_parameters.possible_amounts_leisure_trips
+        )
+        amount_probabilities: list[float] = (
+            leisure_parameters.amount_probabilities
+        )
+        day_indices: list[int] = leisure_parameters.day_indices
+        day_weights: list[float] = leisure_parameters.day_weights
+        if len(possible_amounts_leisure_trips) != len(amount_probabilities):
+            raise ValueError(
+                f'{possible_amounts_leisure_trips=} and '
+                f'{amount_probabilities=} must have the same length.'
+            )
 
-        return leisure_trip_days
+        if len(day_indices) != len(day_weights):
+            raise ValueError(
+                f'{day_indices=} and {day_weights=} '
+                'must have the same length.'
+            )
+        if any(
+            probability < 0 for probability in amount_probabilities
+        ) or not np.isclose(sum(amount_probabilities), 1.0):
+            raise ValueError(
+                f'{amount_probabilities=} must be >=0.0 and sum to 1.0'
+            )
+        if any(day_weight < 0 for day_weight in day_weights) or not np.isclose(
+            sum(day_weights), 1.0
+        ):
+            raise ValueError(f'{day_weights=} must be >=0.0 and sum to 1.0')
+
+        amount_of_leisure_trips: int = int(
+            random_generator.choice(
+                possible_amounts_leisure_trips, p=amount_probabilities
+            )
+        )
+        if amount_of_leisure_trips > len(day_indices):
+            raise ValueError(
+                f'{amount_of_leisure_trips=} exceeds the number of available '
+                f'leisure weekdays: {len(day_indices)}.'
+            )
+
+        if any(amount < 0 for amount in possible_amounts_leisure_trips):
+            raise ValueError(
+                f'{possible_amounts_leisure_trips=} cannot contain '
+                'negative values.'
+            )
+        leisure_trip_weekday_numbers: list[int] = sorted(
+            int(day_index)
+            for day_index in random_generator.choice(
+                day_indices,
+                size=amount_of_leisure_trips,
+                p=day_weights,
+                replace=False,
+            )
+        )
+
+        return leisure_trip_weekday_numbers
 
     @staticmethod
     def draw(
@@ -1172,16 +1231,13 @@ class Activities:
                 weekend_parameters=weekend_parameters,
                 random_generator=random_generator,
                 beta_shape=beta_shape,
-                time_constants=time_constants,
                 week_indices=week_indices,
             )
         )
         leisure_trip_weekday_numbers: list[int] = (
             Activities.draw_leisure_trip_weekday_numbers(
-                weekend_trip_week_numbers=weekend_trip_week_numbers,
                 leisure_parameters=leisure_parameters,
                 random_generator=random_generator,
-                time_constants=time_constants,
             )
         )
 

@@ -39,7 +39,7 @@ def run_scenario(scenario: Box) -> None:
         scenario=scenario, random_generator=random_generators.define
     )
     for user in users_pool:
-        print(user.activities.weekend_trip_week_numbers)
+        print(user.activities.leisure_trip_weekday_numbers)
 
 
 @cook.function_timer
