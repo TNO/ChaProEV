@@ -536,6 +536,8 @@ class ChargingBehaviour:
     adaptive: bool
     charge_desire_proportion_trigger: float
     charge_stop_proportion_trigger: float
+    fast_charge_desire_proportion_trigger: float
+    fast_charge_stop_proportion_trigger: float
 
     @staticmethod
     def draw(
@@ -589,6 +591,42 @@ class ChargingBehaviour:
                 'and 1.0 (inclusive).'
             )
 
+        fast_charge_desire_proportion_trigger_min: float = (
+            charging_behaviour_parameters.fast_charge_desire_proportion_trigger_min  # noqa:E501
+        )
+        fast_charge_desire_proportion_trigger_typical: float = (
+            charging_behaviour_parameters.fast_charge_desire_proportion_trigger_typical  # noqa:E501
+        )
+        fast_charge_desire_proportion_trigger_max: float = (
+            charging_behaviour_parameters.fast_charge_desire_proportion_trigger_max  # noqa:E501
+        )
+        if (
+            fast_charge_desire_proportion_trigger_min < 0.0
+            or fast_charge_desire_proportion_trigger_max > 1.0
+        ):
+            raise ValueError(
+                'The fast_charge_desire_proportion_trigger needs '
+                'to be between 0.0 and 1.0 (inclusive).'
+            )
+
+        fast_charge_stop_proportion_trigger_min: float = (
+            charging_behaviour_parameters.fast_charge_stop_proportion_trigger_min  # noqa:E501
+        )
+        fast_charge_stop_proportion_trigger_typical: float = (
+            charging_behaviour_parameters.fast_charge_stop_proportion_trigger_typical  # noqa:E501
+        )
+        fast_charge_stop_proportion_trigger_max: float = (
+            charging_behaviour_parameters.fast_charge_stop_proportion_trigger_max  # noqa:E501
+        )
+        if (
+            fast_charge_stop_proportion_trigger_min < 0.0
+            or fast_charge_stop_proportion_trigger_max > 1.0
+        ):
+            raise ValueError(
+                'The fast_charge_stop_proportion_trigger needs '
+                'to be between 0.0 and 1.0 (inclusive).'
+            )
+
         adaptive: bool = bool(
             random_generator.choice(
                 [True, False], p=[adaptive_proportion, 1 - adaptive_proportion]
@@ -610,10 +648,32 @@ class ChargingBehaviour:
             shape=beta_shape,
         )
 
+        fast_charge_desire_proportion_trigger: float = draw_beta_value(
+            minimum=fast_charge_desire_proportion_trigger_min,
+            typical=fast_charge_desire_proportion_trigger_typical,
+            maximum=fast_charge_desire_proportion_trigger_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
+        fast_charge_stop_proportion_trigger: float = draw_beta_value(
+            minimum=fast_charge_stop_proportion_trigger_min,
+            typical=fast_charge_stop_proportion_trigger_typical,
+            maximum=fast_charge_stop_proportion_trigger_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
         return ChargingBehaviour(
             adaptive=adaptive,
             charge_desire_proportion_trigger=charge_desire_proportion_trigger,
             charge_stop_proportion_trigger=charge_stop_proportion_trigger,
+            fast_charge_desire_proportion_trigger=(
+                fast_charge_desire_proportion_trigger
+            ),
+            fast_charge_stop_proportion_trigger=(
+                fast_charge_stop_proportion_trigger
+            ),
         )
 
 
@@ -1316,8 +1376,8 @@ class User:
             )
 
             raise ValueError(
-                "Missing time modulation factors for locations: "
-                f"{missing_locations}"
+                'Missing time modulation factors for locations: '
+                f'{missing_locations}'
             )
 
         charging_dataframe = charging_dataframe.with_columns(

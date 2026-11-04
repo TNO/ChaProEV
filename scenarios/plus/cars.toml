@@ -182,6 +182,36 @@ time_modulation_factors = [
 ] # Starts at midnight
 
 
+
+[locations.fast]
+base = false
+latitude = 51.8
+longitude = 6.2
+has_variants = false
+
+connectivity = 1.0
+charging_power_kW = 250
+charger_efficiency = 0.95
+charging_price_eur_kWh = [
+    0.89, 0.89, 0.89, 0.89, 0.89, 0.89, 0.89, 0.89,
+    0.89, 0.89, 0.89, 0.89, 0.89, 0.89, 0.89, 0.89,
+    0.89, 0.89, 0.89, 0.89, 0.89, 0.89, 0.89, 0.89,
+]
+charging_desirability = 1.0
+# An indicator (0-1) of how much people like to charge at this location
+discharge_power_kW = 0 # kW
+proportion_of_discharge_to_network = 0.9
+discharging_reward_eur_kWh = [
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+]
+time_modulation_factors = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+] # Starts at midnight
+
 [legs_references]
 # Put the means and standard deviations of distances (in km)
 # between two locations, which you will use as references in the leg 
@@ -547,7 +577,7 @@ battery_size_kWh_max = 100.0
 
 has_one_trip_per_day_type = false
 driving_location_name = 'road'
-
+fast_charging_location_name = 'fast'
 
 [charging_behaviour]
 adaptive_proportion = 0.8 
@@ -559,6 +589,13 @@ charge_desire_proportion_trigger_max = 0.6
 charge_stop_proportion_trigger_min = 1.0
 charge_stop_proportion_trigger_typical = 1.0
 charge_stop_proportion_trigger_max = 1.0
+
+fast_charge_desire_proportion_trigger_min = 0.1
+fast_charge_desire_proportion_trigger_typical = 0.15
+fast_charge_desire_proportion_trigger_max = 0.20
+fast_charge_stop_proportion_trigger_min = 0.7
+fast_charge_stop_proportion_trigger_typical = 0.75
+fast_charge_stop_proportion_trigger_max = 0.8
 
 
 [time]
