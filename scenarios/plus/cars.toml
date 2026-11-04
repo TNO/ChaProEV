@@ -38,7 +38,7 @@ time_modulation_factors = [
 ] # Starts at midnight
 
 [locations.home.street_parking]
-connectivity = 1.0
+connectivity = 0.25
 charging_power_kW = 14.0
 charger_efficiency = 0.9
 charging_price_eur_kWh = [
@@ -735,3 +735,4 @@ consumption_header = 'Consumption (kWh)'
 session_duration_header = 'Time at location (hours)'
 electricity_spending_header = 'Electricity spending (€)'
 
+driven_header = 'Kilometers driven'

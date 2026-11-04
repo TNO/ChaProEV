@@ -70,6 +70,7 @@ class Vehicle:
     battery_size_kWh: float
     has_one_trip_per_day_type: bool
     driving_location_name: str
+    fast_charging_location_name: str
 
     @staticmethod
     def draw(
@@ -83,6 +84,9 @@ class Vehicle:
             vehicle_settings.has_one_trip_per_day_type
         )
         driving_location_name: str = vehicle_settings.driving_location_name
+        fast_charging_location_name: str = (
+            vehicle_settings.fast_charging_location_name
+        )
 
         consumption_kWh_km_min: float = vehicle_settings.consumption_kWh_km_min
         consumption_kWh_km_typical: float = (
@@ -125,6 +129,7 @@ class Vehicle:
             battery_size_kWh=battery_size_kWh,
             has_one_trip_per_day_type=has_one_trip_per_day_type,
             driving_location_name=driving_location_name,
+            fast_charging_location_name=fast_charging_location_name,
         )
 
 
@@ -1176,9 +1181,7 @@ class User:
         connectivity_header: str = charging_settings.connectivity_header
         session_header: str = charging_settings.session_header
         can_charge_header: str = charging_settings.can_charge_header
-        wants_to_charge_header: str = charging_settings.wants_to_charge_header
-        does_charge_header: str = charging_settings.does_charge_header
-        battery_level_header: str = charging_settings.battery_level_header
+
         nominal_charge_power_to_vehicle_header: str = (
             charging_settings.nominal_charge_power_to_vehicle_header
         )
@@ -1205,31 +1208,12 @@ class User:
             charging_settings.available_discharge_power_to_network_header
         )
 
-        power_to_vehicle_header: str = (
-            charging_settings.power_to_vehicle_header
-        )
-        power_from_network_header: str = (
-            charging_settings.power_from_network_header
-        )
-        charge_to_vehicle_header: str = (
-            charging_settings.charge_to_vehicle_header
-        )
-        charge_from_network_header: str = (
-            charging_settings.charge_from_network_header
-        )
         session_start_header: str = charging_settings.session_start_header
 
         charging_dataframe: pl.DataFrame = mobility.clone()
+
         if charging_dataframe[session_header].null_count() > 0:
             raise ValueError(f'{session_header!r} contains null values.')
-
-        charging_dataframe = charging_dataframe.with_columns(
-            pl.lit(None, dtype=pl.Float64).alias(battery_level_header),
-            pl.lit(None, dtype=pl.Float64).alias(power_to_vehicle_header),
-            pl.lit(None, dtype=pl.Float64).alias(power_from_network_header),
-            pl.lit(None, dtype=pl.Float64).alias(charge_to_vehicle_header),
-            pl.lit(None, dtype=pl.Float64).alias(charge_from_network_header),
-        )
 
         connectivity_by_location: dict[str, float] = {
             location_name: location.connectivity
@@ -1266,11 +1250,6 @@ class User:
         )
         if charging_dataframe[session_header].null_count() > 0:
             raise ValueError(f'{session_header!r} contains null values.')
-
-        charging_dataframe = charging_dataframe.with_columns(
-            pl.lit(None, dtype=pl.Boolean).alias(wants_to_charge_header),
-            pl.lit(None, dtype=pl.Boolean).alias(does_charge_header),
-        )
 
         nominal_charge_power_to_vehicle_by_location: dict[str, float] = {
             location_name: location.charging_power_kW
@@ -1404,6 +1383,7 @@ class User:
             .fill_null(True)
             .alias(session_start_header)
         )
+
         return charging_dataframe
 
     @staticmethod

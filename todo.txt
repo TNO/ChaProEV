@@ -1,7 +1,7 @@
 
 Add fast charging trigger (e.g. batrey less than 10% --> top up )
 
-
+Do not round down fats charging (reduce the power for the last minute?)
 
 Test parameters to get to actual kilometrages
    
