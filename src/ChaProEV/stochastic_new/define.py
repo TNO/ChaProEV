@@ -1009,49 +1009,244 @@ class User:
                 consumption_header
             )
         )
+        session_header: str = mobility_settings.session_header
         mobility_matrix = (
             mobility_matrix.with_columns(
                 (pl.col(location_header) != pl.col(location_header).shift(1))
                 .fill_null(True)
                 .cum_sum()
-                .alias('location_run_ID')
+                .alias(session_header)
             )
             .with_columns(
-                pl.len().over('location_run_ID').alias('location_run_rows')
+                pl.len().over(session_header).alias('location_run_rows')
             )
             .with_columns(
                 (
                     pl.col('location_run_rows') * run_time_resolution_hours
                 ).alias(time_at_location_header)
             )
-            .drop('location_run_ID', 'location_run_rows')
+            .drop('location_run_rows')
         )
 
         return mobility_matrix
 
     @staticmethod
-    def create_charging_dataframe(*, time_ranges: TimeRange) -> pl.DataFrame:
-        charging_dataframe = pl.DataFrame(
-            {
-                'Time Stamp': time_ranges.run_stamps,
-            },
-            schema={
-                'Time Stamp': pl.Datetime('us'),
-            },
+    def create_charging_dataframe(
+        *,
+        charging_settings: Box,
+        mobility: pl.DataFrame,
+        time_ranges: TimeRange,
+        locations: dict[str, Location],
+        vehicle: Vehicle,
+        random_generator: np.random.Generator,
+    ) -> pl.DataFrame:
+
+        time_index_name: str = charging_settings.time_index_name
+        modulation_factor_header: str = (
+            charging_settings.modulation_factor_header
+        )
+        location_header: str = charging_settings.location_header
+        connectivity_header: str = charging_settings.connectivity_header
+        session_header: str = charging_settings.session_header
+        can_charge_header: str = charging_settings.can_charge_header
+        wants_to_charge_header: str = charging_settings.wants_to_charge_header
+        does_charge_header: str = charging_settings.does_charge_header
+        battery_level_header: str = charging_settings.battery_level_header
+        nominal_charge_power_to_vehicle_header: str = (
+            charging_settings.nominal_charge_power_to_vehicle_header
+        )
+        nominal_charge_power_from_network_header: str = (
+            charging_settings.nominal_charge_power_from_network_header
+        )
+        nominal_discharge_power_from_vehicle_header: str = (
+            charging_settings.nominal_discharge_power_from_vehicle_header
+        )
+        nominal_discharge_power_to_network_header: str = (
+            charging_settings.nominal_discharge_power_to_network_header
+        )
+
+        available_charge_power_to_vehicle_header: str = (
+            charging_settings.available_charge_power_to_vehicle_header
+        )
+        available_charge_power_from_network_header: str = (
+            charging_settings.available_charge_power_from_network_header
+        )
+        available_discharge_power_from_vehicle_header: str = (
+            charging_settings.available_discharge_power_from_vehicle_header
+        )
+        available_discharge_power_to_network_header: str = (
+            charging_settings.available_discharge_power_to_network_header
+        )
+
+        power_to_vehicle_header: str = (
+            charging_settings.power_to_vehicle_header
+        )
+        power_from_netowrk_header: str = (
+            charging_settings.power_from_netowrk_header
+        )
+        charge_to_vehicle_header: str = (
+            charging_settings.charge_to_vehicle_header
+        )
+        charge_from_netowrk_header: str = (
+            charging_settings.charge_from_netowrk_header
+        )
+        session_start_header: str = charging_settings.session_start_header
+
+        charging_dataframe: pl.DataFrame = mobility.clone()
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.lit(None, dtype=pl.Float64).alias(battery_level_header),
+            pl.lit(None, dtype=pl.Float64).alias(power_to_vehicle_header),
+            pl.lit(None, dtype=pl.Float64).alias(power_from_netowrk_header),
+            pl.lit(None, dtype=pl.Float64).alias(charge_to_vehicle_header),
+            pl.lit(None, dtype=pl.Float64).alias(charge_from_netowrk_header),
+        )
+
+        connectivity_by_location: dict[str, float] = {
+            location_name: location.connectivity
+            for location_name, location in locations.items()
+        }
+        connectivity_by_location[vehicle.driving_location_name] = 0.0
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.col(location_header)
+            .replace_strict(connectivity_by_location)
+            .alias(connectivity_header)
+        )
+
+        sessions: pl.DataFrame = charging_dataframe.group_by(
+            session_header, maintain_order=True
+        ).agg(pl.col(connectivity_header).first())
+
+        # We draw the possibility of charging here,
+        # as it does not matter when we do the draw and this is
+        # faster than drawing during an iteration
+        can_charge: np.ndarray = (
+            random_generator.random(sessions.height)
+            < sessions[connectivity_header].to_numpy()
+        )
+        sessions = sessions.with_columns(
+            pl.Series(can_charge_header, can_charge)
+        )
+
+        charging_dataframe = charging_dataframe.join(
+            sessions.select(session_header, can_charge_header),
+            on=session_header,
+            how='left',
         )
 
         charging_dataframe = charging_dataframe.with_columns(
-            pl.lit(None, dtype=pl.Float64).alias('Battery charge level (kWh)'),
-            pl.lit(None, dtype=pl.Float64).alias('Power to vehicle (kW)'),
-            pl.lit(None, dtype=pl.Float64).alias(
-                'Power drawn from network (kW)'
-            ),
-            pl.lit(None, dtype=pl.Float64).alias('Charge to vehicle (kWh)'),
-            pl.lit(None, dtype=pl.Float64).alias(
-                'Charge drawn from network (kWh)'
-            ),
+            pl.lit(None, dtype=pl.Boolean).alias(wants_to_charge_header),
+            pl.lit(None, dtype=pl.Boolean).alias(does_charge_header),
         )
 
+        nominal_charge_power_to_vehicle_by_location: dict[str, float] = {
+            location_name: location.charging_power_kW
+            * location.charger_efficiency
+            for location_name, location in locations.items()
+        }
+        nominal_charge_power_to_vehicle_by_location[
+            vehicle.driving_location_name
+        ] = 0.0
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.col(location_header)
+            .replace_strict(nominal_charge_power_to_vehicle_by_location)
+            .alias(nominal_charge_power_to_vehicle_header)
+        )
+
+        nominal_charge_power_from_network_by_location: dict[str, float] = {
+            location_name: location.charging_power_kW
+            for location_name, location in locations.items()
+        }
+        nominal_charge_power_from_network_by_location[
+            vehicle.driving_location_name
+        ] = 0.0
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.col(location_header)
+            .replace_strict(nominal_charge_power_from_network_by_location)
+            .alias(nominal_charge_power_from_network_header)
+        )
+
+        nominal_discharge_power_from_vehicle_by_location: dict[str, float] = {
+            location_name: location.discharge_power_kW
+            for location_name, location in locations.items()
+        }
+        nominal_discharge_power_from_vehicle_by_location[
+            vehicle.driving_location_name
+        ] = 0.0
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.col(location_header)
+            .replace_strict(nominal_discharge_power_from_vehicle_by_location)
+            .alias(nominal_discharge_power_from_vehicle_header)
+        )
+
+        nominal_discharge_power_to_network_by_location: dict[str, float] = {
+            location_name: location.charging_power_kW
+            * location.proportion_of_discharge_to_network
+            for location_name, location in locations.items()
+        }
+        nominal_discharge_power_to_network_by_location[
+            vehicle.driving_location_name
+        ] = 0.0
+
+        charging_dataframe = charging_dataframe.with_columns(
+            pl.col(location_header)
+            .replace_strict(nominal_discharge_power_to_network_by_location)
+            .alias(nominal_discharge_power_to_network_header)
+        )
+
+        time_modulation_factors: pl.DataFrame = pl.DataFrame(
+            {
+                location_header: location_name,
+                'Hour': hour,
+                modulation_factor_header: modulation_factor,
+            }
+            for location_name, location in locations.items()
+            for hour, modulation_factor in enumerate(
+                location.time_modulation_factors
+            )
+        )
+
+        charging_dataframe = (
+            charging_dataframe.with_columns(
+                pl.col(time_index_name).dt.hour().alias('Hour')
+            )
+            .join(
+                time_modulation_factors,
+                on=[location_header, 'Hour'],
+                how='left',
+                validate='m:1',
+            )
+            .drop('Hour')
+        )
+
+        charging_dataframe = charging_dataframe.with_columns(
+            (
+                pl.col(nominal_charge_power_to_vehicle_header)
+                * pl.col(modulation_factor_header)
+            ).alias(available_charge_power_to_vehicle_header),
+            (
+                pl.col(nominal_charge_power_from_network_header)
+                * pl.col(modulation_factor_header)
+            ).alias(available_charge_power_from_network_header),
+            (
+                pl.col(nominal_discharge_power_from_vehicle_header)
+                * pl.col(modulation_factor_header)
+            ).alias(available_discharge_power_from_vehicle_header),
+            (
+                pl.col(nominal_discharge_power_to_network_header)
+                * pl.col(modulation_factor_header)
+            ).alias(available_discharge_power_to_network_header),
+        )
+
+        charging_dataframe = charging_dataframe.with_columns(
+            (pl.col(location_header) != pl.col(location_header).shift(1))
+            .fill_null(True)
+            .alias(session_start_header)
+        )
         return charging_dataframe
 
     @staticmethod
@@ -1092,7 +1287,12 @@ class User:
         )
 
         charge: pl.DataFrame = User.create_charging_dataframe(
-            time_ranges=time_ranges
+            charging_settings=scenario.charging_dataframe,
+            mobility=mobility,
+            time_ranges=time_ranges,
+            locations=locations,
+            vehicle=vehicle,
+            random_generator=random_generator,
         )
 
         run_metrics: RunMetrics = RunMetrics(

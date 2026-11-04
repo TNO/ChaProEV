@@ -11,7 +11,7 @@ has_variants = true
 variants = ['own_driveway', 'street_parking']
 variant_weights = [0.25, 0.75]
 [locations.home.own_driveway]
-connectivity = 1
+connectivity = 1.0
 charging_power_kW = 6.0
 charger_efficiency = 0.8
 charging_price_eur_kWh = 0.25
@@ -43,7 +43,7 @@ discharging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 
 time_modulation_factors = [
-    1, 1, 1, 1, 1, 1, 1, 1,
+    0.89, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midnight
@@ -57,7 +57,7 @@ longitude = 5.8
 has_variants = false
 
 connectivity = 0.5
-charging_power_kW = 14 # kW
+charging_power_kW = 14.0 # kW
 charger_efficiency = 0.9
 charging_price_eur_kWh = 0  # €/kWh
 charging_desirability = 1
@@ -76,7 +76,7 @@ longitude = 6.2
 has_variants = false
 
 connectivity = 0.25
-charging_power_kW = 14
+charging_power_kW = 14.0
 charger_efficiency = 0.9
 charging_price_eur_kWh = 0.35
 charging_desirability = 0.25
@@ -96,7 +96,7 @@ longitude = 6.2
 has_variants = false
 
 connectivity = 0.125
-charging_power_kW = 14
+charging_power_kW = 14.0
 charger_efficiency = 0.9
 charging_price_eur_kWh = 0.35
 charging_desirability = 0.1
@@ -115,8 +115,8 @@ latitude = 53.0
 longitude = 6.2
 has_variants=false
 
-connectivity = 1
-charging_power_kW = 14
+connectivity = 1.0
+charging_power_kW = 14.0
 charger_efficiency = 0.9
 charging_price_eur_kWh = 0.35
 charging_desirability = 0.2
@@ -605,6 +605,7 @@ weekday_probabilities = [0.5, 0.5]
 [mobility]
 time_index_name = 'Time Stamp'
 location_header = 'Location'
+session_header = 'Session ID'
 driven_header = 'Kilometers driven'
 consumption_header = 'Consumption (kWh)'
 time_at_location_header = 'Time at location (hours)'
@@ -614,3 +615,27 @@ base = 'home'
 away_location = 'holiday' 
 base_transfer_trips = ['holiday_outward', 'holiday_back']
 transfer_end_locations = ['holiday', 'home']
+
+[charging_dataframe]
+location_header = 'Location'
+connectivity_header = 'Connectivity'
+session_header = 'Session ID'
+can_charge_header = 'Can charge'
+wants_to_charge_header = 'Wants to charge'
+does_charge_header = 'Does charge'
+battery_level_header = 'Battery charge level (kWh)'
+power_to_vehicle_header = 'Power to vehicle (kW)'
+power_from_netowrk_header = 'Power drawn from network (kW)'
+charge_to_vehicle_header = 'Charge to vehicle (kWh)'
+charge_from_netowrk_header = 'Charge drawn from network (kWh)'
+time_index_name = 'Time Stamp'
+modulation_factor_header = 'Modulation factor'
+nominal_charge_power_to_vehicle_header = 'Nominal charge power to vehicle (kW)'
+nominal_charge_power_from_network_header = 'Nominal charge power from network (kW)'
+nominal_discharge_power_from_vehicle_header = 'Nominal discharge power from vehicle (kW)'
+nominal_discharge_power_to_network_header = 'Nominal discharge power to network (kW)'
+available_charge_power_to_vehicle_header = 'Available charge power to vehicle (kW)'
+available_charge_power_from_network_header = 'Available charge power from network (kW)'
+available_discharge_power_from_vehicle_header = 'Available discharge power from vehicle (kW)'
+available_discharge_power_to_network_header = 'Available discharge power to network (kW)'
+session_start_header = 'Session start'
