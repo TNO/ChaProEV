@@ -7,6 +7,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
+from ChaProEV.stochastic_new.charging import compute_charging
 from ChaProEV.stochastic_new.define import User, get_users_pool
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
 
@@ -20,6 +21,8 @@ class UsersPoolStatistics:
     average_electricity_sold_kWh: float
     average_discharge_income_eur: float
     pool_average_hourly_power_from_network_kW: pl.Series
+    pool_average_electricity_costs_eur_kWh: float
+    pool_average_travel_costs_eur_km: float
 
     @staticmethod
     def compute(*, users_pool: list[User]) -> UsersPoolStatistics:
@@ -44,6 +47,13 @@ class UsersPoolStatistics:
 
         average_discharge_income_eur: float = fmean(
             user.run_metrics.discharge_income_eur for user in users_pool
+        )
+        pool_average_electricity_costs_eur_kWh: float = fmean(
+            user.run_metrics.average_electricity_costs_eur_kWh
+            for user in users_pool
+        )
+        pool_average_travel_costs_eur_km: float = fmean(
+            user.run_metrics.average_travel_costs_eur_km for user in users_pool
         )
         pool_average_hourly_power_from_network_kW: pl.Series = (
             pl.DataFrame(
@@ -70,6 +80,10 @@ class UsersPoolStatistics:
             pool_average_hourly_power_from_network_kW=(
                 pool_average_hourly_power_from_network_kW
             ),
+            pool_average_electricity_costs_eur_kWh=(
+                pool_average_electricity_costs_eur_kWh
+            ),
+            pool_average_travel_costs_eur_km=pool_average_travel_costs_eur_km,
         )
 
 
@@ -103,6 +117,33 @@ def run_scenario(scenario: Box) -> None:
     users_pool: list[User] = get_users_pool(
         scenario=scenario, random_generator=random_generators.define
     )
+
+    for user in users_pool:
+        # print(user.locations)
+        # input()
+        # print(user.charge['Power drawn from network (kW)'].sum())
+        # print(user.run_metrics)
+        user.charge = compute_charging(
+            charging_behaviour=user.charging_behaviour,
+            charge=user.charge,
+            charging_settings=scenario.charging_dataframe,
+            vehicle=user.vehicle,
+            scenario=scenario,
+            locations=user.locations,
+        )
+        user.run_metrics.charge_update(
+            charge_dataframe=user.charge,
+            charging_settings=scenario.charging_dataframe,
+        )
+        # with pl.Config(tbl_rows=26):
+        #     print(user.run_metrics)
+        # exit()
+        # print(user.ID)
+        # print(user.run_metrics.charge_spending_eur)
+        # print(
+        #     user.run_metrics.charge_spending_eur
+        #     / user.run_metrics.purchased_electricity_kWh
+        # )
 
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
         users_pool=users_pool

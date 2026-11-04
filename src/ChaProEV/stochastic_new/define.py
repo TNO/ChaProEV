@@ -18,9 +18,12 @@ class RunMetrics:
     kilometrage: float = 0.0
     consumption_kWh: float = 0.0
     purchased_electricity_kWh: float = 0.0
+    electricity_to_battery_kWh: float = 0.0
     charge_spending_eur: float = 0.0
     electricity_sold_kWh: float = 0.0
     discharge_income_eur: float = 0.0
+    average_electricity_costs_eur_kWh: float = 0.0
+    average_travel_costs_eur_km: float = 0.0
     average_hourly_power_from_network_kW: pl.Series = field(
         default_factory=lambda: pl.Series(
             'Average hourly power from network (kW)',
@@ -28,6 +31,36 @@ class RunMetrics:
             dtype=pl.Float64,
         )
     )
+
+    def charge_update(
+        self, charge_dataframe: pl.DataFrame, charging_settings: Box
+    ) -> None:
+        self.purchased_electricity_kWh = charge_dataframe[
+            charging_settings.charge_from_network_header
+        ].sum()
+        self.electricity_to_battery_kWh = charge_dataframe[
+            charging_settings.charge_to_vehicle_header
+        ].sum()
+        self.charge_spending_eur = charge_dataframe[
+            charging_settings.electricity_spending_header
+        ].sum()
+        self.average_hourly_power_from_network_kW = (
+            charge_dataframe.group_by(
+                pl.col(charging_settings.time_index_name)
+                .dt.hour()
+                .alias('Hour number')
+            )
+            .agg(pl.col(charging_settings.power_from_network_header).mean())
+            .sort('Hour number')
+            .get_column(charging_settings.power_from_network_header)
+            .rename('Average hourly power from network (kW)')
+        )
+        self.average_electricity_costs_eur_kWh = (
+            self.charge_spending_eur / self.purchased_electricity_kWh
+        )
+        self.average_travel_costs_eur_km = (
+            self.charge_spending_eur / self.kilometrage
+        )
 
 
 @dataclass
@@ -112,7 +145,8 @@ class Location:
     time_modulation_factors: list[float]
     latitude: float
     longitude: float
-    charging_price_eur_kWh: float
+    charging_price_eur_kWh: list[float]
+    discharging_reward_eur_kWh: list[float]
     charging_desirability: float
 
     @staticmethod
@@ -162,7 +196,12 @@ class Location:
             location_values.time_modulation_factors
         )
 
-        charging_price_eur_kWh: float = location_values.charging_price_eur_kWh
+        charging_price_eur_kWh: list[float] = (
+            location_values.charging_price_eur_kWh
+        )
+        discharging_reward_eur_kWh: list[float] = (
+            location_values.discharging_reward_eur_kWh
+        )
         charging_desirability: float = location_values.charging_desirability
         return Location(
             base=base,
@@ -177,6 +216,7 @@ class Location:
             latitude=latitude,
             longitude=longitude,
             charging_price_eur_kWh=charging_price_eur_kWh,
+            discharging_reward_eur_kWh=discharging_reward_eur_kWh,
             charging_desirability=charging_desirability,
         )
 
@@ -495,6 +535,7 @@ class Trip:
 class ChargingBehaviour:
     adaptive: bool
     charge_desire_proportion_trigger: float
+    charge_stop_proportion_trigger: float
 
     @staticmethod
     def draw(
@@ -530,6 +571,24 @@ class ChargingBehaviour:
                 'and 1.0 (inclusive).'
             )
 
+        charge_stop_proportion_trigger_min: float = (
+            charging_behaviour_parameters.charge_stop_proportion_trigger_min
+        )
+        charge_stop_proportion_trigger_typical: float = (
+            charging_behaviour_parameters.charge_stop_proportion_trigger_typical  # noqa:E501
+        )
+        charge_stop_proportion_trigger_max: float = (
+            charging_behaviour_parameters.charge_stop_proportion_trigger_max
+        )
+        if (
+            charge_stop_proportion_trigger_min < 0.0
+            or charge_stop_proportion_trigger_max > 1.0
+        ):
+            raise ValueError(
+                'The charge_stop_proportion_trigger needs to be between 0.0 '
+                'and 1.0 (inclusive).'
+            )
+
         adaptive: bool = bool(
             random_generator.choice(
                 [True, False], p=[adaptive_proportion, 1 - adaptive_proportion]
@@ -543,9 +602,18 @@ class ChargingBehaviour:
             shape=beta_shape,
         )
 
+        charge_stop_proportion_trigger: float = draw_beta_value(
+            minimum=charge_stop_proportion_trigger_min,
+            typical=charge_stop_proportion_trigger_typical,
+            maximum=charge_stop_proportion_trigger_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
         return ChargingBehaviour(
             adaptive=adaptive,
             charge_desire_proportion_trigger=charge_desire_proportion_trigger,
+            charge_stop_proportion_trigger=charge_stop_proportion_trigger,
         )
 
 

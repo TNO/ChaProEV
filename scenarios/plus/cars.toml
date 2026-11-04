@@ -14,12 +14,20 @@ variant_weights = [0.25, 0.75]
 connectivity = 1.0
 charging_power_kW = 6.0
 charger_efficiency = 0.8
-charging_price_eur_kWh = 0.25
+charging_price_eur_kWh = [
+    0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
+    0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.25,
+]
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 6.0
 proportion_of_discharge_to_network = 0.8
-discharging_reward_eur_kWh = 0.25
+discharging_reward_eur_kWh = [
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15,
+]
 discharging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 
@@ -30,15 +38,23 @@ time_modulation_factors = [
 ] # Starts at midnight
 
 [locations.home.street_parking]
-connectivity = 0.25
+connectivity = 1.0
 charging_power_kW = 14.0
 charger_efficiency = 0.9
-charging_price_eur_kWh = 0.35
+charging_price_eur_kWh = [
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55,
+]
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14.0
 proportion_of_discharge_to_network = 0.9
-discharging_reward_eur_kWh = 0.25
+discharging_reward_eur_kWh = [
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15,
+]
 discharging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 
@@ -59,11 +75,20 @@ has_variants = false
 connectivity = 0.5
 charging_power_kW = 14.0 # kW
 charger_efficiency = 0.9
-charging_price_eur_kWh = 0  # €/kWh
+charging_price_eur_kWh = [
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+]
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
 proportion_of_discharge_to_network = 0.9
+discharging_reward_eur_kWh = [
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15,
+]
 time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
@@ -78,11 +103,20 @@ has_variants = false
 connectivity = 0.25
 charging_power_kW = 14.0
 charger_efficiency = 0.9
-charging_price_eur_kWh = 0.35
+charging_price_eur_kWh = [
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55,
+]
 charging_desirability = 0.25
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
 proportion_of_discharge_to_network = 0.9
+discharging_reward_eur_kWh = [
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15,
+]
 time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
@@ -98,11 +132,20 @@ has_variants = false
 connectivity = 0.125
 charging_power_kW = 14.0
 charger_efficiency = 0.9
-charging_price_eur_kWh = 0.35
+charging_price_eur_kWh = [
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55,
+]
 charging_desirability = 0.1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
 proportion_of_discharge_to_network = 0.9
+discharging_reward_eur_kWh = [
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15,
+]
 time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
@@ -118,11 +161,20 @@ has_variants=false
 connectivity = 1.0
 charging_power_kW = 14.0
 charger_efficiency = 0.9
-charging_price_eur_kWh = 0.35
+charging_price_eur_kWh = [
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35,
+    0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55, 0.55,
+]
 charging_desirability = 0.2
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
 proportion_of_discharge_to_network = 0.9
+discharging_reward_eur_kWh = [
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
+    0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.15,
+]
 time_modulation_factors = [
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
@@ -504,6 +556,9 @@ adaptive_proportion = 0.8
 charge_desire_proportion_trigger_min = 0.4
 charge_desire_proportion_trigger_typical = 0.5
 charge_desire_proportion_trigger_max = 0.6
+charge_stop_proportion_trigger_min = 1.0
+charge_stop_proportion_trigger_typical = 1.0
+charge_stop_proportion_trigger_max = 1.0
 
 
 [time]
@@ -639,3 +694,7 @@ available_charge_power_from_network_header = 'Available charge power from networ
 available_discharge_power_from_vehicle_header = 'Available discharge power from vehicle (kW)'
 available_discharge_power_to_network_header = 'Available discharge power to network (kW)'
 session_start_header = 'Session start'
+consumption_header = 'Consumption (kWh)'
+session_duration_header = 'Time at location (hours)'
+electricity_spending_header = 'Electricity spending (€)'
+
