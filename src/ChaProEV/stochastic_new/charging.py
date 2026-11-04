@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import polars as pl
 from box import Box
@@ -11,6 +13,128 @@ from ChaProEV.stochastic_new.define import (
     User,
     Vehicle,
 )
+
+
+# def compute_charging_step(
+#     *,
+#     can_charge: bool,
+#     consumption: float,
+#     session_start: bool,
+#     session_duration: float,
+#     available_charge_power_to_vehicle: float,
+#     available_charge_power_from_network: float,
+# ) -> None:
+
+#     current_battery_level_kWh -= consumption
+#     if current_battery_level_kWh < 0:
+#         raise ValueError(
+#             'Battery level is negative! '
+#             'This can for xample happen if your base connctivity is too'
+#             'low, which can lead to a situation where a vehicle drives'
+#             'and wants to charge, but cannot.'
+#         )
+
+#     # The quantities we track are only updated if we can charge
+#     if can_charge:
+
+#         if session_start:
+#             # If there is a new session, we check if the user wants
+#             # to charge. We do this one time, because if we did during the
+#             # session, the battery might go above the threshold at
+#             # which the user wants to charge, but still below the maximal
+#             # charge they want (charge_stop_proortion_trigger).
+#             wants_to_charge = (
+#                 current_battery_level_kWh
+#                 < charge_desire_proportion_trigger * battery_capacity_kWh
+#             )
+#             # We also need the battery space at session start
+#             # for adaptive charging
+#             battery_space_at_session_start_kWh = (
+#                 battery_capacity_kWh - current_battery_level_kWh
+#             )
+
+#             if charging_behaviour.adaptive:
+#                 charger_efficiency: float = (
+#                     available_charge_power_to_vehicle
+#                     / available_charge_power_from_network
+#                 )
+#                 desired_power_to_vehicle_kW: float = (
+#                     battery_space_at_session_start_kWh / session_duration
+#                 )
+#                 desired_power_from_network: float = (
+#                     desired_power_to_vehicle_kW / charger_efficiency
+#                 )
+#                 this_step_power_drawn_from_network_kW: float = min(
+#                     available_charge_power_to_vehicle,
+#                     desired_power_from_network,
+#                 )
+#                 this_step_power_to_vehicle_kW: float = (
+#                     this_step_power_drawn_from_network_kW * charger_efficiency
+#                 )
+#             else:
+#                 this_step_power_drawn_from_network_kW = (
+#                     available_charge_power_from_network
+#                 )
+#                 this_step_power_to_vehicle_kW = (
+#                     available_charge_power_to_vehicle
+#                 )
+#         else:
+#             this_step_power_to_vehicle_kW = previous_step_power_to_vehicle_kW
+#             this_step_power_drawn_from_network_kW = (
+#                 previous_step_power_drawn_from_network_kW
+#             )
+#         if wants_to_charge:
+#             charge_to_vehicle_kWh: float = (
+#                 this_step_power_to_vehicle_kW * run_time_resolution_hours
+#             )
+
+#             if (
+#                 current_battery_level_kWh + charge_to_vehicle_kWh
+#                 >= battery_capacity_kWh * charge_stop_proportion_trigger
+#             ):
+#                 # If we exceed the charge stop level (100% or lower,
+#                 # set in charging behaviour), the user does not want
+#                 # to charge anymore. The charge drawn during the session
+#                 # might have gone higher than the maximum,
+#                 # so we need to scale back (essentially stop partly during
+#                 # the step).
+#                 wants_to_charge = False
+
+#                 excess_factor: float = charge_to_vehicle_kWh / (
+#                     battery_capacity_kWh * charge_stop_proportion_trigger
+#                     - current_battery_level_kWh
+#                 )
+#                 this_step_power_drawn_from_network_kW /= excess_factor
+#                 this_step_power_to_vehicle_kW /= excess_factor
+#         else:
+#             this_step_power_to_vehicle_kW = 0
+#             this_step_power_drawn_from_network_kW = 0
+#     else:
+#         this_step_power_to_vehicle_kW = 0
+#         this_step_power_drawn_from_network_kW = 0
+
+#     # Now that we know how much power was drawn,
+#     # we can update the battery level
+#     current_battery_level_kWh += (
+#         this_step_power_to_vehicle_kW * run_time_resolution_hours
+#     )
+
+#     # And add the values we track to our trackers
+#     battery_charge_levels_kWh.append(current_battery_level_kWh)
+#     power_to_vehicle_kW.append(this_step_power_to_vehicle_kW)
+#     power_drawn_from_network_kW.append(this_step_power_drawn_from_network_kW)
+
+#     previous_step_power_to_vehicle_kW = this_step_power_to_vehicle_kW
+#     previous_step_power_drawn_from_network_kW = (
+#         this_step_power_drawn_from_network_kW
+#     )
+
+
+# emergency fast charge: shift DF (then mobility is out of date, so document that)
+# or chnage loc to fast station for e.g. 15 minutes (compute based on charge needed)
+# then replace next 15 minutes by road (but what if within less than 15min of next stop?)
+# concurrent user charging
+# or batch users
 
 
 # @cook.function_timer
@@ -116,7 +240,6 @@ def compute_charging(
     previous_step_power_drawn_from_network_kW: float = 0
 
     for (
-        time_stamp,
         can_charge,
         consumption,
         session_start,
@@ -124,7 +247,6 @@ def compute_charging(
         available_charge_power_to_vehicle,
         available_charge_power_from_network,
     ) in zip(
-        charge[time_index_name],
         charge[can_charge_header],
         charge[consumption_header],
         charge[session_start_header],
@@ -142,12 +264,9 @@ def compute_charging(
                 'and wants to charge, but cannot.'
             )
 
-        # print(f'{this_step_power_to_vehicle_kW=}')
-        # print('A')
         # The quantities we track are only updated if we can charge
         if can_charge:
-            # print(f'{this_step_power_to_vehicle_kW=}')
-            # print('B')
+
             if session_start:
                 # If there is a new session, we check if the user wants
                 # to charge. We do this one time, because if we did during the
@@ -163,12 +282,6 @@ def compute_charging(
                 battery_space_at_session_start_kWh = (
                     battery_capacity_kWh - current_battery_level_kWh
                 )
-                # if wants_to_charge:
-                #     print(battery_space_at_session_start_kWh)
-                #     print(time_stamp)
-                #     print(f'{current_battery_level_kWh=}')
-                #     print(charge_desire_proportion_trigger * battery_capacity_kWh)
-                #     exit()
 
                 if charging_behaviour.adaptive:
                     charger_efficiency: float = (
@@ -207,9 +320,7 @@ def compute_charging(
                 charge_to_vehicle_kWh: float = (
                     this_step_power_to_vehicle_kW * run_time_resolution_hours
                 )
-                # print(charge_to_vehicle)
-                # print(time_stamp)
-                # input()
+
                 if (
                     current_battery_level_kWh + charge_to_vehicle_kWh
                     >= battery_capacity_kWh * charge_stop_proportion_trigger
@@ -234,25 +345,12 @@ def compute_charging(
         else:
             this_step_power_to_vehicle_kW = 0
             this_step_power_drawn_from_network_kW = 0
-        # if this_step_power_to_vehicle_kW > 0:
-        #     print(f'{this_step_power_to_vehicle_kW=}')
-        #     print(time_stamp)
-        #     exit()
+
         # Now that we know how much power was drawn,
         # we can update the battery level
-        # print(time_stamp)
-        # print(f'{current_battery_level_kWh=}')
-
         current_battery_level_kWh += (
             this_step_power_to_vehicle_kW * run_time_resolution_hours
         )
-        # print(f'{this_step_power_to_vehicle_kW=}')
-        # print(f'{current_battery_level_kWh=}')
-        # if this_step_power_to_vehicle_kW > 0:
-        #     input()
-        #     print(charge_desire_proportion_trigger * battery_capacity_kWh)
-        #     print(wants_to_charge)
-        #     print(battery_capacity_kWh)
 
         # And add the values we track to our trackers
         battery_charge_levels_kWh.append(current_battery_level_kWh)
