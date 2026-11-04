@@ -33,9 +33,21 @@ if current_battery_level_kWh < 0:
 this_step_power_to_vehicle_kW: float = 0
 this_step_power_drawn_from_network_kW: float = 0
 ...
+
+if can_charge   
+    if session start: 
+        set wants_to_charge and space_at_start
+
+    if wants_to_charge:
+        ....
+
+
 Less tests 
 if can_charge:
-    wants_to_charge: bool = hdsjd
+    wants_to_charge: bool = hdsjd NO! Wants is set at session start. Otherwise it switches WHILE CHARGINGE
+    FLIP ONLY IF FULL (or max batt level)
+
+
     if wants_to_charge:
         power_to_)veh=...
         power_from_net = ...

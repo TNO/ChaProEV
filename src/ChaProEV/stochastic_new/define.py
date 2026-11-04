@@ -1035,7 +1035,6 @@ class User:
         *,
         charging_settings: Box,
         mobility: pl.DataFrame,
-        time_ranges: TimeRange,
         locations: dict[str, Location],
         vehicle: Vehicle,
         random_generator: np.random.Generator,
@@ -1081,25 +1080,27 @@ class User:
         power_to_vehicle_header: str = (
             charging_settings.power_to_vehicle_header
         )
-        power_from_netowrk_header: str = (
-            charging_settings.power_from_netowrk_header
+        power_from_network_header: str = (
+            charging_settings.power_from_network_header
         )
         charge_to_vehicle_header: str = (
             charging_settings.charge_to_vehicle_header
         )
-        charge_from_netowrk_header: str = (
-            charging_settings.charge_from_netowrk_header
+        charge_from_network_header: str = (
+            charging_settings.charge_from_network_header
         )
         session_start_header: str = charging_settings.session_start_header
 
         charging_dataframe: pl.DataFrame = mobility.clone()
+        if charging_dataframe[session_header].null_count() > 0:
+            raise ValueError(f'{session_header!r} contains null values.')
 
         charging_dataframe = charging_dataframe.with_columns(
             pl.lit(None, dtype=pl.Float64).alias(battery_level_header),
             pl.lit(None, dtype=pl.Float64).alias(power_to_vehicle_header),
-            pl.lit(None, dtype=pl.Float64).alias(power_from_netowrk_header),
+            pl.lit(None, dtype=pl.Float64).alias(power_from_network_header),
             pl.lit(None, dtype=pl.Float64).alias(charge_to_vehicle_header),
-            pl.lit(None, dtype=pl.Float64).alias(charge_from_netowrk_header),
+            pl.lit(None, dtype=pl.Float64).alias(charge_from_network_header),
         )
 
         connectivity_by_location: dict[str, float] = {
@@ -1133,7 +1134,10 @@ class User:
             sessions.select(session_header, can_charge_header),
             on=session_header,
             how='left',
+            validate="m:1",
         )
+        if charging_dataframe[session_header].null_count() > 0:
+            raise ValueError(f'{session_header!r} contains null values.')
 
         charging_dataframe = charging_dataframe.with_columns(
             pl.lit(None, dtype=pl.Boolean).alias(wants_to_charge_header),
@@ -1184,7 +1188,7 @@ class User:
         )
 
         nominal_discharge_power_to_network_by_location: dict[str, float] = {
-            location_name: location.charging_power_kW
+            location_name: location.discharge_power_kW
             * location.proportion_of_discharge_to_network
             for location_name, location in locations.items()
         }
@@ -1220,8 +1224,33 @@ class User:
                 how='left',
                 validate='m:1',
             )
+            .with_columns(
+                (
+                    pl.when(
+                        pl.col(location_header)
+                        == vehicle.driving_location_name
+                    )
+                    .then(0.0)
+                    .otherwise(pl.col(modulation_factor_header))
+                    .alias(modulation_factor_header)
+                )
+            )
             .drop('Hour')
         )
+        if charging_dataframe[modulation_factor_header].null_count() > 0:
+            missing_locations: list[str] = (
+                charging_dataframe.filter(
+                    pl.col(modulation_factor_header).is_null()
+                )
+                .get_column(location_header)
+                .unique()
+                .to_list()
+            )
+
+            raise ValueError(
+                "Missing time modulation factors for locations: "
+                f"{missing_locations}"
+            )
 
         charging_dataframe = charging_dataframe.with_columns(
             (
@@ -1243,7 +1272,7 @@ class User:
         )
 
         charging_dataframe = charging_dataframe.with_columns(
-            (pl.col(location_header) != pl.col(location_header).shift(1))
+            (pl.col(session_header) != pl.col(session_header).shift(1))
             .fill_null(True)
             .alias(session_start_header)
         )
@@ -1289,7 +1318,6 @@ class User:
         charge: pl.DataFrame = User.create_charging_dataframe(
             charging_settings=scenario.charging_dataframe,
             mobility=mobility,
-            time_ranges=time_ranges,
             locations=locations,
             vehicle=vehicle,
             random_generator=random_generator,
