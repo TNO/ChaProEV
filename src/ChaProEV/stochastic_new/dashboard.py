@@ -7,11 +7,94 @@ import polars as pl
 import streamlit as st
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 from ChaProEV.stochastic_new.ChaProEV_run import (
     UsersPoolStatistics,
     run_scenario,
 )
+
+
+def draw_metric(
+    *,
+    values_dict: dict[str, float],
+    metric_plot: Axes,
+    metric: str,
+    y_max: float,
+    total_prefix: str,
+    total_suffix: str,
+    location_types_colors: dict[str, tuple[float, float, float]],
+    metrics_text_color: tuple[float, float, float],
+) -> None:
+
+    bottom: float = 0.0
+    for location_type, step_value in values_dict.items():
+        metric_plot.bar(
+            x=metric,
+            height=step_value,
+            bottom=bottom,
+            label=location_type,
+            color=location_types_colors[location_type],
+        )
+        bottom += step_value
+    metric_plot.set_ylim(0, ymax=y_max)
+    metric_plot.text(
+        x=0,
+        y=bottom,
+        s=f'{total_prefix}{bottom:.0f}{total_suffix}',
+        ha='center',
+        va='bottom',
+        color=metrics_text_color,
+    )
+    metric_plot.tick_params(axis='y', colors=metrics_text_color)
+    metric_plot.spines['left'].set_color(metrics_text_color)
+    metric_plot.xaxis.set_visible(False)
+    metric_plot.spines['top'].set_visible(False)
+    metric_plot.spines['right'].set_visible(False)
+    metric_plot.spines['bottom'].set_visible(False)
+    metric_plot.set_facecolor('none')
+
+
+def get_metrics_figure(
+    metrics_values: list[dict[str, float]],
+    metrics: list[str],
+    y_maxes: list[float],
+    total_prefixes: list[str],
+    total_suffixes: list[str],
+    location_types_colors: dict[str, tuple[float, float, float]],
+    metrics_text_color: tuple[float, float, float],
+) -> tuple[Figure, Axes]:
+    metrics_figure, metrics_plots = plt.subplots(1, len(metrics_values))
+
+    for (
+        metric_values,
+        metric_plot,
+        metric,
+        y_max,
+        total_prefix,
+        total_suffix,
+    ) in zip(
+        metrics_values,
+        metrics_plots,
+        metrics,
+        y_maxes,
+        total_prefixes,
+        total_suffixes,
+    ):
+        draw_metric(
+            values_dict=metric_values,
+            metric_plot=metric_plot,
+            metric=metric,
+            y_max=y_max,
+            total_prefix=total_prefix,
+            total_suffix=total_suffix,
+            location_types_colors=location_types_colors,
+            metrics_text_color=metrics_text_color,
+        )
+    metrics_figure.patch.set_alpha(0)
+    metrics_figure.tight_layout()
+    return metrics_figure, metrics_plots
 
 
 def make_dashboard() -> None:
@@ -36,8 +119,6 @@ def make_dashboard() -> None:
     st.set_page_config(layout='wide')
 
     metrics_A, metrics_B = st.columns(2)
-    figure_A, plots_A = plt.subplots(1, 2)
-    figure_B, plots_B = plt.subplots(1, 2)
 
     metric_plots_A, metric_plots_B = st.columns(2)
     _, plot_box_1, _ = st.columns([1, 2, 1])
@@ -127,41 +208,32 @@ def make_dashboard() -> None:
     statistics_B: UsersPoolStatistics = run_scenario(scenario_B)
     with metrics_A:
         st.subheader('Scenario A')
-        st.metric(
-            label='Kilometrage',
-            value=f'{statistics_A.average_kilometrage:.0f} km',
-        )
-        st.metric(
-            label='Consumption',
-            value=f'{statistics_A.average_consumption_kWh:.0F} kWh',
-        )
-        # st.metric(
-        #     label='Purchased electricity',
-        #     value=f'{statistics_A.average_purchased_electricity_kWh:.0f} kWh',
-        # )
-        # st.metric(
-        #     label='Charge spending',
-        #     value=f'{statistics_A.average_charge_spending_eur:.0f} €',
-        # )
+        metrics_A_1, metrics_A_2 = st.columns(2)
+        with metrics_A_1:
+
+            st.metric(
+                label='Kilometrage',
+                value=f'{statistics_A.average_kilometrage:.0f} km',
+            )
+        with metrics_A_2:
+            st.metric(
+                label='Consumption',
+                value=f'{statistics_A.average_consumption_kWh:.0F} kWh',
+            )
 
     with metrics_B:
         st.subheader('Scenario B')
-        st.metric(
-            label='Kilometrage',
-            value=f'{statistics_B.average_kilometrage:.0f} km',
-        )
-        st.metric(
-            label='Consumption',
-            value=f'{statistics_B.average_consumption_kWh:.0f} kWh',
-        )
-        # st.metric(
-        #     label='Purchased electricity',
-        #     value=f'{statistics_B.average_purchased_electricity_kWh:.0f} kWh',
-        # )
-        # st.metric(
-        #     label='Charge spending',
-        #     value=f'{statistics_B.average_charge_spending_eur:.0f} €',
-        # )
+        metrics_B_1, metrics_B_2 = st.columns(2)
+        with metrics_B_1:
+            st.metric(
+                label='Kilometrage',
+                value=f'{statistics_B.average_kilometrage:.0f} km',
+            )
+        with metrics_B_2:
+            st.metric(
+                label='Consumption',
+                value=f'{statistics_B.average_consumption_kWh:.0f} kWh',
+            )
 
     plt.style.use('fivethirtyeight')
 
@@ -170,8 +242,19 @@ def make_dashboard() -> None:
     location_types_colors_list: list[str] = (
         metrics_settings.location_types_colors
     )
-    location_types_colors: dict[str, str] = dict(
+    location_types_color_names: dict[str, str] = dict(
         zip(location_types, location_types_colors_list)
+    )
+    location_types_colors: dict[str, tuple[float, float, float]] = {
+        location_type: cook.get_rgb_from_name(
+            location_types_color_names[location_type],
+            general_definitions.colors,
+        )
+        for location_type in location_types
+    }
+    metrics_text_color_name: str = scenario.metrics.text_color
+    metrics_text_color: tuple[float, float, float] = cook.get_rgb_from_name(
+        metrics_text_color_name, general_definitions.colors
     )
     spending_A: dict[str, float] = (
         statistics_A.average_charge_spending_eur_per_location_type
@@ -196,144 +279,40 @@ def make_dashboard() -> None:
             sum(list(electricity_purchased_B.values())),
         ]
     )
-    metrics_text_color_name: str = scenario.metrics.text_color
-    metrics_text_color: tuple[float, float, float] = cook.get_rgb_from_name(
-        metrics_text_color_name, general_definitions.colors
-    )
-    bottom_spending: float = 0.0
-    for location_type, spending in spending_A.items():
-        location_color_name: str = location_types_colors[location_type]
-        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
-            location_color_name, general_definitions.colors
-        )
-        plots_A[1].bar(
-            x='Yearly electricity spending (€)',
-            height=spending,
-            color=location_color,
-            bottom=bottom_spending,
-            label=location_type,
-        )
-        bottom_spending += spending
-    plots_A[1].set_ylim(0, spending_scale[1])
-    plots_A[1].text(
-        x=0,
-        y=bottom_spending,
-        s=f'€{bottom_spending:.0f} total',
-        ha='center',
-        va='bottom',
-        color=metrics_text_color,
-    )
-    plots_A[1].xaxis.set_visible(False)
-    plots_A[1].tick_params(axis='y', colors=metrics_text_color)
-    plots_A[1].spines['bottom'].set_visible(False)
-    plots_A[1].spines['top'].set_visible(False)
-    plots_A[1].spines['left'].set_color(metrics_text_color)
-    plots_A[1].spines['right'].set_visible(False)
 
-    bottom_spending: float = 0.0
-    for location_type, spending in spending_B.items():
-        location_color_name: str = location_types_colors[location_type]
-        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
-            location_color_name, general_definitions.colors
-        )
-        plots_B[1].bar(
-            x='Yearly electricity spending (€)',
-            height=spending,
-            color=location_color,
-            bottom=bottom_spending,
-            label=location_type,
-        )
-        bottom_spending += spending
-    plots_B[1].set_ylim(0, spending_scale[1])
-    plots_B[1].text(
-        x=0,
-        y=bottom_spending,
-        s=f'€ {bottom_spending:.0f} total',
-        ha='center',
-        va='bottom',
-        color=metrics_text_color
+    figure_A, plots_A = get_metrics_figure(
+        metrics_values=[electricity_purchased_A, spending_A],
+        metrics=[
+            'Yearly electricity purchasesd (kWh)',
+            'Yearly electricity spending (€)',
+        ],
+        y_maxes=[electricity_purchased_scale[1], spending_scale[1]],
+        total_prefixes=['Total = ', '€'],
+        total_suffixes=[' kWh', ' total'],
+        location_types_colors=location_types_colors,
+        metrics_text_color=metrics_text_color,
     )
-    plots_B[1].xaxis.set_visible(False)
-    plots_B[1].tick_params(axis='y', colors=metrics_text_color)
-    plots_B[1].spines['bottom'].set_visible(False)
-    plots_B[1].spines['top'].set_visible(False)
-    plots_B[1].spines['left'].set_color(metrics_text_color)
-    plots_B[1].spines['right'].set_visible(False)
-    bottom_electricity: float = 0.0
-    for location_type, electricity in electricity_purchased_A.items():
-        location_color_name: str = location_types_colors[location_type]
-        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
-            location_color_name, general_definitions.colors
-        )
-        plots_A[0].bar(
-            x='Yearly electricity purchasesd (kWh)',
-            height=electricity,
-            color=location_color,
-            bottom=bottom_electricity,
-            label=location_type,
-        )
-        bottom_electricity += electricity
-    plots_A[0].set_ylim(0, electricity_purchased_scale[1])
-    plots_A[0].text(
-        x=0,
-        y=bottom_electricity,
-        s=f'Total = {bottom_electricity:.0f} kWh',
-        ha='center',
-        va='bottom',
-        color=metrics_text_color
+
+    figure_B, plots_B = get_metrics_figure(
+        metrics_values=[electricity_purchased_B, spending_B],
+        metrics=[
+            'Yearly electricity purchasesd (kWh)',
+            'Yearly electricity spending (€)',
+        ],
+        y_maxes=[electricity_purchased_scale[1], spending_scale[1]],
+        total_prefixes=['Total = ', '€'],
+        total_suffixes=[' kWh', ' total'],
+        location_types_colors=location_types_colors,
+        metrics_text_color=metrics_text_color,
     )
-    plots_A[0].xaxis.set_visible(False)
-    plots_A[0].tick_params(axis='y', colors=metrics_text_color)
-    plots_A[0].spines['bottom'].set_visible(False)
-    plots_A[0].spines['top'].set_visible(False)
-    plots_A[0].spines['left'].set_color(metrics_text_color)
-    plots_A[0].spines['right'].set_visible(False)
-    bottom_electricity: float = 0.0
-    for location_type, electricity in electricity_purchased_B.items():
-        location_color_name: str = location_types_colors[location_type]
-        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
-            location_color_name, general_definitions.colors
-        )
-        plots_B[0].bar(
-            x='Yearly electricity purchasesd (kWh)',
-            height=electricity,
-            color=location_color,
-            bottom=bottom_electricity,
-            label=location_type,
-        )
-        bottom_electricity += electricity
-    plots_B[0].set_ylim(0, electricity_purchased_scale[1])
-    plots_B[0].text(
-        x=0,
-        y=bottom_electricity,
-        s=f'Total = {bottom_electricity:.0f} kWh',
-        ha='center',
-        va='bottom',
-        color=metrics_text_color
-    )
-    plots_B[0].xaxis.set_visible(False)
-    plots_B[0].tick_params(axis='y', colors=metrics_text_color)
-    plots_B[0].spines['bottom'].set_visible(False)
-    plots_B[0].spines['top'].set_visible(False)
-    plots_B[0].spines['left'].set_color(metrics_text_color)
-    plots_B[0].spines['right'].set_visible(False)
+
     with metric_plots_A:
-        figure_A.patch.set_alpha(0)
 
-        for plot in plots_A:
-            plot.set_facecolor('none')
-
-        figure_A.tight_layout()
         st.pyplot(fig=figure_A)
         plt.close(figure_A)
 
     with metric_plots_B:
-        figure_B.patch.set_alpha(0)
 
-        for plot in plots_B:
-            plot.set_facecolor('none')
-
-        figure_B.tight_layout()
         st.pyplot(fig=figure_B)
         plt.close(figure_B)
 
