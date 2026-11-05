@@ -44,7 +44,7 @@ classic = 'ChaProEV.classic.ChaProEV_run:test_run'
 stochastic = 'ChaProEV.stochastic.ChaProEV_run:test_run'
 dashboard = 'ChaProEV.stochastic.dashboard:run_dashboard'
 stochastic_new = 'ChaProEV.stochastic_new.ChaProEV_run:test_run'
-
+dashboard_new = 'ChaProEV.stochastic_new.dashboard:run_dashboard'
 
 [project.urls]
 'Homepage' = 'https://github.com/TNO/ChaProEV'

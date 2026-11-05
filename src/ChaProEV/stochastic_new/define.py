@@ -153,10 +153,14 @@ class Location:
     charging_price_eur_kWh: list[float]
     discharging_reward_eur_kWh: list[float]
     charging_desirability: float
+    variant_name: str
 
     @staticmethod
     def draw(
-        *, location_parameters: Box, random_generator: np.random.Generator
+        *,
+        location_parameters: Box,
+        location_name: str,
+        random_generator: np.random.Generator,
     ) -> Location:
         base: bool = location_parameters.base
         latitude: float = location_parameters.latitude
@@ -187,8 +191,10 @@ class Location:
                 )
 
             location_values: Box = location_parameters[chosen_variant]
+            variant_name: str = chosen_variant
         else:
             location_values = location_parameters
+            variant_name = location_name
 
         connectivity: float = location_values.connectivity
         charging_power_kW: float = location_values.charging_power_kW
@@ -223,6 +229,7 @@ class Location:
             charging_price_eur_kWh=charging_price_eur_kWh,
             discharging_reward_eur_kWh=discharging_reward_eur_kWh,
             charging_desirability=charging_desirability,
+            variant_name=variant_name,
         )
 
 
@@ -722,6 +729,7 @@ class User:
         locations: dict[str, Location] = {
             location_name: Location.draw(
                 location_parameters=location_parameters,
+                location_name=location_name,
                 random_generator=random_generator,
             )
             for location_name, location_parameters in (

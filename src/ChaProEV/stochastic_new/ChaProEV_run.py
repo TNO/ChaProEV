@@ -103,7 +103,7 @@ def test_run() -> None:
 
 
 @cook.function_timer
-def run_scenario(scenario: Box) -> None:
+def run_scenario(scenario: Box) -> UsersPoolStatistics:
     monte_carlo_definitions: Box = scenario.monte_carlo
 
     monte_carlo: MonteCarlo = MonteCarlo(
@@ -150,6 +150,8 @@ def run_scenario(scenario: Box) -> None:
     )
     with pl.Config(tbl_rows=26):
         print(users_pool_statistics)
+
+    return users_pool_statistics
 
 
 @cook.function_timer
