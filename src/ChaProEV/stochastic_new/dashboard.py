@@ -135,14 +135,14 @@ def make_dashboard() -> None:
             label='Consumption',
             value=f'{statistics_A.average_consumption_kWh:.0F} kWh',
         )
-        st.metric(
-            label='Purchased electricity',
-            value=f'{statistics_A.average_purchased_electricity_kWh:.0f} kWh',
-        )
-        st.metric(
-            label='Charge spending',
-            value=f'{statistics_A.average_charge_spending_eur:.0f} €',
-        )
+        # st.metric(
+        #     label='Purchased electricity',
+        #     value=f'{statistics_A.average_purchased_electricity_kWh:.0f} kWh',
+        # )
+        # st.metric(
+        #     label='Charge spending',
+        #     value=f'{statistics_A.average_charge_spending_eur:.0f} €',
+        # )
 
     with metrics_B:
         st.subheader('Scenario B')
@@ -154,14 +154,14 @@ def make_dashboard() -> None:
             label='Consumption',
             value=f'{statistics_B.average_consumption_kWh:.0f} kWh',
         )
-        st.metric(
-            label='Purchased electricity',
-            value=f'{statistics_B.average_purchased_electricity_kWh:.0f} kWh',
-        )
-        st.metric(
-            label='Charge spending',
-            value=f'{statistics_B.average_charge_spending_eur:.0f} €',
-        )
+        # st.metric(
+        #     label='Purchased electricity',
+        #     value=f'{statistics_B.average_purchased_electricity_kWh:.0f} kWh',
+        # )
+        # st.metric(
+        #     label='Charge spending',
+        #     value=f'{statistics_B.average_charge_spending_eur:.0f} €',
+        # )
 
     plt.style.use('fivethirtyeight')
 
@@ -179,7 +179,6 @@ def make_dashboard() -> None:
     electricity_purchased_A: dict[str, float] = (
         statistics_A.average_purchased_electricity_kWh_per_location_type
     )
-    print(spending_A)
 
     spending_B: dict[str, float] = (
         statistics_B.average_charge_spending_eur_per_location_type
@@ -189,13 +188,18 @@ def make_dashboard() -> None:
         statistics_B.average_purchased_electricity_kWh_per_location_type
     )
     spending_scale = cook.reference_scale(
-        list(spending_A.values()) + list(spending_B.values())
+        [sum(list(spending_A.values())), sum(list(spending_B.values()))]
     )
     electricity_purchased_scale = cook.reference_scale(
-        list(electricity_purchased_A.values())
-        + list(electricity_purchased_B.values())
+        [
+            sum(list(electricity_purchased_A.values())),
+            sum(list(electricity_purchased_B.values())),
+        ]
     )
-
+    metrics_text_color_name: str = scenario.metrics.text_color
+    metrics_text_color: tuple[float, float, float] = cook.get_rgb_from_name(
+        metrics_text_color_name, general_definitions.colors
+    )
     bottom_spending: float = 0.0
     for location_type, spending in spending_A.items():
         location_color_name: str = location_types_colors[location_type]
@@ -210,14 +214,22 @@ def make_dashboard() -> None:
             label=location_type,
         )
         bottom_spending += spending
-    # plots_A[1].set_ylim(0, spending_scale[1])
+    plots_A[1].set_ylim(0, spending_scale[1])
     plots_A[1].text(
         x=0,
         y=bottom_spending,
-        s=f'€ total {bottom_spending:.0f}',
+        s=f'€{bottom_spending:.0f} total',
         ha='center',
         va='bottom',
+        color=metrics_text_color,
     )
+    plots_A[1].xaxis.set_visible(False)
+    plots_A[1].tick_params(axis='y', colors=metrics_text_color)
+    plots_A[1].spines['bottom'].set_visible(False)
+    plots_A[1].spines['top'].set_visible(False)
+    plots_A[1].spines['left'].set_color(metrics_text_color)
+    plots_A[1].spines['right'].set_visible(False)
+
     bottom_spending: float = 0.0
     for location_type, spending in spending_B.items():
         location_color_name: str = location_types_colors[location_type]
@@ -232,14 +244,21 @@ def make_dashboard() -> None:
             label=location_type,
         )
         bottom_spending += spending
-    # plots_B[1].set_ylim(0, spending_scale[1])
+    plots_B[1].set_ylim(0, spending_scale[1])
     plots_B[1].text(
         x=0,
         y=bottom_spending,
-        s=f'€ total {bottom_spending:.0f}',
+        s=f'€ {bottom_spending:.0f} total',
         ha='center',
         va='bottom',
+        color=metrics_text_color
     )
+    plots_B[1].xaxis.set_visible(False)
+    plots_B[1].tick_params(axis='y', colors=metrics_text_color)
+    plots_B[1].spines['bottom'].set_visible(False)
+    plots_B[1].spines['top'].set_visible(False)
+    plots_B[1].spines['left'].set_color(metrics_text_color)
+    plots_B[1].spines['right'].set_visible(False)
     bottom_electricity: float = 0.0
     for location_type, electricity in electricity_purchased_A.items():
         location_color_name: str = location_types_colors[location_type]
@@ -254,14 +273,21 @@ def make_dashboard() -> None:
             label=location_type,
         )
         bottom_electricity += electricity
-    # plots_A[0].set_ylim(0, electricity_purchased_scale[1])
+    plots_A[0].set_ylim(0, electricity_purchased_scale[1])
     plots_A[0].text(
         x=0,
         y=bottom_electricity,
-        s=f'Total {bottom_electricity:.0f} (kWh)',
+        s=f'Total = {bottom_electricity:.0f} kWh',
         ha='center',
         va='bottom',
+        color=metrics_text_color
     )
+    plots_A[0].xaxis.set_visible(False)
+    plots_A[0].tick_params(axis='y', colors=metrics_text_color)
+    plots_A[0].spines['bottom'].set_visible(False)
+    plots_A[0].spines['top'].set_visible(False)
+    plots_A[0].spines['left'].set_color(metrics_text_color)
+    plots_A[0].spines['right'].set_visible(False)
     bottom_electricity: float = 0.0
     for location_type, electricity in electricity_purchased_B.items():
         location_color_name: str = location_types_colors[location_type]
@@ -276,20 +302,39 @@ def make_dashboard() -> None:
             label=location_type,
         )
         bottom_electricity += electricity
-    # plots_B[0].set_ylim(0, electricity_purchased_scale[1])
+    plots_B[0].set_ylim(0, electricity_purchased_scale[1])
     plots_B[0].text(
         x=0,
         y=bottom_electricity,
-        s=f'Total {bottom_electricity:.0f} (kWh)',
+        s=f'Total = {bottom_electricity:.0f} kWh',
         ha='center',
         va='bottom',
+        color=metrics_text_color
     )
+    plots_B[0].xaxis.set_visible(False)
+    plots_B[0].tick_params(axis='y', colors=metrics_text_color)
+    plots_B[0].spines['bottom'].set_visible(False)
+    plots_B[0].spines['top'].set_visible(False)
+    plots_B[0].spines['left'].set_color(metrics_text_color)
+    plots_B[0].spines['right'].set_visible(False)
     with metric_plots_A:
-        st.pyplot(fig=figure_A, use_container_width=True)
+        figure_A.patch.set_alpha(0)
+
+        for plot in plots_A:
+            plot.set_facecolor('none')
+
+        figure_A.tight_layout()
+        st.pyplot(fig=figure_A)
         plt.close(figure_A)
 
     with metric_plots_B:
-        st.pyplot(fig=figure_B, use_container_width=True)
+        figure_B.patch.set_alpha(0)
+
+        for plot in plots_B:
+            plot.set_facecolor('none')
+
+        figure_B.tight_layout()
+        st.pyplot(fig=figure_B)
         plt.close(figure_B)
 
     power_from_network_W_A: pl.Series = (
@@ -340,7 +385,7 @@ def make_dashboard() -> None:
     network_power_plot.legend()
 
     with plot_box_1:
-        st.pyplot(network_power_figure, use_container_width=True)
+        st.pyplot(network_power_figure)
 
         plt.close(network_power_figure)
 

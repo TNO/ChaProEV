@@ -17,9 +17,10 @@ location_types_colors = [
     'TNO_sustainable_green',
     'TNO_healthy_yellow',
     'TNO_safe_purple',
-    'TNO_ink',
-    'TNO_blue',
+    'TNO_gray',
+    'kraken_ice_blue',
 ]
+text_color = 'TNO_white'
 
 
 [locations]

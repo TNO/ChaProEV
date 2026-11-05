@@ -199,14 +199,14 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             locations=user.locations,
         )
 
-        print(user.run_metrics.charge_spending_eur)
-        print(
-            sum(
-                list(
-                    user.run_metrics.charge_spending_eur_per_location_type.values()
-                )
-            )
-        )
+        # print(user.run_metrics.charge_spending_eur)
+        # print(
+        #     sum(
+        #         list(
+        #             user.run_metrics.charge_spending_eur_per_location_type.values()
+        #         )
+        #     )
+        # )
 
         # with pl.Config(tbl_rows=26):
         #     print(
