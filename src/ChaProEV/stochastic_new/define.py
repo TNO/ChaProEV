@@ -18,11 +18,29 @@ class RunMetrics:
     kilometrage: float = 0.0
     consumption_kWh: float = 0.0
     purchased_electricity_kWh: float = 0.0
+    purchased_electricity_kWh_per_location_type: dict[str, float] = field(
+        default_factory=dict
+    )
     electricity_to_battery_kWh: float = 0.0
+    electricity_to_battery_kWh_per_location_type: dict[str, float] = field(
+        default_factory=dict
+    )
     charge_spending_eur: float = 0.0
+    charge_spending_eur_per_location_type: dict[str, float] = field(
+        default_factory=dict
+    )
     electricity_sold_kWh: float = 0.0
+    electricity_sold_kWh_per_location_type: dict[str, float] = field(
+        default_factory=dict
+    )
     discharge_income_eur: float = 0.0
+    discharge_income_eur_per_location_type: dict[str, float] = field(
+        default_factory=dict
+    )
     average_electricity_costs_eur_kWh: float = 0.0
+    average_electricity_costs_eur_kWh_per_location_type: dict[str, float] = (
+        field(default_factory=dict)
+    )
     average_travel_costs_eur_km: float = 0.0
     average_hourly_power_from_network_kW: pl.Series = field(
         default_factory=lambda: pl.Series(
@@ -31,30 +49,91 @@ class RunMetrics:
             dtype=pl.Float64,
         )
     )
+    average_hourly_power_from_network_kW_per_location_type: dict[
+        str, pl.Series
+    ] = field(default_factory=dict)
 
     def charge_update(
-        self, charge_dataframe: pl.DataFrame, charging_settings: Box
+        self,
+        charge_dataframe: pl.DataFrame,
+        charging_settings: Box,
+        locations: dict[str, Location],
     ) -> None:
         self.purchased_electricity_kWh = charge_dataframe[
             charging_settings.charge_from_network_header
         ].sum()
+        self.purchased_electricity_kWh_per_location_type = {
+            location.variant_name: charge_dataframe.filter(
+                pl.col(charging_settings.location_header) == location_name
+            )[charging_settings.charge_from_network_header].sum()
+            for location_name, location in locations.items()
+        }
+
         self.electricity_to_battery_kWh = charge_dataframe[
             charging_settings.charge_to_vehicle_header
         ].sum()
+        self.electricity_to_battery_kWh_per_location_type = {
+            location.variant_name: charge_dataframe.filter(
+                pl.col(charging_settings.location_header) == location_name
+            )[charging_settings.charge_to_vehicle_header].sum()
+            for location_name, location in locations.items()
+        }
         self.charge_spending_eur = charge_dataframe[
             charging_settings.electricity_spending_header
         ].sum()
+        self.charge_spending_eur_per_location_type = {
+            location.variant_name: charge_dataframe.filter(
+                pl.col(charging_settings.location_header) == location_name
+            )[charging_settings.electricity_spending_header].sum()
+            for location_name, location in locations.items()
+        }
+        hours: pl.DataFrame = pl.DataFrame({'Hour number': range(24)})
+        hours = pl.DataFrame({'Hour number': range(24)})
+
         self.average_hourly_power_from_network_kW = (
-            charge_dataframe.group_by(
-                pl.col(charging_settings.time_index_name)
-                .dt.hour()
-                .alias('Hour number')
+            hours.join(
+                charge_dataframe.group_by(
+                    pl.col(charging_settings.time_index_name)
+                    .dt.hour()
+                    .alias('Hour number')
+                ).agg(
+                    pl.col(charging_settings.power_from_network_header).mean()
+                ),
+                on='Hour number',
+                how='left',
             )
-            .agg(pl.col(charging_settings.power_from_network_header).mean())
-            .sort('Hour number')
             .get_column(charging_settings.power_from_network_header)
+            .fill_null(0.0)
             .rename('Average hourly power from network (kW)')
         )
+
+        self.average_hourly_power_from_network_kW_per_location_type = {
+            location.variant_name: (
+                hours.join(
+                    charge_dataframe.filter(
+                        pl.col(charging_settings.location_header)
+                        == location_name
+                    )
+                    .group_by(
+                        pl.col(charging_settings.time_index_name)
+                        .dt.hour()
+                        .alias('Hour number')
+                    )
+                    .agg(
+                        pl.col(
+                            charging_settings.power_from_network_header
+                        ).mean()
+                    ),
+                    on='Hour number',
+                    how='left',
+                )
+                .get_column(charging_settings.power_from_network_header)
+                .fill_null(0.0)
+                .rename('Average hourly power from network (kW)')
+            )
+            for location_name, location in locations.items()
+        }
+
         self.average_electricity_costs_eur_kWh = (
             self.charge_spending_eur / self.purchased_electricity_kWh
         )

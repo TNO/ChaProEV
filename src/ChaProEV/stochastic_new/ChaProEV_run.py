@@ -134,7 +134,10 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         user.run_metrics.charge_update(
             charge_dataframe=user.charge,
             charging_settings=scenario.charging_dataframe,
+            locations=user.locations
         )
+        print(user.run_metrics)
+        exit()
         # with pl.Config(tbl_rows=26):
         #     print(user.run_metrics)
         # exit()
