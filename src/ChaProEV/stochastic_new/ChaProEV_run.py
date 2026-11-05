@@ -41,6 +41,15 @@ class UsersPoolStatistics:
             user.run_metrics.consumption_kWh for user in users_pool
         )
 
+        actual_location_types = {
+            location_type
+            for user in users_pool
+            for location_type in user.run_metrics.purchased_electricity_kWh_per_location_type
+        }
+        assert actual_location_types <= set(
+            location_types
+        ), f'Missing location types: {actual_location_types - set(location_types)}'
+
         average_purchased_electricity_kWh: float = fmean(
             user.run_metrics.purchased_electricity_kWh for user in users_pool
         )
@@ -190,6 +199,15 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             locations=user.locations,
         )
 
+        print(user.run_metrics.charge_spending_eur)
+        print(
+            sum(
+                list(
+                    user.run_metrics.charge_spending_eur_per_location_type.values()
+                )
+            )
+        )
+
         # with pl.Config(tbl_rows=26):
         #     print(
         #         user.run_metrics.average_electricity_costs_eur_kWh_per_location_type
@@ -202,7 +220,7 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         #     user.run_metrics.charge_spending_eur
         #     / user.run_metrics.purchased_electricity_kWh
         # )
-
+    # exit()
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
         users_pool=users_pool, location_types=scenario.metrics.location_types
     )

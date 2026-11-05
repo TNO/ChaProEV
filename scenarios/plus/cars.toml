@@ -6,6 +6,7 @@ location_types = [
     'work',
     'weekend',
     'holiday',
+    'leisure',
     'fast'
 ]
 # Keep it consistent with the below [locations]
@@ -17,6 +18,7 @@ location_types_colors = [
     'TNO_healthy_yellow',
     'TNO_safe_purple',
     'TNO_ink',
+    'TNO_blue',
 ]
 
 
