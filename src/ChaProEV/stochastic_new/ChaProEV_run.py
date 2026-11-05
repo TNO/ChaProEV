@@ -17,15 +17,22 @@ class UsersPoolStatistics:
     average_kilometrage: float
     average_consumption_kWh: float
     average_purchased_electricity_kWh: float
+    average_purchased_electricity_kWh_per_location_type: dict[str, float]
     average_charge_spending_eur: float
+    average_charge_spending_eur_per_location_type: dict[str, float]
     average_electricity_sold_kWh: float
     average_discharge_income_eur: float
     pool_average_hourly_power_from_network_kW: pl.Series
+    pool_average_hourly_power_from_network_kW_per_location_type: dict[
+        str, pl.Series
+    ]
     pool_average_electricity_costs_eur_kWh: float
     pool_average_travel_costs_eur_km: float
 
     @staticmethod
-    def compute(*, users_pool: list[User]) -> UsersPoolStatistics:
+    def compute(
+        *, users_pool: list[User], location_types: list[str]
+    ) -> UsersPoolStatistics:
         average_kilometrage: float = fmean(
             user.run_metrics.kilometrage for user in users_pool
         )
@@ -37,9 +44,29 @@ class UsersPoolStatistics:
         average_purchased_electricity_kWh: float = fmean(
             user.run_metrics.purchased_electricity_kWh for user in users_pool
         )
+        average_purchased_electricity_kWh_per_location_type: dict[
+            str, float
+        ] = {
+            location_type: fmean(
+                user.run_metrics.purchased_electricity_kWh_per_location_type.get(  # noqa:E501
+                    location_type, 0.0
+                )
+                for user in users_pool
+            )
+            for location_type in location_types
+        }
         average_charge_spending_eur: float = fmean(
             user.run_metrics.charge_spending_eur for user in users_pool
         )
+        average_charge_spending_eur_per_location_type: dict[str, float] = {
+            location_type: fmean(
+                user.run_metrics.charge_spending_eur_per_location_type.get(
+                    location_type, 0.0
+                )
+                for user in users_pool
+            )
+            for location_type in location_types
+        }
 
         average_electricity_sold_kWh: float = fmean(
             user.run_metrics.electricity_sold_kWh for user in users_pool
@@ -67,6 +94,25 @@ class UsersPoolStatistics:
             .mean_horizontal()
             .rename('Average hourly power from network (kW)')
         )
+        pool_average_hourly_power_from_network_kW_per_location_type: dict[
+            str, pl.Series
+        ] = {
+            location_type: (
+                pl.DataFrame(
+                    [
+                        user.run_metrics.average_hourly_power_from_network_kW_per_location_type.get(  # noqa:E501
+                            location_type, pl.Series(values=[0.0] * 24)
+                        ).rename(  # noqa: E501
+                            str(user_index)
+                        )
+                        for user_index, user in enumerate(users_pool)
+                    ]
+                )
+                .mean_horizontal()
+                .rename('Average hourly power from network (kW)')
+            )
+            for location_type in location_types
+        }
 
         return UsersPoolStatistics(
             average_kilometrage=average_kilometrage,
@@ -74,7 +120,13 @@ class UsersPoolStatistics:
             average_purchased_electricity_kWh=(
                 average_purchased_electricity_kWh
             ),
+            average_purchased_electricity_kWh_per_location_type=(
+                average_purchased_electricity_kWh_per_location_type
+            ),
             average_charge_spending_eur=average_charge_spending_eur,
+            average_charge_spending_eur_per_location_type=(
+                average_charge_spending_eur_per_location_type
+            ),
             average_electricity_sold_kWh=average_electricity_sold_kWh,
             average_discharge_income_eur=average_discharge_income_eur,
             pool_average_hourly_power_from_network_kW=(
@@ -84,6 +136,7 @@ class UsersPoolStatistics:
                 pool_average_electricity_costs_eur_kWh
             ),
             pool_average_travel_costs_eur_km=pool_average_travel_costs_eur_km,
+            pool_average_hourly_power_from_network_kW_per_location_type=pool_average_hourly_power_from_network_kW_per_location_type,  # noqa:E501
         )
 
 
@@ -134,12 +187,14 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         user.run_metrics.charge_update(
             charge_dataframe=user.charge,
             charging_settings=scenario.charging_dataframe,
-            locations=user.locations
+            locations=user.locations,
         )
-        print(user.run_metrics)
-        exit()
+
         # with pl.Config(tbl_rows=26):
-        #     print(user.run_metrics)
+        #     print(
+        #         user.run_metrics.average_electricity_costs_eur_kWh_per_location_type
+        #     )
+        #     input()
         # exit()
         # print(user.ID)
         # print(user.run_metrics.charge_spending_eur)
@@ -149,7 +204,7 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         # )
 
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
-        users_pool=users_pool
+        users_pool=users_pool, location_types=scenario.metrics.location_types
     )
     with pl.Config(tbl_rows=26):
         print(users_pool_statistics)

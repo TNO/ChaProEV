@@ -1,4 +1,18 @@
 
+[metrics]
+location_types = [
+    'own_driveway',
+    'street_parking',
+    'work',
+    'weekend',
+    'holiday',
+    'fast'
+]
+# Keep it consistent with the below [locations]
+# Do use the variants if there are any
+
+
+
 [locations]
 # Add locations following the syntax below:
 # [location.code] <--use the the code/alias you want for the location

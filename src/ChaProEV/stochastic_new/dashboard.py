@@ -36,6 +36,7 @@ def make_dashboard() -> None:
     st.set_page_config(layout='wide')
 
     metrics_A, metrics_B = st.columns(2)
+    plots_A, plots_B = st.columns(2)
     _, plot_box_1, _ = st.columns([1, 2, 1])
     sliders_A, sliders_B = st.columns(2)
 
