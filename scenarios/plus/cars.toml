@@ -10,7 +10,14 @@ location_types = [
 ]
 # Keep it consistent with the below [locations]
 # Do use the variants if there are any
-
+location_types_colors = [
+    'TNO_action_blue',
+    'TNO_action_orange',
+    'TNO_sustainable_green',
+    'TNO_healthy_yellow',
+    'TNO_safe_purple',
+    'TNO_ink',
+]
 
 
 [locations]

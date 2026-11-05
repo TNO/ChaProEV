@@ -36,7 +36,10 @@ def make_dashboard() -> None:
     st.set_page_config(layout='wide')
 
     metrics_A, metrics_B = st.columns(2)
-    plots_A, plots_B = st.columns(2)
+    figure_A, plots_A = plt.subplots(1, 2)
+    figure_B, plots_B = plt.subplots(1, 2)
+
+    metric_plots_A, metric_plots_B = st.columns(2)
     _, plot_box_1, _ = st.columns([1, 2, 1])
     sliders_A, sliders_B = st.columns(2)
 
@@ -161,6 +164,133 @@ def make_dashboard() -> None:
         )
 
     plt.style.use('fivethirtyeight')
+
+    metrics_settings: Box = scenario.metrics
+    location_types: list[str] = metrics_settings.location_types
+    location_types_colors_list: list[str] = (
+        metrics_settings.location_types_colors
+    )
+    location_types_colors: dict[str, str] = dict(
+        zip(location_types, location_types_colors_list)
+    )
+    spending_A: dict[str, float] = (
+        statistics_A.average_charge_spending_eur_per_location_type
+    )
+    electricity_purchased_A: dict[str, float] = (
+        statistics_A.average_purchased_electricity_kWh_per_location_type
+    )
+    print(spending_A)
+
+    spending_B: dict[str, float] = (
+        statistics_B.average_charge_spending_eur_per_location_type
+    )
+
+    electricity_purchased_B: dict[str, float] = (
+        statistics_B.average_purchased_electricity_kWh_per_location_type
+    )
+    spending_scale = cook.reference_scale(
+        list(spending_A.values()) + list(spending_B.values())
+    )
+    electricity_purchased_scale = cook.reference_scale(
+        list(electricity_purchased_A.values())
+        + list(electricity_purchased_B.values())
+    )
+
+    bottom_spending: float = 0.0
+    for location_type, spending in spending_A.items():
+        location_color_name: str = location_types_colors[location_type]
+        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
+            location_color_name, general_definitions.colors
+        )
+        plots_A[1].bar(
+            x='Yearly electricity spending (€)',
+            height=spending,
+            color=location_color,
+            bottom=bottom_spending,
+            label=location_type,
+        )
+        bottom_spending += spending
+    # plots_A[1].set_ylim(0, spending_scale[1])
+    plots_A[1].text(
+        x=0,
+        y=bottom_spending,
+        s=f'€ total {bottom_spending:.0f}',
+        ha='center',
+        va='bottom',
+    )
+    bottom_spending: float = 0.0
+    for location_type, spending in spending_B.items():
+        location_color_name: str = location_types_colors[location_type]
+        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
+            location_color_name, general_definitions.colors
+        )
+        plots_B[1].bar(
+            x='Yearly electricity spending (€)',
+            height=spending,
+            color=location_color,
+            bottom=bottom_spending,
+            label=location_type,
+        )
+        bottom_spending += spending
+    # plots_B[1].set_ylim(0, spending_scale[1])
+    plots_B[1].text(
+        x=0,
+        y=bottom_spending,
+        s=f'€ total {bottom_spending:.0f}',
+        ha='center',
+        va='bottom',
+    )
+    bottom_electricity: float = 0.0
+    for location_type, electricity in electricity_purchased_A.items():
+        location_color_name: str = location_types_colors[location_type]
+        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
+            location_color_name, general_definitions.colors
+        )
+        plots_A[0].bar(
+            x='Yearly electricity purchasesd (kWh)',
+            height=electricity,
+            color=location_color,
+            bottom=bottom_electricity,
+            label=location_type,
+        )
+        bottom_electricity += electricity
+    # plots_A[0].set_ylim(0, electricity_purchased_scale[1])
+    plots_A[0].text(
+        x=0,
+        y=bottom_electricity,
+        s=f'Total {bottom_electricity:.0f} (kWh)',
+        ha='center',
+        va='bottom',
+    )
+    bottom_electricity: float = 0.0
+    for location_type, electricity in electricity_purchased_B.items():
+        location_color_name: str = location_types_colors[location_type]
+        location_color: tuple[float, float, float] = cook.get_rgb_from_name(
+            location_color_name, general_definitions.colors
+        )
+        plots_B[0].bar(
+            x='Yearly electricity purchasesd (kWh)',
+            height=electricity,
+            color=location_color,
+            bottom=bottom_electricity,
+            label=location_type,
+        )
+        bottom_electricity += electricity
+    # plots_B[0].set_ylim(0, electricity_purchased_scale[1])
+    plots_B[0].text(
+        x=0,
+        y=bottom_electricity,
+        s=f'Total {bottom_electricity:.0f} (kWh)',
+        ha='center',
+        va='bottom',
+    )
+    with metric_plots_A:
+        st.pyplot(fig=figure_A, use_container_width=True)
+        plt.close(figure_A)
+
+    with metric_plots_B:
+        st.pyplot(fig=figure_B, use_container_width=True)
+        plt.close(figure_B)
 
     power_from_network_W_A: pl.Series = (
         statistics_A.pool_average_hourly_power_from_network_kW
