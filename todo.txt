@@ -1,7 +1,21 @@
 
-Add fast charging trigger (e.g. batrey less than 10% --> top up )
 
-Do not round down fats charging (reduce the power for the last minute?)
+Dashboard
+discharge
+More run_metrics
+Histograms
+More vehicles (batched)
+
+peak price per location off peak price per location 
+and double slider to set peak (since midnigh crossing is offpeak in principle)
+
+wants to charge combine price and trigger: A trgger any price will do.
+At 100% battery, only zero price will do 
+
+(charge level-trigger level) X price <= X 
+
+X is in euros
+
 
 Test parameters to get to actual kilometrages
 

@@ -59,7 +59,7 @@ discharging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 
 time_modulation_factors = [
-    0.89, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1,
 ] # Starts at midnight
@@ -580,7 +580,7 @@ driving_location_name = 'road'
 fast_charging_location_name = 'fast'
 
 [charging_behaviour]
-adaptive_proportion = 0.8 
+adaptive_proportion = 0.8
 # Proportion of users using adaptive charging.
 # Must be between 0.0 and 1.0 (inclusive)
 charge_desire_proportion_trigger_min = 0.4

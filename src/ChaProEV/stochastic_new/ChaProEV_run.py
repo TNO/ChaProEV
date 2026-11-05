@@ -148,7 +148,8 @@ def run_scenario(scenario: Box) -> None:
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
         users_pool=users_pool
     )
-    print(users_pool_statistics)
+    with pl.Config(tbl_rows=26):
+        print(users_pool_statistics)
 
 
 @cook.function_timer
