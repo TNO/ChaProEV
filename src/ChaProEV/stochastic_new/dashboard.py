@@ -92,6 +92,17 @@ def get_metrics_figure(
             location_types_colors=location_types_colors,
             metrics_text_color=metrics_text_color,
         )
+    legend_colors, lgend_labels = metrics_plots[0].get_legend_handles_labels()
+    metrics_figure.legend(
+        legend_colors,
+        lgend_labels,
+        ncol=4,
+        frameon=False,
+        labelcolor=metrics_text_color,
+        fontsize=10,
+        loc='lower center',
+        bbox_to_anchor=(0.5, -0.05)
+    )
     metrics_figure.patch.set_alpha(0)
     metrics_figure.tight_layout()
     return metrics_figure, metrics_plots
