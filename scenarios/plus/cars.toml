@@ -241,49 +241,49 @@ time_modulation_factors = [
 # between two locations, which you will use as references in the leg 
 # definitions. Do same with speeds
 [legs_references.home_work]
-distance_km_min = 15.0
-distance_km_typical =  19.2
-distance_km_max = 25.0
+distance_km_min = 17.0
+distance_km_typical =  24.0
+distance_km_max = 31.0
 speed_kph_min = 60.0
 speed_kph_typical = 80.0
 speed_kph_max = 90.0
 
 [legs_references.home_leisure]
-distance_km_min = 3.0
-distance_km_typical =  5.2
-distance_km_max = 12.0
+distance_km_min = 10.0
+distance_km_typical =  18.0
+distance_km_max = 26.0
 speed_kph_min = 30.0
 speed_kph_typical = 50.0
 speed_kph_max = 60.0
 
 [legs_references.work_leisure]
-distance_km_min = 15.0
-distance_km_typical =  21.0
+distance_km_min = 16.0
+distance_km_typical =  23.0
 distance_km_max = 30.0
 speed_kph_min = 40.0
 speed_kph_typical = 50.0
 speed_kph_max = 60.0
 
 [legs_references.holiday_leisure]
-distance_km_min = 7.0
-distance_km_typical =  10.0
-distance_km_max = 12.0
+distance_km_min = 10.0
+distance_km_typical =  15.0
+distance_km_max = 20.0
 speed_kph_min = 30.0
 speed_kph_typical = 50.0
 speed_kph_max = 60.0
 
 [legs_references.home_weekend]
-distance_km_min = 50.0
-distance_km_typical =  87.3
+distance_km_min = 80.0
+distance_km_typical =  90.0
 distance_km_max = 100.0
 speed_kph_min = 80.0
 speed_kph_typical = 100.0
 speed_kph_max = 110.0
 
 [legs_references.home_holiday]
-distance_km_min = 130.0
-distance_km_typical =  174.6
-distance_km_max = 200.0
+distance_km_min = 200.0
+distance_km_typical =  300.0
+distance_km_max = 400.0
 speed_kph_min = 80.0
 speed_kph_typical = 100.0
 speed_kph_max = 110.0
