@@ -292,6 +292,71 @@ def make_dashboard() -> None:
                     format='percent',
                     key='street_parking_connectivity_A',
                 )
+                home_work_distance_min_A, home_work_distance_max_A = st.slider(
+                    label='Home-work distance (km)',
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=(15.0, 25.0),
+                    step=1.0,
+                    format='%.0f',
+                    key='home_work_distance_A',
+                )
+                home_leisure_distance_min_A, home_leisure_distance_max_A = (
+                    st.slider(
+                        label='Home-leisure distance (km)',
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=(3.0, 12.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='home_leisure_distance_A',
+                    )
+                )
+                work_leisure_distance_min_A, work_leisure_distance_max_A = (
+                    st.slider(
+                        label='Work-leisure distance (km)',
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=(15.0, 30.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='work_leisure_distance_A',
+                    )
+                )
+                (
+                    holiday_leisure_distance_min_A,
+                    holiday_leisure_distance_max_A,
+                ) = st.slider(
+                    label='Holiday-leisure distance (km)',
+                    min_value=10.0,
+                    max_value=100.0,
+                    value=(15.0, 25.0),
+                    step=1.0,
+                    format='%.0f',
+                    key='holiday_leisure_distance_A',
+                )
+                home_weekend_distance_min_A, home_weekend_distance_max_A = (
+                    st.slider(
+                        label='Home-weekend distance (km)',
+                        min_value=0.0,
+                        max_value=400.0,
+                        value=(50.0, 100.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='home_weekend_distance_A',
+                    )
+                )
+                home_holiday_distance_min_A, home_holiday_distance_max_A = (
+                    st.slider(
+                        label='Home-holiday distance (km)',
+                        min_value=0.0,
+                        max_value=1_000.0,
+                        value=(130.0, 200.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='home_holiday_distance_A',
+                    )
+                )
 
             with sliders_B:
                 st.subheader('Scenario B')
@@ -346,6 +411,71 @@ def make_dashboard() -> None:
                     format='percent',
                     key='street_parking_connectivity_B',
                 )
+                home_work_distance_min_B, home_work_distance_max_B = st.slider(
+                    label='Home-work distance (km)',
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=(15.0, 25.0),
+                    step=1.0,
+                    format='%.0f',
+                    key='home_work_distance_B',
+                )
+                home_leisure_distance_min_B, home_leisure_distance_max_B = (
+                    st.slider(
+                        label='Home-leisure distance (km)',
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=(3.0, 12.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='home_leisure_distance_B',
+                    )
+                )
+                work_leisure_distance_min_B, work_leisure_distance_max_B = (
+                    st.slider(
+                        label='Work-leisure distance (km)',
+                        min_value=0.0,
+                        max_value=100.0,
+                        value=(15.0, 30.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='work_leisure_distance_B',
+                    )
+                )
+                (
+                    holiday_leisure_distance_min_B,
+                    holiday_leisure_distance_max_B,
+                ) = st.slider(
+                    label='Holiday-leisure distance (km)',
+                    min_value=10.0,
+                    max_value=100.0,
+                    value=(15.0, 25.0),
+                    step=1.0,
+                    format='%.0f',
+                    key='holiday_leisure_distance_B',
+                )
+                home_weekend_distance_min_B, home_weekend_distance_max_B = (
+                    st.slider(
+                        label='Home-weekend distance (km)',
+                        min_value=0.0,
+                        max_value=400.0,
+                        value=(50.0, 100.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='home_weekend_distance_B',
+                    )
+                )
+                home_holiday_distance_min_B, home_holiday_distance_max_B = (
+                    st.slider(
+                        label='Home-holiday distance (km)',
+                        min_value=0.0,
+                        max_value=1_000.0,
+                        value=(130.0, 200.0),
+                        step=1.0,
+                        format='%.0f',
+                        key='home_holiday_distance_B',
+                    )
+                )
             run_button = st.form_submit_button("Run")
     charge_desire_proportion_trigger_min_A /= 100
     charge_desire_proportion_trigger_max_A /= 100
@@ -380,6 +510,54 @@ def make_dashboard() -> None:
         proportion_own_driveway_B,
         1 - proportion_own_driveway_B,
     ]
+    home_work_distance_typical_A: float = (
+        home_work_distance_min_A + home_work_distance_max_A
+    ) / 2
+
+    home_leisure_distance_typical_A: float = (
+        home_leisure_distance_min_A + home_leisure_distance_max_A
+    ) / 2
+
+    work_leisure_distance_typical_A: float = (
+        work_leisure_distance_min_A + work_leisure_distance_max_A
+    ) / 2
+
+    holiday_leisure_distance_typical_A: float = (
+        holiday_leisure_distance_min_A + holiday_leisure_distance_max_A
+    ) / 2
+
+    home_weekend_distance_typical_A: float = (
+        home_weekend_distance_min_A + home_weekend_distance_max_A
+    ) / 2
+
+    home_holiday_distance_typical_A: float = (
+        home_holiday_distance_min_A + home_holiday_distance_max_A
+    ) / 2
+
+    home_work_distance_typical_B: float = (
+        home_work_distance_min_B + home_work_distance_max_B
+    ) / 2
+
+    home_leisure_distance_typical_B: float = (
+        home_leisure_distance_min_B + home_leisure_distance_max_B
+    ) / 2
+
+    work_leisure_distance_typical_B: float = (
+        work_leisure_distance_min_B + work_leisure_distance_max_B
+    ) / 2
+
+    holiday_leisure_distance_typical_B: float = (
+        holiday_leisure_distance_min_B + holiday_leisure_distance_max_B
+    ) / 2
+
+    home_weekend_distance_typical_B: float = (
+        home_weekend_distance_min_B + home_weekend_distance_max_B
+    ) / 2
+
+    home_holiday_distance_typical_B: float = (
+        home_holiday_distance_min_B + home_holiday_distance_max_B
+    ) / 2
+
     scenario_A.charging_behaviour.adaptive_proportion = adaptive_proportion_A
     scenario_A.charging_behaviour.charge_desire_proportion_trigger_min = (
         charge_desire_proportion_trigger_min_A
@@ -429,6 +607,126 @@ def make_dashboard() -> None:
     )
     scenario_B.locations.home.street_parking.connectivity = (
         street_parking_connectivity_B
+    )
+
+    scenario_A.legs_references.home_work.distance_km_min = (
+        home_work_distance_min_A
+    )
+    scenario_A.legs_references.home_work.distance_km_typical = (
+        home_work_distance_typical_A
+    )
+    scenario_A.legs_references.home_work.distance_km_max = (
+        home_work_distance_max_A
+    )
+
+    scenario_A.legs_references.home_leisure.distance_km_min = (
+        home_leisure_distance_min_A
+    )
+    scenario_A.legs_references.home_leisure.distance_km_typical = (
+        home_leisure_distance_typical_A
+    )
+    scenario_A.legs_references.home_leisure.distance_km_max = (
+        home_leisure_distance_max_A
+    )
+
+    scenario_A.legs_references.work_leisure.distance_km_min = (
+        work_leisure_distance_min_A
+    )
+    scenario_A.legs_references.work_leisure.distance_km_typical = (
+        work_leisure_distance_typical_A
+    )
+    scenario_A.legs_references.work_leisure.distance_km_max = (
+        work_leisure_distance_max_A
+    )
+
+    scenario_A.legs_references.holiday_leisure.distance_km_min = (
+        holiday_leisure_distance_min_A
+    )
+    scenario_A.legs_references.holiday_leisure.distance_km_typical = (
+        holiday_leisure_distance_typical_A
+    )
+    scenario_A.legs_references.holiday_leisure.distance_km_max = (
+        holiday_leisure_distance_max_A
+    )
+
+    scenario_A.legs_references.home_weekend.distance_km_min = (
+        home_weekend_distance_min_A
+    )
+    scenario_A.legs_references.home_weekend.distance_km_typical = (
+        home_weekend_distance_typical_A
+    )
+    scenario_A.legs_references.home_weekend.distance_km_max = (
+        home_weekend_distance_max_A
+    )
+
+    scenario_A.legs_references.home_holiday.distance_km_min = (
+        home_holiday_distance_min_A
+    )
+    scenario_A.legs_references.home_holiday.distance_km_typical = (
+        home_holiday_distance_typical_A
+    )
+    scenario_A.legs_references.home_holiday.distance_km_max = (
+        home_holiday_distance_max_A
+    )
+
+    scenario_B.legs_references.home_work.distance_km_min = (
+        home_work_distance_min_B
+    )
+    scenario_B.legs_references.home_work.distance_km_typical = (
+        home_work_distance_typical_B
+    )
+    scenario_B.legs_references.home_work.distance_km_max = (
+        home_work_distance_max_B
+    )
+
+    scenario_B.legs_references.home_leisure.distance_km_min = (
+        home_leisure_distance_min_B
+    )
+    scenario_B.legs_references.home_leisure.distance_km_typical = (
+        home_leisure_distance_typical_B
+    )
+    scenario_B.legs_references.home_leisure.distance_km_max = (
+        home_leisure_distance_max_B
+    )
+
+    scenario_B.legs_references.work_leisure.distance_km_min = (
+        work_leisure_distance_min_B
+    )
+    scenario_B.legs_references.work_leisure.distance_km_typical = (
+        work_leisure_distance_typical_B
+    )
+    scenario_B.legs_references.work_leisure.distance_km_max = (
+        work_leisure_distance_max_B
+    )
+
+    scenario_B.legs_references.holiday_leisure.distance_km_min = (
+        holiday_leisure_distance_min_B
+    )
+    scenario_B.legs_references.holiday_leisure.distance_km_typical = (
+        holiday_leisure_distance_typical_B
+    )
+    scenario_B.legs_references.holiday_leisure.distance_km_max = (
+        holiday_leisure_distance_max_B
+    )
+
+    scenario_B.legs_references.home_weekend.distance_km_min = (
+        home_weekend_distance_min_B
+    )
+    scenario_B.legs_references.home_weekend.distance_km_typical = (
+        home_weekend_distance_typical_B
+    )
+    scenario_B.legs_references.home_weekend.distance_km_max = (
+        home_weekend_distance_max_B
+    )
+
+    scenario_B.legs_references.home_holiday.distance_km_min = (
+        home_holiday_distance_min_B
+    )
+    scenario_B.legs_references.home_holiday.distance_km_typical = (
+        home_holiday_distance_typical_B
+    )
+    scenario_B.legs_references.home_holiday.distance_km_max = (
+        home_holiday_distance_max_B
     )
     if (
         'statistics_A' not in st.session_state
@@ -635,7 +933,6 @@ if __name__ == '__main__':
     # more accurte kilometrages
     # slider selection in TOML
     # stop triggers
-    # distances sliders
     # lunch/evening leisure split
     # weekday commutre factir nd/or commute day probabilities
     # Session data (start, duration, kWh needed)
