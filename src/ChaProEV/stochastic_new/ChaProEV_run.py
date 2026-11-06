@@ -214,6 +214,7 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         #         )
         #     exit()
         # input()
+        print(user.run_metrics.kilometrage)
         # print(user.run_metrics.charge_spending_eur)
         # print(
         #     sum(

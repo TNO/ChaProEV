@@ -995,6 +995,26 @@ def make_dashboard() -> None:
         st.session_state.statistics_A = run_scenario(scenario_A)
         st.session_state.statistics_B = run_scenario(scenario_B)
 
+        # Store the initial metrics as the reference
+        if 'initial_average_kilometrage_A' not in st.session_state:
+            st.session_state.initial_average_kilometrage_A = (
+                st.session_state.statistics_A.average_kilometrage
+            )
+
+        if 'initial_average_consumption_kWh_A' not in st.session_state:
+            st.session_state.initial_average_consumption_kWh_A = (
+                st.session_state.statistics_A.average_consumption_kWh
+            )
+        if 'initial_average_kilometrage_B' not in st.session_state:
+            st.session_state.initial_average_kilometrage_B = (
+                st.session_state.statistics_B.average_kilometrage
+            )
+
+        if 'initial_average_consumption_kWh_B' not in st.session_state:
+            st.session_state.initial_average_consumption_kWh_B = (
+                st.session_state.statistics_B.average_consumption_kWh
+            )
+
     statistics_A: UsersPoolStatistics = st.session_state.statistics_A
     statistics_B: UsersPoolStatistics = st.session_state.statistics_B
 
@@ -1006,11 +1026,17 @@ def make_dashboard() -> None:
             st.metric(
                 label='Kilometrage',
                 value=f'{statistics_A.average_kilometrage:.0f} km',
+                delta=(
+                    f'{statistics_A.average_kilometrage - st.session_state.initial_average_kilometrage_A:+.0f} km'  # noqa:E501
+                ),
             )
         with metrics_A_2:
             st.metric(
                 label='Consumption',
                 value=f'{statistics_A.average_consumption_kWh:.0F} kWh',
+                delta=(
+                    f'{statistics_A.average_consumption_kWh - st.session_state.initial_average_consumption_kWh_A:+.0f} kWh'  # noqa:E501
+                ),
             )
 
     with metrics_B:
@@ -1020,11 +1046,17 @@ def make_dashboard() -> None:
             st.metric(
                 label='Kilometrage',
                 value=f'{statistics_B.average_kilometrage:.0f} km',
+                delta=(
+                    f'{statistics_B.average_kilometrage - st.session_state.initial_average_kilometrage_B:+.0f} km'  # noqa:E501
+                ),
             )
         with metrics_B_2:
             st.metric(
                 label='Consumption',
                 value=f'{statistics_B.average_consumption_kWh:.0f} kWh',
+                delta=(
+                    f'{statistics_B.average_consumption_kWh - st.session_state.initial_average_consumption_kWh_B:+.0f} kWh'  # noqa:E501
+                ),
             )
 
     plt.style.use('fivethirtyeight')
