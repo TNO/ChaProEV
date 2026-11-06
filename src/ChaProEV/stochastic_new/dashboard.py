@@ -432,6 +432,15 @@ def make_dashboard() -> None:
                         key='home_holiday_distance_A',
                     )
                 )
+                lunch_leisure_proportion_A: float = st.slider(
+                    label='Percentage of leisure trips at lunchtime',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.2,
+                    step=0.01,
+                    format='percent',
+                    key='lunch_leisure_proportion_A',
+                )
 
             with sliders_B:
                 st.subheader('Scenario B')
@@ -626,6 +635,15 @@ def make_dashboard() -> None:
                         format='%.0f',
                         key='home_holiday_distance_B',
                     )
+                )
+                lunch_leisure_proportion_B: float = st.slider(
+                    label='Percentage of leisure trips at lunchtime',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.2,
+                    step=0.01,
+                    format='percent',
+                    key='lunch_leisure_proportion_B',
                 )
             run_button = st.form_submit_button("Run")
     charge_desire_proportion_trigger_min_A /= 100
@@ -960,6 +978,15 @@ def make_dashboard() -> None:
     scenario_B.legs_references.home_holiday.distance_km_max = (
         home_holiday_distance_max_B
     )
+
+    scenario_A.activity_parameters.trips.work_and_leisure_trip_split = [
+        lunch_leisure_proportion_A,
+        1 - lunch_leisure_proportion_A,
+    ]
+    scenario_B.activity_parameters.trips.work_and_leisure_trip_split = [
+        lunch_leisure_proportion_B,
+        1 - lunch_leisure_proportion_B,
+    ]
     if (
         'statistics_A' not in st.session_state
         or 'statistics_B' not in st.session_state
@@ -1162,9 +1189,10 @@ def run_dashboard() -> None:
 if __name__ == '__main__':
 
     make_dashboard()
+
+    # Adjust km (including commute days, holiday, WE factors)
+    # Demo cases show how things are related
     # slider selection in TOML
-    # stop triggers
-    # lunch/evening leisure split
     # weekday commutre factir nd/or commute day probabilities
     # Session data (start, duration, kWh needed)
     # step(user) computation
