@@ -87,17 +87,22 @@ class RunMetrics:
             )[charging_settings.electricity_spending_header].sum()
             for location_name, location in locations.items()
         }
-        hours: pl.DataFrame = pl.DataFrame({'Hour number': range(24)})
         hours = pl.DataFrame({'Hour number': range(24)})
+
+        hour_number_expression = (
+            pl.col(charging_settings.time_index_name)
+            .dt.hour()
+            .alias('Hour number')
+        )
+
+        power_from_network_expression = pl.col(
+            charging_settings.power_from_network_header
+        )
 
         self.average_hourly_power_from_network_kW = (
             hours.join(
-                charge_dataframe.group_by(
-                    pl.col(charging_settings.time_index_name)
-                    .dt.hour()
-                    .alias('Hour number')
-                ).agg(
-                    pl.col(charging_settings.power_from_network_header).mean()
+                charge_dataframe.group_by(hour_number_expression).agg(
+                    power_from_network_expression.mean()
                 ),
                 on='Hour number',
                 how='left',
@@ -110,19 +115,15 @@ class RunMetrics:
         self.average_hourly_power_from_network_kW_per_location_type = {
             location.variant_name: (
                 hours.join(
-                    charge_dataframe.filter(
-                        pl.col(charging_settings.location_header)
-                        == location_name
-                    )
-                    .group_by(
-                        pl.col(charging_settings.time_index_name)
-                        .dt.hour()
-                        .alias('Hour number')
-                    )
-                    .agg(
-                        pl.col(
-                            charging_settings.power_from_network_header
-                        ).mean()
+                    charge_dataframe.group_by(hour_number_expression).agg(
+                        pl.when(
+                            pl.col(charging_settings.location_header)
+                            == location_name
+                        )
+                        .then(power_from_network_expression)
+                        .otherwise(0.0)
+                        .mean()
+                        .alias(charging_settings.power_from_network_header)
                     ),
                     on='Hour number',
                     how='left',

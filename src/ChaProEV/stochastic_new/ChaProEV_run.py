@@ -44,11 +44,11 @@ class UsersPoolStatistics:
         actual_location_types = {
             location_type
             for user in users_pool
-            for location_type in user.run_metrics.purchased_electricity_kWh_per_location_type
+            for location_type in user.run_metrics.purchased_electricity_kWh_per_location_type  # noqa:E501
         }
         assert actual_location_types <= set(
             location_types
-        ), f'Missing location types: {actual_location_types - set(location_types)}'
+        ), f'Missing location types: {actual_location_types - set(location_types)}'  # noqa:E501
 
         average_purchased_electricity_kWh: float = fmean(
             user.run_metrics.purchased_electricity_kWh for user in users_pool
@@ -198,7 +198,22 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             charging_settings=scenario.charging_dataframe,
             locations=user.locations,
         )
-
+        # with pl.Config(tbl_rows=26):
+        #     print(user.run_metrics.average_hourly_power_from_network_kW)
+        #     print(
+        #         user.run_metrics.average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+        #     )
+        #     with pl.Config(tbl_rows=42):
+        #         print(
+        #             user.charge.filter(pl.col('Location') == 'fast')
+        #             .filter(pl.col('Power drawn from network (kW)') > 0.0)
+        #             .filter(pl.col('Time Stamp').dt.hour() == 9)[
+        #                 'Power drawn from network (kW)'
+        #             ]
+        #             .mean()
+        #         )
+        #     exit()
+        # input()
         # print(user.run_metrics.charge_spending_eur)
         # print(
         #     sum(

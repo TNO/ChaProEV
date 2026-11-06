@@ -16,6 +16,54 @@ from ChaProEV.stochastic_new.ChaProEV_run import (
 )
 
 
+def get_network_locations_figure(
+    network_power_per_location_type: dict[str, pl.Series],
+    location_types_colors: dict[str, tuple[float, float, float]],
+    metrics_text_color: tuple[float, float, float],
+    max_power_scale: float,
+) -> Figure:
+
+    network_locations_figure, network_locations_plot = plt.subplots(1, 1)
+
+    for (
+        location_type,
+        power_per_hour,
+    ) in network_power_per_location_type.items():
+        network_locations_plot.plot(
+            power_per_hour * 1000,
+            label=location_type,
+            color=location_types_colors[location_type],
+        )
+
+    network_locations_plot.set_title(
+        'Average power draw from network', color=metrics_text_color
+    )
+    network_locations_plot.set_xlabel('Hour in day', color=metrics_text_color)
+    network_locations_plot.set_ylabel('Watt', color=metrics_text_color)
+    network_locations_plot.legend(
+        ncol=4,
+        frameon=False,
+        labelcolor=metrics_text_color,
+        fontsize=10,
+        loc='lower center',
+        bbox_to_anchor=(0.5, -0.5),
+    )
+    network_locations_plot.set_ylim(0, max_power_scale * 1000)
+
+    network_locations_plot.tick_params(axis='x', colors=metrics_text_color)
+    network_locations_plot.tick_params(axis='y', colors=metrics_text_color)
+    network_locations_plot.spines['left'].set_color(metrics_text_color)
+    network_locations_plot.spines['top'].set_visible(False)
+    network_locations_plot.spines['right'].set_visible(False)
+    network_locations_plot.spines['bottom'].set_color(metrics_text_color)
+    network_locations_plot.set_facecolor('none')
+
+    network_locations_figure.patch.set_alpha(0)
+    network_locations_figure.tight_layout()
+
+    return network_locations_figure
+
+
 def draw_metric(
     *,
     values_dict: dict[str, float],
@@ -64,7 +112,7 @@ def get_metrics_figure(
     total_suffixes: list[str],
     location_types_colors: dict[str, tuple[float, float, float]],
     metrics_text_color: tuple[float, float, float],
-) -> tuple[Figure, Axes]:
+) -> Figure:
     metrics_figure, metrics_plots = plt.subplots(1, len(metrics_values))
 
     for (
@@ -101,11 +149,11 @@ def get_metrics_figure(
         labelcolor=metrics_text_color,
         fontsize=10,
         loc='lower center',
-        bbox_to_anchor=(0.5, -0.05)
+        bbox_to_anchor=(0.5, -0.05),
     )
     metrics_figure.patch.set_alpha(0)
     metrics_figure.tight_layout()
-    return metrics_figure, metrics_plots
+    return metrics_figure
 
 
 def make_dashboard() -> None:
@@ -132,6 +180,7 @@ def make_dashboard() -> None:
     metrics_A, metrics_B = st.columns(2)
 
     metric_plots_A, metric_plots_B = st.columns(2)
+    network_A, network_B = st.columns(2)
     _, plot_box_1, _ = st.columns([1, 2, 1])
     sliders_A, sliders_B = st.columns(2)
 
@@ -291,7 +340,7 @@ def make_dashboard() -> None:
         ]
     )
 
-    figure_A, plots_A = get_metrics_figure(
+    figure_A = get_metrics_figure(
         metrics_values=[electricity_purchased_A, spending_A],
         metrics=[
             'Yearly electricity purchasesd (kWh)',
@@ -304,7 +353,7 @@ def make_dashboard() -> None:
         metrics_text_color=metrics_text_color,
     )
 
-    figure_B, plots_B = get_metrics_figure(
+    figure_B = get_metrics_figure(
         metrics_values=[electricity_purchased_B, spending_B],
         metrics=[
             'Yearly electricity purchasesd (kWh)',
@@ -326,6 +375,46 @@ def make_dashboard() -> None:
 
         st.pyplot(fig=figure_B)
         plt.close(figure_B)
+
+    network_power_per_location_type_A: dict[str, pl.Series] = (
+        statistics_A.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    )
+
+    network_power_per_location_type_B: dict[str, pl.Series] = (
+        statistics_B.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    )
+
+    network_power_values: list[float] = []
+    for power_values in network_power_per_location_type_A.values():
+        network_power_values += power_values.to_list()
+
+    for power_values in network_power_per_location_type_B.values():
+        network_power_values += power_values.to_list()
+
+    max_power_scale: float = cook.reference_scale(
+        network_power_values, digit_shift=1
+    )[1]
+
+    network_figure_A: Figure = get_network_locations_figure(
+        network_power_per_location_type=network_power_per_location_type_A,
+        location_types_colors=location_types_colors,
+        metrics_text_color=metrics_text_color,
+        max_power_scale=max_power_scale,
+    )
+    network_figure_B: Figure = get_network_locations_figure(
+        network_power_per_location_type=network_power_per_location_type_B,
+        location_types_colors=location_types_colors,
+        metrics_text_color=metrics_text_color,
+        max_power_scale=max_power_scale,
+    )
+
+    with network_A:
+        st.pyplot(fig=network_figure_A)
+        plt.close(network_figure_A)
+
+    with network_B:
+        st.pyplot(fig=network_figure_B)
+        plt.close(network_figure_B)
 
     power_from_network_W_A: pl.Series = (
         statistics_A.pool_average_hourly_power_from_network_kW
@@ -369,7 +458,7 @@ def make_dashboard() -> None:
         width=0.5,
         color=color_B,
     )
-    network_power_plot.set_title('Average power draw from netowrk')
+    network_power_plot.set_title('Average power draw from network')
     network_power_plot.set_xlabel('Hour in day')
     network_power_plot.set_ylabel('Average draw from network (W)')
     network_power_plot.legend()
