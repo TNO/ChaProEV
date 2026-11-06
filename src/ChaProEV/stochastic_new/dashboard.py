@@ -261,12 +261,25 @@ def make_dashboard() -> None:
                     format='%.0f%%',
                     key='charge_desire_proportion_trigger_A',
                 )
-                charge_desire_proportion_trigger_min_A /= 100
-                charge_desire_proportion_trigger_max_A /= 100
-                charge_desire_proportion_trigger_typical_A: float = (
-                    charge_desire_proportion_trigger_min_A
-                    + charge_desire_proportion_trigger_max_A
-                ) / 2
+
+                proportion_own_driveway_A: float = st.slider(
+                    label='Percentage of households with own driveways',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.25,
+                    step=0.01,
+                    format='percent',
+                    key='proportion_own_driveway_A',
+                )
+                street_parking_connectivity_A: float = st.slider(
+                    label='Street parking connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.25,
+                    step=0.01,
+                    format='percent',
+                    key='street_parking_connectivity_A',
+                )
 
             with sliders_B:
                 st.subheader('Scenario B')
@@ -291,14 +304,46 @@ def make_dashboard() -> None:
                     format='%.0f%%',
                     key='charge_desire_proportion_trigger_B',
                 )
+                proportion_own_driveway_B: float = st.slider(
+                    label='Percentage of households with own driveways',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.25,
+                    step=0.01,
+                    format='percent',
+                    key='proportion_own_driveway_B',
+                )
+                street_parking_connectivity_B: float = st.slider(
+                    label='Street parking connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.25,
+                    step=0.01,
+                    format='percent',
+                    key='street_parking_connectivity_B',
+                )
             run_button = st.form_submit_button("Run")
-
+    charge_desire_proportion_trigger_min_A /= 100
+    charge_desire_proportion_trigger_max_A /= 100
+    charge_desire_proportion_trigger_typical_A: float = (
+        charge_desire_proportion_trigger_min_A
+        + charge_desire_proportion_trigger_max_A
+    ) / 2
     charge_desire_proportion_trigger_min_B /= 100
     charge_desire_proportion_trigger_max_B /= 100
     charge_desire_proportion_trigger_typical_B: float = (
         charge_desire_proportion_trigger_min_B
         + charge_desire_proportion_trigger_max_B
     ) / 2
+
+    own_driveway_variant_weights_A: list[float] = [
+        proportion_own_driveway_A,
+        1 - proportion_own_driveway_A,
+    ]
+    own_driveway_variant_weights_B: list[float] = [
+        proportion_own_driveway_B,
+        1 - proportion_own_driveway_B,
+    ]
     scenario_A.charging_behaviour.adaptive_proportion = adaptive_proportion_A
     scenario_A.charging_behaviour.charge_desire_proportion_trigger_min = (
         charge_desire_proportion_trigger_min_A
@@ -320,6 +365,15 @@ def make_dashboard() -> None:
     )
     scenario_B.charging_behaviour.charge_desire_proportion_trigger_max = (
         charge_desire_proportion_trigger_max_B
+    )
+
+    scenario_A.locations.home.variant_weights = own_driveway_variant_weights_A
+    scenario_B.locations.home.variant_weights = own_driveway_variant_weights_B
+    scenario_A.locations.home.street_parking.connectivity = (
+        street_parking_connectivity_A
+    )
+    scenario_B.locations.home.street_parking.connectivity = (
+        street_parking_connectivity_B
     )
     if (
         'statistics_A' not in st.session_state
@@ -523,8 +577,7 @@ def run_dashboard() -> None:
 if __name__ == '__main__':
 
     make_dashboard()
-
-    # run button after moving the sliders
+    # Session data (start, duration, kWh needed)
     # step(user) computation
     # power requested and power allocated (or queue?)
     # Does power requested increase?
