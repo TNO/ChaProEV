@@ -234,65 +234,71 @@ def make_dashboard() -> None:
     metric_plots_A, metric_plots_B = st.columns(2)
     network_A, network_B = st.columns(2)
     _, plot_box_1, _ = st.columns([1, 2, 1])
-    sliders_A, sliders_B = st.columns(2)
 
-    with sliders_A:
-        adaptive_proportion_A: float = st.slider(
-            label='Adaptive proportion',
-            min_value=0.0,
-            max_value=1.0,
-            value=0.8,
-            step=0.01,
-            format='percent',
-            key='dapative_proportion_A',
-        )
-        (
-            charge_desire_proportion_trigger_min_A,
-            charge_desire_proportion_trigger_max_A,
-        ) = st.slider(
-            label='Charge desire proportion trigger',
-            min_value=0.0,
-            max_value=100.0,
-            value=(40.0, 60.0),
-            step=1.0,
-            format='%.0f%%',
-            key='charge_desire_proportion_trigger_A',
-        )
-        charge_desire_proportion_trigger_min_A /= 100
-        charge_desire_proportion_trigger_max_A /= 100
-        charge_desire_proportion_trigger_typical_A: float = (
-            charge_desire_proportion_trigger_min_A
-            + charge_desire_proportion_trigger_max_A
-        ) / 2
+    with st.sidebar:
+        with st.form('scenario_settings'):
+            sliders_A, sliders_B = st.columns(2)
+            with sliders_A:
+                st.subheader('Scenario A')
+                adaptive_proportion_A: float = st.slider(
+                    label='Adaptive proportion',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.8,
+                    step=0.01,
+                    format='percent',
+                    key='dapative_proportion_A',
+                )
+                (
+                    charge_desire_proportion_trigger_min_A,
+                    charge_desire_proportion_trigger_max_A,
+                ) = st.slider(
+                    label='Charge desire proportion trigger',
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=(40.0, 60.0),
+                    step=1.0,
+                    format='%.0f%%',
+                    key='charge_desire_proportion_trigger_A',
+                )
+                charge_desire_proportion_trigger_min_A /= 100
+                charge_desire_proportion_trigger_max_A /= 100
+                charge_desire_proportion_trigger_typical_A: float = (
+                    charge_desire_proportion_trigger_min_A
+                    + charge_desire_proportion_trigger_max_A
+                ) / 2
 
-    with sliders_B:
-        adaptive_proportion_B: float = st.slider(
-            label='Adaptive proportion',
-            min_value=0.0,
-            max_value=1.0,
-            value=0.8,
-            step=0.01,
-            format='percent',
-            key='dapative_proportion_B',
-        )
-        (
-            charge_desire_proportion_trigger_min_B,
-            charge_desire_proportion_trigger_max_B,
-        ) = st.slider(
-            label='Charge desire proportion trigger',
-            min_value=0.0,
-            max_value=100.0,
-            value=(40.0, 60.0),
-            step=1.0,
-            format='%.0f%%',
-            key='charge_desire_proportion_trigger_B',
-        )
-        charge_desire_proportion_trigger_min_B /= 100
-        charge_desire_proportion_trigger_max_B /= 100
-        charge_desire_proportion_trigger_typical_B: float = (
-            charge_desire_proportion_trigger_min_B
-            + charge_desire_proportion_trigger_max_B
-        ) / 2
+            with sliders_B:
+                st.subheader('Scenario B')
+                adaptive_proportion_B: float = st.slider(
+                    label='Adaptive proportion',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.8,
+                    step=0.01,
+                    format='percent',
+                    key='dapative_proportion_B',
+                )
+                (
+                    charge_desire_proportion_trigger_min_B,
+                    charge_desire_proportion_trigger_max_B,
+                ) = st.slider(
+                    label='Charge desire proportion trigger',
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=(40.0, 60.0),
+                    step=1.0,
+                    format='%.0f%%',
+                    key='charge_desire_proportion_trigger_B',
+                )
+            run_button = st.form_submit_button("Run")
+
+    charge_desire_proportion_trigger_min_B /= 100
+    charge_desire_proportion_trigger_max_B /= 100
+    charge_desire_proportion_trigger_typical_B: float = (
+        charge_desire_proportion_trigger_min_B
+        + charge_desire_proportion_trigger_max_B
+    ) / 2
     scenario_A.charging_behaviour.adaptive_proportion = adaptive_proportion_A
     scenario_A.charging_behaviour.charge_desire_proportion_trigger_min = (
         charge_desire_proportion_trigger_min_A
@@ -315,9 +321,17 @@ def make_dashboard() -> None:
     scenario_B.charging_behaviour.charge_desire_proportion_trigger_max = (
         charge_desire_proportion_trigger_max_B
     )
+    if (
+        'statistics_A' not in st.session_state
+        or 'statistics_B' not in st.session_state
+        or run_button
+    ):
+        st.session_state.statistics_A = run_scenario(scenario_A)
+        st.session_state.statistics_B = run_scenario(scenario_B)
 
-    statistics_A: UsersPoolStatistics = run_scenario(scenario_A)
-    statistics_B: UsersPoolStatistics = run_scenario(scenario_B)
+    statistics_A: UsersPoolStatistics = st.session_state.statistics_A
+    statistics_B: UsersPoolStatistics = st.session_state.statistics_B
+
     with metrics_A:
         st.subheader('Scenario A')
         metrics_A_1, metrics_A_2 = st.columns(2)
@@ -510,6 +524,13 @@ if __name__ == '__main__':
 
     make_dashboard()
 
+    # run button after moving the sliders
+    # step(user) computation
+    # power requested and power allocated (or queue?)
+    # Does power requested increase?
+
+    # slider defaults in TOML
+    # slider trigger button
     # powere per location type! filter street
     # required kWH and obtained
     # based on trafo ID and line id
@@ -519,3 +540,5 @@ if __name__ == '__main__':
     # Alllow queuing (waiting --> tolerance (e.g. leave queue
     # if 25% of the session time is done)
     # ) queueu
+
+    # add more sliders
