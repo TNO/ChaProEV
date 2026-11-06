@@ -16,6 +16,58 @@ from ChaProEV.stochastic_new.ChaProEV_run import (
 )
 
 
+def get_network_power_figure(
+    *,
+    power_from_network_W_A: pl.Series,
+    power_from_network_W_B: pl.Series,
+    color_A: tuple[float, float, float],
+    color_B: tuple[float, float, float],
+    metrics_text_color: tuple[float, float, float],
+) -> Figure:
+
+    network_power_figure, network_power_plot = plt.subplots(
+        1, 1, figsize=(16, 9)
+    )
+
+    hours: int = len(power_from_network_W_A)
+
+    network_power_plot.bar(
+        x=range(hours),
+        height=power_from_network_W_A,
+        label='Scenario A',
+        width=1.0,
+        color=color_A,
+    )
+    network_power_plot.bar(
+        x=range(hours),
+        height=power_from_network_W_B,
+        label='Scenario B',
+        width=0.5,
+        color=color_B,
+    )
+    network_power_plot.set_title(
+        'Average power draw from network', color=metrics_text_color
+    )
+    network_power_plot.set_xlabel('Hour in day', color=metrics_text_color)
+    network_power_plot.set_ylabel(
+        'Average draw from network (W)', color=metrics_text_color
+    )
+    network_power_plot.legend(frameon=False, labelcolor=metrics_text_color)
+
+    network_power_plot.tick_params(axis='x', colors=metrics_text_color)
+    network_power_plot.tick_params(axis='y', colors=metrics_text_color)
+    network_power_plot.spines['left'].set_color(metrics_text_color)
+    network_power_plot.spines['top'].set_visible(False)
+    network_power_plot.spines['right'].set_visible(False)
+    network_power_plot.spines['bottom'].set_color(metrics_text_color)
+    network_power_plot.set_facecolor('none')
+
+    network_power_figure.patch.set_alpha(0)
+    network_power_figure.tight_layout()
+
+    return network_power_figure
+
+
 def get_network_locations_figure(
     network_power_per_location_type: dict[str, pl.Series],
     location_types_colors: dict[str, tuple[float, float, float]],
@@ -422,46 +474,24 @@ def make_dashboard() -> None:
     power_from_network_W_B: pl.Series = (
         statistics_B.pool_average_hourly_power_from_network_kW
     ) * 1_000
-    network_power_figure, network_power_plot = plt.subplots(
-        1, 1, figsize=(16, 9)
-    )
 
-    hours: int = len(power_from_network_W_A)
     color_A_name: str = 'TNO_action_blue'
     color_B_name: str = 'TNO_action_orange'
+
     color_A: tuple[float, float, float] = cook.get_rgb_from_name(
         color_name=color_A_name, color_definitions=general_definitions.colors
     )
     color_B: tuple[float, float, float] = cook.get_rgb_from_name(
         color_name=color_B_name, color_definitions=general_definitions.colors
     )
-    # powere per location type! filter street
-    # required kWH and obtained
-    # based on trafo ID and line id
-    # and a queueu of available powers
-    # first comes in
-    # You will be allowed if there is space
-    # Alllow queuing (waiting --> tolerance (e.g. leave queue
-    # if 25% of the session time is done)
-    # ) queueu
-    network_power_plot.bar(
-        x=range(hours),
-        height=power_from_network_W_A,
-        label='Scenario A',
-        width=1.0,
-        color=color_A,
+
+    network_power_figure: Figure = get_network_power_figure(
+        power_from_network_W_A=power_from_network_W_A,
+        power_from_network_W_B=power_from_network_W_B,
+        color_A=color_A,
+        color_B=color_B,
+        metrics_text_color=metrics_text_color,
     )
-    network_power_plot.bar(
-        x=range(hours),
-        height=power_from_network_W_B,
-        label='Scenario B',
-        width=0.5,
-        color=color_B,
-    )
-    network_power_plot.set_title('Average power draw from network')
-    network_power_plot.set_xlabel('Hour in day')
-    network_power_plot.set_ylabel('Average draw from network (W)')
-    network_power_plot.legend()
 
     with plot_box_1:
         st.pyplot(network_power_figure)
@@ -479,3 +509,13 @@ def run_dashboard() -> None:
 if __name__ == '__main__':
 
     make_dashboard()
+
+    # powere per location type! filter street
+    # required kWH and obtained
+    # based on trafo ID and line id
+    # and a queueu of available powers
+    # first comes in
+    # You will be allowed if there is space
+    # Alllow queuing (waiting --> tolerance (e.g. leave queue
+    # if 25% of the session time is done)
+    # ) queueu
