@@ -261,6 +261,18 @@ def make_dashboard() -> None:
                     format='%.0f%%',
                     key='charge_desire_proportion_trigger_A',
                 )
+                (
+                    fast_charge_desire_proportion_trigger_min_A,
+                    fast_charge_desire_proportion_trigger_max_A,
+                ) = st.slider(
+                    label='Fast charge desire proportion trigger',
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=(10.0, 20.0),
+                    step=1.0,
+                    format='%.0f%%',
+                    key='fast_charge_desire_proportion_trigger_A',
+                )
 
                 proportion_own_driveway_A: float = st.slider(
                     label='Percentage of households with own driveways',
@@ -304,6 +316,18 @@ def make_dashboard() -> None:
                     format='%.0f%%',
                     key='charge_desire_proportion_trigger_B',
                 )
+                (
+                    fast_charge_desire_proportion_trigger_min_B,
+                    fast_charge_desire_proportion_trigger_max_B,
+                ) = st.slider(
+                    label='Fast charge desire proportion trigger',
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=(10.0, 20.0),
+                    step=1.0,
+                    format='%.0f%%',
+                    key='fast_charge_desire_proportion_trigger_B',
+                )
                 proportion_own_driveway_B: float = st.slider(
                     label='Percentage of households with own driveways',
                     min_value=0.0,
@@ -335,6 +359,18 @@ def make_dashboard() -> None:
         charge_desire_proportion_trigger_min_B
         + charge_desire_proportion_trigger_max_B
     ) / 2
+    fast_charge_desire_proportion_trigger_min_A /= 100
+    fast_charge_desire_proportion_trigger_max_A /= 100
+    fast_charge_desire_proportion_trigger_typical_A: float = (
+        fast_charge_desire_proportion_trigger_min_A
+        + fast_charge_desire_proportion_trigger_max_A
+    ) / 2
+    fast_charge_desire_proportion_trigger_min_B /= 100
+    fast_charge_desire_proportion_trigger_max_B /= 100
+    fast_charge_desire_proportion_trigger_typical_B: float = (
+        fast_charge_desire_proportion_trigger_min_B
+        + fast_charge_desire_proportion_trigger_max_B
+    ) / 2
 
     own_driveway_variant_weights_A: list[float] = [
         proportion_own_driveway_A,
@@ -365,6 +401,25 @@ def make_dashboard() -> None:
     )
     scenario_B.charging_behaviour.charge_desire_proportion_trigger_max = (
         charge_desire_proportion_trigger_max_B
+    )
+    scenario_A.charging_behaviour.fast_charge_desire_proportion_trigger_min = (
+        fast_charge_desire_proportion_trigger_min_A
+    )
+    scenario_A.charging_behaviour.fast_charge_desire_proportion_trigger_typical = (  # noqa:E501
+        fast_charge_desire_proportion_trigger_typical_A
+    )
+    scenario_A.charging_behaviour.fast_charge_desire_proportion_trigger_max = (
+        fast_charge_desire_proportion_trigger_max_A
+    )
+
+    scenario_B.charging_behaviour.fast_charge_desire_proportion_trigger_min = (
+        fast_charge_desire_proportion_trigger_min_B
+    )
+    scenario_B.charging_behaviour.fast_charge_desire_proportion_trigger_typical = (  # noqa:E501
+        fast_charge_desire_proportion_trigger_typical_B
+    )
+    scenario_B.charging_behaviour.fast_charge_desire_proportion_trigger_max = (
+        fast_charge_desire_proportion_trigger_max_B
     )
 
     scenario_A.locations.home.variant_weights = own_driveway_variant_weights_A
@@ -577,6 +632,12 @@ def run_dashboard() -> None:
 if __name__ == '__main__':
 
     make_dashboard()
+    # more accurte kilometrages
+    # slider selection in TOML
+    # stop triggers
+    # distances sliders
+    # lunch/evening leisure split
+    # weekday commutre factir nd/or commute day probabilities
     # Session data (start, duration, kWh needed)
     # step(user) computation
     # power requested and power allocated (or queue?)
