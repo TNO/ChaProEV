@@ -283,6 +283,16 @@ def make_dashboard() -> None:
                     format='percent',
                     key='proportion_own_driveway_A',
                 )
+                own_driveway_connectivity_A: float = st.slider(
+                    label='Own driveway connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=1.0,
+                    step=0.01,
+                    format='percent',
+                    key='own_driveway_connectivity_A',
+                )
+
                 street_parking_connectivity_A: float = st.slider(
                     label='Street parking connectivity',
                     min_value=0.0,
@@ -291,6 +301,46 @@ def make_dashboard() -> None:
                     step=0.01,
                     format='percent',
                     key='street_parking_connectivity_A',
+                )
+
+                work_connectivity_A: float = st.slider(
+                    label='Work connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.5,
+                    step=0.01,
+                    format='percent',
+                    key='work_connectivity_A',
+                )
+
+                leisure_connectivity_A: float = st.slider(
+                    label='Leisure connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.25,
+                    step=0.01,
+                    format='percent',
+                    key='leisure_connectivity_A',
+                )
+
+                weekend_connectivity_A: float = st.slider(
+                    label='Weekend connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.125,
+                    step=0.01,
+                    format='percent',
+                    key='weekend_connectivity_A',
+                )
+
+                holiday_connectivity_A: float = st.slider(
+                    label='Holiday connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=1.0,
+                    step=0.01,
+                    format='percent',
+                    key='holiday_connectivity_A',
                 )
                 home_work_distance_min_A, home_work_distance_max_A = st.slider(
                     label='Home-work distance (km)',
@@ -402,6 +452,16 @@ def make_dashboard() -> None:
                     format='percent',
                     key='proportion_own_driveway_B',
                 )
+                own_driveway_connectivity_B: float = st.slider(
+                    label='Own driveway connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=1.0,
+                    step=0.01,
+                    format='percent',
+                    key='own_driveway_connectivity_B',
+                )
+
                 street_parking_connectivity_B: float = st.slider(
                     label='Street parking connectivity',
                     min_value=0.0,
@@ -410,6 +470,46 @@ def make_dashboard() -> None:
                     step=0.01,
                     format='percent',
                     key='street_parking_connectivity_B',
+                )
+
+                work_connectivity_B: float = st.slider(
+                    label='Work connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.5,
+                    step=0.01,
+                    format='percent',
+                    key='work_connectivity_B',
+                )
+
+                leisure_connectivity_B: float = st.slider(
+                    label='Leisure connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.25,
+                    step=0.01,
+                    format='percent',
+                    key='leisure_connectivity_B',
+                )
+
+                weekend_connectivity_B: float = st.slider(
+                    label='Weekend connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.125,
+                    step=0.01,
+                    format='percent',
+                    key='weekend_connectivity_B',
+                )
+
+                holiday_connectivity_B: float = st.slider(
+                    label='Holiday connectivity',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=1.0,
+                    step=0.01,
+                    format='percent',
+                    key='holiday_connectivity_B',
                 )
                 home_work_distance_min_B, home_work_distance_max_B = st.slider(
                     label='Home-work distance (km)',
@@ -602,12 +702,27 @@ def make_dashboard() -> None:
 
     scenario_A.locations.home.variant_weights = own_driveway_variant_weights_A
     scenario_B.locations.home.variant_weights = own_driveway_variant_weights_B
+    scenario_A.locations.home.own_driveway.connectivity = (
+        own_driveway_connectivity_A
+    )
     scenario_A.locations.home.street_parking.connectivity = (
         street_parking_connectivity_A
+    )
+    scenario_A.locations.work.connectivity = work_connectivity_A
+    scenario_A.locations.leisure.connectivity = leisure_connectivity_A
+    scenario_A.locations.weekend.connectivity = weekend_connectivity_A
+    scenario_A.locations.holiday.connectivity = holiday_connectivity_A
+
+    scenario_B.locations.home.own_driveway.connectivity = (
+        own_driveway_connectivity_B
     )
     scenario_B.locations.home.street_parking.connectivity = (
         street_parking_connectivity_B
     )
+    scenario_B.locations.work.connectivity = work_connectivity_B
+    scenario_B.locations.leisure.connectivity = leisure_connectivity_B
+    scenario_B.locations.weekend.connectivity = weekend_connectivity_B
+    scenario_B.locations.holiday.connectivity = holiday_connectivity_B
 
     scenario_A.legs_references.home_work.distance_km_min = (
         home_work_distance_min_A
@@ -930,7 +1045,6 @@ def run_dashboard() -> None:
 if __name__ == '__main__':
 
     make_dashboard()
-    # more accurte kilometrages Strongly linked to home-work???
     # slider selection in TOML
     # stop triggers
     # lunch/evening leisure split
