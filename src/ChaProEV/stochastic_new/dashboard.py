@@ -18,6 +18,7 @@ from ChaProEV.stochastic_new.ChaProEV_run import (
 
 def get_network_power_figure(
     *,
+    location_type: str,
     power_from_network_W_A: pl.Series,
     power_from_network_W_B: pl.Series,
     color_A: tuple[float, float, float],
@@ -46,7 +47,8 @@ def get_network_power_figure(
         color=color_B,
     )
     network_power_plot.set_title(
-        'Average power draw from network', color=metrics_text_color
+        f'Average power draw from network in {location_type}',
+        color=metrics_text_color,
     )
     network_power_plot.set_xlabel('Hour in day', color=metrics_text_color)
     network_power_plot.set_ylabel(
@@ -1196,19 +1198,47 @@ def make_dashboard() -> None:
     color_B: tuple[float, float, float] = cook.get_rgb_from_name(
         color_name=color_B_name, color_definitions=general_definitions.colors
     )
+    power_from_network_W_A_per_location: dict[str, pl.Series] = (
+        statistics_A.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    )
 
-    network_power_figure: Figure = get_network_power_figure(
+    power_from_network_W_B_per_location: dict[str, pl.Series] = (
+        statistics_B.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    )
+
+    network_power_figures: dict[str, Figure] = {
+        location_type_for_power: get_network_power_figure(
+            location_type=location_type_for_power,
+            power_from_network_W_A=(
+                power_from_network_W_A_per_location[location_type_for_power]
+            ),
+            power_from_network_W_B=(
+                power_from_network_W_B_per_location[location_type_for_power]
+            ),
+            color_A=color_A,
+            color_B=color_B,
+            metrics_text_color=metrics_text_color,
+        )
+        for location_type_for_power in location_types
+    }
+    network_power_figures['total'] = get_network_power_figure(
+        location_type='total',
         power_from_network_W_A=power_from_network_W_A,
         power_from_network_W_B=power_from_network_W_B,
         color_A=color_A,
         color_B=color_B,
         metrics_text_color=metrics_text_color,
     )
-
     with plot_box_1:
-        st.pyplot(network_power_figure)
 
-        plt.close(network_power_figure)
+        location_type_for_power: str = st.selectbox(
+            'Location type',
+            options=network_power_figures.keys(),
+            index=len(location_types),
+        )
+        st.pyplot(network_power_figures[location_type_for_power])
+
+        plt.close(network_power_figures[location_type_for_power])
 
 
 def run_dashboard() -> None:
