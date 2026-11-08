@@ -1,6 +1,6 @@
 
 
-SPLIT GENERATORS!
+Documnet random_generators (and their split)
 Dashboard
 discharge
 More run_metrics

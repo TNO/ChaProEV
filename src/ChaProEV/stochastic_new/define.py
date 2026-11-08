@@ -140,9 +140,14 @@ class RunMetrics:
 
         self.average_electricity_costs_eur_kWh = (
             self.charge_spending_eur / self.purchased_electricity_kWh
+            if self.purchased_electricity_kWh > 0
+            else 0.0
         )
+
         self.average_travel_costs_eur_km = (
             self.charge_spending_eur / self.kilometrage
+            if self.kilometrage > 0
+            else 0.0
         )
 
 
