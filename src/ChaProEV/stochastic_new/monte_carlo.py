@@ -48,6 +48,11 @@ def draw_beta_value(
 
     The typical value is the median: half of the draws are below it
     and half are above it.
+    Note:
+    A previous version skipped the random draw when ``minimum == maximum``.
+    This is undesirable because it shifts the random-number stream, causing
+    subsequent results to differ even when they should not depend on this
+    parameter.
     '''
     if shape <= 0:
         raise ValueError(f'{shape=} must be greater than zero.')
@@ -55,8 +60,6 @@ def draw_beta_value(
         raise ValueError(
             f'You need to have {minimum=} <= {typical=} <= {maximum}.'
         )
-    if minimum == maximum:
-        return minimum
     draw: float = random_generator.beta(a=shape, b=shape)
 
     if draw <= 0.5:

@@ -17,6 +17,17 @@ At 100% battery, only zero price will do
 X is in euros
 
 
+Do convergence tests. 
+
+
+Recommendation
+Keep the modified draw_beta_value that always consumes the beta draw.
+Add a regression test confirming that changing a deterministic parameter does not change mobility outputs.
+Document that the function intentionally consumes a draw for degenerate ranges to preserve random-stream alignment.
+Consider separate generators for activities, distances, user properties, and charging if scenario isolation becomes important.
+Do not rely on 12 users for a precise population mean. Use an explicit convergence test based on the standard error across users and across complete Monte Carlo runs.
+
+
 Test parameters to get to actual kilometrages
 
 Concurrent users thing

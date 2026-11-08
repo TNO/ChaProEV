@@ -240,8 +240,8 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
         users_pool=users_pool, location_types=scenario.metrics.location_types
     )
-    with pl.Config(tbl_rows=26):
-        print(users_pool_statistics)
+    # with pl.Config(tbl_rows=26):
+    #     print(users_pool_statistics)
 
     return users_pool_statistics
 
