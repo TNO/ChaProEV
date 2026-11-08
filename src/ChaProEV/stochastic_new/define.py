@@ -9,7 +9,10 @@ import polars as pl
 from box import Box
 
 from ChaProEV.stochastic_new.activities import Activities
-from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
+from ChaProEV.stochastic_new.monte_carlo import (
+    RandomGenerators,
+    draw_beta_value,
+)
 from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
 
@@ -787,7 +790,7 @@ class User:
     def draw_characteristics(
         *,
         scenario: Box,
-        random_generator: np.random.Generator,
+        random_generators: RandomGenerators,
         time_constants: TimeConstants,
         time_ranges: TimeRange,
     ) -> tuple[
@@ -802,7 +805,7 @@ class User:
         vehicle_settings: Box = scenario.vehicle
         vehicle: Vehicle = Vehicle.draw(
             vehicle_settings=vehicle_settings,
-            random_generator=random_generator,
+            random_generator=random_generators.define,
             beta_shape=beta_shape,
         )
         locations_parameters: Box = scenario.locations
@@ -810,7 +813,7 @@ class User:
             location_name: Location.draw(
                 location_parameters=location_parameters,
                 location_name=location_name,
-                random_generator=random_generator,
+                random_generator=random_generators.charging,
             )
             for location_name, location_parameters in (
                 locations_parameters.items()
@@ -822,7 +825,7 @@ class User:
 
         drawn_legs_references: Box = draw_legs_references(
             legs_references=legs_references,
-            random_generator=random_generator,
+            random_generator=random_generators.mobility,
             beta_shape=beta_shape,
         )
         legs: dict[str, Leg] = {
@@ -838,7 +841,7 @@ class User:
             trip_name: Trip.draw(
                 trip_parameters=trip_parameters,
                 legs=legs,
-                random_generator=random_generator,
+                random_generator=random_generators.mobility,
                 beta_shape=beta_shape,
                 vehicle=vehicle,
             )
@@ -850,7 +853,7 @@ class User:
             activity_parameters: Box = scenario.activity_parameters
             activities = Activities.draw(
                 activity_parameters=activity_parameters,
-                random_generator=random_generator,
+                random_generator=random_generators.mobility,
                 beta_shape=beta_shape,
                 time_constants=time_constants,
                 time_ranges=time_ranges,
@@ -859,7 +862,7 @@ class User:
         charging_behaviour_parameters: Box = scenario.charging_behaviour
         charging_behaviour: ChargingBehaviour = ChargingBehaviour.draw(
             charging_behaviour_parameters=charging_behaviour_parameters,
-            random_generator=random_generator,
+            random_generator=random_generators.charging,
             beta_shape=beta_shape,
         )
         return vehicle, locations, legs, trips, activities, charging_behaviour
@@ -1337,7 +1340,7 @@ class User:
             validate="m:1",
         )
         if charging_dataframe[session_header].null_count() > 0:
-            raise ValueError(f'{session_header!r} contains null values.')
+            raise ValueError(f'{can_charge_header!r} contains null values.')
 
         nominal_charge_power_to_vehicle_by_location: dict[str, float] = {
             location_name: location.charging_power_kW
@@ -1478,7 +1481,7 @@ class User:
     def create(
         *,
         scenario: Box,
-        random_generator: np.random.Generator,
+        random_generators: RandomGenerators,
         time_ranges: TimeRange,
         time_constants: TimeConstants,
     ) -> User:
@@ -1487,7 +1490,7 @@ class User:
         vehicle, locations, legs, trips, activities, charging_behaviour = (
             User.draw_characteristics(
                 scenario=scenario,
-                random_generator=random_generator,
+                random_generators=random_generators,
                 time_constants=time_constants,
                 time_ranges=time_ranges,
             )
@@ -1497,7 +1500,7 @@ class User:
             trips=trips,
             time_ranges=time_ranges,
             scenario=scenario,
-            random_generator=random_generator,
+            random_generator=random_generators.mobility,
         )
         mobility_settings: Box = scenario.mobility
 
@@ -1516,7 +1519,7 @@ class User:
             mobility=mobility,
             locations=locations,
             vehicle=vehicle,
-            random_generator=random_generator,
+            random_generator=random_generators.charging,
         )
 
         run_metrics: RunMetrics = RunMetrics(
@@ -1541,7 +1544,7 @@ class User:
 
 
 def create_users(
-    *, scenario: Box, random_generator: np.random.Generator
+    *, scenario: Box, random_generators: RandomGenerators
 ) -> list[User]:
 
     users_settings: Box = scenario.users
@@ -1565,7 +1568,7 @@ def create_users(
     users_pool: list[User] = [
         User.create(
             scenario=scenario,
-            random_generator=random_generator,
+            random_generators=random_generators,
             time_ranges=time_ranges,
             time_constants=time_constants,
         )
@@ -1594,7 +1597,7 @@ def read_users_pool(*, scenario: Box) -> list[User]:
 
 
 def get_users_pool(
-    *, scenario: Box, random_generator: np.random.Generator
+    *, scenario: Box, random_generators: RandomGenerators
 ) -> list[User]:
 
     users_settings: Box = scenario.users
@@ -1603,6 +1606,6 @@ def get_users_pool(
         users_pool: list[User] = read_users_pool(scenario=scenario)
     else:
         users_pool: list[User] = create_users(
-            scenario=scenario, random_generator=random_generator
+            scenario=scenario, random_generators=random_generators
         )
     return users_pool

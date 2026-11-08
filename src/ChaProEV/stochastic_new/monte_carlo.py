@@ -12,6 +12,7 @@ class MonteCarlo:
 @dataclass
 class RandomGenerators:
     define: np.random.Generator
+    mobility: np.random.Generator
     charging: np.random.Generator
 
     @staticmethod
@@ -26,10 +27,11 @@ class RandomGenerators:
             run_seed
         )
 
-        define_seed, charging_seed = seed_sequence.spawn(2)
+        define_seed, mobility_seed, charging_seed = seed_sequence.spawn(3)
 
         return RandomGenerators(
             define=np.random.default_rng(seed=define_seed),
+            mobility=np.random.default_rng(seed=mobility_seed),
             charging=np.random.default_rng(seed=charging_seed),
         )
 
@@ -49,10 +51,9 @@ def draw_beta_value(
     The typical value is the median: half of the draws are below it
     and half are above it.
     Note:
-    A previous version skipped the random draw when ``minimum == maximum``.
-    This is undesirable because it shifts the random-number stream, causing
-    subsequent results to differ even when they should not depend on this
-    parameter.
+    Therandom draw is also performed when ``minimum == maximum``.
+    Skipping it would shift the random-number stream and could change
+    subsequent results that should not depend on this parameter.
     '''
     if shape <= 0:
         raise ValueError(f'{shape=} must be greater than zero.')

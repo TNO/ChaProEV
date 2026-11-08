@@ -177,7 +177,7 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
     )
 
     users_pool: list[User] = get_users_pool(
-        scenario=scenario, random_generator=random_generators.define
+        scenario=scenario, random_generators=random_generators
     )
 
     for user in users_pool:

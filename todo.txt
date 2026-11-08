@@ -1,5 +1,6 @@
 
 
+SPLIT GENERATORS!
 Dashboard
 discharge
 More run_metrics
@@ -18,6 +19,62 @@ X is in euros
 
 
 Do convergence tests. 
+
+How big an issue is convergence right now?
+
+At the current development stage, it is not a major issue, provided you do not interpret the results from 12 users as stable population estimates.
+
+Twelve users are sufficient for:
+
+testing whether the model runs;
+debugging user-level behaviour;
+checking energy balances and invariants;
+examining individual mobility and charging profiles;
+detecting obviously implausible results;
+comparing outputs when all randomness is deliberately aligned.
+
+Twelve users are not sufficient for:
+
+estimating population-average kilometrage precisely;
+evaluating small differences between scenarios;
+estimating uncommon behaviour;
+establishing stable location-specific charging demand;
+drawing policy conclusions from aggregate results.
+
+Your current sample has a standard deviation of roughly 3,400 km and a mean around 12,200 km. For 12 independent users, the standard error of the mean is approximately 1,000 km. Therefore, an average from this user pool can easily move by several hundred or more than 1,000 km merely because of random sampling.
+
+That is not a problem while you are developing the mechanics. It only becomes a problem when you begin interpreting small aggregate differences.
+
+Practical threshold for concern
+
+For now, I would use this rule:
+
+Logic and debugging: 12 users is fine.
+Qualitative scenario checks: tens to a few hundred users may be enough.
+Quantitative scenario comparison: establish convergence explicitly.
+Final reported results: use enough users and runs to meet a chosen precision criterion.
+
+The critical warning sign is when you start saying something like:
+
+Scenario B reduces average kilometrage or charging cost by 2%.
+
+With 12 users, a 2% difference will probably be much smaller than the sampling noise. At that point, convergence testing becomes essential.
+
+Recommended approach
+
+For now:
+
+Keep the changed draw_beta_value.
+Use the shorter docstring note.
+Start using the two generators you already created:
+mobility
+charging
+Do not add further generator subdivisions yet.
+Continue using 12 users for development.
+Avoid interpreting the aggregate mean as a converged result.
+Add convergence testing once the model structure and principal behavioural rules have stabilized.
+
+So the convergence issue is real, but it is not urgent for implementation work. The random-generator separation is more useful now because it directly improves debugging and controlled scenario comparisons at very little additional complexity.
 
 
 Recommendation
