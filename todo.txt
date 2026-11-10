@@ -1,4 +1,6 @@
-
+Clarify demnded charge. Add network reaction/offered charge
+QUeueing with a limit.
+All users at the same time (option?)
 
 Documnet random_generators (and their split)
 Dashboard
