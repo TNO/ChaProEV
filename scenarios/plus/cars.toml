@@ -780,10 +780,14 @@ line_capacity_to_average_ratio_max = 1.2
 yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
 yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_typical = 2_500
 yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_max = 3_000
-possible_profile_shape_references = ['XXX', 'YYY']
+possible_profile_shape_references = ['1.00_E1A_AZI_A', '1.00_E1A_AMI_A']
 possible_profile_shape_references_weights = [0.8, 0.2]
-profiles_shapes_source = 'input/household_profile_shapes.csv'
+profiles_shapes_source = 'input/household_profiles.csv'
 adoption_rate_heat_pumps = 0.25
 adoption_rate_solar_panels = 0.26
 adoption_rate_home_batteries_if_solar_panels = 0.42
 adoption_rate_home_batteries_if_not_solar_panels = 0.06
+
+yearly_heat_pump_consumption_kWh_min = 1_000
+yearly_heat_pump_consumption_kWh_typical = 1_200
+yearly_heat_pump_consumption_kWh_max = 1_400

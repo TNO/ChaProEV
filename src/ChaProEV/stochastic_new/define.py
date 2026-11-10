@@ -264,25 +264,25 @@ class Transformer:
 @dataclass
 class Household:
     yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float
-    demand_profile: pl.Series
+    profile_shape: pl.Series
 
 
 @dataclass
 class HeatPump:
     yearly_consumption_kWh: float
-    demand_profile: pl.Series
+    profile_shape: pl.Series
 
 
 @dataclass
 class HomeBattery:
-    chaege_profile: pl.Series
+    charge_profile: pl.Series
     discharge_profile: pl.Series
 
 
 @dataclass
 class SolarPanels:
     yearly_production_kWh: float
-    producton_profile: pl.Series
+    profile_shape: pl.Series
 
 
 @dataclass
@@ -926,6 +926,10 @@ class User:
     charging_behaviour: ChargingBehaviour
     charge: pl.DataFrame
     run_metrics: RunMetrics
+    household: Household
+    heat_pump: HeatPump
+    home_battery: HomeBattery
+    solar_panels: SolarPanels
 
     @staticmethod
     def draw_characteristics(
@@ -1690,6 +1694,118 @@ class User:
         return user_transformer.ID, selected_power_line.index
 
     @staticmethod
+    def draw_non_EV(
+        *,
+        households_settings: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+    ) -> tuple[Household, HeatPump, HomeBattery, SolarPanels]:
+
+        yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float = (
+            draw_beta_value(
+                minimum=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_min,  # noqa: E501
+                typical=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_typical,  # noqa: E501
+                maximum=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_max,  # noqa: E501
+                random_generator=random_generator,
+                shape=beta_shape,
+            )
+        )
+
+        demand_profile_shape_name: str = random_generator.choice(
+            np.array(households_settings.possible_profile_shape_references),
+            p=households_settings.possible_profile_shape_references_weights,
+        )
+
+        profiles_shapes_source: pl.DataFrame = pl.read_csv(
+            Path(households_settings.profiles_shapes_source)
+        )
+        profile_shape: pl.Series = profiles_shapes_source[
+            demand_profile_shape_name
+        ]
+        household: Household = Household(
+            yearly_consumption_kWh_excluding_EV_heat_pump_home_battery=yearly_consumption_kWh_excluding_EV_heat_pump_home_battery,  # noqa:E501
+            profile_shape=profile_shape,
+        )
+
+        adoption_rate_heat_pumps: float = (
+            households_settings.adoption_rate_heat_pumps
+        )
+        has_heat_pump: bool = bool(
+            random_generator.choice(
+                [True, False],
+                p=[adoption_rate_heat_pumps, 1 - adoption_rate_heat_pumps],
+            )
+        )
+        if has_heat_pump:
+            yearly_heat_pump_consumption_kWh: float = draw_beta_value(
+                minimum=households_settings.yearly_heat_pump_consumption_kWh_min,  # noqa: E501
+                typical=(
+                    households_settings.yearly_heat_pump_consumption_kWh_typical  # noqa:E501
+                ),
+                maximum=households_settings.yearly_heat_pump_consumption_kWh_max,  # noqa:E501
+                random_generator=random_generator,
+                shape=beta_shape,
+            )
+
+        else:
+            yearly_heat_pump_consumption_kWh = 0
+
+        heat_pump_shape: pl.Series = pl.Series()
+        heat_pump: HeatPump = HeatPump(
+            yearly_consumption_kWh=yearly_heat_pump_consumption_kWh,
+            profile_shape=heat_pump_shape,
+        )
+
+        adoption_rate_solar_panels: float = (
+            households_settings.adoption_rate_solar_panels
+        )
+        has_solar_panels: bool = bool(
+            random_generator.choice(
+                [True, False],
+                p=[adoption_rate_solar_panels, 1 - adoption_rate_solar_panels],
+            )
+        )
+        if has_solar_panels:
+            solar_production: float = (
+                yearly_consumption_kWh_excluding_EV_heat_pump_home_battery
+            )
+            adoption_rate_home_batteries: float = (
+                households_settings.adoption_rate_home_batteries_if_solar_panels  # noqa: E501
+            )
+        else:
+            solar_production = 0
+            adoption_rate_home_batteries = (
+                households_settings.adoption_rate_home_batteries_if_not_solar_panels  # noqa: E501
+            )
+
+        solar_shape: pl.Series = pl.Series()
+        solar_panels: SolarPanels = SolarPanels(
+            yearly_production_kWh=solar_production, profile_shape=solar_shape
+        )
+        has_home_battery: bool = bool(
+            random_generator.choice(
+                [True, False],
+                p=[
+                    adoption_rate_home_batteries,
+                    1 - adoption_rate_home_batteries,
+                ],
+            )
+        )
+        if has_home_battery:
+            home_battery_charge_profile: pl.Series = pl.Series()
+            home_battery_discharge_profile: pl.Series = pl.Series()
+        else:
+            home_battery_charge_profile = pl.Series()
+            home_battery_discharge_profile = pl.Series()
+
+        home_battery: HomeBattery = HomeBattery(
+            charge_profile=home_battery_charge_profile,
+            discharge_profile=home_battery_discharge_profile,
+        )
+
+        return household, heat_pump, home_battery, solar_panels
+
+    @staticmethod
     def create(
         *,
         scenario: Box,
@@ -1746,6 +1862,11 @@ class User:
             transformers_settings=scenario.transformers,
             random_generator=random_generators.define,
         )
+        household, heat_pump, home_battery, solar_panels = User.draw_non_EV(
+            households_settings=scenario.households,
+            random_generator=random_generators.households,
+            beta_shape=scenario.monte_carlo.beta_shape,
+        )
         return User(
             ID=ID,
             transformer_ID=transformer_ID,
@@ -1760,6 +1881,10 @@ class User:
             mobility=mobility,
             charge=charge,
             run_metrics=run_metrics,
+            household=household,
+            heat_pump=heat_pump,
+            home_battery=home_battery,
+            solar_panels=solar_panels,
         )
 
 

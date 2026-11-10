@@ -167,6 +167,8 @@ def test_run() -> None:
     scenario.case_name = case_name
     run_scenario(scenario)
     print('[magenta] Document pickling as a cache of sorts with warnings')
+    print('[yellow] Households for non-cars (skip?) and shape per minute')
+    print('[blue] Get shapes of demand, heat_pumps, solar, battery')
 
 
 @cook.function_timer
