@@ -12,7 +12,6 @@ from ChaProEV.stochastic_new.define import User
 
 @dataclass
 class PreCharge:
-    time_stamps: list[datetime]
     locations: list[str]
     kilometers_driven_run: list[float]
     consumptions: list[float]
@@ -25,7 +24,6 @@ class PreCharge:
     def initialise(*, user: User, scenario: Box) -> PreCharge:
 
         charging_settings: Box = scenario.charging_dataframe
-        time_index_name: str = charging_settings.time_index_name
         location_header: str = charging_settings.location_header
         can_charge_header: str = charging_settings.can_charge_header
 
@@ -43,7 +41,6 @@ class PreCharge:
         )
 
         return PreCharge(
-            time_stamps=user.charge[time_index_name].to_list(),
             locations=user.charge[location_header].to_list(),
             kilometers_driven_run=user.charge[driven_header].to_list(),
             consumptions=user.charge[consumption_header].to_list(),
