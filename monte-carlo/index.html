@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Monte Carlo simulations - ChaProEV</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Monte Carlo simulations";
+        var mkdocs_page_input_path = "monte-carlo.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ChaProEV
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Approach</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../non_road/">Non-road</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../consumption/">Consumption</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../make_variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running_model/">Running model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multiprocessing/">Multiprocessing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../writing/">Writing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Programming matters</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../parallel_processing/">Parallel processing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChaProEV</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Monte Carlo simulations</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="monte-carlo-simulations">Monte Carlo simulations</h1>
+<p>The model uses Monte Carlo simulation to represent variation in model inputs and behaviour. Instead of assigning every modelled user or process the same fixed values, selected parameters can be drawn from probability distributions.</p>
+<p>The Monte Carlo configuration determines whether these random draws are reproducible. Separate random-number generators are used for different parts of the model, while bounded beta distributions can be used to draw values around specified typical values.</p>
+<h2 id="monte-carlo-configuration">Monte Carlo configuration</h2>
+<p>The <code>MonteCarlo</code> class contains the configuration used to initialise the random-number generation for a model run. It contains two parameters:</p>
+<ul>
+<li><code>use_seed</code> determines whether the model uses a fixed seed.</li>
+<li><code>seed</code> specifies the fixed seed used when seeding is enabled.</li>
+</ul>
+<p>When <code>use_seed</code> is <code>True</code>, the configured seed produces the same sequence of random draws each time the model is run. Provided that the rest of the model is deterministic, this makes the complete model run reproducible.</p>
+<p>Reproducible random draws make it possible to compare model configurations without introducing unrelated differences in random sampling. For example, the effect of changing a charging parameter can be examined while retaining the same randomly generated characteristics and mobility behaviour.</p>
+<p>When <code>use_seed</code> is <code>False</code>, the configured value of <code>seed</code> is not used. NumPy then supplies non-deterministic entropy to initialise the seed sequence. Repeated model runs can consequently produce different sequences of random draws.</p>
+<h2 id="independent-random-number-generators">Independent random-number generators</h2>
+<p>The <code>RandomGenerators</code> class contains separate NumPy random-number generators for different parts of the model:</p>
+<ul>
+<li><code>define</code> is used when defining model inputs and characteristics.</li>
+<li><code>mobility</code> is used for random processes related to mobility.</li>
+<li><code>charging</code> is used for random processes related to vehicle charging.</li>
+<li><code>transformers</code> is used for random processes related to transformers and power lines
+= <code>households</code>  is used for randome processes related to household consumption (outside elelectric vehicles), including heat pumps, home batteries, and solr panels.</li>
+</ul>
+<p>Separating the random-number generators prevents a change in one part of the model from unnecessarily shifting the random-number stream used by another part. For example, adding an extra charging-related draw should not change the mobility draws merely because both processes would otherwise consume values from the same random-number sequence.</p>
+<p>The generators are created by the <code>RandomGenerators.create_generators()</code> method. This method first creates a NumPy <code>SeedSequence</code> from the configured Monte Carlo seed. It then uses <code>SeedSequence.spawn()</code> to create three child seed sequences, one for each random-number generator.</p>
+<p>When seeding is enabled, the same root seed produces the same child seed sequences and therefore the same three random-number streams. The streams remain separate but are reproducible as a group. When seeding is disabled, the root seed sequence is initialised using non-deterministic entropy.</p>
+<h2 id="drawing-bounded-parameter-values">Drawing bounded parameter values</h2>
+<p>The <code>draw_beta_value()</code> function draws a value within a specified range. The function requires a minimum value, a typical value, a maximum value, a random-number generator, and a beta-distribution shape parameter.</p>
+<p>The input values must satisfy:</p>
+<pre><code class="language-text">minimum &lt;= typical &lt;= maximum
+</code></pre>
+<p>The returned value is therefore bounded by <code>minimum</code> and <code>maximum</code>. The <code>typical</code> value defines the central value around which the draws are distributed.</p>
+<p>A bounded distribution is useful for model parameters for which values outside the specified range would be physically impossible, behaviourally implausible, or inconsistent with the scenario definition.</p>
+<h2 id="beta-distribution-and-transformation">Beta distribution and transformation</h2>
+<p>The function first draws a value from a symmetric beta distribution:</p>
+<pre><code class="language-text">Beta(shape, shape)
+</code></pre>
+<p>This produces a value between zero and one. Because both beta shape parameters are equal, the distribution is symmetric around <code>0.5</code>.</p>
+<p>The beta draw is subsequently transformed in two parts:</p>
+<ol>
+<li>A beta draw between <code>0</code> and <code>0.5</code> is mapped to the interval from <code>minimum</code> to <code>typical</code>.</li>
+<li>A beta draw between <code>0.5</code> and <code>1</code> is mapped to the interval from <code>typical</code> to <code>maximum</code>.</li>
+</ol>
+<p>For draws at or below <code>0.5</code>, the transformation is:</p>
+<pre><code class="language-text">minimum + 2 * draw * (typical - minimum)
+</code></pre>
+<p>For draws above <code>0.5</code>, the transformation is:</p>
+<pre><code class="language-text">typical + 2 * (draw - 0.5) * (maximum - typical)
+</code></pre>
+<p>This piecewise transformation allows the typical value to be positioned anywhere between the minimum and maximum. The distance from the minimum to the typical value does not need to equal the distance from the typical value to the maximum.</p>
+<h2 id="interpretation-of-the-typical-value">Interpretation of the typical value</h2>
+<p>The <code>typical</code> value is a median of the resulting distribution. When <code>minimum &lt; typical &lt; maximum</code>, half of the generated values are below the typical value and half are above it.</p>
+<p>This does not necessarily make the typical value the arithmetic mean of the resulting distribution. When the intervals below and above the typical value have different widths, the resulting distribution is asymmetric in terms of the modelled parameter. The typical value remains the median, but the mean may lie above or below it.</p>
+<p>For example, consider:</p>
+<pre><code class="language-text">minimum = 10
+typical = 20
+maximum = 50
+</code></pre>
+<p>Half of the draws are located between 10 and 20, while the other half are located between 20 and 50. The upper half covers a wider interval. Consequently, the mean of the resulting values will be greater than 20 even though 20 is the median.</p>
+<p>This makes it possible to specify a typical value independently of the width of the ranges on either side of it.</p>
+<h2 id="effect-of-the-shape-parameter">Effect of the shape parameter</h2>
+<p>The <code>shape</code> parameter controls how strongly draws are concentrated around the typical value.</p>
+<p>Values greater than 1 produce a concentration around the typical value. As <code>shape</code> increases, the symmetric beta distribution becomes increasingly concentrated around <code>0.5</code>. After transformation, this results in a stronger concentration of draws around <code>typical</code>.</p>
+<p>A <code>shape</code> value of 1 produces a uniform beta draw between zero and one. Half of these draws are mapped uniformly to the interval between <code>minimum</code> and <code>typical</code>, and the other half are mapped uniformly to the interval between <code>typical</code> and <code>maximum</code>. The resulting distribution over the full range is therefore only uniform when <code>typical</code> is halfway between <code>minimum</code> and <code>maximum</code>.</p>
+<p>Values below 1 increasingly favour the minimum and maximum. The underlying beta distribution becomes increasingly concentrated near zero and one, which correspond to the minimum and maximum after transformation.</p>
+<p>The <code>shape</code> parameter must be greater than zero.</p>
+<h2 id="validation">Validation</h2>
+<p>Before drawing a value, <code>draw_beta_value()</code> verifies that the shape parameter is greater than zero and that the minimum, typical, and maximum values are correctly ordered.</p>
+<p>A <code>ValueError</code> is raised when:</p>
+<pre><code class="language-text">shape &lt;= 0
+</code></pre>
+<p>A <code>ValueError</code> is also raised when the following condition is not satisfied:</p>
+<pre><code class="language-text">minimum &lt;= typical &lt;= maximum
+</code></pre>
+<p>These checks prevent invalid beta-distribution parameters and incorrectly specified value ranges from being silently accepted.</p>
+<h2 id="fixed-and-degenerate-ranges">Fixed and degenerate ranges</h2>
+<p>The function also supports cases in which two or all three of the range values are equal.</p>
+<p>For example:</p>
+<pre><code class="language-text">minimum = typical &lt; maximum
+</code></pre>
+<p>means that beta draws in the lower half of the distribution all result in the typical value, while draws in the upper half are distributed between the typical value and the maximum.</p>
+<p>Similarly:</p>
+<pre><code class="language-text">minimum &lt; typical = maximum
+</code></pre>
+<p>causes draws in the upper half to result in the typical value, while draws in the lower half are distributed between the minimum and typical values.</p>
+<p>When:</p>
+<pre><code class="language-text">minimum = typical = maximum
+</code></pre>
+<p>the returned value is always equal to this fixed value.</p>
+<p>Importantly, a random beta draw is still performed in this final case even though it cannot affect the returned value.</p>
+<h2 id="maintaining-the-random-number-stream">Maintaining the random-number stream</h2>
+<p>Performing a random draw when <code>minimum == maximum</code> is deliberate. Skipping the draw only when a parameter has a fixed value would shift all subsequent draws from the same random-number generator.</p>
+<p>This could cause later model results to change merely because an earlier parameter happened to have a fixed value, even when those later results should otherwise be independent of that parameter.</p>
+<p>By consuming one beta draw on every call, including when <code>minimum == maximum</code>, the position within the random-number stream is preserved relative to another run that calls the function at the same point with a non-degenerate range. This makes controlled comparisons between model configurations easier because making this parameter fixed does not, by itself, shift subsequent draws from the same generator.</p>
+<h2 id="reproducibility">Reproducibility</h2>
+<p>A fixed Monte Carlo seed makes the random-number streams reproducible. Complete model results are reproducible when stochastic operations consistently use the provided generators and the remainder of the calculation behaves deterministically.</p>
+<p>Random operations should therefore use the appropriate generator from <code>RandomGenerators</code>:</p>
+<ul>
+<li>definition-related draws use <code>define</code>;</li>
+<li>mobility-related draws use <code>mobility</code>;</li>
+<li>charging-related draws use <code>charging</code>.</li>
+</ul>
+<p>Keeping these random streams separate also limits the effect of changes within one part of the model. A change in the number of charging draws, for example, can alter subsequent draws from the <code>charging</code> generator, but does not shift the sequence produced by the <code>mobility</code> or <code>define</code> generators.</p>
+<p>For reproducible simulations, random draws should consistently use these generators rather than an independent or global random-number state.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        });
+    </script>
+
+</body>
+</html>
