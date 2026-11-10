@@ -14,6 +14,8 @@ Your step-by-step approach makes sense. I would not complicate update_tracking()
 
 END
 
+Memory: Check memory.md
+
 Clarify demnded charge. Add network reaction/offered charge
 QUeueing with a limit.
 All users at the same time (option?)
