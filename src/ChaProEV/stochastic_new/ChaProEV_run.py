@@ -7,7 +7,7 @@ from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
-from ChaProEV.stochastic_new.charging import compute_charging
+from ChaProEV.stochastic_new.charging import compute_fleet_charging
 from ChaProEV.stochastic_new.define import (
     Transformer,
     User,
@@ -187,70 +187,28 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         scenario=scenario, random_generators=random_generators
     )
 
-    users_pool: list[User] = get_users_pool(
+    users_pool, time_constants, time_ranges = get_users_pool(
         scenario=scenario,
         random_generators=random_generators,
         transformers_pool=transformers_pool,
     )
 
-    for user in users_pool:
-        # print(user.locations)
-        # input()
-        # print(user.charge['Power drawn from network (kW)'].sum())
-        # print(user.run_metrics)
-        user.charge = compute_charging(
-            charging_behaviour=user.charging_behaviour,
-            charge=user.charge,
-            charging_settings=scenario.charging_dataframe,
-            vehicle=user.vehicle,
-            scenario=scenario,
-            locations=user.locations,
-        )
-        user.run_metrics.charge_update(
-            charge_dataframe=user.charge,
-            charging_settings=scenario.charging_dataframe,
-            locations=user.locations,
-        )
-        # with pl.Config(tbl_rows=26):
-        #     print(user.run_metrics.average_hourly_power_from_network_kW)
-        #     print(
-        #         user.run_metrics.average_hourly_power_from_network_kW_per_location_type  # noqa:E501
-        #     )
-        #     with pl.Config(tbl_rows=42):
-        #         print(
-        #             user.charge.filter(pl.col('Location') == 'fast')
-        #             .filter(pl.col('Power drawn from network (kW)') > 0.0)
-        #             .filter(pl.col('Time Stamp').dt.hour() == 9)[
-        #                 'Power drawn from network (kW)'
-        #             ]
-        #             .mean()
-        #         )
-        #     exit()
-        # input()
-        print(user.run_metrics.kilometrage)
-        print(user.line_index)
-        # print(user.run_metrics.charge_spending_eur)
-        # print(
-        #     sum(
-        #         list(
-        #             user.run_metrics.charge_spending_eur_per_location_type.values()
-        #         )
-        #     )
-        # )
+    HOURS_IN_A_DAY: int = time_constants.HOURS_IN_A_DAY
 
-        # with pl.Config(tbl_rows=26):
-        #     print(
-        #         user.run_metrics.average_electricity_costs_eur_kWh_per_location_type
-        #     )
-        #     input()
-        # exit()
-        # print(user.ID)
-        # print(user.run_metrics.charge_spending_eur)
-        # print(
-        #     user.run_metrics.charge_spending_eur
-        #     / user.run_metrics.purchased_electricity_kWh
-        # )
-    # exit()
+    MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
+
+    if time_ranges.frequency_type != 'm':
+        raise ValueError('You need to use minutes for the frequency!')
+    run_frequency_size: int = time_ranges.frequency_size
+    run_time_resolution_hours: float = run_frequency_size / MINUTES_PER_HOUR
+
+    users_pool = compute_fleet_charging(
+        users_pool=users_pool,
+        scenario=scenario,
+        run_time_resolution_hours=run_time_resolution_hours,
+        HOURS_IN_A_DAY=HOURS_IN_A_DAY,
+    )
+
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
         users_pool=users_pool, location_types=scenario.metrics.location_types
     )

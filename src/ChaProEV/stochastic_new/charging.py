@@ -1,28 +1,146 @@
+import uuid
+from dataclasses import dataclass
+
 import polars as pl
 from box import Box
 
-from ChaProEV.stochastic_new.define import (
-    ChargingBehaviour,
-    Location,
-    TimeConstants,
-    TimeRange,
-    Vehicle,
-)
+from ChaProEV.stochastic_new.define import User
 
-# def compute_charging_step(
-#     *
+# class GrisStatus
 
 
-# @cook.function_timer
-def compute_charging(
+@dataclass
+class PreCharge:
+    locations: pl.Series
+    kilometers_driven_run: pl.Series
+    consumptions: pl.Series
+    can_charge_run: pl.Series
+    session_starts: pl.Series
+    session_durations_hours: pl.Series
+    available_charge_powers_to_vehicle: pl.Series
+    available_charge_powers_from_network: pl.Series
+
+    def initialise(*, user: User, scenario: Box) -> PreCharge:
+
+        charging_settings: Box = scenario.charging_dataframe
+        location_header: str = charging_settings.location_header
+        can_charge_header: str = charging_settings.can_charge_header
+
+        available_charge_power_to_vehicle_header: str = (
+            charging_settings.available_charge_power_to_vehicle_header
+        )
+        available_charge_power_from_network_header: str = (
+            charging_settings.available_charge_power_from_network_header
+        )
+        driven_header: str = charging_settings.driven_header
+        session_start_header: str = charging_settings.session_start_header
+        consumption_header: str = charging_settings.consumption_header
+        session_duration_header: str = (
+            charging_settings.session_duration_header
+        )
+
+        return PreCharge(
+            locations=user.charge[location_header],
+            kilometers_driven_run=user.charge[driven_header],
+            consumptions=user.charge[consumption_header],
+            can_charge_run=user.charge[can_charge_header],
+            session_starts=user.charge[session_start_header],
+            session_durations_hours=user.charge[session_duration_header],
+            available_charge_powers_to_vehicle=user.charge[
+                available_charge_power_to_vehicle_header
+            ],
+            available_charge_powers_from_network=user.charge[
+                available_charge_power_from_network_header
+            ],
+        )
+
+
+@dataclass
+class TrackingVariables:
+    run_locations: list[str]  # We have to retrack these if using fast
+    # charging
+    run_kilometers_driven: list[float]  # Same as run_locations
+    run_consumptions: list[float]  # Same as locations and kilometers
+    power_drawn_from_network_kW: list[float]
+    power_to_vehicle_kW: list[float]
+    battery_charge_levels_kWh: list[float]
+    current_battery_level_kWh: float
+    wants_to_charge: bool
+    previous_step_power_to_vehicle_kW: float
+    previous_step_power_drawn_from_network_kW: float
+    at_fast_station: bool
+    catching_up: bool
+    catch_up_locations: list[str]
+    catch_up_kilometers_driven: list[float]
+    catch_up_consumptions: list[float]
+    buffer_steps: int
+    catch_up_steps: int
+
+    @staticmethod
+    def initialise(*, user: User) -> TrackingVariables:
+
+        run_locations: list[str] = []  # We have to retrack these if using fast
+        # charging
+        run_kilometers_driven: list[float] = []  # Same as run_locations
+        run_consumptions: list[float] = []  # Same as locations and kilometers
+        power_drawn_from_network_kW: list[float] = []
+        power_to_vehicle_kW: list[float] = []
+        battery_charge_levels_kWh: list[float] = []
+
+        current_battery_level_kWh: float = user.vehicle.battery_size_kWh
+
+        wants_to_charge: bool = (
+            current_battery_level_kWh
+            < user.vehicle.battery_size_kWh
+            * user.charging_behaviour.charge_desire_proportion_trigger
+        )
+
+        previous_step_power_to_vehicle_kW: float = 0
+        previous_step_power_drawn_from_network_kW: float = 0
+        at_fast_station: bool = False
+        catching_up: bool = False
+        catch_up_locations: list[str] = []
+        catch_up_kilometers_driven: list[float] = []
+        catch_up_consumptions: list[float] = []
+        buffer_steps: int = 0
+        catch_up_steps: int = 0
+
+        return TrackingVariables(
+            run_locations=run_locations,
+            run_kilometers_driven=run_kilometers_driven,
+            run_consumptions=run_consumptions,
+            power_drawn_from_network_kW=power_drawn_from_network_kW,
+            power_to_vehicle_kW=power_to_vehicle_kW,
+            battery_charge_levels_kWh=battery_charge_levels_kWh,
+            current_battery_level_kWh=current_battery_level_kWh,
+            wants_to_charge=wants_to_charge,
+            previous_step_power_to_vehicle_kW=(
+                previous_step_power_to_vehicle_kW
+            ),
+            previous_step_power_drawn_from_network_kW=(
+                previous_step_power_drawn_from_network_kW
+            ),
+            at_fast_station=at_fast_station,
+            catching_up=catching_up,
+            catch_up_locations=catch_up_locations,
+            catch_up_kilometers_driven=catch_up_kilometers_driven,
+            catch_up_consumptions=catch_up_consumptions,
+            buffer_steps=buffer_steps,
+            catch_up_steps=catch_up_steps,
+        )
+
+
+# def charge_update(*, time_stamp: datetime, user: User) -> None:
+#     print(user.vehicle.)
+
+
+def compute_fleet_charging(
     *,
-    charging_behaviour: ChargingBehaviour,
-    charge: pl.DataFrame,
-    charging_settings: Box,
-    vehicle: Vehicle,
+    users_pool: list[User],
     scenario: Box,
-    locations: dict[str, Location],
-) -> pl.DataFrame:
+    run_time_resolution_hours: float,
+    HOURS_IN_A_DAY: int,
+) -> list[User]:
     '''
     This includes fast charging, used if the battery level goes too low.
     That can be an issue if the connectivity at base is lower than one.
@@ -37,19 +155,47 @@ def compute_charging(
     Also, this is a small issue, as the shift is of the order of 15 minutes
     and travel on the night of December 31st is not likely to be large.
     '''
+    tracking_pool: dict[uuid.UUID, TrackingVariables] = {
+        user.ID: TrackingVariables.initialise(user=user) for user in users_pool
+    }
+    pre_charge_pool: dict[uuid.UUID, PreCharge] = {
+        user.ID: PreCharge.initialise(user=user, scenario=scenario)
+        for user in users_pool
+    }
+    for user in users_pool:
+        print(user.ID)
+        compute_charging(
+            user=user,
+            scenario=scenario,
+            tracking=tracking_pool[user.ID],
+            pre_charge=pre_charge_pool[user.ID],
+            run_time_resolution_hours=run_time_resolution_hours,
+            HOURS_IN_A_DAY=HOURS_IN_A_DAY,
+        )
+        user.run_metrics.charge_update(
+            charge_dataframe=user.charge,
+            charging_settings=scenario.charging_dataframe,
+            locations=user.locations,
+        )
 
+    return users_pool
+
+
+def write_charge_to_user(
+    *,
+    user: User,
+    tracking: TrackingVariables,
+    scenario: Box,
+    run_time_resolution_hours: float,
+    HOURS_IN_A_DAY: int,
+) -> User:
+
+    charging_settings: Box = scenario.charging_dataframe
     time_index_name: str = charging_settings.time_index_name
     location_header: str = charging_settings.location_header
-    can_charge_header: str = charging_settings.can_charge_header
+    driven_header: str = charging_settings.driven_header
+    consumption_header: str = charging_settings.consumption_header
     battery_level_header: str = charging_settings.battery_level_header
-
-    available_charge_power_to_vehicle_header: str = (
-        charging_settings.available_charge_power_to_vehicle_header
-    )
-    available_charge_power_from_network_header: str = (
-        charging_settings.available_charge_power_from_network_header
-    )
-
     power_to_vehicle_header: str = charging_settings.power_to_vehicle_header
     power_from_network_header: str = (
         charging_settings.power_from_network_header
@@ -58,85 +204,94 @@ def compute_charging(
     charge_from_network_header: str = (
         charging_settings.charge_from_network_header
     )
-    driven_header: str = charging_settings.driven_header
-    session_start_header: str = charging_settings.session_start_header
-    consumption_header: str = charging_settings.consumption_header
-    session_duration_header: str = charging_settings.session_duration_header
     electricity_spending_header: str = (
         charging_settings.electricity_spending_header
     )
-    fast_charging_location_name: str = vehicle.fast_charging_location_name
-    battery_capacity_kWh: float = vehicle.battery_size_kWh
-    charge_desire_proportion_trigger: float = (
-        charging_behaviour.charge_desire_proportion_trigger
-    )
-    charge_stop_proportion_trigger: float = (
-        charging_behaviour.charge_stop_proportion_trigger
-    )
-    charge_desire_trigger_kWh: float = (
-        charge_desire_proportion_trigger * vehicle.battery_size_kWh
-    )
-    charge_stop_trigger_kWh: float = (
-        charge_stop_proportion_trigger * vehicle.battery_size_kWh
+
+    new_charge: pl.DataFrame = user.charge.select(time_index_name)
+
+    new_charge = new_charge.with_columns(
+        pl.Series(
+            name=location_header,
+            values=tracking.run_locations,
+            dtype=pl.String,
+        ),
+        pl.Series(
+            name=driven_header,
+            values=tracking.run_kilometers_driven,
+            dtype=pl.Float64,
+        ),
+        pl.Series(
+            name=consumption_header,
+            values=tracking.run_consumptions,
+            dtype=pl.Float64,
+        ),
+        pl.Series(
+            name=battery_level_header,
+            values=tracking.battery_charge_levels_kWh,
+            dtype=pl.Float64,
+        ),
+        pl.Series(
+            name=power_to_vehicle_header,
+            values=tracking.power_to_vehicle_kW,
+            dtype=pl.Float64,
+        ),
+        pl.Series(
+            name=power_from_network_header,
+            values=tracking.power_drawn_from_network_kW,
+            dtype=pl.Float64,
+        ),
     )
 
-    fast_charge_desire_proportion_trigger: float = (
-        charging_behaviour.fast_charge_desire_proportion_trigger
-    )
-    fast_charge_stop_proportion_trigger: float = (
-        charging_behaviour.fast_charge_stop_proportion_trigger
-    )
-
-    fast_charge_desire_trigger_kWh: float = (
-        fast_charge_desire_proportion_trigger * vehicle.battery_size_kWh
-    )
-    fast_charge_stop_trigger_kWh: float = (
-        fast_charge_stop_proportion_trigger * vehicle.battery_size_kWh
+    new_charge = new_charge.with_columns(
+        (pl.col(power_from_network_header) * run_time_resolution_hours).alias(
+            charge_from_network_header
+        ),
+        (pl.col(power_to_vehicle_header) * run_time_resolution_hours).alias(
+            charge_to_vehicle_header
+        ),
     )
 
-    fast_charging_power_to_vehicle: float = (
-        locations[fast_charging_location_name].charging_power_kW
-        * locations[fast_charging_location_name].charger_efficiency
-    )
+    location_hourly_charging_prices: dict[str, list[float]] = {
+        location_name: user.locations[location_name].charging_price_eur_kWh
+        for location_name in user.locations
+    }
+    location_hourly_charging_prices[user.vehicle.driving_location_name] = [
+        0
+    ] * HOURS_IN_A_DAY
 
-    time_constants: TimeConstants = TimeConstants.read_parameters(
-        scenario.time
-    )
-    run_parameters: Box = scenario.run
-    time_ranges: TimeRange = TimeRange.set_ranges(
-        run_parameters=run_parameters,
-        time_constants=time_constants,
-    )
+    new_charge = (
+        new_charge.with_columns(
+            pl.col(location_header)
+            .replace_strict(location_hourly_charging_prices)
+            .alias('Hourly charging prices')
+        )
+        .with_columns(
+            pl.col('Hourly charging prices')
+            .list.get(pl.col(time_index_name).dt.hour())
+            .alias('Cost (€/kWh)'),
+        )
+        .with_columns(
+            (
+                pl.col(charge_from_network_header) * pl.col('Cost (€/kWh)')
+            ).alias(electricity_spending_header)
+        )
+    ).drop('Hourly charging prices', 'Cost (€/kWh)')
 
-    MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
+    user.charge = new_charge
+    return user
 
-    if time_ranges.frequency_type != 'm':
-        raise ValueError('You need to use minutes for the frequency!')
-    run_frequency_size: int = time_ranges.frequency_size
-    run_time_resolution_hours: float = run_frequency_size / MINUTES_PER_HOUR
 
-    run_locations: list[str] = []  # We have to retrack these if using fast
-    # charging
-    run_kilometers_driven: list[float] = []  # Same as run_locations
-    run_consumptions: list[float] = []  # Same as locations and kilometers
-    power_drawn_from_network_kW: list[float] = []
-    power_to_vehicle_kW: list[float] = []
-    battery_charge_levels_kWh: list[float] = []
-
-    current_battery_level_kWh: float = battery_capacity_kWh
-    wants_to_charge: bool = (
-        current_battery_level_kWh < charge_desire_trigger_kWh
-    )
-
-    previous_step_power_to_vehicle_kW: float = 0
-    previous_step_power_drawn_from_network_kW: float = 0
-    at_fast_station: bool = False
-    catching_up: bool = False
-    catch_up_locations: list[str] = []
-    catch_up_kilometers_driven: list[float] = []
-    catch_up_consumptions: list[float] = []
-    buffer_steps: int = 0
-    catch_up_steps: int = 0
+# @cook.function_timer
+def compute_charging(
+    *,
+    user: User,
+    scenario: Box,
+    tracking: TrackingVariables,
+    pre_charge: PreCharge,
+    run_time_resolution_hours: float,
+    HOURS_IN_A_DAY: int,
+) -> User:
 
     for (
         location,
@@ -148,59 +303,73 @@ def compute_charging(
         available_charge_power_to_vehicle,
         available_charge_power_from_network,
     ) in zip(
-        charge[location_header],
-        charge[driven_header],
-        charge[consumption_header],
-        charge[can_charge_header],
-        charge[session_start_header],
-        charge[session_duration_header],
-        charge[available_charge_power_to_vehicle_header],
-        charge[available_charge_power_from_network_header],
+        pre_charge.locations,
+        pre_charge.kilometers_driven_run,
+        pre_charge.consumptions,
+        pre_charge.can_charge_run,
+        pre_charge.session_starts,
+        pre_charge.session_durations_hours,
+        pre_charge.available_charge_powers_to_vehicle,
+        pre_charge.available_charge_powers_from_network,
     ):
 
         if (
-            current_battery_level_kWh - consumption
-            <= fast_charge_desire_trigger_kWh
+            tracking.current_battery_level_kWh - consumption
+            <= user.charging_behaviour.fast_charge_desire_proportion_trigger
+            * user.vehicle.battery_size_kWh
         ):
-            if not at_fast_station and not catching_up:
-                at_fast_station = True
+            if not tracking.at_fast_station and not tracking.catching_up:
+                tracking.at_fast_station = True
 
-        if at_fast_station:
-            catch_up_locations.append(location)
-            catch_up_consumptions.append(consumption)
-            catch_up_kilometers_driven.append(kilometers_driven)
-            location = fast_charging_location_name
+        if tracking.at_fast_station:
+            tracking.catch_up_locations.append(location)
+            tracking.catch_up_consumptions.append(consumption)
+            tracking.catch_up_kilometers_driven.append(kilometers_driven)
+            location = user.vehicle.fast_charging_location_name
             consumption = 0.0
             kilometers_driven = 0.0
             remaining_energy_to_supply_kWh: float = (
-                fast_charge_stop_trigger_kWh - current_battery_level_kWh
+                user.charging_behaviour.fast_charge_stop_proportion_trigger
+                * user.vehicle.battery_size_kWh
+                - tracking.current_battery_level_kWh
             )
             this_step_power_to_vehicle_kW = min(
-                fast_charging_power_to_vehicle,
+                user.locations[
+                    user.vehicle.fast_charging_location_name
+                ].charging_power_kW
+                * user.locations[
+                    user.vehicle.fast_charging_location_name
+                ].charger_efficiency,
                 remaining_energy_to_supply_kWh / run_time_resolution_hours,
             )
             this_step_power_drawn_from_network_kW = (
                 this_step_power_to_vehicle_kW
-                / locations[fast_charging_location_name].charger_efficiency
+                / user.locations[
+                    user.vehicle.fast_charging_location_name
+                ].charger_efficiency
             )
 
-        elif catching_up:
-            location = catch_up_locations[buffer_steps - catch_up_steps]
-            consumption = catch_up_consumptions[buffer_steps - catch_up_steps]
-            kilometers_driven = catch_up_kilometers_driven[
-                buffer_steps - catch_up_steps
+        elif tracking.catching_up:
+            location = tracking.catch_up_locations[
+                tracking.buffer_steps - tracking.catch_up_steps
+            ]
+            consumption = tracking.catch_up_consumptions[
+                tracking.buffer_steps - tracking.catch_up_steps
+            ]
+            kilometers_driven = tracking.catch_up_kilometers_driven[
+                tracking.buffer_steps - tracking.catch_up_steps
             ]
             # Normal charging is deliberately disabled while replaying delayed
             # mobility. This assumes that the short delay does not contain a
             # material normal-charging opportunity.
             this_step_power_drawn_from_network_kW = 0.0
             this_step_power_to_vehicle_kW = 0.0
-            catch_up_steps -= 1
-            if catch_up_steps == 0:
-                catching_up = False
-                catch_up_locations = []
-                catch_up_kilometers_driven = []
-                catch_up_consumptions = []
+            tracking.catch_up_steps -= 1
+            if tracking.catch_up_steps == 0:
+                tracking.catching_up = False
+                tracking.catch_up_locations = []
+                tracking.catch_up_kilometers_driven = []
+                tracking.catch_up_consumptions = []
 
         # The quantities we track are only updated if we can charge
         elif can_charge:
@@ -211,18 +380,22 @@ def compute_charging(
                 # session, the battery might go above the threshold at
                 # which the user wants to charge, but still below the maximal
                 # charge they want (charge_stop_proportion_trigger).
-                wants_to_charge = (
-                    current_battery_level_kWh < charge_desire_trigger_kWh
+                tracking.wants_to_charge = (
+                    tracking.current_battery_level_kWh
+                    < user.charging_behaviour.charge_desire_proportion_trigger
+                    * user.vehicle.battery_size_kWh
                 )
 
-                if charging_behaviour.adaptive:
+                if user.charging_behaviour.adaptive:
                     charger_efficiency: float = (
                         available_charge_power_to_vehicle
                         / available_charge_power_from_network
                     )
                     energy_required_at_session_start_kWh: float = max(
                         0.0,
-                        charge_stop_trigger_kWh - current_battery_level_kWh,
+                        user.charging_behaviour.charge_stop_proportion_trigger
+                        * user.vehicle.battery_size_kWh
+                        - tracking.current_battery_level_kWh,
                     )
 
                     desired_power_to_vehicle_kW: float = (
@@ -249,19 +422,20 @@ def compute_charging(
                     )
             else:
                 this_step_power_to_vehicle_kW = (
-                    previous_step_power_to_vehicle_kW
+                    tracking.previous_step_power_to_vehicle_kW
                 )
                 this_step_power_drawn_from_network_kW = (
-                    previous_step_power_drawn_from_network_kW
+                    tracking.previous_step_power_drawn_from_network_kW
                 )
-            if wants_to_charge:
+            if tracking.wants_to_charge:
                 charge_to_vehicle_kWh: float = (
                     this_step_power_to_vehicle_kW * run_time_resolution_hours
                 )
 
                 if (
-                    current_battery_level_kWh + charge_to_vehicle_kWh
-                    >= charge_stop_trigger_kWh
+                    tracking.current_battery_level_kWh + charge_to_vehicle_kWh
+                    >= user.charging_behaviour.charge_stop_proportion_trigger
+                    * user.vehicle.battery_size_kWh
                 ):
                     # If we exceed the charge stop level (100% or lower,
                     # set in charging behaviour), the user does not want
@@ -269,10 +443,12 @@ def compute_charging(
                     # might have gone higher than the maximum,
                     # so we need to scale back (essentially stop partly during
                     # the step).
-                    wants_to_charge = False
+                    tracking.wants_to_charge = False
 
                     excess_factor: float = charge_to_vehicle_kWh / (
-                        charge_stop_trigger_kWh - current_battery_level_kWh
+                        user.charging_behaviour.charge_stop_proportion_trigger
+                        * user.vehicle.battery_size_kWh
+                        - tracking.current_battery_level_kWh
                     )
                     this_step_power_drawn_from_network_kW /= excess_factor
                     this_step_power_to_vehicle_kW /= excess_factor
@@ -285,21 +461,23 @@ def compute_charging(
 
         # Now that we know how much power was drawn,
         # we can update the battery level
-        current_battery_level_kWh += (
+        tracking.current_battery_level_kWh += (
             this_step_power_to_vehicle_kW * run_time_resolution_hours
             - consumption
         )
 
         if (
-            at_fast_station
-            and current_battery_level_kWh >= fast_charge_stop_trigger_kWh
+            tracking.at_fast_station
+            and tracking.current_battery_level_kWh
+            >= user.charging_behaviour.fast_charge_stop_proportion_trigger
+            * user.vehicle.battery_size_kWh
         ):
-            at_fast_station = False
-            catching_up = True
-            catch_up_steps = len(catch_up_locations)
-            buffer_steps = len(catch_up_locations)
+            tracking.at_fast_station = False
+            tracking.catching_up = True
+            tracking.catch_up_steps = len(tracking.catch_up_locations)
+            tracking.buffer_steps = len(tracking.catch_up_locations)
 
-        if current_battery_level_kWh < 0:
+        if tracking.current_battery_level_kWh < 0:
             raise ValueError(
                 'Battery level is negative! '
                 'This can for example happen if your base connectivity is too '
@@ -308,80 +486,29 @@ def compute_charging(
             )
 
         # And add the values we track to our trackers
-        run_locations.append(location)
-        run_kilometers_driven.append(kilometers_driven)
-        run_consumptions.append(consumption)
-        battery_charge_levels_kWh.append(current_battery_level_kWh)
-        power_to_vehicle_kW.append(this_step_power_to_vehicle_kW)
-        power_drawn_from_network_kW.append(
+        tracking.run_locations.append(location)
+        tracking.run_kilometers_driven.append(kilometers_driven)
+        tracking.run_consumptions.append(consumption)
+        tracking.battery_charge_levels_kWh.append(
+            tracking.current_battery_level_kWh
+        )
+        tracking.power_to_vehicle_kW.append(this_step_power_to_vehicle_kW)
+        tracking.power_drawn_from_network_kW.append(
             this_step_power_drawn_from_network_kW
         )
 
-        previous_step_power_to_vehicle_kW = this_step_power_to_vehicle_kW
-        previous_step_power_drawn_from_network_kW = (
+        tracking.previous_step_power_to_vehicle_kW = (
+            this_step_power_to_vehicle_kW
+        )
+        tracking.previous_step_power_drawn_from_network_kW = (
             this_step_power_drawn_from_network_kW
         )
 
-    charge = charge.select(time_index_name)
-
-    charge = charge.with_columns(
-        pl.Series(name=location_header, values=run_locations, dtype=pl.String),
-        pl.Series(
-            name=driven_header, values=run_kilometers_driven, dtype=pl.Float64
-        ),
-        pl.Series(
-            name=consumption_header, values=run_consumptions, dtype=pl.Float64
-        ),
-        pl.Series(
-            name=battery_level_header,
-            values=battery_charge_levels_kWh,
-            dtype=pl.Float64,
-        ),
-        pl.Series(
-            name=power_to_vehicle_header,
-            values=power_to_vehicle_kW,
-            dtype=pl.Float64,
-        ),
-        pl.Series(
-            name=power_from_network_header,
-            values=power_drawn_from_network_kW,
-            dtype=pl.Float64,
-        ),
+    user = write_charge_to_user(
+        user=user,
+        tracking=tracking,
+        scenario=scenario,
+        run_time_resolution_hours=run_time_resolution_hours,
+        HOURS_IN_A_DAY=HOURS_IN_A_DAY,
     )
-
-    charge = charge.with_columns(
-        (pl.col(power_from_network_header) * run_time_resolution_hours).alias(
-            charge_from_network_header
-        ),
-        (pl.col(power_to_vehicle_header) * run_time_resolution_hours).alias(
-            charge_to_vehicle_header
-        ),
-    )
-
-    location_hourly_charging_prices: dict[str, list[float]] = {
-        location_name: locations[location_name].charging_price_eur_kWh
-        for location_name in locations
-    }
-    location_hourly_charging_prices[vehicle.driving_location_name] = [
-        0
-    ] * time_constants.HOURS_IN_A_DAY
-
-    charge = (
-        charge.with_columns(
-            pl.col(location_header)
-            .replace_strict(location_hourly_charging_prices)
-            .alias('Hourly charging prices')
-        )
-        .with_columns(
-            pl.col('Hourly charging prices')
-            .list.get(pl.col(time_index_name).dt.hour())
-            .alias('Cost (€/kWh)'),
-        )
-        .with_columns(
-            (
-                pl.col(charge_from_network_header) * pl.col('Cost (€/kWh)')
-            ).alias(electricity_spending_header)
-        )
-    ).drop('Hourly charging prices', 'Cost (€/kWh)')
-
-    return charge
+    return user

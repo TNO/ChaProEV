@@ -1893,7 +1893,7 @@ def create_users(
     scenario: Box,
     random_generators: RandomGenerators,
     transformers_pool: list[Transformer],
-) -> list[User]:
+) -> tuple[list[User], TimeConstants, TimeRange]:
 
     users_settings: Box = scenario.users
 
@@ -1931,7 +1931,7 @@ def create_users(
         with users_path.open('wb') as users_file:
             pickle.dump(users_pool, users_file)
 
-    return users_pool
+    return users_pool, time_constants, time_ranges
 
 
 def read_users_pool(*, scenario: Box) -> list[User]:
@@ -1950,19 +1950,27 @@ def get_users_pool(
     scenario: Box,
     random_generators: RandomGenerators,
     transformers_pool: list[Transformer],
-) -> list[User]:
+) -> tuple[list[User], TimeConstants, TimeRange]:
 
     users_settings: Box = scenario.users
 
     if users_settings.read_from_file:
         users_pool: list[User] = read_users_pool(scenario=scenario)
+        time_constants: TimeConstants = TimeConstants.read_parameters(
+            scenario.time
+        )
+        run_parameters: Box = scenario.run
+        time_ranges: TimeRange = TimeRange.set_ranges(
+            run_parameters=run_parameters,
+            time_constants=time_constants,
+        )
     else:
-        users_pool: list[User] = create_users(
+        users_pool, time_constants, time_ranges = create_users(
             scenario=scenario,
             random_generators=random_generators,
             transformers_pool=transformers_pool,
         )
-    return users_pool
+    return users_pool, time_constants, time_ranges
 
 
 def get_transformers_pool(
