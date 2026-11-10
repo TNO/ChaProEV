@@ -8,7 +8,12 @@ from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
 from ChaProEV.stochastic_new.charging import compute_charging
-from ChaProEV.stochastic_new.define import User, get_users_pool
+from ChaProEV.stochastic_new.define import (
+    Transformer,
+    User,
+    get_transformers_pool,
+    get_users_pool,
+)
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
 
 
@@ -176,8 +181,14 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         monte_carlo=monte_carlo
     )
 
-    users_pool: list[User] = get_users_pool(
+    transformers_pool: list[Transformer] = get_transformers_pool(
         scenario=scenario, random_generators=random_generators
+    )
+
+    users_pool: list[User] = get_users_pool(
+        scenario=scenario,
+        random_generators=random_generators,
+        transformers_pool=transformers_pool,
     )
 
     for user in users_pool:
@@ -215,6 +226,7 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         #     exit()
         # input()
         print(user.run_metrics.kilometrage)
+        print(user.line_index)
         # print(user.run_metrics.charge_spending_eur)
         # print(
         #     sum(

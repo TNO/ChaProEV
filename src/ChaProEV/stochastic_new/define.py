@@ -152,6 +152,140 @@ class RunMetrics:
 
 
 @dataclass
+class PowerLine:
+    index: int
+    capacity_kW: float
+
+
+@dataclass
+class Transformer:
+    ID: uuid.UUID
+    capacity_kW: float
+    power_lines: list[PowerLine]
+
+    @staticmethod
+    def create(
+        *,
+        transformers_settings: Box,
+        random_generators: RandomGenerators,
+        beta_shape: float,
+    ) -> Transformer:
+        ID: uuid.UUID = uuid.uuid4()
+
+        transformer_capacity_kW: float = draw_beta_value(
+            minimum=transformers_settings.capacity_kW_min,
+            typical=transformers_settings.capacity_kW_typical,
+            maximum=transformers_settings.capacity_kW_max,
+            random_generator=random_generators.transformers,
+            shape=beta_shape,
+        )
+
+        line_amount_to_transformer_capacity_ratio: float = draw_beta_value(
+            minimum=(
+                transformers_settings.line_amount_to_transformer_capacity_ratio_min  # noqa:E501
+            ),
+            typical=(
+                transformers_settings.line_amount_to_transformer_capacity_ratio_typical  # noqa:E501
+            ),
+            maximum=(
+                transformers_settings.line_amount_to_transformer_capacity_ratio_max  # noqa:E501
+            ),
+            random_generator=random_generators.transformers,
+            shape=beta_shape,
+        )
+
+        amount_of_lines: int = int(
+            line_amount_to_transformer_capacity_ratio * transformer_capacity_kW
+        )
+
+        if amount_of_lines < 1:
+            raise ValueError(
+                'The calculated number of power lines is less than one: '
+                f'{transformer_capacity_kW=}, '
+                f'{line_amount_to_transformer_capacity_ratio=}, '
+                f'{amount_of_lines=}.'
+            )
+
+        line_capacity_weights: list[float] = [
+            draw_beta_value(
+                minimum=(
+                    transformers_settings.line_capacity_to_average_ratio_min
+                ),
+                typical=(
+                    transformers_settings.line_capacity_to_average_ratio_typical  # noqa:E501
+                ),
+                maximum=(
+                    transformers_settings.line_capacity_to_average_ratio_max
+                ),
+                random_generator=random_generators.transformers,
+                shape=beta_shape,
+            )
+            for _ in range(amount_of_lines)
+        ]
+
+        total_line_capacity_weight: float = sum(line_capacity_weights)
+
+        power_lines: list[PowerLine] = [
+            PowerLine(
+                index=line_index,
+                capacity_kW=(
+                    transformer_capacity_kW
+                    * line_capacity_weight
+                    / total_line_capacity_weight
+                ),
+            )
+            for line_index, line_capacity_weight in enumerate(
+                line_capacity_weights
+            )
+        ]
+
+        total_line_capacity_kW: float = sum(
+            power_line.capacity_kW for power_line in power_lines
+        )
+
+        if not np.isclose(
+            total_line_capacity_kW,
+            transformer_capacity_kW,
+        ):
+            raise RuntimeError(
+                'The allocated power-line capacity does not equal the '
+                'transformer capacity: '
+                f'{total_line_capacity_kW=}, '
+                f'{transformer_capacity_kW=}.'
+            )
+
+        return Transformer(
+            ID=ID,
+            capacity_kW=transformer_capacity_kW,
+            power_lines=power_lines,
+        )
+
+
+@dataclass
+class Household:
+    yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float
+    demand_profile: pl.Series
+
+
+@dataclass
+class HeatPump:
+    yearly_consumption_kWh: float
+    demand_profile: pl.Series
+
+
+@dataclass
+class HomeBattery:
+    chaege_profile: pl.Series
+    discharge_profile: pl.Series
+
+
+@dataclass
+class SolarPanels:
+    yearly_production_kWh: float
+    producton_profile: pl.Series
+
+
+@dataclass
 class Vehicle:
     name: str
     consumption_kWh_km: float
@@ -780,6 +914,8 @@ class ChargingBehaviour:
 @dataclass
 class User:
     ID: uuid.UUID
+    transformer_ID: uuid.UUID
+    line_index: int
     vehicle: Vehicle
     locations: dict[str, Location]
     legs: dict[str, Leg]
@@ -1483,12 +1619,84 @@ class User:
         return charging_dataframe
 
     @staticmethod
+    def get_transformer_ID_and_line_index(
+        *,
+        transformers_pool: list[Transformer],
+        transformers_settings: Box,
+        random_generator: np.random.Generator,
+    ) -> tuple[uuid.UUID, int]:
+        if not transformers_pool:
+            raise ValueError(
+                'Cannot assign a transformer because '
+                'transformers_pool is empty.'
+            )
+
+        proportions_of_users: list[float] = (
+            transformers_settings.proportions_of_users
+        )
+
+        if len(proportions_of_users) != len(transformers_pool):
+            raise ValueError(
+                'The number of user proportions must equal the number of '
+                'transformers: '
+                f'{len(proportions_of_users)=}, '
+                f'{len(transformers_pool)=}.'
+            )
+
+        if not np.isclose(sum(proportions_of_users), 1.0):
+            raise ValueError(
+                'Transformer user proportions must sum to 1.0: '
+                f'{sum(proportions_of_users)=}, '
+                f'{proportions_of_users=}.'
+            )
+
+        transformer_index: int = int(
+            random_generator.choice(
+                len(transformers_pool),
+                p=proportions_of_users,
+            )
+        )
+        user_transformer: Transformer = transformers_pool[transformer_index]
+
+        if not user_transformer.power_lines:
+            raise ValueError(
+                'The selected transformer has no power lines: '
+                f'{user_transformer.ID=}.'
+            )
+
+        line_capacities_kW: list[float] = [
+            power_line.capacity_kW
+            for power_line in user_transformer.power_lines
+        ]
+
+        total_line_capacity_kW: float = sum(line_capacities_kW)
+
+        line_probabilities: list[float] = [
+            capacity_kW / total_line_capacity_kW
+            for capacity_kW in line_capacities_kW
+        ]
+
+        selected_line_position: int = int(
+            random_generator.choice(
+                len(user_transformer.power_lines),
+                p=line_probabilities,
+            )
+        )
+
+        selected_power_line: PowerLine = user_transformer.power_lines[
+            selected_line_position
+        ]
+
+        return user_transformer.ID, selected_power_line.index
+
+    @staticmethod
     def create(
         *,
         scenario: Box,
         random_generators: RandomGenerators,
         time_ranges: TimeRange,
         time_constants: TimeConstants,
+        transformers_pool: list[Transformer],
     ) -> User:
 
         ID: uuid.UUID = uuid.uuid4()
@@ -1533,8 +1741,15 @@ class User:
                 mobility_settings.consumption_header
             ].sum(),
         )
+        transformer_ID, line_index = User.get_transformer_ID_and_line_index(
+            transformers_pool=transformers_pool,
+            transformers_settings=scenario.transformers,
+            random_generator=random_generators.define,
+        )
         return User(
             ID=ID,
+            transformer_ID=transformer_ID,
+            line_index=line_index,
             vehicle=vehicle,
             locations=locations,
             legs=legs,
@@ -1549,7 +1764,10 @@ class User:
 
 
 def create_users(
-    *, scenario: Box, random_generators: RandomGenerators
+    *,
+    scenario: Box,
+    random_generators: RandomGenerators,
+    transformers_pool: list[Transformer],
 ) -> list[User]:
 
     users_settings: Box = scenario.users
@@ -1576,6 +1794,7 @@ def create_users(
             random_generators=random_generators,
             time_ranges=time_ranges,
             time_constants=time_constants,
+            transformers_pool=transformers_pool,
         )
         for _ in range(users_pool_size)
     ]
@@ -1602,7 +1821,10 @@ def read_users_pool(*, scenario: Box) -> list[User]:
 
 
 def get_users_pool(
-    *, scenario: Box, random_generators: RandomGenerators
+    *,
+    scenario: Box,
+    random_generators: RandomGenerators,
+    transformers_pool: list[Transformer],
 ) -> list[User]:
 
     users_settings: Box = scenario.users
@@ -1611,6 +1833,31 @@ def get_users_pool(
         users_pool: list[User] = read_users_pool(scenario=scenario)
     else:
         users_pool: list[User] = create_users(
-            scenario=scenario, random_generators=random_generators
+            scenario=scenario,
+            random_generators=random_generators,
+            transformers_pool=transformers_pool,
         )
     return users_pool
+
+
+def get_transformers_pool(
+    *, scenario: Box, random_generators: RandomGenerators
+) -> list[Transformer]:
+
+    transformers_settings: Box = scenario.transformers
+    beta_shape: float = scenario.monte_carlo.beta_shape
+    amount: int = transformers_settings.amount
+
+    return [
+        Transformer.create(
+            transformers_settings=transformers_settings,
+            random_generators=random_generators,
+            beta_shape=beta_shape,
+        )
+        for _ in range(amount)
+    ]
+
+
+#     Attribute to user bassed on draw (ranges. For demand_profles: draw
+# in MFFBAS)
+# warning/error for non-cars
