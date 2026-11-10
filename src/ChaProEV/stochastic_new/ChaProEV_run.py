@@ -207,6 +207,7 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         scenario=scenario,
         run_time_resolution_hours=run_time_resolution_hours,
         HOURS_IN_A_DAY=HOURS_IN_A_DAY,
+        run_time_stamps=time_ranges.run_stamps.to_list(),
     )
 
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
@@ -227,3 +228,14 @@ if __name__ == '__main__':
 
     case_name: str = 'plus'
     run_ChaProEV(case_name=case_name)
+    # can charge to can connect
+    # MOdel maintenance
+    # iterate on time stamps too if we need time
+
+#     use run_index and pre_charge e.g. pre_charge.locations[run_index]
+
+# de update_tracking(run_index, user, pre_charge, tracking, scenario,
+# run_time_resolution) -> tracking
+
+
+#  and write charge is done later in an iteration

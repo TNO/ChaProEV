@@ -1,3 +1,19 @@
+Interaction START
+
+In current implementation, interactions are limited to the past. Need to look at how to 
+deal with simultaneous arrivals (proably check if that is the case, then trigger an ordering, posibly random
+so that it's not always the same user that loses)
+
+Current implementation: interactions are based only on states established in previous time steps.
+ TODO: handle simultaneous events where multiple users compete for the same constrained resource, especially simultaneous charging-session starts/arrivals. Detect these before updating individual users and apply an explicit allocation/priority rule. If ordering is required, consider randomized ordering so the same user is not systematically disadvantaged.
+
+One thing I'd keep in mind for later: since reproducibility matters in your model, random ordering should use your existing seeded RandomGenerators setup, rather than an independent/unseeded shuffle.
+
+Your step-by-step approach makes sense. I would not complicate update_tracking() with this yet.
+
+
+END
+
 Clarify demnded charge. Add network reaction/offered charge
 QUeueing with a limit.
 All users at the same time (option?)
