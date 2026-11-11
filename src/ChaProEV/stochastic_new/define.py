@@ -163,8 +163,9 @@ class Transformer:
     capacity_kW: float
     power_lines: list[PowerLine]
 
-    @staticmethod
+    @classmethod
     def create(
+        cls,
         *,
         transformers_settings: Box,
         random_generators: RandomGenerators,
@@ -254,7 +255,7 @@ class Transformer:
                 f'{transformer_capacity_kW=}.'
             )
 
-        return Transformer(
+        return cls(
             ID=ID,
             capacity_kW=transformer_capacity_kW,
             power_lines=power_lines,
@@ -294,8 +295,9 @@ class Vehicle:
     driving_location_name: str
     fast_charging_location_name: str
 
-    @staticmethod
+    @classmethod
     def draw(
+        cls,
         *,
         vehicle_settings: Box,
         random_generator: np.random.Generator,
@@ -345,7 +347,7 @@ class Vehicle:
             shape=beta_shape,
         )
 
-        return Vehicle(
+        return cls(
             name=name,
             consumption_kWh_km=consumption_kWh_km,
             battery_size_kWh=battery_size_kWh,
@@ -377,8 +379,9 @@ class Location:
     charging_desirability: float
     variant_name: str
 
-    @staticmethod
+    @classmethod
     def draw(
+        cls,
         *,
         location_parameters: Box,
         location_name: str,
@@ -436,7 +439,7 @@ class Location:
             location_values.discharging_reward_eur_kWh
         )
         charging_desirability: float = location_values.charging_desirability
-        return Location(
+        return cls(
             base=base,
             connectivity=connectivity,
             charging_power_kW=charging_power_kW,
@@ -522,9 +525,9 @@ class Leg:
     start_location: str
     end_location: str
 
-    @staticmethod
+    @classmethod
     def set_values(
-        *, this_leg_definition: Box, drawn_legs_references: Box
+        cls, *, this_leg_definition: Box, drawn_legs_references: Box
     ) -> Leg:
 
         reference: str = this_leg_definition.reference
@@ -535,7 +538,7 @@ class Leg:
         start_location: str = this_leg_definition.start_location
         end_location: str = this_leg_definition.end_location
 
-        return Leg(
+        return cls(
             distance_km=distance_km,
             duration_hours=duration_hours,
             start_location=start_location,
@@ -556,8 +559,10 @@ class TripStep:
     duration_hours: float
     speed_kph: float
 
-    @staticmethod
+    @classmethod
     def get_step(
+        cls,
+        *,
         start_time_hours: float,
         duration_hours: float,
         location_name: str,
@@ -567,7 +572,7 @@ class TripStep:
             speed_kph: float = 0
         else:
             speed_kph = leg_length_kilometers / duration_hours
-        return TripStep(
+        return cls(
             start_hour=start_time_hours,
             end_hour=start_time_hours + duration_hours,
             location_name=location_name,
@@ -689,8 +694,9 @@ class Trip:
         )
         return leg_names, time_between_legs_hours
 
-    @staticmethod
+    @classmethod
     def draw(
+        cls,
         *,
         trip_parameters: Box,
         legs: dict[str, Leg],
@@ -757,7 +763,7 @@ class Trip:
                     f'which does not match {end_base=}.'
                 )
 
-        return Trip(
+        return cls(
             start_base=start_base,
             end_base=end_base,
             base_transition=base_transition,
@@ -773,8 +779,9 @@ class ChargingBehaviour:
     fast_charge_desire_proportion_trigger: float
     fast_charge_stop_proportion_trigger: float
 
-    @staticmethod
+    @classmethod
     def draw(
+        cls,
         *,
         charging_behaviour_parameters: Box,
         random_generator: np.random.Generator,
@@ -898,7 +905,7 @@ class ChargingBehaviour:
             shape=beta_shape,
         )
 
-        return ChargingBehaviour(
+        return cls(
             adaptive=adaptive,
             charge_desire_proportion_trigger=charge_desire_proportion_trigger,
             charge_stop_proportion_trigger=charge_stop_proportion_trigger,
@@ -1805,8 +1812,9 @@ class User:
 
         return household, heat_pump, home_battery, solar_panels
 
-    @staticmethod
+    @classmethod
     def create(
+        cls,
         *,
         scenario: Box,
         random_generators: RandomGenerators,
@@ -1867,7 +1875,7 @@ class User:
             random_generator=random_generators.households,
             beta_shape=scenario.monte_carlo.beta_shape,
         )
-        return User(
+        return cls(
             ID=ID,
             transformer_ID=transformer_ID,
             line_index=line_index,
@@ -1905,7 +1913,7 @@ def create_users(
             '(users_pool_size in [users] in scenario toml)'
         )
     time_constants: TimeConstants = TimeConstants.read_parameters(
-        scenario.time
+        time_parameters=scenario.time
     )
     run_parameters: Box = scenario.run
     time_ranges: TimeRange = TimeRange.set_ranges(
@@ -1957,7 +1965,7 @@ def get_users_pool(
     if users_settings.read_from_file:
         users_pool: list[User] = read_users_pool(scenario=scenario)
         time_constants: TimeConstants = TimeConstants.read_parameters(
-            scenario.time
+            time_parameters=scenario.time
         )
         run_parameters: Box = scenario.run
         time_ranges: TimeRange = TimeRange.set_ranges(

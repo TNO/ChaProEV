@@ -39,8 +39,8 @@ class RandomGenerators:
     transformers: np.random.Generator
     households: np.random.Generator
 
-    @staticmethod
-    def create_generators(monte_carlo: MonteCarlo) -> RandomGenerators:
+    @classmethod
+    def create_generators(cls, *, monte_carlo: MonteCarlo) -> RandomGenerators:
         '''
         Create independent random-number generators for a Monte Carlo run.
 
@@ -66,7 +66,7 @@ class RandomGenerators:
             households_seed,
         ) = seed_sequence.spawn(5)
 
-        return RandomGenerators(
+        return cls(
             define=np.random.default_rng(seed=define_seed),
             mobility=np.random.default_rng(seed=mobility_seed),
             charging=np.random.default_rng(seed=charging_seed),

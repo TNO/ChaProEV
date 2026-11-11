@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 import numpy as np
+import numpy.typing as npt
 import polars as pl
 from box import Box
 
@@ -14,20 +15,17 @@ from ChaProEV.stochastic_new.define import User
 
 @dataclass
 class PreCharge:
-    locations: list[str] | np.typing.NDArray[np.str_]
-    kilometers_driven_run: list[float] | np.typing.NDArray[np.float64]
-    consumptions: list[float] | np.typing.NDArray[np.float64]
-    can_connect_run: list[bool] | np.typing.NDArray[np.bool_]
-    session_starts: list[bool] | np.typing.NDArray[np.bool_]
-    session_durations_hours: list[float] | np.typing.NDArray[np.float64]
-    available_charge_powers_to_vehicle: (
-        list[float] | np.typing.NDArray[np.float64]
-    )
-    available_charge_powers_from_network: (
-        list[float] | np.typing.NDArray[np.float64]
-    )
+    locations: list[str] | npt.NDArray[np.str_]
+    kilometers_driven_run: list[float] | npt.NDArray[np.float64]
+    consumptions: list[float] | npt.NDArray[np.float64]
+    can_connect_run: list[bool] | npt.NDArray[np.bool_]
+    session_starts: list[bool] | npt.NDArray[np.bool_]
+    session_durations_hours: list[float] | npt.NDArray[np.float64]
+    available_charge_powers_to_vehicle: list[float] | npt.NDArray[np.float64]
+    available_charge_powers_from_network: list[float] | npt.NDArray[np.float64]
 
-    def initialise(*, user: User, scenario: Box) -> PreCharge:
+    @classmethod
+    def initialise(cls, *, user: User, scenario: Box) -> PreCharge:
 
         charging_settings: Box = scenario.charging_dataframe
 
@@ -49,7 +47,7 @@ class PreCharge:
         storage_type: str = scenario.execution.pre_charge_storage
 
         if storage_type == 'list':
-            return PreCharge(
+            return cls(
                 locations=user.charge[location_header].to_list(),
                 kilometers_driven_run=user.charge[driven_header].to_list(),
                 consumptions=user.charge[consumption_header].to_list(),
@@ -67,7 +65,7 @@ class PreCharge:
             )
 
         if storage_type == 'numpy':
-            return PreCharge(
+            return cls(
                 locations=user.charge[location_header].to_numpy(),
                 kilometers_driven_run=user.charge[driven_header].to_numpy(),
                 consumptions=user.charge[consumption_header].to_numpy(),
@@ -98,14 +96,14 @@ class TrackingVariables:
     ]  # Non-dual because numpy would need a fixed length
     # We have to retrack these if using fast charging
     run_kilometers_driven: (
-        list[float] | np.typing.NDArray[np.float64]
+        list[float] | npt.NDArray[np.float64]
     )  # Same as run_locations
     run_consumptions: (
-        list[float] | np.typing.NDArray[np.float64]
+        list[float] | npt.NDArray[np.float64]
     )  # Same as run_locations and kilometers driven
-    power_drawn_from_network_kW: list[float] | np.typing.NDArray[np.float64]
-    power_to_vehicle_kW: list[float] | np.typing.NDArray[np.float64]
-    battery_charge_levels_kWh: list[float] | np.typing.NDArray[np.float64]
+    power_drawn_from_network_kW: list[float] | npt.NDArray[np.float64]
+    power_to_vehicle_kW: list[float] | npt.NDArray[np.float64]
+    battery_charge_levels_kWh: list[float] | npt.NDArray[np.float64]
     current_battery_level_kWh: float
     wants_to_charge: bool
     previous_step_power_to_vehicle_kW: float
@@ -118,9 +116,9 @@ class TrackingVariables:
     buffer_steps: int
     catch_up_steps: int
 
-    @staticmethod
+    @classmethod
     def initialise(
-        *, user: User, amount_of_time_stamps: int, scenario: Box
+        cls, *, user: User, amount_of_time_stamps: int, scenario: Box
     ) -> TrackingVariables:
 
         current_battery_level_kWh: float = user.vehicle.battery_size_kWh
@@ -135,7 +133,7 @@ class TrackingVariables:
 
         storage_type: str = scenario.execution.tracking
         if storage_type == 'list':
-            return TrackingVariables(
+            return cls(
                 storage_type=storage_type,
                 run_locations=[],
                 run_kilometers_driven=[],
@@ -159,7 +157,7 @@ class TrackingVariables:
             )
 
         if storage_type == 'numpy':
-            return TrackingVariables(
+            return cls(
                 storage_type=storage_type,
                 run_locations=[],
                 run_kilometers_driven=np.empty(
@@ -313,7 +311,7 @@ def update_tracking(
 
     # We use a run index allocation instead of an iteration to be able to
     # spin out the tracking update so that we can update the whole
-    # user pooll at each time step (which nables interaction between
+    # user pool at each time step (which enables interaction between
     # users).
     location: str = pre_charge.locations[run_index]
     kilometers_driven: float = pre_charge.kilometers_driven_run[run_index]

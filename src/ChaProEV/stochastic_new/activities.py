@@ -678,8 +678,9 @@ class Activities:
             away_dates += this_trip_away_dates
         return away_dates
 
-    @staticmethod
+    @classmethod
     def draw(
+        cls,
         *,
         activity_parameters: Box,
         random_generator: np.random.Generator,
@@ -795,7 +796,7 @@ class Activities:
             holiday_back_trip_dates=holiday_back_trip_dates,
         )
 
-        return Activities(
+        return cls(
             commuting_weekday_numbers=commuting_weekday_numbers,
             holiday_trip_week_numbers=holiday_trip_week_numbers,
             holiday_trip_week_before_numbers=holiday_trip_week_before_numbers,

@@ -27,11 +27,11 @@ class TimeConstants:
     # the fact that years don't necessarily start and/or end at the start/end
     # of a week).
 
-    @staticmethod
-    def read_parameters(time_parameters: Box) -> TimeConstants:
+    @classmethod
+    def read_parameters(cls, *, time_parameters: Box) -> TimeConstants:
         holiday_weeks: list[int] = time_parameters.holiday_weeks
 
-        return TimeConstants(
+        return cls(
             SECONDS_PER_HOUR=time_parameters.SECONDS_PER_HOUR,
             MINUTES_PER_HOUR=time_parameters.MINUTES_PER_HOUR,
             HOURS_IN_A_DAY=time_parameters.HOURS_IN_A_DAY,
@@ -67,8 +67,10 @@ class TimeRange:
     frequency_type: str
     frequency_size: int
 
-    @staticmethod
+    @classmethod
     def set_ranges(
+        cls,
+        *,
         run_parameters: Box,
         time_constants: TimeConstants,
     ) -> TimeRange:
@@ -214,7 +216,7 @@ class TimeRange:
             ).alias('day_type')
         )['day_type']
 
-        return TimeRange(
+        return cls(
             run_dates=run_dates,
             display_dates=display_dates,
             run_stamps=run_stamps,

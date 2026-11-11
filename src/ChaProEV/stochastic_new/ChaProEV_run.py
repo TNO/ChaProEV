@@ -16,7 +16,6 @@ from ChaProEV.stochastic_new.define import (
 )
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
 
-
 # def print_memory(label: str) -> None:
 #     process: psutil.Process = psutil.Process(os.getpid())
 #     memory_gb: float = process.memory_info().rss / 1024**3
@@ -40,9 +39,9 @@ class UsersPoolStatistics:
     pool_average_electricity_costs_eur_kWh: float
     pool_average_travel_costs_eur_km: float
 
-    @staticmethod
+    @classmethod
     def compute(
-        *, users_pool: list[User], location_types: list[str]
+        cls, *, users_pool: list[User], location_types: list[str]
     ) -> UsersPoolStatistics:
         average_kilometrage: float = fmean(
             user.run_metrics.kilometrage for user in users_pool
@@ -134,7 +133,7 @@ class UsersPoolStatistics:
             for location_type in location_types
         }
 
-        return UsersPoolStatistics(
+        return cls(
             average_kilometrage=average_kilometrage,
             average_consumption_kWh=average_consumption_kWh,
             average_purchased_electricity_kWh=(
@@ -235,11 +234,3 @@ if __name__ == '__main__':
     run_ChaProEV(case_name=case_name)
     # MOdel maintenance
     # iterate on time stamps too if we need time
-
-#     use run_index and pre_charge e.g. pre_charge.locations[run_index]
-
-# de update_tracking(run_index, user, pre_charge, tracking, scenario,
-# run_time_resolution) -> tracking
-
-
-#  and write charge is done later in an iteration
