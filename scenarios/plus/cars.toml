@@ -592,32 +592,51 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 
 [execution]
 
-# Controls how the per-user PreCharge time-series data are stored during the
-# charging simulation.
+# Controls how the per-user time-series data are stored during the charging
+# simulation. The same options are available separately for PreCharge input
+# data and TrackingVariables output data.
 #
 # Options:
 #   'list'
 #       Stores the data as Python lists.
-#       This is generally faster for smaller simulations because the charging
-#       model repeatedly accesses individual values by run_index.
-#       However, Python lists require considerably more memory and may become
-#       unsuitable for large fleets.
+#       Python lists can be slightly faster for relatively small fleets because
+#       the charging model repeatedly accesses individual values by run_index.
+#       However, lists consume considerably more memory and their performance
+#       deteriorates as memory pressure increases.
 #
 #   'numpy'
 #       Stores the data as NumPy arrays.
-#       This uses considerably less memory and allows substantially larger
-#       fleets to be simulated. Individual scalar access is somewhat slower,
-#       so small simulations may take longer than when using 'list'.
+#       NumPy arrays are substantially more memory-efficient. Scalar access can
+#       be slightly slower for small fleets, but the lower memory pressure can
+#       also make NumPy faster for larger fleets.
 #
-# Testing showed that 'list' performs better for relatively small fleets
-# (e.g. 12 vehicles), while 'numpy' allows much larger fleets to run without
-# exhausting memory (tested with 120 vehicles).
+# Benchmarks with annual minute-resolution simulations showed:
 #
-# This setting changes only the in-memory representation of the PreCharge
-# data. It does not change the charging calculations themselves.
+#   24 users:
+#       list/list      ~26 s
+#       numpy/numpy    ~27-28 s
+#       Lists are slightly faster, while NumPy uses substantially less memory.
 #
-# Do not introduce an automatic fleet-size threshold until the crossover
-# between runtime and memory usage has been benchmarked more systematically.
+#   120 users:
+#       list/list      ~296 s
+#       numpy/numpy    ~208 s
+#       NumPy is substantially faster at this scale and uses much less memory
+#       before the simulation starts.
+#
+# The results therefore indicate a crossover: lists are useful for small,
+# speed-focused runs, while NumPy is preferable for larger simulations where
+# memory consumption becomes important and can also improve runtime.
+#
+# These settings change only the in-memory representation of the time-series
+# data. They do not change the charging calculations or model output.
+#
+# Recommended use:
+#   Small/development runs:  'list'
+#   Large/fleet runs:        'numpy'
+#
+# Do not introduce an automatic fleet-size threshold until the crossover has
+# been benchmarked more systematically at intermediate fleet sizes.
+
 pre_charge_storage = 'numpy'
 tracking = 'numpy'
 

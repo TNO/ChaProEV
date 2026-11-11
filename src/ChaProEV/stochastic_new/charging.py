@@ -1,4 +1,3 @@
-import os
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -7,11 +6,10 @@ import numpy as np
 import polars as pl
 from box import Box
 
+# from ChaProEV.stochastic_new.auxiliary import print_memory
 from ChaProEV.stochastic_new.define import User
-from ChaProEV.stochastic_new.auxiliary import print_memory
+
 # class GrisStatus
-
-
 
 
 @dataclass
@@ -563,7 +561,7 @@ def compute_fleet_charging(
     Also, this is a small issue, as the shift is of the order of 15 minutes
     and travel on the night of December 31st is not likely to be large.
     '''
-    print_memory('Charging start')
+    # print_memory('Charging start')
 
     tracking_pool: dict[uuid.UUID, TrackingVariables] = {
         user.ID: TrackingVariables.initialise(
@@ -574,14 +572,14 @@ def compute_fleet_charging(
         for user in users_pool
     }
 
-    print_memory('After tracking pool')
+    # print_memory('After tracking pool')
 
     pre_charge_pool: dict[uuid.UUID, PreCharge] = {
         user.ID: PreCharge.initialise(user=user, scenario=scenario)
         for user in users_pool
     }
 
-    print_memory('After PreCharge pool')
+    # print_memory('After PreCharge pool')
 
     charging_pool: list[tuple[User, PreCharge, TrackingVariables]] = [
         (
@@ -591,7 +589,7 @@ def compute_fleet_charging(
         )
         for user in users_pool
     ]
-    print_memory('Before simulation')
+    # print_memory('Before simulation')
 
     for run_index in range(len(run_time_stamps)):
         for user, pre_charge, tracking in charging_pool:
@@ -604,7 +602,7 @@ def compute_fleet_charging(
                 scenario=scenario,
             )
 
-    print_memory('After simulation')
+    # print_memory('After simulation')
 
     for user in users_pool:
         user = write_charge_to_user(
@@ -619,6 +617,6 @@ def compute_fleet_charging(
             charging_settings=scenario.charging_dataframe,
             locations=user.locations,
         )
-    print_memory('After writing users')
+    # print_memory('After writing users')
 
     return users_pool

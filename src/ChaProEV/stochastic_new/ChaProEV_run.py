@@ -1,10 +1,8 @@
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import fmean
 
 import polars as pl
-import psutil
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
