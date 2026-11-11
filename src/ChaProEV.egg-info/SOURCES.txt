@@ -23,6 +23,7 @@ charging strategies.png
 charging_infra.png
 eu-emblem-low-res.jpg
 grid_models.png
+memory.md
 mkdocs-PC-28624.yml
 mkdocs.yml
 moot.png
@@ -67,6 +68,7 @@ docs/make.bat
 docs/make_variants.md
 docs/mobility-PC-28624.md
 docs/mobility.md
+docs/monte-carlo.md
 docs/multiprocessing.md
 docs/non_road.md
 docs/outputs.md

@@ -1,32 +1,40 @@
+import os
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
 
+import numpy as np
 import polars as pl
 from box import Box
 
 from ChaProEV.stochastic_new.define import User
-
+from ChaProEV.stochastic_new.auxiliary import print_memory
 # class GrisStatus
+
+
 
 
 @dataclass
 class PreCharge:
-    locations: list[str]
-    kilometers_driven_run: list[float]
-    consumptions: list[float]
-    can_charge_run: list[bool]
-    session_starts: list[bool]
-    session_durations_hours: list[float]
-    available_charge_powers_to_vehicle: list[float]
-    available_charge_powers_from_network: list[float]
+    locations: list[str] | np.typing.NDArray[np.str_]
+    kilometers_driven_run: list[float] | np.typing.NDArray[np.float64]
+    consumptions: list[float] | np.typing.NDArray[np.float64]
+    can_connect_run: list[bool] | np.typing.NDArray[np.bool_]
+    session_starts: list[bool] | np.typing.NDArray[np.bool_]
+    session_durations_hours: list[float] | np.typing.NDArray[np.float64]
+    available_charge_powers_to_vehicle: (
+        list[float] | np.typing.NDArray[np.float64]
+    )
+    available_charge_powers_from_network: (
+        list[float] | np.typing.NDArray[np.float64]
+    )
 
     def initialise(*, user: User, scenario: Box) -> PreCharge:
 
         charging_settings: Box = scenario.charging_dataframe
-        location_header: str = charging_settings.location_header
-        can_charge_header: str = charging_settings.can_charge_header
 
+        location_header: str = charging_settings.location_header
+        can_connect_header: str = charging_settings.can_connect_header
         available_charge_power_to_vehicle_header: str = (
             charging_settings.available_charge_power_to_vehicle_header
         )
@@ -40,33 +48,66 @@ class PreCharge:
             charging_settings.session_duration_header
         )
 
-        return PreCharge(
-            locations=user.charge[location_header].to_list(),
-            kilometers_driven_run=user.charge[driven_header].to_list(),
-            consumptions=user.charge[consumption_header].to_list(),
-            can_charge_run=user.charge[can_charge_header].to_list(),
-            session_starts=user.charge[session_start_header].to_list(),
-            session_durations_hours=user.charge[
-                session_duration_header
-            ].to_list(),
-            available_charge_powers_to_vehicle=user.charge[
-                available_charge_power_to_vehicle_header
-            ].to_list(),
-            available_charge_powers_from_network=user.charge[
-                available_charge_power_from_network_header
-            ].to_list(),
+        storage_type: str = scenario.execution.pre_charge_storage
+
+        if storage_type == 'list':
+            return PreCharge(
+                locations=user.charge[location_header].to_list(),
+                kilometers_driven_run=user.charge[driven_header].to_list(),
+                consumptions=user.charge[consumption_header].to_list(),
+                can_connect_run=user.charge[can_connect_header].to_list(),
+                session_starts=user.charge[session_start_header].to_list(),
+                session_durations_hours=user.charge[
+                    session_duration_header
+                ].to_list(),
+                available_charge_powers_to_vehicle=user.charge[
+                    available_charge_power_to_vehicle_header
+                ].to_list(),
+                available_charge_powers_from_network=user.charge[
+                    available_charge_power_from_network_header
+                ].to_list(),
+            )
+
+        if storage_type == 'numpy':
+            return PreCharge(
+                locations=user.charge[location_header].to_numpy(),
+                kilometers_driven_run=user.charge[driven_header].to_numpy(),
+                consumptions=user.charge[consumption_header].to_numpy(),
+                can_connect_run=user.charge[can_connect_header].to_numpy(),
+                session_starts=user.charge[session_start_header].to_numpy(),
+                session_durations_hours=user.charge[
+                    session_duration_header
+                ].to_numpy(),
+                available_charge_powers_to_vehicle=user.charge[
+                    available_charge_power_to_vehicle_header
+                ].to_numpy(),
+                available_charge_powers_from_network=user.charge[
+                    available_charge_power_from_network_header
+                ].to_numpy(),
+            )
+
+        raise ValueError(
+            f'Unknown pre-charge storage type: {storage_type}. '
+            "Expected 'list' or 'numpy'."
         )
 
 
 @dataclass
 class TrackingVariables:
-    run_locations: list[str]  # We have to retrack these if using fast
-    # charging
-    run_kilometers_driven: list[float]  # Same as run_locations
-    run_consumptions: list[float]  # Same as locations and kilometers
-    power_drawn_from_network_kW: list[float]
-    power_to_vehicle_kW: list[float]
-    battery_charge_levels_kWh: list[float]
+    storage_type: str
+    run_locations: list[
+        str
+    ]  # Non-dual because numpy would need a fixed length
+    # We have to retrack these if using fast charging
+    run_kilometers_driven: (
+        list[float] | np.typing.NDArray[np.float64]
+    )  # Same as run_locations
+    run_consumptions: (
+        list[float] | np.typing.NDArray[np.float64]
+    )  # Same as run_locations and kilometers driven
+    power_drawn_from_network_kW: list[float] | np.typing.NDArray[np.float64]
+    power_to_vehicle_kW: list[float] | np.typing.NDArray[np.float64]
+    battery_charge_levels_kWh: list[float] | np.typing.NDArray[np.float64]
     current_battery_level_kWh: float
     wants_to_charge: bool
     previous_step_power_to_vehicle_kW: float
@@ -80,15 +121,9 @@ class TrackingVariables:
     catch_up_steps: int
 
     @staticmethod
-    def initialise(*, user: User) -> TrackingVariables:
-
-        run_locations: list[str] = []  # We have to retrack these if using fast
-        # charging
-        run_kilometers_driven: list[float] = []  # Same as run_locations
-        run_consumptions: list[float] = []  # Same as locations and kilometers
-        power_drawn_from_network_kW: list[float] = []
-        power_to_vehicle_kW: list[float] = []
-        battery_charge_levels_kWh: list[float] = []
+    def initialise(
+        *, user: User, amount_of_time_stamps: int, scenario: Box
+    ) -> TrackingVariables:
 
         current_battery_level_kWh: float = user.vehicle.battery_size_kWh
 
@@ -99,37 +134,68 @@ class TrackingVariables:
         )
 
         previous_step_power_to_vehicle_kW: float = 0
-        previous_step_power_drawn_from_network_kW: float = 0
-        at_fast_station: bool = False
-        catching_up: bool = False
-        catch_up_locations: list[str] = []
-        catch_up_kilometers_driven: list[float] = []
-        catch_up_consumptions: list[float] = []
-        buffer_steps: int = 0
-        catch_up_steps: int = 0
 
-        return TrackingVariables(
-            run_locations=run_locations,
-            run_kilometers_driven=run_kilometers_driven,
-            run_consumptions=run_consumptions,
-            power_drawn_from_network_kW=power_drawn_from_network_kW,
-            power_to_vehicle_kW=power_to_vehicle_kW,
-            battery_charge_levels_kWh=battery_charge_levels_kWh,
-            current_battery_level_kWh=current_battery_level_kWh,
-            wants_to_charge=wants_to_charge,
-            previous_step_power_to_vehicle_kW=(
-                previous_step_power_to_vehicle_kW
-            ),
-            previous_step_power_drawn_from_network_kW=(
-                previous_step_power_drawn_from_network_kW
-            ),
-            at_fast_station=at_fast_station,
-            catching_up=catching_up,
-            catch_up_locations=catch_up_locations,
-            catch_up_kilometers_driven=catch_up_kilometers_driven,
-            catch_up_consumptions=catch_up_consumptions,
-            buffer_steps=buffer_steps,
-            catch_up_steps=catch_up_steps,
+        storage_type: str = scenario.execution.tracking
+        if storage_type == 'list':
+            return TrackingVariables(
+                storage_type=storage_type,
+                run_locations=[],
+                run_kilometers_driven=[],
+                run_consumptions=[],
+                power_drawn_from_network_kW=[],
+                power_to_vehicle_kW=[],
+                battery_charge_levels_kWh=[],
+                current_battery_level_kWh=current_battery_level_kWh,
+                wants_to_charge=wants_to_charge,
+                previous_step_power_to_vehicle_kW=(
+                    previous_step_power_to_vehicle_kW
+                ),
+                previous_step_power_drawn_from_network_kW=0.0,
+                at_fast_station=False,
+                catching_up=False,
+                catch_up_locations=[],
+                catch_up_kilometers_driven=[],
+                catch_up_consumptions=[],
+                buffer_steps=0,
+                catch_up_steps=0,
+            )
+
+        if storage_type == 'numpy':
+            return TrackingVariables(
+                storage_type=storage_type,
+                run_locations=[],
+                run_kilometers_driven=np.empty(
+                    amount_of_time_stamps, dtype=np.float64
+                ),
+                run_consumptions=np.empty(
+                    amount_of_time_stamps, dtype=np.float64
+                ),
+                power_drawn_from_network_kW=np.empty(
+                    amount_of_time_stamps, dtype=np.float64
+                ),
+                power_to_vehicle_kW=np.empty(
+                    amount_of_time_stamps, dtype=np.float64
+                ),
+                battery_charge_levels_kWh=np.empty(
+                    amount_of_time_stamps, dtype=np.float64
+                ),
+                current_battery_level_kWh=current_battery_level_kWh,
+                wants_to_charge=wants_to_charge,
+                previous_step_power_to_vehicle_kW=(
+                    previous_step_power_to_vehicle_kW
+                ),
+                previous_step_power_drawn_from_network_kW=0.0,
+                at_fast_station=False,
+                catching_up=False,
+                catch_up_locations=[],
+                catch_up_kilometers_driven=[],
+                catch_up_consumptions=[],
+                buffer_steps=0,
+                catch_up_steps=0,
+            )
+        raise ValueError(
+            f'Unknown tracking storage type: {storage_type}. '
+            "Expected 'list' or 'numpy'."
         )
 
 
@@ -244,6 +310,7 @@ def update_tracking(
     pre_charge: PreCharge,
     tracking: TrackingVariables,
     run_time_resolution_hours: float,
+    scenario: Box,
 ) -> TrackingVariables:
 
     # We use a run index allocation instead of an iteration to be able to
@@ -253,7 +320,7 @@ def update_tracking(
     location: str = pre_charge.locations[run_index]
     kilometers_driven: float = pre_charge.kilometers_driven_run[run_index]
     consumption: float = pre_charge.consumptions[run_index]
-    can_charge: bool = pre_charge.can_charge_run[run_index]
+    can_connect: bool = pre_charge.can_connect_run[run_index]
     session_start: bool = pre_charge.session_starts[run_index]
     session_duration_hours: float = pre_charge.session_durations_hours[
         run_index
@@ -323,8 +390,8 @@ def update_tracking(
             tracking.catch_up_kilometers_driven = []
             tracking.catch_up_consumptions = []
 
-    # The quantities we track are only updated if we can charge
-    elif can_charge:
+    # The quantities we track are only updated if we can connect
+    elif can_connect:
 
         if session_start:
             # If there is a new session, we check if the user wants
@@ -436,16 +503,35 @@ def update_tracking(
         )
 
     # And add the values we track to our trackers
+
     tracking.run_locations.append(location)
-    tracking.run_kilometers_driven.append(kilometers_driven)
-    tracking.run_consumptions.append(consumption)
-    tracking.battery_charge_levels_kWh.append(
-        tracking.current_battery_level_kWh
-    )
-    tracking.power_to_vehicle_kW.append(this_step_power_to_vehicle_kW)
-    tracking.power_drawn_from_network_kW.append(
-        this_step_power_drawn_from_network_kW
-    )
+    if tracking.storage_type == 'list':
+        tracking.run_kilometers_driven.append(kilometers_driven)  # type: ignore[union-attr]  # noqa:E501
+        tracking.run_consumptions.append(consumption)  # type: ignore[union-attr]  # noqa:E501
+        tracking.battery_charge_levels_kWh.append(  # type: ignore[union-attr]
+            tracking.current_battery_level_kWh
+        )
+        tracking.power_to_vehicle_kW.append(this_step_power_to_vehicle_kW)  # type: ignore[union-attr] # noqa:E501
+        tracking.power_drawn_from_network_kW.append(  # type: ignore[union-attr]  # noqa: E501
+            this_step_power_drawn_from_network_kW
+        )
+
+    elif tracking.storage_type == 'numpy':
+        tracking.run_kilometers_driven[run_index] = kilometers_driven
+        tracking.run_consumptions[run_index] = consumption
+        tracking.battery_charge_levels_kWh[run_index] = (
+            tracking.current_battery_level_kWh
+        )
+        tracking.power_to_vehicle_kW[run_index] = this_step_power_to_vehicle_kW
+        tracking.power_drawn_from_network_kW[run_index] = (
+            this_step_power_drawn_from_network_kW
+        )
+
+    else:
+        raise ValueError(
+            f'Unknown tracking storage type: {tracking.storage_type}. '
+            "Expected 'list' or 'numpy'."
+        )
 
     tracking.previous_step_power_to_vehicle_kW = this_step_power_to_vehicle_kW
     tracking.previous_step_power_drawn_from_network_kW = (
@@ -477,13 +563,26 @@ def compute_fleet_charging(
     Also, this is a small issue, as the shift is of the order of 15 minutes
     and travel on the night of December 31st is not likely to be large.
     '''
+    print_memory('Charging start')
+
     tracking_pool: dict[uuid.UUID, TrackingVariables] = {
-        user.ID: TrackingVariables.initialise(user=user) for user in users_pool
+        user.ID: TrackingVariables.initialise(
+            user=user,
+            amount_of_time_stamps=len(run_time_stamps),
+            scenario=scenario,
+        )
+        for user in users_pool
     }
+
+    print_memory('After tracking pool')
+
     pre_charge_pool: dict[uuid.UUID, PreCharge] = {
         user.ID: PreCharge.initialise(user=user, scenario=scenario)
         for user in users_pool
     }
+
+    print_memory('After PreCharge pool')
+
     charging_pool: list[tuple[User, PreCharge, TrackingVariables]] = [
         (
             user,
@@ -492,6 +591,7 @@ def compute_fleet_charging(
         )
         for user in users_pool
     ]
+    print_memory('Before simulation')
 
     for run_index in range(len(run_time_stamps)):
         for user, pre_charge, tracking in charging_pool:
@@ -501,7 +601,11 @@ def compute_fleet_charging(
                 pre_charge=pre_charge,
                 tracking=tracking,
                 run_time_resolution_hours=run_time_resolution_hours,
+                scenario=scenario,
             )
+
+    print_memory('After simulation')
+
     for user in users_pool:
         user = write_charge_to_user(
             user=user,
@@ -515,5 +619,6 @@ def compute_fleet_charging(
             charging_settings=scenario.charging_dataframe,
             locations=user.locations,
         )
+    print_memory('After writing users')
 
     return users_pool

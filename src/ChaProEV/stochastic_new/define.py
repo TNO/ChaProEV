@@ -1297,7 +1297,7 @@ class User:
                             # location on away and holiday back trips
 
                             if (
-                                trip_step_record['Step end'].date()
+                                trip_step_record['Step end'].date()  # type: ignore[union-attr]   # noqa: E501
                                 == trip_date
                             ):
 
@@ -1416,7 +1416,7 @@ class User:
         location_header: str = charging_settings.location_header
         connectivity_header: str = charging_settings.connectivity_header
         session_header: str = charging_settings.session_header
-        can_charge_header: str = charging_settings.can_charge_header
+        can_connect_header: str = charging_settings.can_connect_header
 
         nominal_charge_power_to_vehicle_header: str = (
             charging_settings.nominal_charge_power_to_vehicle_header
@@ -1470,22 +1470,22 @@ class User:
         # We draw the possibility of charging here,
         # as it does not matter when we do the draw and this is
         # faster than drawing during an iteration
-        can_charge: np.ndarray = (
+        can_connect: np.ndarray = (
             random_generator.random(sessions.height)
             < sessions[connectivity_header].to_numpy()
         )
         sessions = sessions.with_columns(
-            pl.Series(can_charge_header, can_charge)
+            pl.Series(can_connect_header, can_connect)
         )
 
         charging_dataframe = charging_dataframe.join(
-            sessions.select(session_header, can_charge_header),
+            sessions.select(session_header, can_connect_header),
             on=session_header,
             how='left',
             validate="m:1",
         )
         if charging_dataframe[session_header].null_count() > 0:
-            raise ValueError(f'{can_charge_header!r} contains null values.')
+            raise ValueError(f'{can_connect_header!r} contains null values.')
 
         nominal_charge_power_to_vehicle_by_location: dict[str, float] = {
             location_name: location.charging_power_kW

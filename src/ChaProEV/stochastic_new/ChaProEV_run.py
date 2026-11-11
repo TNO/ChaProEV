@@ -1,8 +1,10 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import fmean
 
 import polars as pl
+import psutil
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
@@ -15,6 +17,12 @@ from ChaProEV.stochastic_new.define import (
     get_users_pool,
 )
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
+
+
+# def print_memory(label: str) -> None:
+#     process: psutil.Process = psutil.Process(os.getpid())
+#     memory_gb: float = process.memory_info().rss / 1024**3
+#     print(f'{label}: {memory_gb:.2f} GB')
 
 
 @dataclass
@@ -186,7 +194,6 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
     transformers_pool: list[Transformer] = get_transformers_pool(
         scenario=scenario, random_generators=random_generators
     )
-
     users_pool, time_constants, time_ranges = get_users_pool(
         scenario=scenario,
         random_generators=random_generators,
@@ -228,7 +235,6 @@ if __name__ == '__main__':
 
     case_name: str = 'plus'
     run_ChaProEV(case_name=case_name)
-    # can charge to can connect
     # MOdel maintenance
     # iterate on time stamps too if we need time
 

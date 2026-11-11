@@ -589,6 +589,38 @@ type = 'm'  # 'min'# Put the interval type here, use 'h' for hours, 'min' for mi
 # https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.datetime_range.html
 
 
+
+[execution]
+
+# Controls how the per-user PreCharge time-series data are stored during the
+# charging simulation.
+#
+# Options:
+#   'list'
+#       Stores the data as Python lists.
+#       This is generally faster for smaller simulations because the charging
+#       model repeatedly accesses individual values by run_index.
+#       However, Python lists require considerably more memory and may become
+#       unsuitable for large fleets.
+#
+#   'numpy'
+#       Stores the data as NumPy arrays.
+#       This uses considerably less memory and allows substantially larger
+#       fleets to be simulated. Individual scalar access is somewhat slower,
+#       so small simulations may take longer than when using 'list'.
+#
+# Testing showed that 'list' performs better for relatively small fleets
+# (e.g. 12 vehicles), while 'numpy' allows much larger fleets to run without
+# exhausting memory (tested with 120 vehicles).
+#
+# This setting changes only the in-memory representation of the PreCharge
+# data. It does not change the charging calculations themselves.
+#
+# Do not introduce an automatic fleet-size threshold until the crossover
+# between runtime and memory usage has been benchmarked more systematically.
+pre_charge_storage = 'numpy'
+tracking = 'numpy'
+
 [vehicle]
 name = 'car'
 consumption_kWh_km_min = 0.15
@@ -736,7 +768,7 @@ transfer_end_locations = ['holiday', 'home']
 location_header = 'Location'
 connectivity_header = 'Connectivity'
 session_header = 'Session ID'
-can_charge_header = 'Can charge'
+can_connect_header = 'Can connect'
 wants_to_charge_header = 'Wants to charge'
 does_charge_header = 'Does charge'
 battery_level_header = 'Battery charge level (kWh)'

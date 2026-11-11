@@ -1,6 +1,7 @@
 build>=1.6.1
 ets-cookbook>=1.2.8
 polars>=1.43.2
+psutil>=7.2.2
 streamlit>=1.62.0
 tomli-w>=1.2.0
 tqdm>=4.70.0

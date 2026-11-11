@@ -13,6 +13,7 @@ License-File: LICENCE
 Requires-Dist: build>=1.6.1
 Requires-Dist: ets-cookbook>=1.2.8
 Requires-Dist: polars>=1.43.2
+Requires-Dist: psutil>=7.2.2
 Requires-Dist: streamlit>=1.62.0
 Requires-Dist: tomli-w>=1.2.0
 Requires-Dist: tqdm>=4.70.0
