@@ -22,7 +22,7 @@ class PreCharge:
     session_starts: list[bool] | npt.NDArray[np.bool_]
     session_durations_hours: list[float] | npt.NDArray[np.float64]
     available_charge_powers_to_vehicle: list[float] | npt.NDArray[np.float64]
-    available_charge_powers_from_network: list[float] | npt.NDArray[np.float64]
+    available_charge_powers_from_grid: list[float] | npt.NDArray[np.float64]
 
     @classmethod
     def initialise(cls, *, user: User, scenario: Box) -> PreCharge:
@@ -34,8 +34,8 @@ class PreCharge:
         available_charge_power_to_vehicle_header: str = (
             charging_settings.available_charge_power_to_vehicle_header
         )
-        available_charge_power_from_network_header: str = (
-            charging_settings.available_charge_power_from_network_header
+        available_charge_power_from_grid_header: str = (
+            charging_settings.available_charge_power_from_grid_header
         )
         driven_header: str = charging_settings.driven_header
         session_start_header: str = charging_settings.session_start_header
@@ -59,8 +59,8 @@ class PreCharge:
                 available_charge_powers_to_vehicle=user.charge[
                     available_charge_power_to_vehicle_header
                 ].to_list(),
-                available_charge_powers_from_network=user.charge[
-                    available_charge_power_from_network_header
+                available_charge_powers_from_grid=user.charge[
+                    available_charge_power_from_grid_header
                 ].to_list(),
             )
 
@@ -77,8 +77,8 @@ class PreCharge:
                 available_charge_powers_to_vehicle=user.charge[
                     available_charge_power_to_vehicle_header
                 ].to_numpy(),
-                available_charge_powers_from_network=user.charge[
-                    available_charge_power_from_network_header
+                available_charge_powers_from_grid=user.charge[
+                    available_charge_power_from_grid_header
                 ].to_numpy(),
             )
 
@@ -101,13 +101,13 @@ class TrackingVariables:
     run_consumptions: (
         list[float] | npt.NDArray[np.float64]
     )  # Same as run_locations and kilometers driven
-    power_drawn_from_network_kW: list[float] | npt.NDArray[np.float64]
+    power_drawn_from_grid_kW: list[float] | npt.NDArray[np.float64]
     power_to_vehicle_kW: list[float] | npt.NDArray[np.float64]
     battery_charge_levels_kWh: list[float] | npt.NDArray[np.float64]
     current_battery_level_kWh: float
     wants_to_charge: bool
     previous_step_power_to_vehicle_kW: float
-    previous_step_power_drawn_from_network_kW: float
+    previous_step_power_drawn_from_grid_kW: float
     at_fast_station: bool
     catching_up: bool
     catch_up_locations: list[str]
@@ -138,7 +138,7 @@ class TrackingVariables:
                 run_locations=[],
                 run_kilometers_driven=[],
                 run_consumptions=[],
-                power_drawn_from_network_kW=[],
+                power_drawn_from_grid_kW=[],
                 power_to_vehicle_kW=[],
                 battery_charge_levels_kWh=[],
                 current_battery_level_kWh=current_battery_level_kWh,
@@ -146,7 +146,7 @@ class TrackingVariables:
                 previous_step_power_to_vehicle_kW=(
                     previous_step_power_to_vehicle_kW
                 ),
-                previous_step_power_drawn_from_network_kW=0.0,
+                previous_step_power_drawn_from_grid_kW=0.0,
                 at_fast_station=False,
                 catching_up=False,
                 catch_up_locations=[],
@@ -166,7 +166,7 @@ class TrackingVariables:
                 run_consumptions=np.empty(
                     amount_of_time_stamps, dtype=np.float64
                 ),
-                power_drawn_from_network_kW=np.empty(
+                power_drawn_from_grid_kW=np.empty(
                     amount_of_time_stamps, dtype=np.float64
                 ),
                 power_to_vehicle_kW=np.empty(
@@ -180,7 +180,7 @@ class TrackingVariables:
                 previous_step_power_to_vehicle_kW=(
                     previous_step_power_to_vehicle_kW
                 ),
-                previous_step_power_drawn_from_network_kW=0.0,
+                previous_step_power_drawn_from_grid_kW=0.0,
                 at_fast_station=False,
                 catching_up=False,
                 catch_up_locations=[],
@@ -215,13 +215,9 @@ def write_charge_to_user(
     consumption_header: str = charging_settings.consumption_header
     battery_level_header: str = charging_settings.battery_level_header
     power_to_vehicle_header: str = charging_settings.power_to_vehicle_header
-    power_from_network_header: str = (
-        charging_settings.power_from_network_header
-    )
+    power_from_grid_header: str = charging_settings.power_from_grid_header
     charge_to_vehicle_header: str = charging_settings.charge_to_vehicle_header
-    charge_from_network_header: str = (
-        charging_settings.charge_from_network_header
-    )
+    charge_from_grid_header: str = charging_settings.charge_from_grid_header
     electricity_spending_header: str = (
         charging_settings.electricity_spending_header
     )
@@ -255,15 +251,15 @@ def write_charge_to_user(
             dtype=pl.Float64,
         ),
         pl.Series(
-            name=power_from_network_header,
-            values=tracking.power_drawn_from_network_kW,
+            name=power_from_grid_header,
+            values=tracking.power_drawn_from_grid_kW,
             dtype=pl.Float64,
         ),
     )
 
     new_charge = new_charge.with_columns(
-        (pl.col(power_from_network_header) * run_time_resolution_hours).alias(
-            charge_from_network_header
+        (pl.col(power_from_grid_header) * run_time_resolution_hours).alias(
+            charge_from_grid_header
         ),
         (pl.col(power_to_vehicle_header) * run_time_resolution_hours).alias(
             charge_to_vehicle_header
@@ -290,9 +286,9 @@ def write_charge_to_user(
             .alias('Cost (€/kWh)'),
         )
         .with_columns(
-            (
-                pl.col(charge_from_network_header) * pl.col('Cost (€/kWh)')
-            ).alias(electricity_spending_header)
+            (pl.col(charge_from_grid_header) * pl.col('Cost (€/kWh)')).alias(
+                electricity_spending_header
+            )
         )
     ).drop('Hourly charging prices', 'Cost (€/kWh)')
 
@@ -324,8 +320,8 @@ def update_tracking(
     available_charge_power_to_vehicle: float = (
         pre_charge.available_charge_powers_to_vehicle[run_index]
     )
-    available_charge_power_from_network: float = (
-        pre_charge.available_charge_powers_from_network[run_index]
+    available_charge_power_from_grid: float = (
+        pre_charge.available_charge_powers_from_grid[run_index]
     )
 
     if (
@@ -357,7 +353,7 @@ def update_tracking(
             ].charger_efficiency,
             remaining_energy_to_supply_kWh / run_time_resolution_hours,
         )
-        this_step_power_drawn_from_network_kW = (
+        this_step_power_drawn_from_grid_kW = (
             this_step_power_to_vehicle_kW
             / user.locations[
                 user.vehicle.fast_charging_location_name
@@ -377,7 +373,7 @@ def update_tracking(
         # Normal charging is deliberately disabled while replaying delayed
         # mobility. This assumes that the short delay does not contain a
         # material normal-charging opportunity.
-        this_step_power_drawn_from_network_kW = 0.0
+        this_step_power_drawn_from_grid_kW = 0.0
         this_step_power_to_vehicle_kW = 0.0
         tracking.catch_up_steps -= 1
         if tracking.catch_up_steps == 0:
@@ -404,7 +400,7 @@ def update_tracking(
             if user.charging_behaviour.adaptive:
                 charger_efficiency: float = (
                     available_charge_power_to_vehicle
-                    / available_charge_power_from_network
+                    / available_charge_power_from_grid
                 )
                 energy_required_at_session_start_kWh: float = max(
                     0.0,
@@ -417,19 +413,19 @@ def update_tracking(
                     energy_required_at_session_start_kWh
                     / session_duration_hours
                 )
-                desired_power_from_network: float = (
+                desired_power_from_grid: float = (
                     desired_power_to_vehicle_kW / charger_efficiency
                 )
-                this_step_power_drawn_from_network_kW: float = min(
-                    available_charge_power_from_network,
-                    desired_power_from_network,
+                this_step_power_drawn_from_grid_kW: float = min(
+                    available_charge_power_from_grid,
+                    desired_power_from_grid,
                 )
                 this_step_power_to_vehicle_kW: float = (
-                    this_step_power_drawn_from_network_kW * charger_efficiency
+                    this_step_power_drawn_from_grid_kW * charger_efficiency
                 )
             else:
-                this_step_power_drawn_from_network_kW = (
-                    available_charge_power_from_network
+                this_step_power_drawn_from_grid_kW = (
+                    available_charge_power_from_grid
                 )
                 this_step_power_to_vehicle_kW = (
                     available_charge_power_to_vehicle
@@ -438,8 +434,8 @@ def update_tracking(
             this_step_power_to_vehicle_kW = (
                 tracking.previous_step_power_to_vehicle_kW
             )
-            this_step_power_drawn_from_network_kW = (
-                tracking.previous_step_power_drawn_from_network_kW
+            this_step_power_drawn_from_grid_kW = (
+                tracking.previous_step_power_drawn_from_grid_kW
             )
         if tracking.wants_to_charge:
             charge_to_vehicle_kWh: float = (
@@ -464,14 +460,14 @@ def update_tracking(
                     * user.vehicle.battery_size_kWh
                     - tracking.current_battery_level_kWh
                 )
-                this_step_power_drawn_from_network_kW /= excess_factor
+                this_step_power_drawn_from_grid_kW /= excess_factor
                 this_step_power_to_vehicle_kW /= excess_factor
         else:
             this_step_power_to_vehicle_kW = 0
-            this_step_power_drawn_from_network_kW = 0
+            this_step_power_drawn_from_grid_kW = 0
     else:
         this_step_power_to_vehicle_kW = 0
-        this_step_power_drawn_from_network_kW = 0
+        this_step_power_drawn_from_grid_kW = 0
 
     # Now that we know how much power was drawn,
     # we can update the battery level
@@ -508,8 +504,8 @@ def update_tracking(
             tracking.current_battery_level_kWh
         )
         tracking.power_to_vehicle_kW.append(this_step_power_to_vehicle_kW)  # type: ignore[union-attr] # noqa:E501
-        tracking.power_drawn_from_network_kW.append(  # type: ignore[union-attr]  # noqa: E501
-            this_step_power_drawn_from_network_kW
+        tracking.power_drawn_from_grid_kW.append(  # type: ignore[union-attr]  # noqa: E501
+            this_step_power_drawn_from_grid_kW
         )
 
     elif tracking.storage_type == 'numpy':
@@ -519,8 +515,8 @@ def update_tracking(
             tracking.current_battery_level_kWh
         )
         tracking.power_to_vehicle_kW[run_index] = this_step_power_to_vehicle_kW
-        tracking.power_drawn_from_network_kW[run_index] = (
-            this_step_power_drawn_from_network_kW
+        tracking.power_drawn_from_grid_kW[run_index] = (
+            this_step_power_drawn_from_grid_kW
         )
 
     else:
@@ -530,8 +526,8 @@ def update_tracking(
         )
 
     tracking.previous_step_power_to_vehicle_kW = this_step_power_to_vehicle_kW
-    tracking.previous_step_power_drawn_from_network_kW = (
-        this_step_power_drawn_from_network_kW
+    tracking.previous_step_power_drawn_from_grid_kW = (
+        this_step_power_drawn_from_grid_kW
     )
 
     return tracking

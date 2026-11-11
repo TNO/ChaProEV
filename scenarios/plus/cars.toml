@@ -46,7 +46,7 @@ charging_price_eur_kWh = [
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 6.0
-proportion_of_discharge_to_network = 0.8
+proportion_of_discharge_to_grid = 0.8
 discharging_reward_eur_kWh = [
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
@@ -73,7 +73,7 @@ charging_price_eur_kWh = [
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14.0
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_grid = 0.9
 discharging_reward_eur_kWh = [
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
@@ -107,7 +107,7 @@ charging_price_eur_kWh = [
 charging_desirability = 1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_grid = 0.9
 discharging_reward_eur_kWh = [
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
@@ -135,7 +135,7 @@ charging_price_eur_kWh = [
 charging_desirability = 0.25
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_grid = 0.9
 discharging_reward_eur_kWh = [
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
@@ -164,7 +164,7 @@ charging_price_eur_kWh = [
 charging_desirability = 0.1
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_grid = 0.9
 discharging_reward_eur_kWh = [
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
@@ -193,7 +193,7 @@ charging_price_eur_kWh = [
 charging_desirability = 0.2
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 14 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_grid = 0.9
 discharging_reward_eur_kWh = [
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
     0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15,
@@ -224,7 +224,7 @@ charging_price_eur_kWh = [
 charging_desirability = 1.0
 # An indicator (0-1) of how much people like to charge at this location
 discharge_power_kW = 0 # kW
-proportion_of_discharge_to_network = 0.9
+proportion_of_discharge_to_grid = 0.9
 discharging_reward_eur_kWh = [
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0,
@@ -792,19 +792,19 @@ wants_to_charge_header = 'Wants to charge'
 does_charge_header = 'Does charge'
 battery_level_header = 'Battery charge level (kWh)'
 power_to_vehicle_header = 'Power to vehicle (kW)'
-power_from_network_header = 'Power drawn from network (kW)'
+power_from_grid_header = 'Power drawn from grid (kW)'
 charge_to_vehicle_header = 'Charge to vehicle (kWh)'
-charge_from_network_header = 'Charge drawn from network (kWh)'
+charge_from_grid_header = 'Charge drawn from grid (kWh)'
 time_index_name = 'Time Stamp'
 modulation_factor_header = 'Modulation factor'
 nominal_charge_power_to_vehicle_header = 'Nominal charge power to vehicle (kW)'
-nominal_charge_power_from_network_header = 'Nominal charge power from network (kW)'
+nominal_charge_power_from_grid_header = 'Nominal charge power from grid (kW)'
 nominal_discharge_power_from_vehicle_header = 'Nominal discharge power from vehicle (kW)'
-nominal_discharge_power_to_network_header = 'Nominal discharge power to network (kW)'
+nominal_discharge_power_to_grid_header = 'Nominal discharge power to grid (kW)'
 available_charge_power_to_vehicle_header = 'Available charge power to vehicle (kW)'
-available_charge_power_from_network_header = 'Available charge power from network (kW)'
+available_charge_power_from_grid_header = 'Available charge power from grid (kW)'
 available_discharge_power_from_vehicle_header = 'Available discharge power from vehicle (kW)'
-available_discharge_power_to_network_header = 'Available discharge power to network (kW)'
+available_discharge_power_to_grid_header = 'Available discharge power to grid (kW)'
 session_start_header = 'Session start'
 consumption_header = 'Consumption (kWh)'
 session_duration_header = 'Time at location (hours)'

@@ -16,85 +16,85 @@ from ChaProEV.stochastic_new.ChaProEV_run import (
 )
 
 
-def get_network_power_figure(
+def get_grid_power_figure(
     *,
     location_type: str,
-    power_from_network_W_A: pl.Series,
-    power_from_network_W_B: pl.Series,
+    power_from_grid_W_A: pl.Series,
+    power_from_grid_W_B: pl.Series,
     color_A: tuple[float, float, float],
     color_B: tuple[float, float, float],
     metrics_text_color: tuple[float, float, float],
 ) -> Figure:
 
-    network_power_figure, network_power_plot = plt.subplots(
+    grid_power_figure, grid_power_plot = plt.subplots(
         1, 1, figsize=(16, 9)
     )
 
-    hours: int = len(power_from_network_W_A)
+    hours: int = len(power_from_grid_W_A)
 
-    network_power_plot.bar(
+    grid_power_plot.bar(
         x=range(hours),
-        height=power_from_network_W_A,
+        height=power_from_grid_W_A,
         label='Scenario A',
         width=1.0,
         color=color_A,
     )
-    network_power_plot.bar(
+    grid_power_plot.bar(
         x=range(hours),
-        height=power_from_network_W_B,
+        height=power_from_grid_W_B,
         label='Scenario B',
         width=0.5,
         color=color_B,
     )
-    network_power_plot.set_title(
-        f'Average power draw from network in {location_type}',
+    grid_power_plot.set_title(
+        f'Average power draw from grid in {location_type}',
         color=metrics_text_color,
     )
-    network_power_plot.set_xlabel('Hour in day', color=metrics_text_color)
-    network_power_plot.set_ylabel(
-        'Average draw from network (W)', color=metrics_text_color
+    grid_power_plot.set_xlabel('Hour in day', color=metrics_text_color)
+    grid_power_plot.set_ylabel(
+        'Average draw from grid (W)', color=metrics_text_color
     )
-    network_power_plot.legend(frameon=False, labelcolor=metrics_text_color)
+    grid_power_plot.legend(frameon=False, labelcolor=metrics_text_color)
 
-    network_power_plot.tick_params(axis='x', colors=metrics_text_color)
-    network_power_plot.tick_params(axis='y', colors=metrics_text_color)
-    network_power_plot.spines['left'].set_color(metrics_text_color)
-    network_power_plot.spines['top'].set_visible(False)
-    network_power_plot.spines['right'].set_visible(False)
-    network_power_plot.spines['bottom'].set_color(metrics_text_color)
-    network_power_plot.set_facecolor('none')
+    grid_power_plot.tick_params(axis='x', colors=metrics_text_color)
+    grid_power_plot.tick_params(axis='y', colors=metrics_text_color)
+    grid_power_plot.spines['left'].set_color(metrics_text_color)
+    grid_power_plot.spines['top'].set_visible(False)
+    grid_power_plot.spines['right'].set_visible(False)
+    grid_power_plot.spines['bottom'].set_color(metrics_text_color)
+    grid_power_plot.set_facecolor('none')
 
-    network_power_figure.patch.set_alpha(0)
-    network_power_figure.tight_layout()
+    grid_power_figure.patch.set_alpha(0)
+    grid_power_figure.tight_layout()
 
-    return network_power_figure
+    return grid_power_figure
 
 
-def get_network_locations_figure(
-    network_power_per_location_type: dict[str, pl.Series],
+def get_grid_locations_figure(
+    grid_power_per_location_type: dict[str, pl.Series],
     location_types_colors: dict[str, tuple[float, float, float]],
     metrics_text_color: tuple[float, float, float],
     max_power_scale: float,
 ) -> Figure:
 
-    network_locations_figure, network_locations_plot = plt.subplots(1, 1)
+    grid_locations_figure, grid_locations_plot = plt.subplots(1, 1)
 
     for (
         location_type,
         power_per_hour,
-    ) in network_power_per_location_type.items():
-        network_locations_plot.plot(
+    ) in grid_power_per_location_type.items():
+        grid_locations_plot.plot(
             power_per_hour * 1000,
             label=location_type,
             color=location_types_colors[location_type],
         )
 
-    network_locations_plot.set_title(
-        'Average power draw from network', color=metrics_text_color
+    grid_locations_plot.set_title(
+        'Average power draw from grid', color=metrics_text_color
     )
-    network_locations_plot.set_xlabel('Hour in day', color=metrics_text_color)
-    network_locations_plot.set_ylabel('Watt', color=metrics_text_color)
-    network_locations_plot.legend(
+    grid_locations_plot.set_xlabel('Hour in day', color=metrics_text_color)
+    grid_locations_plot.set_ylabel('Watt', color=metrics_text_color)
+    grid_locations_plot.legend(
         ncol=4,
         frameon=False,
         labelcolor=metrics_text_color,
@@ -102,20 +102,20 @@ def get_network_locations_figure(
         loc='lower center',
         bbox_to_anchor=(0.5, -0.5),
     )
-    network_locations_plot.set_ylim(0, max_power_scale * 1000)
+    grid_locations_plot.set_ylim(0, max_power_scale * 1000)
 
-    network_locations_plot.tick_params(axis='x', colors=metrics_text_color)
-    network_locations_plot.tick_params(axis='y', colors=metrics_text_color)
-    network_locations_plot.spines['left'].set_color(metrics_text_color)
-    network_locations_plot.spines['top'].set_visible(False)
-    network_locations_plot.spines['right'].set_visible(False)
-    network_locations_plot.spines['bottom'].set_color(metrics_text_color)
-    network_locations_plot.set_facecolor('none')
+    grid_locations_plot.tick_params(axis='x', colors=metrics_text_color)
+    grid_locations_plot.tick_params(axis='y', colors=metrics_text_color)
+    grid_locations_plot.spines['left'].set_color(metrics_text_color)
+    grid_locations_plot.spines['top'].set_visible(False)
+    grid_locations_plot.spines['right'].set_visible(False)
+    grid_locations_plot.spines['bottom'].set_color(metrics_text_color)
+    grid_locations_plot.set_facecolor('none')
 
-    network_locations_figure.patch.set_alpha(0)
-    network_locations_figure.tight_layout()
+    grid_locations_figure.patch.set_alpha(0)
+    grid_locations_figure.tight_layout()
 
-    return network_locations_figure
+    return grid_locations_figure
 
 
 def draw_metric(
@@ -234,7 +234,7 @@ def make_dashboard() -> None:
     metrics_A, metrics_B = st.columns(2)
 
     metric_plots_A, metric_plots_B = st.columns(2)
-    network_A, network_B = st.columns(2)
+    grid_A, grid_B = st.columns(2)
     _, plot_box_1, _ = st.columns([1, 2, 1])
 
     with st.sidebar:
@@ -1142,51 +1142,51 @@ def make_dashboard() -> None:
         st.pyplot(fig=figure_B)
         plt.close(figure_B)
 
-    network_power_per_location_type_A: dict[str, pl.Series] = (
-        statistics_A.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    grid_power_per_location_type_A: dict[str, pl.Series] = (
+        statistics_A.pool_average_hourly_power_from_grid_kW_per_location_type  # noqa:E501
     )
 
-    network_power_per_location_type_B: dict[str, pl.Series] = (
-        statistics_B.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    grid_power_per_location_type_B: dict[str, pl.Series] = (
+        statistics_B.pool_average_hourly_power_from_grid_kW_per_location_type  # noqa:E501
     )
 
-    network_power_values: list[float] = []
-    for power_values in network_power_per_location_type_A.values():
-        network_power_values += power_values.to_list()
+    grid_power_values: list[float] = []
+    for power_values in grid_power_per_location_type_A.values():
+        grid_power_values += power_values.to_list()
 
-    for power_values in network_power_per_location_type_B.values():
-        network_power_values += power_values.to_list()
+    for power_values in grid_power_per_location_type_B.values():
+        grid_power_values += power_values.to_list()
 
     max_power_scale: float = cook.reference_scale(
-        network_power_values, digit_shift=1
+        grid_power_values, digit_shift=1
     )[1]
 
-    network_figure_A: Figure = get_network_locations_figure(
-        network_power_per_location_type=network_power_per_location_type_A,
+    grid_figure_A: Figure = get_grid_locations_figure(
+        grid_power_per_location_type=grid_power_per_location_type_A,
         location_types_colors=location_types_colors,
         metrics_text_color=metrics_text_color,
         max_power_scale=max_power_scale,
     )
-    network_figure_B: Figure = get_network_locations_figure(
-        network_power_per_location_type=network_power_per_location_type_B,
+    grid_figure_B: Figure = get_grid_locations_figure(
+        grid_power_per_location_type=grid_power_per_location_type_B,
         location_types_colors=location_types_colors,
         metrics_text_color=metrics_text_color,
         max_power_scale=max_power_scale,
     )
 
-    with network_A:
-        st.pyplot(fig=network_figure_A)
-        plt.close(network_figure_A)
+    with grid_A:
+        st.pyplot(fig=grid_figure_A)
+        plt.close(grid_figure_A)
 
-    with network_B:
-        st.pyplot(fig=network_figure_B)
-        plt.close(network_figure_B)
+    with grid_B:
+        st.pyplot(fig=grid_figure_B)
+        plt.close(grid_figure_B)
 
-    power_from_network_W_A: pl.Series = (
-        statistics_A.pool_average_hourly_power_from_network_kW
+    power_from_grid_W_A: pl.Series = (
+        statistics_A.pool_average_hourly_power_from_grid_kW
     ) * 1_000
-    power_from_network_W_B: pl.Series = (
-        statistics_B.pool_average_hourly_power_from_network_kW
+    power_from_grid_W_B: pl.Series = (
+        statistics_B.pool_average_hourly_power_from_grid_kW
     ) * 1_000
 
     color_A_name: str = 'TNO_action_blue'
@@ -1198,22 +1198,22 @@ def make_dashboard() -> None:
     color_B: tuple[float, float, float] = cook.get_rgb_from_name(
         color_name=color_B_name, color_definitions=general_definitions.colors
     )
-    power_from_network_W_A_per_location: dict[str, pl.Series] = (
-        statistics_A.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    power_from_grid_W_A_per_location: dict[str, pl.Series] = (
+        statistics_A.pool_average_hourly_power_from_grid_kW_per_location_type  # noqa:E501
     )
 
-    power_from_network_W_B_per_location: dict[str, pl.Series] = (
-        statistics_B.pool_average_hourly_power_from_network_kW_per_location_type  # noqa:E501
+    power_from_grid_W_B_per_location: dict[str, pl.Series] = (
+        statistics_B.pool_average_hourly_power_from_grid_kW_per_location_type  # noqa:E501
     )
 
-    network_power_figures: dict[str, Figure] = {
-        location_type_for_power: get_network_power_figure(
+    grid_power_figures: dict[str, Figure] = {
+        location_type_for_power: get_grid_power_figure(
             location_type=location_type_for_power,
-            power_from_network_W_A=(
-                power_from_network_W_A_per_location[location_type_for_power]
+            power_from_grid_W_A=(
+                power_from_grid_W_A_per_location[location_type_for_power]
             ),
-            power_from_network_W_B=(
-                power_from_network_W_B_per_location[location_type_for_power]
+            power_from_grid_W_B=(
+                power_from_grid_W_B_per_location[location_type_for_power]
             ),
             color_A=color_A,
             color_B=color_B,
@@ -1221,10 +1221,10 @@ def make_dashboard() -> None:
         )
         for location_type_for_power in location_types
     }
-    network_power_figures['total'] = get_network_power_figure(
+    grid_power_figures['total'] = get_grid_power_figure(
         location_type='total',
-        power_from_network_W_A=power_from_network_W_A,
-        power_from_network_W_B=power_from_network_W_B,
+        power_from_grid_W_A=power_from_grid_W_A,
+        power_from_grid_W_B=power_from_grid_W_B,
         color_A=color_A,
         color_B=color_B,
         metrics_text_color=metrics_text_color,
@@ -1233,12 +1233,12 @@ def make_dashboard() -> None:
 
         location_type_for_power: str = st.selectbox(
             'Location type',
-            options=network_power_figures.keys(),
+            options=grid_power_figures.keys(),
             index=len(location_types),
         )
-        st.pyplot(network_power_figures[location_type_for_power])
+        st.pyplot(grid_power_figures[location_type_for_power])
 
-        plt.close(network_power_figures[location_type_for_power])
+        plt.close(grid_power_figures[location_type_for_power])
 
 
 def run_dashboard() -> None:

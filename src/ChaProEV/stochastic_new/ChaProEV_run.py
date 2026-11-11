@@ -8,13 +8,9 @@ from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
 from ChaProEV.stochastic_new.charging import compute_fleet_charging
-from ChaProEV.stochastic_new.define import (
-    Transformer,
-    User,
-    get_transformers_pool,
-    get_users_pool,
-)
+from ChaProEV.stochastic_new.define import User, get_users_pool
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
+from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
 # def print_memory(label: str) -> None:
 #     process: psutil.Process = psutil.Process(os.getpid())
@@ -32,8 +28,8 @@ class UsersPoolStatistics:
     average_charge_spending_eur_per_location_type: dict[str, float]
     average_electricity_sold_kWh: float
     average_discharge_income_eur: float
-    pool_average_hourly_power_from_network_kW: pl.Series
-    pool_average_hourly_power_from_network_kW_per_location_type: dict[
+    pool_average_hourly_power_from_grid_kW: pl.Series
+    pool_average_hourly_power_from_grid_kW_per_location_type: dict[
         str, pl.Series
     ]
     pool_average_electricity_costs_eur_kWh: float
@@ -101,25 +97,25 @@ class UsersPoolStatistics:
         pool_average_travel_costs_eur_km: float = fmean(
             user.run_metrics.average_travel_costs_eur_km for user in users_pool
         )
-        pool_average_hourly_power_from_network_kW: pl.Series = (
+        pool_average_hourly_power_from_grid_kW: pl.Series = (
             pl.DataFrame(
                 [
-                    user.run_metrics.average_hourly_power_from_network_kW.rename(  # noqa: E501
+                    user.run_metrics.average_hourly_power_from_grid_kW.rename(  # noqa: E501
                         str(user_index)
                     )
                     for user_index, user in enumerate(users_pool)
                 ]
             )
             .mean_horizontal()
-            .rename('Average hourly power from network (kW)')
+            .rename('Average hourly power from grid (kW)')
         )
-        pool_average_hourly_power_from_network_kW_per_location_type: dict[
+        pool_average_hourly_power_from_grid_kW_per_location_type: dict[
             str, pl.Series
         ] = {
             location_type: (
                 pl.DataFrame(
                     [
-                        user.run_metrics.average_hourly_power_from_network_kW_per_location_type.get(  # noqa:E501
+                        user.run_metrics.average_hourly_power_from_grid_kW_per_location_type.get(  # noqa:E501
                             location_type, pl.Series(values=[0.0] * 24)
                         ).rename(  # noqa: E501
                             str(user_index)
@@ -128,7 +124,7 @@ class UsersPoolStatistics:
                     ]
                 )
                 .mean_horizontal()
-                .rename('Average hourly power from network (kW)')
+                .rename('Average hourly power from grid (kW)')
             )
             for location_type in location_types
         }
@@ -148,14 +144,14 @@ class UsersPoolStatistics:
             ),
             average_electricity_sold_kWh=average_electricity_sold_kWh,
             average_discharge_income_eur=average_discharge_income_eur,
-            pool_average_hourly_power_from_network_kW=(
-                pool_average_hourly_power_from_network_kW
+            pool_average_hourly_power_from_grid_kW=(
+                pool_average_hourly_power_from_grid_kW
             ),
             pool_average_electricity_costs_eur_kWh=(
                 pool_average_electricity_costs_eur_kWh
             ),
             pool_average_travel_costs_eur_km=pool_average_travel_costs_eur_km,
-            pool_average_hourly_power_from_network_kW_per_location_type=pool_average_hourly_power_from_network_kW_per_location_type,  # noqa:E501
+            pool_average_hourly_power_from_grid_kW_per_location_type=pool_average_hourly_power_from_grid_kW_per_location_type,  # noqa:E501
         )
 
 
@@ -178,6 +174,15 @@ def test_run() -> None:
 
 @cook.function_timer
 def run_scenario(scenario: Box) -> UsersPoolStatistics:
+
+    time_constants: TimeConstants = TimeConstants.read_parameters(
+        time_parameters=scenario.time
+    )
+    run_parameters: Box = scenario.run
+    time_ranges: TimeRange = TimeRange.set_ranges(
+        run_parameters=run_parameters,
+        time_constants=time_constants,
+    )
     monte_carlo_definitions: Box = scenario.monte_carlo
 
     monte_carlo: MonteCarlo = MonteCarlo(
@@ -188,14 +193,24 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         monte_carlo=monte_carlo
     )
 
-    transformers_pool: list[Transformer] = get_transformers_pool(
-        scenario=scenario, random_generators=random_generators
-    )
-    users_pool, time_constants, time_ranges = get_users_pool(
+    users_pool = get_users_pool(
         scenario=scenario,
         random_generators=random_generators,
-        transformers_pool=transformers_pool,
+        time_ranges=time_ranges,
+        time_constants=time_constants,
     )
+
+    # line_non_EV_power_kW: npt.NDArray[np.float64] = (
+    #     get_non_EV_power_demand_per_line_kW(
+    #         lines=lines, amount_of_time_stamps=len(time_ranges.run_stamps)
+    #     )
+    # )
+
+    # grid: Grid = Grid.create(
+    #     transformers_pool=transformers_pool,
+    #     line_non_EV_power_kW=line_non_EV_power_kW,
+    #     amount_of_time_steps=len(time_ranges.run_stamps),
+    # )
 
     HOURS_IN_A_DAY: int = time_constants.HOURS_IN_A_DAY
 

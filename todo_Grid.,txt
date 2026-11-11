@@ -1,0 +1,312 @@
+
+The workflow becomes:
+
+Plain Text
+Settings
+↓
+Create Grid
+↓
+Transformers
+↓
+Power lines
+↓
+Connections
+↓
+Non-EV profiles
+↓
+Create ChaProEV users
+↓
+assign users to appropriate connections
+↓
+simulate EV activity/charging
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+I think your observation suggests a cleaner architecture
+
+The non-EV demand is fixed before the simulation. So we can aggregate:
+
+Plain Text
+Individual connections
+↓
+fixed non-EV profiles
+↓
+line_non_EV_power_kW
+↓
+transformer_non_EV_power_kW
+
+and then discard most individual non-EV profiles if they're not needed.
+
+For connections where an EV can charge, retain the particular non-EV baseline needed for the connection-level constraint.
+
+More importantly, I would question whether you need:
+
+Python
+connection_EV_power_kW[
+connection,
+entire_year,
+]
+
+at all.
+
+During a charging event, you need to know EV power already allocated at that connection over the requested horizon. If household connections normally only have one modelled EV/user, this may already be represented by the user's charging state.
+
+Street chargers are somewhat different because several users can interact through the same connection.
+
+So I'd postpone the exact GridState representation until we've properly defined the **connection modelYes. With those numbers, I would change my recommendation for point 7. At your expected ChaProEV scale, I would keep the full connection-level arrays. The simplicity and transparency are more valuable than optimizing them away prematurely.
+
+Memory is manageable
+
+For 100 users, suppose roughly:
+
+3 transformers
+30 lines
+300 connections
+525,600 minute-resolution time steps
+
+With float64, one connection-level array is:
+
+300×525600×8≈1.26 GB300 \times 525600 \times 8 \approx 1.26\text{ GB}300×525600×8≈1.26 GB
+
+That's not trivial. But if your actual simulated time range is shorter, or you use float32, it comes down quickly:
+
+Resolution	Steps/year	300 connections, float64	float32
+1 minute	525,600	~1.26 GB	~631 MB
+5 minutes	105,120	~252 MB	~126 MB
+15 minutes	35,040	~84 MB	~42 MB
+
+Since you've been working at minute resolution, a full year still deserves attention. But structurally, 200–300 connections isn't intrinsically a problem. The multiplication by the time axis is the issue.
+
+And importantly, you're probably not talking about thousands or millions of connections at the ChaProEV scales you're targeting.
+
+I would therefore model all three levels explicitly
+
+Conceptually:
+
+Plain Text
+GridState
+ 
+connection:
+non-EV power [connections, time]
+EV power [connections, time]
+ 
+line:
+non-EV power [lines, time]
+EV power [lines, time]
+ 
+transformer:
+non-EV power [transformers, time]
+EV power [transformers, time]
+
+That gives you a very clean invariant:
+
+Plain Text
+connections → lines → transformers
+
+and lets you verify:
+
+Python
+sum(connection power on line) == line power
+
+and:
+
+Python
+sum(line power on transformer) == transformer power
+
+Those checks fit nicely with the runtime consistency checks you already use elsewhere in ChaProEV.
+
+And your charging operation becomes particularly clean
+
+If car 42 is charging from connection 173:
+
+Python
+transformer_index, line_index, connection_index = (
+grid_topology.get_grid_indices(
+connection_id=connection_id,
+)
+)
+
+A proposed profile:
+
+Python
+proposed_power_kW
+
+is checked against:
+
+Python
+connection
+line
+transformer
+
+for just:
+
+Python
+time_slice = slice(start_index, end_index)
+
+If accepted, the same profile is added to exactly three slices:
+
+Python
+grid_state.connection_EV_power_kW[
+connection_index, time_slice
+] += proposed_power_kW
+ 
+grid_state.line_EV_power_kW[
+line_index, time_slice
+] += proposed_power_kW
+ 
+grid_state.transformer_EV_power_kW[
+transformer_index, time_slice
+] += proposed_power_kW
+
+That's simple and should be fast.
+
+It also makes your non-EV construction cleaner
+
+Your earlier thought:
+
+for each connection, draw yearly consumption and profile shape
+
+now fits the model very naturally.
+
+I'd make connection-level non-EV demand the source of truth:
+
+Plain Text
+GridConnection
+↓
+draw household characteristics
+↓
+connection non-EV profile
+↓
+aggregate
+↓
+PowerLine
+↓
+aggregate
+↓
+Transformer
+
+For example:
+
+Python
+connection_non_EV_power_kW
+
+is generated first.
+
+Then:
+
+Python
+line_non_EV_power_kW
+
+is calculated from its connections.
+
+Finally:
+
+Python
+transformer_non_EV_power_kW
+
+is calculated from its lines.
+
+You're not independently drawing three versions of the same load.
+
+One nuance about your EV-adoption factor
+
+Your statement:
+
+connections are about X times the amount of users, where X = 1 / EV adoption rate
+
+suggests something important about what a User represents.
+
+If you simulate:
+
+Plain Text
+100 EV users
+
+with:
+
+Plain Text
+EV adoption = 40%
+
+you'd represent roughly:
+
+Plain Text
+250 underlying households/connections
+
+because:
+
+100/0.4=250100 / 0.4 = 250100/0.4=250
+
+but only approximately 100 of those ultimately correspond to the modeled EV population.
+
+I like that approach because it prevents the non-EV grid from accidentally representing only EV-owning households. The grid represents the neighbourhood; the ChaProEV users represent the EV-driving subset of it.
+
+That's another argument for creating:
+
+Python
+Grid
+
+before creating the users.
+
+The workflow becomes:
+
+Plain Text
+Settings
+↓
+Create Grid
+↓
+Transformers
+↓
+Power lines
+↓
+Connections
+↓
+Non-EV profiles
+↓
+Create ChaProEV users
+↓
+assign users to appropriate connections
+↓
+simulate EV activity/charging
+
+I'd follow that direction.
+
+One distinction I'd keep in mind
+
+Not every connection needs to correspond to exactly one household.
+
+I'd allow something like:
+
+Python
+class GridConnectionType(StrEnum):
+HOUSEHOLD = 'household'
+STREET_CHARGING = 'street_charging'
+
+Then your 250 underlying household connections and the number of street-charging connections are generated according to different logic.
+
+That leaves us with a much cleaner architecture than where we were heading with NetworkState.
+
+So I would now stop implementing NetworkState entirely, rename/rework NetworkTopology toward GridTopology, and first implement the domain model:
+
+Python
+Grid
+Transformer
+PowerLine
+GridConnection
+
+Once those four classes and their relationships are correct, constructing GridTopology and GridState from them should actually be quite mechanical.
+
+Show the revised Grid, Transformer, PowerLine, and GridConnection classesDesign the grid creation sequence and connection assignment

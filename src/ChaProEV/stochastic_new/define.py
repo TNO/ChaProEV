@@ -45,14 +45,14 @@ class RunMetrics:
         field(default_factory=dict)
     )
     average_travel_costs_eur_km: float = 0.0
-    average_hourly_power_from_network_kW: pl.Series = field(
+    average_hourly_power_from_grid_kW: pl.Series = field(
         default_factory=lambda: pl.Series(
-            'Average hourly power from network (kW)',
+            'Average hourly power from grid (kW)',
             [0.0] * 24,
             dtype=pl.Float64,
         )
     )
-    average_hourly_power_from_network_kW_per_location_type: dict[
+    average_hourly_power_from_grid_kW_per_location_type: dict[
         str, pl.Series
     ] = field(default_factory=dict)
 
@@ -63,12 +63,12 @@ class RunMetrics:
         locations: dict[str, Location],
     ) -> None:
         self.purchased_electricity_kWh = charge_dataframe[
-            charging_settings.charge_from_network_header
+            charging_settings.charge_from_grid_header
         ].sum()
         self.purchased_electricity_kWh_per_location_type = {
             location.variant_name: charge_dataframe.filter(
                 pl.col(charging_settings.location_header) == location_name
-            )[charging_settings.charge_from_network_header].sum()
+            )[charging_settings.charge_from_grid_header].sum()
             for location_name, location in locations.items()
         }
 
@@ -98,24 +98,24 @@ class RunMetrics:
             .alias('Hour number')
         )
 
-        power_from_network_expression = pl.col(
-            charging_settings.power_from_network_header
+        power_from_grid_expression = pl.col(
+            charging_settings.power_from_grid_header
         )
 
-        self.average_hourly_power_from_network_kW = (
+        self.average_hourly_power_from_grid_kW = (
             hours.join(
                 charge_dataframe.group_by(hour_number_expression).agg(
-                    power_from_network_expression.mean()
+                    power_from_grid_expression.mean()
                 ),
                 on='Hour number',
                 how='left',
             )
-            .get_column(charging_settings.power_from_network_header)
+            .get_column(charging_settings.power_from_grid_header)
             .fill_null(0.0)
-            .rename('Average hourly power from network (kW)')
+            .rename('Average hourly power from grid (kW)')
         )
 
-        self.average_hourly_power_from_network_kW_per_location_type = {
+        self.average_hourly_power_from_grid_kW_per_location_type = {
             location.variant_name: (
                 hours.join(
                     charge_dataframe.group_by(hour_number_expression).agg(
@@ -123,17 +123,17 @@ class RunMetrics:
                             pl.col(charging_settings.location_header)
                             == location_name
                         )
-                        .then(power_from_network_expression)
+                        .then(power_from_grid_expression)
                         .otherwise(0.0)
                         .mean()
-                        .alias(charging_settings.power_from_network_header)
+                        .alias(charging_settings.power_from_grid_header)
                     ),
                     on='Hour number',
                     how='left',
                 )
-                .get_column(charging_settings.power_from_network_header)
+                .get_column(charging_settings.power_from_grid_header)
                 .fill_null(0.0)
-                .rename('Average hourly power from network (kW)')
+                .rename('Average hourly power from grid (kW)')
             )
             for location_name, location in locations.items()
         }
@@ -149,141 +149,6 @@ class RunMetrics:
             if self.kilometrage > 0
             else 0.0
         )
-
-
-@dataclass
-class PowerLine:
-    index: int
-    capacity_kW: float
-
-
-@dataclass
-class Transformer:
-    ID: uuid.UUID
-    capacity_kW: float
-    power_lines: list[PowerLine]
-
-    @classmethod
-    def create(
-        cls,
-        *,
-        transformers_settings: Box,
-        random_generators: RandomGenerators,
-        beta_shape: float,
-    ) -> Transformer:
-        ID: uuid.UUID = uuid.uuid4()
-
-        transformer_capacity_kW: float = draw_beta_value(
-            minimum=transformers_settings.capacity_kW_min,
-            typical=transformers_settings.capacity_kW_typical,
-            maximum=transformers_settings.capacity_kW_max,
-            random_generator=random_generators.transformers,
-            shape=beta_shape,
-        )
-
-        line_amount_to_transformer_capacity_ratio: float = draw_beta_value(
-            minimum=(
-                transformers_settings.line_amount_to_transformer_capacity_ratio_min  # noqa:E501
-            ),
-            typical=(
-                transformers_settings.line_amount_to_transformer_capacity_ratio_typical  # noqa:E501
-            ),
-            maximum=(
-                transformers_settings.line_amount_to_transformer_capacity_ratio_max  # noqa:E501
-            ),
-            random_generator=random_generators.transformers,
-            shape=beta_shape,
-        )
-
-        amount_of_lines: int = int(
-            line_amount_to_transformer_capacity_ratio * transformer_capacity_kW
-        )
-
-        if amount_of_lines < 1:
-            raise ValueError(
-                'The calculated number of power lines is less than one: '
-                f'{transformer_capacity_kW=}, '
-                f'{line_amount_to_transformer_capacity_ratio=}, '
-                f'{amount_of_lines=}.'
-            )
-
-        line_capacity_weights: list[float] = [
-            draw_beta_value(
-                minimum=(
-                    transformers_settings.line_capacity_to_average_ratio_min
-                ),
-                typical=(
-                    transformers_settings.line_capacity_to_average_ratio_typical  # noqa:E501
-                ),
-                maximum=(
-                    transformers_settings.line_capacity_to_average_ratio_max
-                ),
-                random_generator=random_generators.transformers,
-                shape=beta_shape,
-            )
-            for _ in range(amount_of_lines)
-        ]
-
-        total_line_capacity_weight: float = sum(line_capacity_weights)
-
-        power_lines: list[PowerLine] = [
-            PowerLine(
-                index=line_index,
-                capacity_kW=(
-                    transformer_capacity_kW
-                    * line_capacity_weight
-                    / total_line_capacity_weight
-                ),
-            )
-            for line_index, line_capacity_weight in enumerate(
-                line_capacity_weights
-            )
-        ]
-
-        total_line_capacity_kW: float = sum(
-            power_line.capacity_kW for power_line in power_lines
-        )
-
-        if not np.isclose(
-            total_line_capacity_kW,
-            transformer_capacity_kW,
-        ):
-            raise RuntimeError(
-                'The allocated power-line capacity does not equal the '
-                'transformer capacity: '
-                f'{total_line_capacity_kW=}, '
-                f'{transformer_capacity_kW=}.'
-            )
-
-        return cls(
-            ID=ID,
-            capacity_kW=transformer_capacity_kW,
-            power_lines=power_lines,
-        )
-
-
-@dataclass
-class Household:
-    yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float
-    profile_shape: pl.Series
-
-
-@dataclass
-class HeatPump:
-    yearly_consumption_kWh: float
-    profile_shape: pl.Series
-
-
-@dataclass
-class HomeBattery:
-    charge_profile: pl.Series
-    discharge_profile: pl.Series
-
-
-@dataclass
-class SolarPanels:
-    yearly_production_kWh: float
-    profile_shape: pl.Series
 
 
 @dataclass
@@ -370,7 +235,7 @@ class Location:
     charging_power_kW: float
     charger_efficiency: float
     discharge_power_kW: float
-    proportion_of_discharge_to_network: float
+    proportion_of_discharge_to_grid: float
     time_modulation_factors: list[float]
     latitude: float
     longitude: float
@@ -425,8 +290,8 @@ class Location:
         charging_power_kW: float = location_values.charging_power_kW
         charger_efficiency: float = location_values.charger_efficiency
         discharge_power_kW: float = location_values.discharge_power_kW
-        proportion_of_discharge_to_network: float = (
-            location_values.proportion_of_discharge_to_network
+        proportion_of_discharge_to_grid: float = (
+            location_values.proportion_of_discharge_to_grid
         )
         time_modulation_factors: list[float] = (
             location_values.time_modulation_factors
@@ -445,9 +310,7 @@ class Location:
             charging_power_kW=charging_power_kW,
             charger_efficiency=charger_efficiency,
             discharge_power_kW=discharge_power_kW,
-            proportion_of_discharge_to_network=(
-                proportion_of_discharge_to_network
-            ),
+            proportion_of_discharge_to_grid=(proportion_of_discharge_to_grid),
             time_modulation_factors=time_modulation_factors,
             latitude=latitude,
             longitude=longitude,
@@ -921,8 +784,6 @@ class ChargingBehaviour:
 @dataclass
 class User:
     ID: uuid.UUID
-    transformer_ID: uuid.UUID
-    line_index: int
     vehicle: Vehicle
     locations: dict[str, Location]
     legs: dict[str, Leg]
@@ -933,10 +794,6 @@ class User:
     charging_behaviour: ChargingBehaviour
     charge: pl.DataFrame
     run_metrics: RunMetrics
-    household: Household
-    heat_pump: HeatPump
-    home_battery: HomeBattery
-    solar_panels: SolarPanels
 
     @staticmethod
     def draw_characteristics(
@@ -1428,27 +1285,27 @@ class User:
         nominal_charge_power_to_vehicle_header: str = (
             charging_settings.nominal_charge_power_to_vehicle_header
         )
-        nominal_charge_power_from_network_header: str = (
-            charging_settings.nominal_charge_power_from_network_header
+        nominal_charge_power_from_grid_header: str = (
+            charging_settings.nominal_charge_power_from_grid_header
         )
         nominal_discharge_power_from_vehicle_header: str = (
             charging_settings.nominal_discharge_power_from_vehicle_header
         )
-        nominal_discharge_power_to_network_header: str = (
-            charging_settings.nominal_discharge_power_to_network_header
+        nominal_discharge_power_to_grid_header: str = (
+            charging_settings.nominal_discharge_power_to_grid_header
         )
 
         available_charge_power_to_vehicle_header: str = (
             charging_settings.available_charge_power_to_vehicle_header
         )
-        available_charge_power_from_network_header: str = (
-            charging_settings.available_charge_power_from_network_header
+        available_charge_power_from_grid_header: str = (
+            charging_settings.available_charge_power_from_grid_header
         )
         available_discharge_power_from_vehicle_header: str = (
             charging_settings.available_discharge_power_from_vehicle_header
         )
-        available_discharge_power_to_network_header: str = (
-            charging_settings.available_discharge_power_to_network_header
+        available_discharge_power_to_grid_header: str = (
+            charging_settings.available_discharge_power_to_grid_header
         )
 
         session_start_header: str = charging_settings.session_start_header
@@ -1509,18 +1366,18 @@ class User:
             .alias(nominal_charge_power_to_vehicle_header)
         )
 
-        nominal_charge_power_from_network_by_location: dict[str, float] = {
+        nominal_charge_power_from_grid_by_location: dict[str, float] = {
             location_name: location.charging_power_kW
             for location_name, location in locations.items()
         }
-        nominal_charge_power_from_network_by_location[
+        nominal_charge_power_from_grid_by_location[
             vehicle.driving_location_name
         ] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
             pl.col(location_header)
-            .replace_strict(nominal_charge_power_from_network_by_location)
-            .alias(nominal_charge_power_from_network_header)
+            .replace_strict(nominal_charge_power_from_grid_by_location)
+            .alias(nominal_charge_power_from_grid_header)
         )
 
         nominal_discharge_power_from_vehicle_by_location: dict[str, float] = {
@@ -1537,19 +1394,19 @@ class User:
             .alias(nominal_discharge_power_from_vehicle_header)
         )
 
-        nominal_discharge_power_to_network_by_location: dict[str, float] = {
+        nominal_discharge_power_to_grid_by_location: dict[str, float] = {
             location_name: location.discharge_power_kW
-            * location.proportion_of_discharge_to_network
+            * location.proportion_of_discharge_to_grid
             for location_name, location in locations.items()
         }
-        nominal_discharge_power_to_network_by_location[
+        nominal_discharge_power_to_grid_by_location[
             vehicle.driving_location_name
         ] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
             pl.col(location_header)
-            .replace_strict(nominal_discharge_power_to_network_by_location)
-            .alias(nominal_discharge_power_to_network_header)
+            .replace_strict(nominal_discharge_power_to_grid_by_location)
+            .alias(nominal_discharge_power_to_grid_header)
         )
 
         time_modulation_factors: pl.DataFrame = pl.DataFrame(
@@ -1608,17 +1465,17 @@ class User:
                 * pl.col(modulation_factor_header)
             ).alias(available_charge_power_to_vehicle_header),
             (
-                pl.col(nominal_charge_power_from_network_header)
+                pl.col(nominal_charge_power_from_grid_header)
                 * pl.col(modulation_factor_header)
-            ).alias(available_charge_power_from_network_header),
+            ).alias(available_charge_power_from_grid_header),
             (
                 pl.col(nominal_discharge_power_from_vehicle_header)
                 * pl.col(modulation_factor_header)
             ).alias(available_discharge_power_from_vehicle_header),
             (
-                pl.col(nominal_discharge_power_to_network_header)
+                pl.col(nominal_discharge_power_to_grid_header)
                 * pl.col(modulation_factor_header)
-            ).alias(available_discharge_power_to_network_header),
+            ).alias(available_discharge_power_to_grid_header),
         )
 
         charging_dataframe = charging_dataframe.with_columns(
@@ -1629,189 +1486,6 @@ class User:
 
         return charging_dataframe
 
-    @staticmethod
-    def get_transformer_ID_and_line_index(
-        *,
-        transformers_pool: list[Transformer],
-        transformers_settings: Box,
-        random_generator: np.random.Generator,
-    ) -> tuple[uuid.UUID, int]:
-        if not transformers_pool:
-            raise ValueError(
-                'Cannot assign a transformer because '
-                'transformers_pool is empty.'
-            )
-
-        proportions_of_users: list[float] = (
-            transformers_settings.proportions_of_users
-        )
-
-        if len(proportions_of_users) != len(transformers_pool):
-            raise ValueError(
-                'The number of user proportions must equal the number of '
-                'transformers: '
-                f'{len(proportions_of_users)=}, '
-                f'{len(transformers_pool)=}.'
-            )
-
-        if not np.isclose(sum(proportions_of_users), 1.0):
-            raise ValueError(
-                'Transformer user proportions must sum to 1.0: '
-                f'{sum(proportions_of_users)=}, '
-                f'{proportions_of_users=}.'
-            )
-
-        transformer_index: int = int(
-            random_generator.choice(
-                len(transformers_pool),
-                p=proportions_of_users,
-            )
-        )
-        user_transformer: Transformer = transformers_pool[transformer_index]
-
-        if not user_transformer.power_lines:
-            raise ValueError(
-                'The selected transformer has no power lines: '
-                f'{user_transformer.ID=}.'
-            )
-
-        line_capacities_kW: list[float] = [
-            power_line.capacity_kW
-            for power_line in user_transformer.power_lines
-        ]
-
-        total_line_capacity_kW: float = sum(line_capacities_kW)
-
-        line_probabilities: list[float] = [
-            capacity_kW / total_line_capacity_kW
-            for capacity_kW in line_capacities_kW
-        ]
-
-        selected_line_position: int = int(
-            random_generator.choice(
-                len(user_transformer.power_lines),
-                p=line_probabilities,
-            )
-        )
-
-        selected_power_line: PowerLine = user_transformer.power_lines[
-            selected_line_position
-        ]
-
-        return user_transformer.ID, selected_power_line.index
-
-    @staticmethod
-    def draw_non_EV(
-        *,
-        households_settings: Box,
-        random_generator: np.random.Generator,
-        beta_shape: float,
-    ) -> tuple[Household, HeatPump, HomeBattery, SolarPanels]:
-
-        yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float = (
-            draw_beta_value(
-                minimum=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_min,  # noqa: E501
-                typical=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_typical,  # noqa: E501
-                maximum=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_max,  # noqa: E501
-                random_generator=random_generator,
-                shape=beta_shape,
-            )
-        )
-
-        demand_profile_shape_name: str = random_generator.choice(
-            np.array(households_settings.possible_profile_shape_references),
-            p=households_settings.possible_profile_shape_references_weights,
-        )
-
-        profiles_shapes_source: pl.DataFrame = pl.read_csv(
-            Path(households_settings.profiles_shapes_source)
-        )
-        profile_shape: pl.Series = profiles_shapes_source[
-            demand_profile_shape_name
-        ]
-        household: Household = Household(
-            yearly_consumption_kWh_excluding_EV_heat_pump_home_battery=yearly_consumption_kWh_excluding_EV_heat_pump_home_battery,  # noqa:E501
-            profile_shape=profile_shape,
-        )
-
-        adoption_rate_heat_pumps: float = (
-            households_settings.adoption_rate_heat_pumps
-        )
-        has_heat_pump: bool = bool(
-            random_generator.choice(
-                [True, False],
-                p=[adoption_rate_heat_pumps, 1 - adoption_rate_heat_pumps],
-            )
-        )
-        if has_heat_pump:
-            yearly_heat_pump_consumption_kWh: float = draw_beta_value(
-                minimum=households_settings.yearly_heat_pump_consumption_kWh_min,  # noqa: E501
-                typical=(
-                    households_settings.yearly_heat_pump_consumption_kWh_typical  # noqa:E501
-                ),
-                maximum=households_settings.yearly_heat_pump_consumption_kWh_max,  # noqa:E501
-                random_generator=random_generator,
-                shape=beta_shape,
-            )
-
-        else:
-            yearly_heat_pump_consumption_kWh = 0
-
-        heat_pump_shape: pl.Series = pl.Series()
-        heat_pump: HeatPump = HeatPump(
-            yearly_consumption_kWh=yearly_heat_pump_consumption_kWh,
-            profile_shape=heat_pump_shape,
-        )
-
-        adoption_rate_solar_panels: float = (
-            households_settings.adoption_rate_solar_panels
-        )
-        has_solar_panels: bool = bool(
-            random_generator.choice(
-                [True, False],
-                p=[adoption_rate_solar_panels, 1 - adoption_rate_solar_panels],
-            )
-        )
-        if has_solar_panels:
-            solar_production: float = (
-                yearly_consumption_kWh_excluding_EV_heat_pump_home_battery
-            )
-            adoption_rate_home_batteries: float = (
-                households_settings.adoption_rate_home_batteries_if_solar_panels  # noqa: E501
-            )
-        else:
-            solar_production = 0
-            adoption_rate_home_batteries = (
-                households_settings.adoption_rate_home_batteries_if_not_solar_panels  # noqa: E501
-            )
-
-        solar_shape: pl.Series = pl.Series()
-        solar_panels: SolarPanels = SolarPanels(
-            yearly_production_kWh=solar_production, profile_shape=solar_shape
-        )
-        has_home_battery: bool = bool(
-            random_generator.choice(
-                [True, False],
-                p=[
-                    adoption_rate_home_batteries,
-                    1 - adoption_rate_home_batteries,
-                ],
-            )
-        )
-        if has_home_battery:
-            home_battery_charge_profile: pl.Series = pl.Series()
-            home_battery_discharge_profile: pl.Series = pl.Series()
-        else:
-            home_battery_charge_profile = pl.Series()
-            home_battery_discharge_profile = pl.Series()
-
-        home_battery: HomeBattery = HomeBattery(
-            charge_profile=home_battery_charge_profile,
-            discharge_profile=home_battery_discharge_profile,
-        )
-
-        return household, heat_pump, home_battery, solar_panels
-
     @classmethod
     def create(
         cls,
@@ -1820,7 +1494,6 @@ class User:
         random_generators: RandomGenerators,
         time_ranges: TimeRange,
         time_constants: TimeConstants,
-        transformers_pool: list[Transformer],
     ) -> User:
 
         ID: uuid.UUID = uuid.uuid4()
@@ -1865,20 +1538,9 @@ class User:
                 mobility_settings.consumption_header
             ].sum(),
         )
-        transformer_ID, line_index = User.get_transformer_ID_and_line_index(
-            transformers_pool=transformers_pool,
-            transformers_settings=scenario.transformers,
-            random_generator=random_generators.define,
-        )
-        household, heat_pump, home_battery, solar_panels = User.draw_non_EV(
-            households_settings=scenario.households,
-            random_generator=random_generators.households,
-            beta_shape=scenario.monte_carlo.beta_shape,
-        )
+
         return cls(
             ID=ID,
-            transformer_ID=transformer_ID,
-            line_index=line_index,
             vehicle=vehicle,
             locations=locations,
             legs=legs,
@@ -1889,10 +1551,6 @@ class User:
             mobility=mobility,
             charge=charge,
             run_metrics=run_metrics,
-            household=household,
-            heat_pump=heat_pump,
-            home_battery=home_battery,
-            solar_panels=solar_panels,
         )
 
 
@@ -1900,8 +1558,9 @@ def create_users(
     *,
     scenario: Box,
     random_generators: RandomGenerators,
-    transformers_pool: list[Transformer],
-) -> tuple[list[User], TimeConstants, TimeRange]:
+    time_ranges: TimeRange,
+    time_constants: TimeConstants,
+) -> list[User]:
 
     users_settings: Box = scenario.users
 
@@ -1912,14 +1571,6 @@ def create_users(
             'You need at least one user '
             '(users_pool_size in [users] in scenario toml)'
         )
-    time_constants: TimeConstants = TimeConstants.read_parameters(
-        time_parameters=scenario.time
-    )
-    run_parameters: Box = scenario.run
-    time_ranges: TimeRange = TimeRange.set_ranges(
-        run_parameters=run_parameters,
-        time_constants=time_constants,
-    )
 
     users_pool: list[User] = [
         User.create(
@@ -1927,7 +1578,6 @@ def create_users(
             random_generators=random_generators,
             time_ranges=time_ranges,
             time_constants=time_constants,
-            transformers_pool=transformers_pool,
         )
         for _ in range(users_pool_size)
     ]
@@ -1939,7 +1589,7 @@ def create_users(
         with users_path.open('wb') as users_file:
             pickle.dump(users_pool, users_file)
 
-    return users_pool, time_constants, time_ranges
+    return users_pool
 
 
 def read_users_pool(*, scenario: Box) -> list[User]:
@@ -1957,46 +1607,23 @@ def get_users_pool(
     *,
     scenario: Box,
     random_generators: RandomGenerators,
-    transformers_pool: list[Transformer],
-) -> tuple[list[User], TimeConstants, TimeRange]:
+    time_ranges: TimeRange,
+    time_constants: TimeConstants,
+) -> list[User]:
 
     users_settings: Box = scenario.users
 
     if users_settings.read_from_file:
         users_pool: list[User] = read_users_pool(scenario=scenario)
-        time_constants: TimeConstants = TimeConstants.read_parameters(
-            time_parameters=scenario.time
-        )
-        run_parameters: Box = scenario.run
-        time_ranges: TimeRange = TimeRange.set_ranges(
-            run_parameters=run_parameters,
-            time_constants=time_constants,
-        )
+
     else:
-        users_pool, time_constants, time_ranges = create_users(
+        users_pool = create_users(
             scenario=scenario,
             random_generators=random_generators,
-            transformers_pool=transformers_pool,
+            time_ranges=time_ranges,
+            time_constants=time_constants,
         )
-    return users_pool, time_constants, time_ranges
-
-
-def get_transformers_pool(
-    *, scenario: Box, random_generators: RandomGenerators
-) -> list[Transformer]:
-
-    transformers_settings: Box = scenario.transformers
-    beta_shape: float = scenario.monte_carlo.beta_shape
-    amount: int = transformers_settings.amount
-
-    return [
-        Transformer.create(
-            transformers_settings=transformers_settings,
-            random_generators=random_generators,
-            beta_shape=beta_shape,
-        )
-        for _ in range(amount)
-    ]
+    return users_pool
 
 
 #     Attribute to user bassed on draw (ranges. For demand_profles: draw
