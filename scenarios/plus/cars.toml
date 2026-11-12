@@ -813,19 +813,19 @@ electricity_spending_header = 'Electricity spending (€)'
 driven_header = 'Kilometers driven'
 
 
-[transformers]
-amount = 2
-proportions_of_users = [0.42, 0.58]
-capacity_kW_min = 150.0
-capacity_kW_typical = 200.0
-capacity_kW_max = 250.0
-lines_to_capacity_ratio = 0.1
-line_amount_to_transformer_capacity_ratio_min = 0.05
-line_amount_to_transformer_capacity_ratio_typical = 0.10
-line_amount_to_transformer_capacity_ratio_max = 0.15
-line_capacity_to_average_ratio_min = 0.8
-line_capacity_to_average_ratio_typical = 1.0
-line_capacity_to_average_ratio_max = 1.2
+# [transformers]
+# amount = 2
+# proportions_of_users = [0.42, 0.58]
+# capacity_kW_min = 150.0
+# capacity_kW_typical = 200.0
+# capacity_kW_max = 250.0
+# lines_to_capacity_ratio = 0.1
+# line_amount_to_transformer_capacity_ratio_min = 0.05
+# line_amount_to_transformer_capacity_ratio_typical = 0.10
+# line_amount_to_transformer_capacity_ratio_max = 0.15
+# line_capacity_to_average_ratio_min = 0.8
+# line_capacity_to_average_ratio_typical = 1.0
+# line_capacity_to_average_ratio_max = 1.2
 
 [households]
 yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
@@ -842,3 +842,12 @@ adoption_rate_home_batteries_if_not_solar_panels = 0.06
 yearly_heat_pump_consumption_kWh_min = 1_000
 yearly_heat_pump_consumption_kWh_typical = 1_200
 yearly_heat_pump_consumption_kWh_max = 1_400
+
+
+[grid]
+include_residential_grid_congestion = true
+transformer_capacity_kW = 200
+amount_of_lines = 10
+line_capacity_to_average_ratio_min = 0.8
+line_capacity_to_average_ratio_typical = 1.0
+line_capacity_to_average_ratio_max = 1.2

@@ -316,7 +316,26 @@ class GridConnection:
     capacity_kW: float
     connection_type: GridConnectionType
 
+Change to EV connection home or street  Is it actually needed
+We put these through the user  
+and for homes 6 kW is not a problem                                 
+SO only draw line and transformer
 
+own use does not really matter (except maybe for solar)
+aggregate at line and tarnsfor does 
+so have line/transformer profiles 
+transfo is sum of lines 
+and lines is # connected X individual profiles (with draw about kWh per year and connection type, etc.
+
+
+We have N home chargers per line (baed on ratio in pparamters)) so exhaust 
+draws for home chargers 
+
+
+for street also somethingsimilar? but based on connectivity  1 charger = 1/connectivity spots 
+
+Or have EV users per line (separate home/street) and then draw and within pool (i.e. make it so
+that cannot draw if supply is exhausted)
 @dataclass
 class PowerLine:
     index: int
