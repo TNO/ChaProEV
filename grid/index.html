@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Residential grid congestion - ChaProEV</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Residential grid congestion";
+        var mkdocs_page_input_path = "grid.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ChaProEV
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Approach</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../non_road/">Non-road</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../consumption/">Consumption</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../make_variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running_model/">Running model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multiprocessing/">Multiprocessing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../writing/">Writing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Programming matters</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../parallel_processing/">Parallel processing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChaProEV</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Residential grid congestion</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="residential-grid-congestion">Residential grid congestion</h1>
+<p><img alt="Local_grid_figure" src="../Local_grid.svg" title="Residential grid" /></p>
+<h2 id="goal">Goal</h2>
+<p>model impact of residnetial grid connection issues on charging profiles
+charging demand can be high a the same time as other demand is high,
+so chargign session demands might be delayed, reduced or outrighht denied
+This will impact they way vehicles charge and change the charging profiles</p>
+<p>Look at residnetial neighbourhood because it is likely that such conflicts will
+occur (simultaeous demand, also the fact that in other locations the
+grid might besolely dedicated to EV charging)</p>
+<h2 id="when-to-use">WHen to use</h2>
+<p>The parameter include_residential_grid_congestion (set to either <code>true</code> or <code>false</code>)
+in the <code>[grid]</code>  section of your scenario tells if you are using this modelling or not.</p>
+<p>Set it to <code>true</code> if you want to add residetial grid congestion issues to our profile.</p>
+<p>If you don't want to include such effects, or if you want to investigate them in another
+model (fr example an optimisation one) using the profiles provided by ChaProEV,
+or if it is not relevant (e.g. vehicles such as busses that charge in dedidcated locations)</p>
+<p>This is mostly meant for cars</p>
+<h2 id="approach">Approach</h2>
+<p>One transformer for the neighbourhood with a given capacity and
+a certain amount of lines, ach having its own capacity (sum of lines capacity is transformer capacity)
+This provides two constraints. One at transformer level, and one at each level
+so issues could come at the whole neighbourhood level, as well as at a more
+local level (e.g. a street has many EVs and their users charge at the same time
+as they have elecxtricity demand for other purposes)</p>
+<h2 id="parameters">Parameters</h2>
+<p>They are in the <code>[grid]</code> section of your scenario</p>
+<pre><code class="language-TOML">
+[grid]
+include_residential_grid_congestion = true
+transformer_capacity_kW = 200
+amount_of_lines = 10
+line_capacity_to_average_ratio_min = 0.8
+line_capacity_to_average_ratio_typical = 1.0
+line_capacity_to_average_ratio_max = 1.2
+</code></pre>
+<h3 id="transformer-capacity">Transformer capacity</h3>
+<p>The capacity of the transformer (in kW)</p>
+<h3 id="amount-of-lines">Amount of lines</h3>
+<p>The amounts of lines connected to the transformer. </p>
+<h3 id="line-capacity-to-average-ration">Line capacity to average ration</h3>
+<p>These three parameters provide a range for 
+<a href="../monte-carlo/#drawing-bounded-parameter-values">drawing</a>
+each line's capacity by fluctuating around dividing the transformer equally
+within the lines.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        });
+    </script>
+
+</body>
+</html>
