@@ -140,13 +140,6 @@ in the <code>[grid]</code>  section of your scenario tells if you are using this
 model (fr example an optimisation one) using the profiles provided by ChaProEV,
 or if it is not relevant (e.g. vehicles such as busses that charge in dedidcated locations)</p>
 <p>This is mostly meant for cars</p>
-<h2 id="approach">Approach</h2>
-<p>One transformer for the neighbourhood with a given capacity and
-a certain amount of lines, ach having its own capacity (sum of lines capacity is transformer capacity)
-This provides two constraints. One at transformer level, and one at each level
-so issues could come at the whole neighbourhood level, as well as at a more
-local level (e.g. a street has many EVs and their users charge at the same time
-as they have elecxtricity demand for other purposes)</p>
 <h2 id="parameters">Parameters</h2>
 <p>They are in the <code>[grid]</code> section of your scenario</p>
 <pre><code class="language-TOML">
@@ -162,11 +155,72 @@ line_capacity_to_average_ratio_max = 1.2
 <p>The capacity of the transformer (in kW)</p>
 <h3 id="amount-of-lines">Amount of lines</h3>
 <p>The amounts of lines connected to the transformer. </p>
-<h3 id="line-capacity-to-average-ration">Line capacity to average ration</h3>
+<h3 id="line-capacity-to-average-ratio">Line capacity to average ratio</h3>
 <p>These three parameters provide a range for 
 <a href="../monte-carlo/#drawing-bounded-parameter-values">drawing</a>
 each line's capacity by fluctuating around dividing the transformer equally
 within the lines.</p>
+<h2 id="approach">Approach</h2>
+<h3 id="scope">Scope</h3>
+<p>One transformer for the neighbourhood with a given capacity and
+a certain amount of lines, ach having its own capacity (sum of lines capacity is transformer capacity)
+This provides two constraints. One at transformer level, and one at each level
+so issues could come at the whole neighbourhood level, as well as at a more
+local level (e.g. a street has many EVs and their users charge at the same time
+as they have elecxtricity demand for other purposes)</p>
+<h3 id="line-capacity-determination">Line capacity determination</h3>
+<p>AVerage per line is capacity divided by amount of lines
+Fluctuations around this determined by
+<a href="../monte-carlo/#drawing-bounded-parameter-values">drawing</a>
+gives variations around that average
+with total capaicty still equal to transformer capacity</p>
+<h3 id="non-ev-demand">Non-EV demand</h3>
+<h1 id="draw-amounts-of-the-below-per-line-based-on-line-capacitytransfomer-capacity">Draw amounts of the below per line (based on line capacity/transfomer capacity)</h1>
+<p>One on one, or another draw level?
+Each has a draw --&gt; sum
+Time conversion</p>
+<h4 id="households">Households</h4>
+<p>consumption beta draw
+shape depends on connection type? MFFBAS</p>
+<h4 id="heat-pumps">Heat pumps</h4>
+<p>Heat demand profile (wramteprofilengenrator)
++ size (beta draw)</p>
+<h4 id="solar-panels">Solar panels</h4>
+<p>production=consumption
+shape entso-e</p>
+<pre><code class="language-python">clsss Grid:
+    soo: int
+</code></pre>
+<h3 id="assignment-of-home-chargers-and-connectivity">Assignment of home chargers and connectivity</h3>
+<p>Home chargers are created after the users have been generated. The procedure distinguishes between users with their own driveway and users who park on the street. A user with an own driveway receives an individual home charger and therefore has a home connectivity of 1. Whenever the vehicle is at home, the home charger is available to that user.</p>
+<p>For street parking, chargers are shared between multiple users. The configured street-parking connectivity is used to determine the number of chargers that should be available. For (N) street-parking users with a configured connectivity (c), the expected number of chargers is
+$$
+N_{\mathrm{chargers, expected}} = N_{\mathrm{users}} \times c.
+$$
+Because the model must create a discrete number of physical chargers, this value is rounded to the nearest integer, with half values rounded upwards. If there are street-parking users, at least one charger is created. A connectivity of zero is therefore not allowed when street-parking users are present.</p>
+<p>For example, with 12 street-parking users and a configured connectivity of 0.25:</p>
+<p>$$
+12 \times 0.25 = 3
+$$</p>
+<p>and three street chargers are created.</p>
+<p>The street-parking users are first randomly shuffled and are subsequently assigned to the available chargers in round-robin order. This makes the assignment stochastic while distributing the users as evenly as possible over the chargers: the numbers of users assigned to any two chargers can differ by at most one.</p>
+<p>After the users have been assigned, their actual home connectivity is recalculated from the number of users sharing their charger:</p>
+<p>$$
+c_{\mathrm{user}} = \frac{1}{N_{\mathrm{users\ on\ charger}}}.
+$$</p>
+<p>For example, a charger shared by four users gives each of those users a connectivity of 0.25, while a charger shared by three users gives each user a connectivity of approximately 0.333.</p>
+<p>The recalculation is necessary because the configured connectivity represents the desired average availability, whereas the model contains a finite number of users and a discrete number of chargers. The exact configured connectivity can therefore not always be reproduced. For example, if 11 street-parking users have a configured connectivity of 0.25, the expected number of chargers is</p>
+<p>$$
+11 \times 0.25 = 2.75,
+$$</p>
+<p>which results in three physical chargers. The users are then distributed as 4, 4 and 3 users over these chargers, giving individual connectivities of 0.25, 0.25 and approximately 0.333, respectively. This preserves the physical interpretation of connectivity: it represents the probability that the shared charger assigned to a user is available when that user wants to charge.</p>
+<p>The updated connectivity is stored on the user's home <code>Location</code>. The charging DataFrame is deliberately created only <strong>after</strong> the local grid and charger assignment have been constructed. This ensures that the stochastic charging-session availability draws use the final connectivity resulting from the actual charger allocation, rather than the original scenario-level connectivity.</p>
+<h4 id="own-driveway-chargers">Own driveway chargers</h4>
+<p>Users x Own driveway proportion</p>
+<p>also power?</p>
+<p>Trafo --&gt; Lines 
+Non EV profiles</p>
+<p>EV cpacities</p>
               
             </div>
           </div><footer>
