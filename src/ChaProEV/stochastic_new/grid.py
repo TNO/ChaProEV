@@ -9,8 +9,10 @@ from box import Box
 from rich import print
 
 from ChaProEV.stochastic_new.define import User
-from ChaProEV.stochastic_new.monte_carlo import (RandomGenerators,
-                                                 draw_beta_value)
+from ChaProEV.stochastic_new.monte_carlo import (
+    RandomGenerators,
+    draw_beta_value,
+)
 
 
 @dataclass
@@ -222,10 +224,7 @@ class LocalGrid:
             raise ValueError(
                 f'{street_parking_connectivity=} must be between 0 and 1.'
             )
-        if (
-            street_parking_connectivity == 0.0
-            and street_parking_users:
-        ):
+        if street_parking_connectivity == 0.0 and street_parking_users:
             raise ValueError(
                 'You have street parking users but no street parking '
                 'connectivity/no chargers for these users.'
@@ -281,7 +280,6 @@ class LocalGrid:
             )
             # And set the charger of that user
             user_ID_charger_IDs[street_parking_user.ID] = street_charger.ID
-
 
         # We now can update the home connectivities.
         for user in users_pool:

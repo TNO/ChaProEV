@@ -200,8 +200,6 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         time_ranges=time_ranges,
         time_constants=time_constants,
     )
-    for user in users_pool:
-        print(user.locations['home'].connectivity)
 
     # We check if we include the residential grid congestion
     grid_parameters: Box = scenario.grid
@@ -212,9 +210,6 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             scenario=scenario,
             random_generator=random_generators.local_grid,
         )
-    print()
-    for user in users_pool:
-        print(user.locations['home'].connectivity)
 
     # Residential-grid creation may have changed home connectivity for users
     # with street parking. Therefore, the charging DataFrame can only be
@@ -225,7 +220,6 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             random_generator=random_generators.charging,
         )
 
-    exit()
     # line_non_EV_power_kW: npt.NDArray[np.float64] = (
     #     get_non_EV_power_demand_per_line_kW(
     #         lines=lines, amount_of_time_stamps=len(time_ranges.run_stamps)
