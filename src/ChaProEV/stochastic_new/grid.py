@@ -69,7 +69,7 @@ class PowerLine:
     chargers: list[Charger]
 
     @staticmethod
-    def get_non_EV_demand_profile(nodes: list[Node]) -> pl.Series:
+    def get_non_EV_demand_profile(household_nodes: list[Node]) -> pl.Series:
         # SUm of profiles
         return pl.Series()  # Placeholder!
 
@@ -90,6 +90,8 @@ class PowerLine:
         average_line_capacity_kW: float,
         line_index: int,
         grid_parameters: Box,
+        household_nodes: list[Node],
+        chargers: list[Charger],
         random_generator: np.random.Generator,
     ) -> PowerLine:
 
@@ -98,14 +100,11 @@ class PowerLine:
             grid_parameters=grid_parameters,
             random_generator=random_generator,
         )
-        # Maybe create nodes and chargers first
-        # THen draw in them (emptying the pool: new pool = old pool minus drawn)
-        nodes: list[Node] = []
+        # Draw nodes and chargers
         # nodes amount and such connected to capacity?
         non_EV_demand_profile: pl.Series = PowerLine.get_non_EV_demand_profile(
-            nodes=nodes
+            household_nodes=household_nodes
         )
-        chargers: list[Charger] = []
 
         return cls(
             index=line_index,
@@ -306,16 +305,23 @@ class LocalGrid:
         scenario: Box,
         random_generator: np.random.Generator,
     ) -> LocalGrid:
-        chargers = LocalGrid.create_chargers(
+
+        transformer_capacity_kW: float = (
+            grid_parameters.transformer_capacity_kW
+        )
+
+        # We set the home chargers (own driveway and street parking).
+        chargers: list[Charger] = LocalGrid.create_chargers(
             users_pool=users_pool,
             grid_parameters=grid_parameters,
             scenario=scenario,
             random_generator=random_generator,
         )
 
-        transformer_capacity_kW: float = (
-            grid_parameters.transformer_capacity_kW
-        )
+        # We create the household nodes
+        household_nodes: list[Node] = []
+
+        # We create the power lines
         amount_of_lines: int = grid_parameters.amount_of_power_lines
         average_line_capacity_kW: float = (
             transformer_capacity_kW / amount_of_lines
@@ -327,10 +333,14 @@ class LocalGrid:
                 average_line_capacity_kW=average_line_capacity_kW,
                 line_index=line_index,
                 grid_parameters=grid_parameters,
+                household_nodes=household_nodes,
+                chargers=chargers,
                 random_generator=random_generator,
             )
             for line_index in range(amount_of_lines)
         ]
+
+        # Assign chargers to lines
 
         return cls(
             transformer_capacity_kW=transformer_capacity_kW,
