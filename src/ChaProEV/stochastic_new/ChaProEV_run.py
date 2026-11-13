@@ -9,6 +9,7 @@ from rich import print
 
 from ChaProEV.stochastic_new.charging import compute_fleet_charging
 from ChaProEV.stochastic_new.define import User, get_users_pool
+from ChaProEV.stochastic_new.grid import LocalGrid
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
 from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
@@ -199,7 +200,32 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         time_ranges=time_ranges,
         time_constants=time_constants,
     )
+    for user in users_pool:
+        print(user.locations['home'].connectivity)
 
+    # We check if we include the residential grid congestion
+    grid_parameters: Box = scenario.grid
+    if grid_parameters.include_residential_grid_congestion:
+        local_grid: LocalGrid = LocalGrid.initialise(
+            users_pool=users_pool,
+            grid_parameters=grid_parameters,
+            scenario=scenario,
+            random_generator=random_generators.local_grid,
+        )
+    print()
+    for user in users_pool:
+        print(user.locations['home'].connectivity)
+
+    # Residential-grid creation may have changed home connectivity for users
+    # with street parking. Therefore, the charging DataFrame can only be
+    # created after the local grid has been initialised.
+    for user in users_pool:
+        user.create_charging_dataframe(
+            charging_settings=scenario.charging_dataframe,
+            random_generator=random_generators.charging,
+        )
+
+    exit()
     # line_non_EV_power_kW: npt.NDArray[np.float64] = (
     #     get_non_EV_power_demand_per_line_kW(
     #         lines=lines, amount_of_time_stamps=len(time_ranges.run_stamps)

@@ -1,15 +1,361 @@
 import uuid
 from dataclasses import dataclass
+from enum import StrEnum
 
 import numpy as np
 import numpy.typing as npt
 import polars as pl
 from box import Box
+from rich import print
 
-from ChaProEV.stochastic_new.monte_carlo import (
-    RandomGenerators,
-    draw_beta_value,
-)
+from ChaProEV.stochastic_new.define import User
+from ChaProEV.stochastic_new.monte_carlo import (RandomGenerators,
+                                                 draw_beta_value)
+
+
+@dataclass
+class HouseholdBasicDemand:
+    non_BEV_HP_yearly_demand_kWh: float
+    demand_shape: pl.Series
+    profile: pl.Series
+
+
+@dataclass
+class HeatPumpDemand:
+    yearly_heat_demand_kWh: float
+    heat_demand_shape: pl.Series
+    COP: float
+    profile: pl.Series
+
+
+@dataclass
+class SolarPanels:
+    yearly_production_kWh: float
+    production_shape: pl.Series
+    profile: pl.Series
+
+
+@dataclass
+class HomeBattery:
+    capacity_kWh: float
+    charge_power_kW: float
+    discharge_power_kW: float
+    charge_level_kWh: pl.Series
+
+
+@dataclass
+class Node:
+    household: HouseholdBasicDemand
+    heat_pump: HeatPumpDemand
+    solar_panels: SolarPanels
+    home_battery: HomeBattery
+    power_line_index: int
+
+
+@dataclass
+class Charger:
+    ID: uuid.UUID
+    type: str
+    power_kW: float
+
+
+@dataclass
+class PowerLine:
+    index: int
+    capacity_kW: float
+    non_EV_demand_profile: pl.Series
+    chargers: list[Charger]
+
+    @staticmethod
+    def get_non_EV_demand_profile(nodes: list[Node]) -> pl.Series:
+        # SUm of profiles
+        return pl.Series()  # Placeholder!
+
+    @staticmethod
+    def draw_capacity(
+        *,
+        average_line_capacity_kW: float,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+    ) -> float:
+
+        return 1989.0  # placeholder!
+
+    @classmethod
+    def draw(
+        cls,
+        *,
+        average_line_capacity_kW: float,
+        line_index: int,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+    ) -> PowerLine:
+
+        capacity_kW: float = PowerLine.draw_capacity(
+            average_line_capacity_kW=average_line_capacity_kW,
+            grid_parameters=grid_parameters,
+            random_generator=random_generator,
+        )
+        # Maybe create nodes and chargers first
+        # THen draw in them (emptying the pool: new pool = old pool minus drawn)
+        nodes: list[Node] = []
+        # nodes amount and such connected to capacity?
+        non_EV_demand_profile: pl.Series = PowerLine.get_non_EV_demand_profile(
+            nodes=nodes
+        )
+        chargers: list[Charger] = []
+
+        return cls(
+            index=line_index,
+            capacity_kW=capacity_kW,
+            non_EV_demand_profile=non_EV_demand_profile,
+            chargers=chargers,
+        )
+
+
+@dataclass
+class LocalGrid:
+    transformer_capacity_kW: float
+    power_lines: list[PowerLine]
+
+    # @staticmethod
+    # def create_nodes() -> list[Node]:
+    #     nodes: list[Node] = [Node.draw() for _ in nodes_amount]
+    #     return []
+
+    @staticmethod
+    def create_chargers(
+        users_pool: list[User],
+        grid_parameters: Box,
+        scenario: Box,
+        random_generator: np.random.Generator,
+    ) -> list[Charger]:
+        '''
+        Creates the home chargers in the local grid.
+
+        Each own-driveway user receives an individual charger. Street-parking
+        users share chargers and are distributed as evenly as possible across
+        them. The home connectivity of each user is updated to the reciprocal
+        of the number of users assigned to the same charger.
+        '''
+        chargers: list[Charger] = []
+        charger_ID_user_IDs: dict[uuid.UUID, list[uuid.UUID]] = {}
+        user_ID_charger_IDs: dict[uuid.UUID, uuid.UUID] = {}
+        home_location_name: str = grid_parameters.home_location_name
+        own_driveway_name: str = grid_parameters.own_driveway_name
+        street_parking_name: str = grid_parameters.street_parking_name
+
+        # Some checks to verify that names are consistent.
+        supported_home_variants: set[str] = {
+            own_driveway_name,
+            street_parking_name,
+        }
+
+        unsupported_users: list[User] = [
+            user
+            for user in users_pool
+            if user.locations[home_location_name].variant_name
+            not in supported_home_variants
+        ]
+
+        if unsupported_users:
+            unsupported_variants: set[str] = {
+                user.locations[home_location_name].variant_name
+                for user in unsupported_users
+            }
+            raise ValueError(
+                'All users must have a supported home-parking variant. '
+                f'{unsupported_variants=}'
+            )
+
+        # We divide users between own driveway users and
+        # street parking users (who share chargers)
+        own_driveway_users: list[User] = [
+            user
+            for user in users_pool
+            if user.locations[home_location_name].variant_name
+            == own_driveway_name
+        ]
+
+        street_parking_users: list[User] = [
+            user
+            for user in users_pool
+            if user.locations[home_location_name].variant_name
+            == street_parking_name
+        ]
+
+        # The case for own driveway chargers is straightforward:
+        # There is one charger per user
+        for own_driveway_user in own_driveway_users:
+            # In that case, we have one charger per user.
+            driveway_charger: Charger = Charger(
+                ID=uuid.uuid4(),
+                type=own_driveway_name,
+                power_kW=own_driveway_user.locations[
+                    home_location_name
+                ].charging_power_kW,
+            )
+            chargers.append(driveway_charger)
+            charger_ID_user_IDs[driveway_charger.ID] = [own_driveway_user.ID]
+            user_ID_charger_IDs[own_driveway_user.ID] = driveway_charger.ID
+
+        # For street parking, it is more complex
+        # We first need to figure out how many chargers there are.
+        # This is given by the amount of users
+        # times the connectivity, which we need to round
+        # Note that we round this amount, which
+        # will mean that we will need to update the connectivity
+        # of some users. Either some will have less connectivity
+        # (if the rounding goes down), corresponding the situation where
+        # another users appears but not new charger is added), or they
+        # will have more connectivity (if a charger is added in anticipation
+        # of more users). By rounding, we have one of these two situations,
+        # roughly reflecting a flow where the chanve of adding a charger
+        # is higher the more chargers are occupied above the average
+        # connectivity.
+        street_parking_connectivity: float = scenario.locations[
+            home_location_name
+        ][street_parking_name].connectivity
+
+        # Street parking connectivity is a probability
+        if not 0.0 <= street_parking_connectivity <= 1.0:
+            raise ValueError(
+                f'{street_parking_connectivity=} must be between 0 and 1.'
+            )
+        if (
+            street_parking_connectivity == 0.0
+            and street_parking_users:
+        ):
+            raise ValueError(
+                'You have street parking users but no street parking '
+                'connectivity/no chargers for these users.'
+            )
+
+        street_charger_power_kW: float = scenario.locations[
+            home_location_name
+        ][street_parking_name].charging_power_kW
+
+        # We want 0.5 to round up instead of Python's banker's rounding
+        expected_street_chargers: float = (
+            len(street_parking_users) * street_parking_connectivity
+        )
+
+        amount_of_street_chargers: int = (
+            # We ensure that there is at least one charger
+            # if there is at least one street parking user.
+            max(1, int(np.floor(expected_street_chargers + 0.5)))
+            if street_parking_users
+            else 0
+        )
+
+        # We now create the chargers. We put them in the main list, but also
+        # in a sperate list that will allow us to attribute user to them
+        street_chargers: list[Charger] = []
+        for _ in range(amount_of_street_chargers):
+            street_charger: Charger = Charger(
+                ID=uuid.uuid4(),
+                type=street_parking_name,
+                power_kW=street_charger_power_kW,
+            )
+            chargers.append(street_charger)
+            street_chargers.append(street_charger)
+            # We initialise the list of users for that charger
+            charger_ID_user_IDs[street_charger.ID] = []
+
+        # We arrange the indices of the users randomly
+        shuffled_indices: np.ndarray = random_generator.permutation(
+            len(street_parking_users)
+        )
+
+        for position, user_index in enumerate(shuffled_indices):
+            # Assign the randomly ordered users to the chargers in round-robin
+            # order. This ensures that the numbers of users assigned to any two
+            # chargers differ by at most one.
+            street_charger: Charger = street_chargers[
+                position % len(street_chargers)
+            ]
+            street_parking_user: User = street_parking_users[int(user_index)]
+            # And add the user to its users
+            charger_ID_user_IDs[street_charger.ID].append(
+                street_parking_user.ID
+            )
+            # And set the charger of that user
+            user_ID_charger_IDs[street_parking_user.ID] = street_charger.ID
+
+
+        # We now can update the home connectivities.
+        for user in users_pool:
+            ID_of_charger_used_by_user: uuid.UUID = user_ID_charger_IDs[
+                user.ID
+            ]
+            users_on_that_charger: list[uuid.UUID] = charger_ID_user_IDs[
+                ID_of_charger_used_by_user
+            ]
+            amount_of_users_for_that_charger: int = len(users_on_that_charger)
+            updated_connectivity: float = 1 / amount_of_users_for_that_charger
+            user.locations[home_location_name].connectivity = (
+                updated_connectivity
+            )
+
+        return chargers
+
+    @classmethod
+    def initialise(
+        cls,
+        *,
+        users_pool: list[User],
+        grid_parameters: Box,
+        scenario: Box,
+        random_generator: np.random.Generator,
+    ) -> LocalGrid:
+        chargers = LocalGrid.create_chargers(
+            users_pool=users_pool,
+            grid_parameters=grid_parameters,
+            scenario=scenario,
+            random_generator=random_generator,
+        )
+
+        transformer_capacity_kW: float = (
+            grid_parameters.transformer_capacity_kW
+        )
+        amount_of_lines: int = grid_parameters.amount_of_power_lines
+        average_line_capacity_kW: float = (
+            transformer_capacity_kW / amount_of_lines
+        )
+        # household_nodes: list[Node] = LocalGrid.create_nodes()
+
+        power_lines: list[PowerLine] = [
+            PowerLine.draw(
+                average_line_capacity_kW=average_line_capacity_kW,
+                line_index=line_index,
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+            )
+            for line_index in range(amount_of_lines)
+        ]
+
+        return cls(
+            transformer_capacity_kW=transformer_capacity_kW,
+            power_lines=power_lines,
+        )
+
+
+# create list of chargers
+# create list on Nodes
+# create list of license
+# create LocalGrid
+
+# Placeholders?
+
+
+# draw non_EV
+# HHs
+# HPs (WPgenerator)
+# SPs
+
+# draw_chargers
+# driveway
+# street
 
 # 8. Connection-level checks do not necessarily require every connection profile
 
@@ -308,39 +654,39 @@ from ChaProEV.stochastic_new.monte_carlo import (
 
 #     line_connection_offsets: npt.NDArray[np.int64]
 #     connection_to_line: npt.NDArray[np.int64]
-#     connection_to_transformer: npt.NDArray[np.int64]
-@dataclass
-class GridConnection:
-    ID: uuid.UUID
-    index: int
-    capacity_kW: float
-    connection_type: GridConnectionType
+# #     connection_to_transformer: npt.NDArray[np.int64]
+# @dataclass
+# class GridConnection:
+#     ID: uuid.UUID
+#     index: int
+#     capacity_kW: float
+#     connection_type: GridConnectionType
 
-Change to EV connection home or street  Is it actually needed
-We put these through the user  
-and for homes 6 kW is not a problem                                 
-SO only draw line and transformer
+# Change to EV connection home or street  Is it actually needed
+# We put these through the user
+# and for homes 6 kW is not a problem
+# SO only draw line and transformer
 
-own use does not really matter (except maybe for solar)
-aggregate at line and tarnsfor does 
-so have line/transformer profiles 
-transfo is sum of lines 
-and lines is # connected X individual profiles (with draw about kWh per year and connection type, etc.
-
-
-We have N home chargers per line (baed on ratio in pparamters)) so exhaust 
-draws for home chargers 
+# own use does not really matter (except maybe for solar)
+# aggregate at line and tarnsfor does
+# so have line/transformer profiles
+# transfo is sum of lines
+# and lines is # connected X individual profiles (with draw about kWh per year and connection type, etc.
 
 
-for street also somethingsimilar? but based on connectivity  1 charger = 1/connectivity spots 
+# We have N home chargers per line (baed on ratio in pparamters)) so exhaust
+# draws for home chargers
 
-Or have EV users per line (separate home/street) and then draw and within pool (i.e. make it so
-that cannot draw if supply is exhausted)
-@dataclass
-class PowerLine:
-    index: int
-    capacity_kW: float
-    connections: list[GridConnection]
+
+# for street also somethingsimilar? but based on connectivity  1 charger = 1/connectivity spots
+
+# Or have EV users per line (separate home/street) and then draw and within pool (i.e. make it so
+# that cannot draw if supply is exhausted)
+# @dataclass
+# class PowerLine:
+#     index: int
+#     capacity_kW: float
+#     connections: list[GridConnection]
 
 
 # @dataclass
@@ -383,8 +729,6 @@ class PowerLine:
 # # ALs skip this whole thing for bus, truck, van
 
 
-from enum import StrEnum
-
 # create grid
 # → create household and street-charging connections
 # → create users
@@ -409,9 +753,9 @@ from enum import StrEnum
 #     connection_type: GridConnectionType
 
 
-class GridConnectionType(StrEnum):
-    HOUSEHOLD = 'household'
-    STREET_CHARGING = 'street_charging'
+# class GridConnectionType(StrEnum):
+#     HOUSEHOLD = 'household'
+#     STREET_CHARGING = 'street_charging'
 
 
 # @dataclass
@@ -943,3 +1287,4 @@ class GridConnectionType(StrEnum):
 #     #     )
 
 #     #     return household, heat_pump, home_battery, solar_panels
+#

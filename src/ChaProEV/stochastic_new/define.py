@@ -792,7 +792,8 @@ class User:
     run_trips: pl.Series
     mobility: pl.DataFrame
     charging_behaviour: ChargingBehaviour
-    charge: pl.DataFrame
+    charge: pl.DataFrame = field(init=False)
+    # Created after LocalGrid may have updated location connectivity.
     run_metrics: RunMetrics
 
     @staticmethod
@@ -1263,15 +1264,20 @@ class User:
 
         return mobility_matrix
 
-    @staticmethod
     def create_charging_dataframe(
+        self,
         *,
         charging_settings: Box,
-        mobility: pl.DataFrame,
-        locations: dict[str, Location],
-        vehicle: Vehicle,
         random_generator: np.random.Generator,
-    ) -> pl.DataFrame:
+    ) -> None:
+        '''
+        We don't do this at user creation,
+        because there are case where some of the underlying
+        parameters will be updated (namely, the connectivity of some users
+        at home if they do street parking and share a charger and if the
+        amount of street parking users times the connectivity is not
+        an integer.
+        '''
 
         time_index_name: str = charging_settings.time_index_name
         modulation_factor_header: str = (
@@ -1310,16 +1316,16 @@ class User:
 
         session_start_header: str = charging_settings.session_start_header
 
-        charging_dataframe: pl.DataFrame = mobility.clone()
+        charging_dataframe: pl.DataFrame = self.mobility.clone()
 
         if charging_dataframe[session_header].null_count() > 0:
             raise ValueError(f'{session_header!r} contains null values.')
 
         connectivity_by_location: dict[str, float] = {
             location_name: location.connectivity
-            for location_name, location in locations.items()
+            for location_name, location in self.locations.items()
         }
-        connectivity_by_location[vehicle.driving_location_name] = 0.0
+        connectivity_by_location[self.vehicle.driving_location_name] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
             pl.col(location_header)
@@ -1348,16 +1354,16 @@ class User:
             how='left',
             validate="m:1",
         )
-        if charging_dataframe[session_header].null_count() > 0:
+        if charging_dataframe[can_connect_header].null_count() > 0:
             raise ValueError(f'{can_connect_header!r} contains null values.')
 
         nominal_charge_power_to_vehicle_by_location: dict[str, float] = {
             location_name: location.charging_power_kW
             * location.charger_efficiency
-            for location_name, location in locations.items()
+            for location_name, location in self.locations.items()
         }
         nominal_charge_power_to_vehicle_by_location[
-            vehicle.driving_location_name
+            self.vehicle.driving_location_name
         ] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
@@ -1368,10 +1374,10 @@ class User:
 
         nominal_charge_power_from_grid_by_location: dict[str, float] = {
             location_name: location.charging_power_kW
-            for location_name, location in locations.items()
+            for location_name, location in self.locations.items()
         }
         nominal_charge_power_from_grid_by_location[
-            vehicle.driving_location_name
+            self.vehicle.driving_location_name
         ] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
@@ -1382,10 +1388,10 @@ class User:
 
         nominal_discharge_power_from_vehicle_by_location: dict[str, float] = {
             location_name: location.discharge_power_kW
-            for location_name, location in locations.items()
+            for location_name, location in self.locations.items()
         }
         nominal_discharge_power_from_vehicle_by_location[
-            vehicle.driving_location_name
+            self.vehicle.driving_location_name
         ] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
@@ -1397,10 +1403,10 @@ class User:
         nominal_discharge_power_to_grid_by_location: dict[str, float] = {
             location_name: location.discharge_power_kW
             * location.proportion_of_discharge_to_grid
-            for location_name, location in locations.items()
+            for location_name, location in self.locations.items()
         }
         nominal_discharge_power_to_grid_by_location[
-            vehicle.driving_location_name
+            self.vehicle.driving_location_name
         ] = 0.0
 
         charging_dataframe = charging_dataframe.with_columns(
@@ -1415,7 +1421,7 @@ class User:
                 'Hour': hour,
                 modulation_factor_header: modulation_factor,
             }
-            for location_name, location in locations.items()
+            for location_name, location in self.locations.items()
             for hour, modulation_factor in enumerate(
                 location.time_modulation_factors
             )
@@ -1435,7 +1441,7 @@ class User:
                 (
                     pl.when(
                         pl.col(location_header)
-                        == vehicle.driving_location_name
+                        == self.vehicle.driving_location_name
                     )
                     .then(0.0)
                     .otherwise(pl.col(modulation_factor_header))
@@ -1484,7 +1490,7 @@ class User:
             .alias(session_start_header)
         )
 
-        return charging_dataframe
+        self.charge = charging_dataframe
 
     @classmethod
     def create(
@@ -1524,14 +1530,6 @@ class User:
             trips=trips,
         )
 
-        charge: pl.DataFrame = User.create_charging_dataframe(
-            charging_settings=scenario.charging_dataframe,
-            mobility=mobility,
-            locations=locations,
-            vehicle=vehicle,
-            random_generator=random_generators.charging,
-        )
-
         run_metrics: RunMetrics = RunMetrics(
             kilometrage=mobility[mobility_settings.driven_header].sum(),
             consumption_kWh=mobility[
@@ -1549,7 +1547,6 @@ class User:
             run_trips=run_trips,
             charging_behaviour=charging_behaviour,
             mobility=mobility,
-            charge=charge,
             run_metrics=run_metrics,
         )
 

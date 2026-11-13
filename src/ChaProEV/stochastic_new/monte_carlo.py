@@ -36,8 +36,7 @@ class RandomGenerators:
     define: np.random.Generator
     mobility: np.random.Generator
     charging: np.random.Generator
-    transformers: np.random.Generator
-    households: np.random.Generator
+    local_grid: np.random.Generator
 
     @classmethod
     def create_generators(cls, *, monte_carlo: MonteCarlo) -> RandomGenerators:
@@ -62,16 +61,14 @@ class RandomGenerators:
             define_seed,
             mobility_seed,
             charging_seed,
-            transformers_seed,
-            households_seed,
-        ) = seed_sequence.spawn(5)
+            local_grid_seed,
+        ) = seed_sequence.spawn(4)
 
         return cls(
             define=np.random.default_rng(seed=define_seed),
             mobility=np.random.default_rng(seed=mobility_seed),
             charging=np.random.default_rng(seed=charging_seed),
-            transformers=np.random.default_rng(seed=transformers_seed),
-            households=np.random.default_rng(seed=households_seed),
+            local_grid=np.random.default_rng(seed=local_grid_seed)
         )
 
 

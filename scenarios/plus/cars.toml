@@ -846,8 +846,11 @@ yearly_heat_pump_consumption_kWh_max = 1_400
 
 [grid]
 include_residential_grid_congestion = true
+home_location_name = 'home'
+own_driveway_name = 'own_driveway'
+street_parking_name = 'street_parking'
 transformer_capacity_kW = 200
-amount_of_lines = 10
+amount_of_power_lines = 10
 line_capacity_to_average_ratio_min = 0.8
 line_capacity_to_average_ratio_typical = 1.0
 line_capacity_to_average_ratio_max = 1.2
