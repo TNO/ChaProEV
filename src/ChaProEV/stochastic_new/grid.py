@@ -66,7 +66,7 @@ class PowerLine:
     index: int
     capacity_kW: float
     non_EV_demand_profile: pl.Series
-    chargers: list[Charger]
+    EV_users: list[User]  # Will give us charging demand profiles in the line
 
     @staticmethod
     def get_non_EV_demand_profile(household_nodes: list[Node]) -> pl.Series:
@@ -91,7 +91,7 @@ class PowerLine:
         line_index: int,
         grid_parameters: Box,
         household_nodes: list[Node],
-        chargers: list[Charger],
+        EV_users: list[User],
         random_generator: np.random.Generator,
     ) -> PowerLine:
 
@@ -110,7 +110,7 @@ class PowerLine:
             index=line_index,
             capacity_kW=capacity_kW,
             non_EV_demand_profile=non_EV_demand_profile,
-            chargers=chargers,
+            EV_users=EV_users,
         )
 
 
@@ -319,22 +319,27 @@ class LocalGrid:
         )
 
         # We create the household nodes
-        household_nodes: list[Node] = []
+        household_nodes: list[Node] = []  # LocalGrid.create_nodes()
 
         # We create the power lines
         amount_of_lines: int = grid_parameters.amount_of_power_lines
         average_line_capacity_kW: float = (
             transformer_capacity_kW / amount_of_lines
         )
-        # household_nodes: list[Node] = LocalGrid.create_nodes()
+
+        # Shuffle/ or draw/pop wtrh power
+        lines_chargers: list[Charger] = []  # LocalGrid.get_chargers_per_line()
+        lines_EV_users: list[list[User]] = []  # LocalGrid.get_lines_EV_users()
+        # shuffle (or draw and drop with probability proportiuonal to power)
+        line_household_nodes: list[list[Node]] = []  # LocalGrid.create_nodes()
 
         power_lines: list[PowerLine] = [
             PowerLine.draw(
                 average_line_capacity_kW=average_line_capacity_kW,
                 line_index=line_index,
                 grid_parameters=grid_parameters,
-                household_nodes=household_nodes,
-                chargers=chargers,
+                household_nodes=line_household_nodes[line_index],
+                EV_users=lines_EV_users[line_index],
                 random_generator=random_generator,
             )
             for line_index in range(amount_of_lines)
