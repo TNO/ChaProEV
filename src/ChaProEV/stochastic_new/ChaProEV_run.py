@@ -209,9 +209,28 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             grid_parameters=grid_parameters,
             scenario=scenario,
             time_ranges=time_ranges,
+            time_constants=time_constants,
             random_generator=random_generators.local_grid,
         )
-        print(local_grid)
+        for line_index in range(len(local_grid.power_lines)):
+            print(line_index)
+            min_demand = local_grid.power_lines[
+                line_index
+            ].non_EV_demand_profile.min()
+            mean_demand = local_grid.power_lines[
+                line_index
+            ].non_EV_demand_profile.mean()
+            max_demand = local_grid.power_lines[
+                line_index
+            ].non_EV_demand_profile.max()
+            capacity = local_grid.power_lines[line_index].capacity_kW
+            print(min_demand, mean_demand, max_demand)
+            print(
+                capacity - min_demand,
+                capacity - mean_demand,
+                capacity - max_demand,
+            )
+
         exit()
 
     # Residential-grid creation may have changed home connectivity for users

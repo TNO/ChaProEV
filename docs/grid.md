@@ -240,8 +240,67 @@ connected to a line are summed to obtain the line-level non-EV demand profile.
 
 #### Basic household electricity demand
 
-TODO: Describe how the yearly basic household electricity demand is drawn and
-how this yearly demand is converted into a time-dependent demand profile.
+The basic household electricity demand represents electricity consumption
+excluding EV charging, heat pumps, and home batteries. These components are
+modelled separately and are subsequently combined to obtain the complete net
+non-EV profile of each household node.
+
+For each household, the model first draws the total basic electricity demand
+for the simulation period from a bounded beta distribution. The minimum,
+typical, and maximum demand are provided as model inputs. This allows individual
+households to have different total electricity demands while keeping these
+within the specified bounds.
+
+The temporal distribution of this electricity demand is determined using a
+set of demand-profile shapes provided as model input. One of these shapes is
+randomly selected for each household, with user-defined probabilities
+determining how frequently the different shapes are selected.
+
+The temporal resolution of the selected demand shape does not necessarily have
+to equal the temporal resolution of the simulation. If the demand shape has a
+lower temporal resolution, its values are repeated to obtain the required model
+resolution. For example, a 15-minute profile can be converted to a 1-minute
+profile by repeating each value 15 times. If the demand shape has a higher
+temporal resolution, consecutive values are averaged. The two resolutions must
+have an integer ratio; otherwise, the model raises an error.
+
+After any required resolution conversion, the demand shape is normalised:
+
+$$
+\sum_t s(t) = 1
+$$
+
+where $s(t)$ is the normalised household demand shape. It is then scaled using
+the total electricity demand drawn for that household and converted from energy
+per time step to average power in kW:
+
+$$
+P_{\mathrm{household}}(t)
+=
+\frac{
+E_{\mathrm{household,run}} \, s(t)
+}{
+\Delta t
+}
+$$
+
+where $E_{\mathrm{household,run}}$ is the total basic household electricity
+demand over the simulation period in kWh and $\Delta t$ is the model time-step
+duration in hours.
+
+This ensures that integrating the resulting power profile over the complete
+simulation period reproduces the drawn household electricity demand:
+
+$$
+\sum_t P_{\mathrm{household}}(t)\Delta t
+=
+E_{\mathrm{household,run}}
+$$
+
+The resulting profile represents the basic household electricity demand in kW
+at every model time step and is subsequently combined with the heat-pump,
+solar-panel, and home-battery profiles to obtain the household node's net
+non-EV power profile.
 
 #### Heat-pump demand
 

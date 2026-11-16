@@ -1,5 +1,6 @@
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import polars as pl
@@ -8,12 +9,12 @@ from rich import print
 
 from ChaProEV.stochastic_new.define import User
 from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
-from ChaProEV.stochastic_new.time import TimeRange
+from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
 
 @dataclass
 class HouseholdBasicDemand:
-    non_BEV_HP_yearly_demand_kWh: float
+    non_BEV_HP_run_demand_kWh: float
     demand_shape: pl.Series
     profile: pl.Series
 
@@ -21,18 +22,121 @@ class HouseholdBasicDemand:
     def create(
         cls,
         *,
-        grid_parameters: Box,
+        household_parameters: Box,
         random_generator: np.random.Generator,
         beta_shape: float,
         time_ranges: TimeRange,
+        time_constants: TimeConstants,
+        profiles_shapes_source_households: pl.DataFrame,
     ) -> HouseholdBasicDemand:
+        '''
+        Create the basic electricity-demand profile of a household.
 
-        non_BEV_HP_yearly_demand_kWh: float = 0.0
-        demand_shape: pl.Series = pl.Series()
-        profile: pl.Series = non_BEV_HP_yearly_demand_kWh * demand_shape
+        This demand excludes heat pumps, home batteries, and EV charging.
+
+        The total household electricity demand for the run is drawn in kWh from
+        user-defined bounds. A demand shape is then randomly selected from the
+        available profile shapes using user-defined selection weights.
+
+        If the temporal resolution of the selected shape differs from the model
+        resolution, the shape is resized. Lower-resolution profiles are
+        expanded by repeating values, while higher-resolution profiles are
+        reduced by averaging consecutive values. The resolutions must have an
+        integer ratio.
+
+        Finally, the demand shape is normalised and scaled to the total
+        electricity demand for the run. The resulting energy per time step
+        in kWh is divided by the time-step duration in hours to obtain t
+        he average power demand in kW for each time step.
+        '''
+
+        MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
+
+        if time_ranges.frequency_type != 'm':
+            raise ValueError('You need to use minutes for the frequency!')
+        run_frequency_size: int = time_ranges.frequency_size
+        run_time_resolution_hours: float = (
+            run_frequency_size / MINUTES_PER_HOUR
+        )
+
+        # Draw the total basic household electricity demand for the run.
+        non_BEV_HP_run_demand_kWh: float = draw_beta_value(
+            minimum=household_parameters.run_consumption_kWh_excluding_EV_heat_pump_home_battery_min,  # noqa: E501
+            typical=household_parameters.run_consumption_kWh_excluding_EV_heat_pump_home_battery_typical,  # noqa: E501
+            maximum=household_parameters.run_consumption_kWh_excluding_EV_heat_pump_home_battery_max,  # noqa: E501
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
+        # Select a demand shape according to the user-defined probabilities.
+        demand_profile_shape_name: str = random_generator.choice(
+            np.array(household_parameters.possible_profile_shape_references),
+            p=household_parameters.possible_profile_shape_references_weights,
+        )
+
+        demand_shape: pl.Series = profiles_shapes_source_households[
+            demand_profile_shape_name
+        ]
+        run_stamps_amount: int = len(time_ranges.run_stamps)
+
+        if run_stamps_amount == 0:
+            raise ValueError('The run range cannot be empty.')
+
+        if len(demand_shape) == 0:
+            raise ValueError('The household demand shape cannot be empty.')
+
+        # If the shape has a lower temporal resolution than the run,
+        # repeat its values to match the model resolution.
+        if len(demand_shape) < run_stamps_amount:
+
+            if run_stamps_amount % len(demand_shape) != 0:
+                raise ValueError(
+                    'The shape profile for household demand could not be '
+                    'repeated to match the run range.'
+                )
+            else:
+                resizing_factor: int = run_stamps_amount // len(demand_shape)
+                demand_shape = demand_shape.repeat_by(
+                    resizing_factor
+                ).explode()
+
+        # If the shape has a higher temporal resolution than the run,
+        # average consecutive values to match the model resolution.
+        elif len(demand_shape) > run_stamps_amount:
+
+            if len(demand_shape) % run_stamps_amount == 0:
+                resizing_factor = len(demand_shape) // run_stamps_amount
+                demand_shape = pl.Series(
+                    demand_shape.to_numpy()
+                    .reshape(-1, resizing_factor)
+                    .mean(axis=1)
+                )
+            else:
+                raise ValueError(
+                    'The shape profile for household demand could not be '
+                    'reduced to match the run range.'
+                )
+
+        demand_shape_sum: float = sum(demand_shape)
+
+        if demand_shape_sum <= 0:
+            raise ValueError(
+                'The household demand shape must have a positive sum.'
+            )
+
+        # Normalise the shape so that its values sum to one.
+        demand_shape /= demand_shape_sum
+
+        # Scale the shape to the total run demand and convert the
+        # resulting energy per time step to average power in kW.
+        profile: pl.Series = (
+            non_BEV_HP_run_demand_kWh
+            * demand_shape
+            / run_time_resolution_hours
+        )
 
         return cls(
-            non_BEV_HP_yearly_demand_kWh=non_BEV_HP_yearly_demand_kWh,
+            non_BEV_HP_run_demand_kWh=non_BEV_HP_run_demand_kWh,
             demand_shape=demand_shape,
             profile=profile,
         )
@@ -40,7 +144,7 @@ class HouseholdBasicDemand:
 
 @dataclass
 class HeatPumpDemand:
-    yearly_heat_demand_kWh: float
+    run_heat_demand_kWh: float
     heat_demand_shape: pl.Series
     COP: float
     profile: pl.Series
@@ -55,13 +159,15 @@ class HeatPumpDemand:
         time_ranges: TimeRange,
     ) -> HeatPumpDemand:
 
-        yearly_heat_demand_kWh: float = 0.0
-        heat_demand_shape: pl.Series = pl.Series()
+        run_heat_demand_kWh: float = 0.0
+        heat_demand_shape: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
         COP: float = 4.0
-        profile: pl.Series = (yearly_heat_demand_kWh / COP) * heat_demand_shape
+        profile: pl.Series = (run_heat_demand_kWh / COP) * heat_demand_shape
 
         return cls(
-            yearly_heat_demand_kWh=yearly_heat_demand_kWh,
+            run_heat_demand_kWh=run_heat_demand_kWh,
             heat_demand_shape=heat_demand_shape,
             COP=COP,
             profile=profile,
@@ -70,7 +176,7 @@ class HeatPumpDemand:
 
 @dataclass
 class SolarPanels:
-    yearly_production_kWh: float
+    run_production_kWh: float
     production_shape: pl.Series
     profile: pl.Series
 
@@ -84,13 +190,15 @@ class SolarPanels:
         time_ranges: TimeRange,
     ) -> SolarPanels:
 
-        yearly_production_kWh: float = 0.0
-        production_shape: pl.Series = pl.Series()
-        profile: pl.Series = -yearly_production_kWh * production_shape
+        run_production_kWh: float = 0.0
+        production_shape: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
+        profile: pl.Series = -run_production_kWh * production_shape
         # Negative sign because it is a production, the opposite
         # of a demand
         return cls(
-            yearly_production_kWh=yearly_production_kWh,
+            run_production_kWh=run_production_kWh,
             production_shape=production_shape,
             profile=profile,
         )
@@ -118,7 +226,7 @@ class HomeBattery:
         charge_power_kW: float = 0.0
         discharge_power_kW: float = 0.0
         charge_level_kWh: pl.Series = pl.Series()
-        profile: pl.Series = pl.Series()
+        profile: pl.Series = pl.Series(np.zeros(len(time_ranges.run_stamps)))
 
         return cls(
             capacity_kWh=capacity_kWh,
@@ -159,35 +267,47 @@ class Node:
         random_generator: np.random.Generator,
         beta_shape: float,
         time_ranges: TimeRange,
+        time_constants: TimeConstants,
+        profiles_shapes_source_households: pl.DataFrame,
     ) -> Node:
         '''
         Create a household node and its non-EV demand components.
         '''
+
+        household: HouseholdBasicDemand = HouseholdBasicDemand.create(
+            household_parameters=grid_parameters.households,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
+            time_ranges=time_ranges,
+            time_constants=time_constants,
+            profiles_shapes_source_households=(
+                profiles_shapes_source_households
+            ),
+        )
+
+        heat_pump: HeatPumpDemand = HeatPumpDemand.create(
+            grid_parameters=grid_parameters,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
+            time_ranges=time_ranges,
+        )
+        solar_panels: SolarPanels = SolarPanels.create(
+            grid_parameters=grid_parameters,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
+            time_ranges=time_ranges,
+        )
+        home_battery: HomeBattery = HomeBattery.create(
+            grid_parameters=grid_parameters,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
+            time_ranges=time_ranges,
+        )
         return cls(
-            household=HouseholdBasicDemand.create(
-                grid_parameters=grid_parameters,
-                random_generator=random_generator,
-                beta_shape=beta_shape,
-                time_ranges=time_ranges,
-            ),
-            heat_pump=HeatPumpDemand.create(
-                grid_parameters=grid_parameters,
-                random_generator=random_generator,
-                beta_shape=beta_shape,
-                time_ranges=time_ranges,
-            ),
-            solar_panels=SolarPanels.create(
-                grid_parameters=grid_parameters,
-                random_generator=random_generator,
-                beta_shape=beta_shape,
-                time_ranges=time_ranges,
-            ),
-            home_battery=HomeBattery.create(
-                grid_parameters=grid_parameters,
-                random_generator=random_generator,
-                beta_shape=beta_shape,
-                time_ranges=time_ranges,
-            ),
+            household=household,
+            heat_pump=heat_pump,
+            solar_panels=solar_panels,
+            home_battery=home_battery,
         )
 
 
@@ -673,6 +793,7 @@ class LocalGrid:
         grid_parameters: Box,
         scenario: Box,
         time_ranges: TimeRange,
+        time_constants: TimeConstants,
         random_generator: np.random.Generator,
     ) -> LocalGrid:
 
@@ -706,12 +827,21 @@ class LocalGrid:
             )
 
         # We create the household nodes
+        # We read the shape file to avoid doing it for each node:
+        profiles_shapes_source_households: pl.DataFrame = pl.read_csv(
+            Path(grid_parameters.households.profiles_shapes_source)
+        )
+
         household_nodes: list[Node] = [
             Node.create(
                 grid_parameters=grid_parameters,
                 random_generator=random_generator,
                 beta_shape=beta_shape,
                 time_ranges=time_ranges,
+                time_constants=time_constants,
+                profiles_shapes_source_households=(
+                    profiles_shapes_source_households
+                ),
             )
             for _ in range(grid_parameters.amount_of_households)
         ]
@@ -1144,7 +1274,7 @@ class LocalGrid:
 # # While writing get_non_EV_power_demand_per_line_kW, I thought of the following (not the change from network --> grid):      # Go through lines and draw powers by:
 # # setting an amount of connections per line
 # # (ransdom draw between zero and line_power/power per connection)
-# # Then for each connection, draw a yearly consumption adn profile
+# # Then for each connection, draw a run consumption adn profile
 # # shape. The sum of these connections per line will then provide
 # # line_non_EV_power_kW: npt.NDArray[np.float64] = np.zeros(
 # # Note that we probably should introduce connections to the grid
@@ -1525,13 +1655,13 @@ class LocalGrid:
 
 # @dataclass
 # class Household:
-#     yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float
+#     run_consumption_kWh_excluding_EV_heat_pump_home_battery: float
 #     profile_shape: pl.Series
 
 
 # @dataclass
 # class HeatPump:
-#     yearly_consumption_kWh: float
+#     run_consumption_kWh: float
 #     profile_shape: pl.Series
 
 
