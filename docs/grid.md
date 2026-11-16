@@ -311,10 +311,75 @@ profile.
 
 #### Solar-panel production
 
-TODO: Describe how the presence and characteristics of solar panels are
-determined and how their electricity-production profile is calculated. Solar
-production is represented by negative power because it supplies electricity
-rather than consuming it.
+Solar panels are included in the household node as a source of electricity
+production. Whether a household has solar panels is determined stochastically
+using a user-defined solar-panel adoption rate. Each household therefore has a
+probability of receiving solar panels equal to the specified adoption rate.
+
+For households with solar panels, the total solar production over the simulation
+period is determined relative to the basic household electricity demand:
+
+$$
+E_{\mathrm{solar,run}}
+=
+E_{\mathrm{household,run}}
+r_{\mathrm{solar}}
+$$
+
+where $E_{\mathrm{household,run}}$ is the basic household electricity demand
+over the simulation period and $r_{\mathrm{solar}}$ is the assumed ratio
+between solar production and basic household electricity demand.
+
+The model allows this ratio to depend on whether the household also has a home
+battery. Separate solar-production-to-demand ratios can therefore be provided
+for households with and without a home battery. This makes it possible to
+represent a relationship between home-battery ownership and the amount of
+installed solar generation.
+
+The temporal distribution of solar production is determined using a set of
+solar-production profile shapes provided as model input. One profile variant is
+randomly selected for each household with solar panels, using user-defined
+probabilities for the different variants.
+
+The selected profile is resized to match the temporal resolution and length of
+the simulation, if necessary, using the same profile-reshaping procedure as for
+the basic household demand. The resulting production shape is normalised:
+
+$$
+\sum_t s_{\mathrm{solar}}(t) = 1
+$$
+
+The normalised shape is subsequently scaled to the total solar production over
+the simulation period. The resulting energy per time step is converted from kWh
+to average power in kW by dividing it by the model time-step duration in hours:
+
+$$
+P_{\mathrm{solar}}(t)
+=
+-
+\frac{
+E_{\mathrm{solar,run}} s_{\mathrm{solar}}(t)
+}{
+\Delta t
+}
+$$
+
+where $\Delta t$ is the model time-step duration in hours.
+
+Solar production is represented as negative power because the grid convention
+used in the model considers electricity consumption to be positive and
+electricity production to be negative. Consequently:
+
+$$
+-\sum_t P_{\mathrm{solar}}(t)\Delta t
+=
+E_{\mathrm{solar,run}}
+$$
+
+For households without solar panels, both solar production and the corresponding
+power profile are zero. The solar-production profile is subsequently combined
+with the basic household demand, heat-pump demand, and home-battery profile to
+obtain the net non-EV power profile of the household node.
 
 #### Home-battery demand
 

@@ -9,7 +9,7 @@ from rich import print
 
 from ChaProEV.stochastic_new.define import User
 from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
-from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
+from ChaProEV.stochastic_new.time import TimeConstants, TimeRange, reshape
 
 
 @dataclass
@@ -38,16 +38,14 @@ class HouseholdBasicDemand:
         user-defined bounds. A demand shape is then randomly selected from the
         available profile shapes using user-defined selection weights.
 
-        If the temporal resolution of the selected shape differs from the model
-        resolution, the shape is resized. Lower-resolution profiles are
-        expanded by repeating values, while higher-resolution profiles are
-        reduced by averaging consecutive values. The resolutions must have an
-        integer ratio.
+        The selected shape is resized to match the model run range, if
+        necessary, and normalised so that its values sum to one.
+        The normalised shape is then scaled to the total electricity demand
+        for the run.
 
-        Finally, the demand shape is normalised and scaled to the total
-        electricity demand for the run. The resulting energy per time step
-        in kWh is divided by the time-step duration in hours to obtain t
-        he average power demand in kW for each time step.
+        The resulting energy per time step in kWh is divided by the time-step
+        duration in hours to obtain the average power demand in kW for each
+        time step.
         '''
 
         MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
@@ -79,53 +77,9 @@ class HouseholdBasicDemand:
         ]
         run_stamps_amount: int = len(time_ranges.run_stamps)
 
-        if run_stamps_amount == 0:
-            raise ValueError('The run range cannot be empty.')
-
-        if len(demand_shape) == 0:
-            raise ValueError('The household demand shape cannot be empty.')
-
-        # If the shape has a lower temporal resolution than the run,
-        # repeat its values to match the model resolution.
-        if len(demand_shape) < run_stamps_amount:
-
-            if run_stamps_amount % len(demand_shape) != 0:
-                raise ValueError(
-                    'The shape profile for household demand could not be '
-                    'repeated to match the run range.'
-                )
-            else:
-                resizing_factor: int = run_stamps_amount // len(demand_shape)
-                demand_shape = demand_shape.repeat_by(
-                    resizing_factor
-                ).explode()
-
-        # If the shape has a higher temporal resolution than the run,
-        # average consecutive values to match the model resolution.
-        elif len(demand_shape) > run_stamps_amount:
-
-            if len(demand_shape) % run_stamps_amount == 0:
-                resizing_factor = len(demand_shape) // run_stamps_amount
-                demand_shape = pl.Series(
-                    demand_shape.to_numpy()
-                    .reshape(-1, resizing_factor)
-                    .mean(axis=1)
-                )
-            else:
-                raise ValueError(
-                    'The shape profile for household demand could not be '
-                    'reduced to match the run range.'
-                )
-
-        demand_shape_sum: float = sum(demand_shape)
-
-        if demand_shape_sum <= 0:
-            raise ValueError(
-                'The household demand shape must have a positive sum.'
-            )
-
-        # Normalise the shape so that its values sum to one.
-        demand_shape /= demand_shape_sum
+        demand_shape = reshape(
+            source_shape=demand_shape, run_stamps_amount=run_stamps_amount
+        )
 
         # Scale the shape to the total run demand and convert the
         # resulting energy per time step to average power in kW.
@@ -186,12 +140,39 @@ class SolarPanels:
         *,
         solar_panels_parameters: Box,
         random_generator: np.random.Generator,
-        beta_shape: float,
         time_ranges: TimeRange,
+        time_constants: TimeConstants,
         household_run_demand_kWh: float,
         has_home_battery: bool,
+        profiles_shapes_source_solar: pl.DataFrame,
     ) -> SolarPanels:
+        '''
+        Create the solar-production profile of a household.
 
+        The total solar production for the run is determined as a proportion
+        of the basic household electricity demand. A different proportion can
+        be specified depending on whether the household has a home battery.
+
+        A solar-production shape is randomly selected from the available
+        variants using user-defined selection probabilities. The selected
+        shape is resized to match the model run range, if necessary, and
+        normalised so that its values sum to one.
+
+        The normalised shape is scaled to the total solar production for the
+        run. The resulting energy per time step in kWh is divided by the
+        time-step duration in hours to obtain average power in kW. Solar
+        production is represented as negative power because it supplies
+        electricity rather than consuming it.
+        '''
+        if time_ranges.frequency_type != 'm':
+            raise ValueError('You need to use minutes for the frequency!')
+
+        run_time_resolution_hours: float = (
+            time_ranges.frequency_size / time_constants.MINUTES_PER_HOUR
+        )
+
+        # Select the solar-production-to-demand ratio based on whether
+        # the household also has a home battery.
         if has_home_battery:
             production_demand_ratio: float = (
                 solar_panels_parameters.run_production_as_proportion_of_demand_if_battery  # noqa:E501
@@ -200,15 +181,41 @@ class SolarPanels:
             production_demand_ratio = (
                 solar_panels_parameters.run_production_as_proportion_of_demand_if_no_battery  # noqa:E501
             )
+
+        # Determine the total solar production for the run from the
+        # household's basic electricity demand.
         run_production_kWh: float = (
             household_run_demand_kWh * production_demand_ratio
         )
-        production_shape: pl.Series = pl.Series(
-            np.zeros(len(time_ranges.run_stamps))
+
+        # Select a solar-production shape according to the user-defined
+        # probabilities.
+        profile_variants: list[str] = solar_panels_parameters.profile_variants
+        profile_proportions: list[float] = (
+            solar_panels_parameters.profile_proportions
         )
-        profile: pl.Series = -run_production_kWh * production_shape
-        # Negative sign because it is a production, the opposite
-        # of a demand
+        chosen_variant: str = random_generator.choice(
+            profile_variants, p=profile_proportions
+        )
+
+        production_shape: pl.Series = profiles_shapes_source_solar[
+            chosen_variant
+        ]
+        run_stamps_amount: int = len(time_ranges.run_stamps)
+
+        # Match the production shape to the model run range and normalise it.
+        production_shape = reshape(
+            source_shape=production_shape,
+            run_stamps_amount=run_stamps_amount,
+        )
+
+        # Scale the shape to the total production for the run, convert
+        # the energy per time step to kW, and represent production
+        # as negative grid demand.
+        profile: pl.Series = (
+            -run_production_kWh * production_shape / run_time_resolution_hours
+        )
+
         return cls(
             run_production_kWh=run_production_kWh,
             production_shape=production_shape,
@@ -281,6 +288,7 @@ class Node:
         time_ranges: TimeRange,
         time_constants: TimeConstants,
         profiles_shapes_source_households: pl.DataFrame,
+        profiles_shapes_source_solar: pl.DataFrame,
     ) -> Node:
         '''
         Create a household node and its non-EV demand components.
@@ -305,22 +313,23 @@ class Node:
         )
         if has_solar_panels:
             has_home_battery: bool = (
-                random_generator.random
+                random_generator.random()
                 < grid_parameters.home_batteries.adoption_rate_home_batteries_if_solar_panels  # noqa:E501
             )
         else:
             has_home_battery = (
-                random_generator.random
+                random_generator.random()
                 < grid_parameters.home_batteries.adoption_rate_home_batteries_if_not_solar_panels  # noqa:E501
             )
         if has_solar_panels:
             solar_panels: SolarPanels = SolarPanels.create(
                 solar_panels_parameters=grid_parameters.solar_panels,
                 random_generator=random_generator,
-                beta_shape=beta_shape,
                 time_ranges=time_ranges,
+                time_constants=time_constants,
                 household_run_demand_kWh=household.non_BEV_HP_run_demand_kWh,
                 has_home_battery=has_home_battery,
+                profiles_shapes_source_solar=profiles_shapes_source_solar,
             )
         else:
             solar_panels = SolarPanels(
@@ -330,7 +339,8 @@ class Node:
             )
 
         has_heat_pump: bool = (
-            random_generator.random() < grid_parameters.heat_pumps
+            random_generator.random()
+            < grid_parameters.heat_pumps.adoption_rate_heat_pumps
         )
 
         if has_heat_pump:
@@ -891,6 +901,9 @@ class LocalGrid:
         profiles_shapes_source_households: pl.DataFrame = pl.read_csv(
             Path(grid_parameters.households.profiles_shapes_source)
         )
+        profiles_shapes_source_solar: pl.DataFrame = pl.read_csv(
+            Path(grid_parameters.solar_panels.profile_shapes_source)
+        )
 
         household_nodes: list[Node] = [
             Node.create(
@@ -902,6 +915,7 @@ class LocalGrid:
                 profiles_shapes_source_households=(
                     profiles_shapes_source_households
                 ),
+                profiles_shapes_source_solar=profiles_shapes_source_solar,
             )
             for _ in range(grid_parameters.amount_of_households)
         ]

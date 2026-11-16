@@ -5,6 +5,68 @@ import polars as pl
 from box import Box
 
 
+def reshape(*, source_shape: pl.Series, run_stamps_amount: int) -> pl.Series:
+    '''
+    Reshape and normalise a profile shape to match the model run range.
+
+    If the temporal resolution of the source shape differs from the model
+    resolution, the shape is resized. Lower-resolution profiles are expanded
+    by repeating values, while higher-resolution profiles are reduced by
+    averaging consecutive values. The resolutions must have an integer ratio.
+
+    Finally, the reshaped profile is normalised so that its values sum to one.
+    '''
+    if run_stamps_amount == 0:
+        raise ValueError('The run range cannot be empty.')
+
+    if len(source_shape) == 0:
+        raise ValueError('The source shape cannot be empty.')
+
+    # If the shape has a lower temporal resolution than the run,
+    # repeat its values to match the model resolution.
+    if len(source_shape) < run_stamps_amount:
+
+        if run_stamps_amount % len(source_shape) != 0:
+            raise ValueError(
+                'The shape profile could not be '
+                'repeated to match the run range.'
+            )
+        else:
+            resizing_factor: int = run_stamps_amount // len(source_shape)
+            reshaped_shape = source_shape.repeat_by(resizing_factor).explode()
+
+    # If the shape has a higher temporal resolution than the run,
+    # average consecutive values to match the model resolution.
+    elif len(source_shape) > run_stamps_amount:
+
+        if len(source_shape) % run_stamps_amount == 0:
+            resizing_factor = len(source_shape) // run_stamps_amount
+            reshaped_shape = pl.Series(
+                source_shape.to_numpy()
+                .reshape(-1, resizing_factor)
+                .mean(axis=1)
+            )
+        else:
+            raise ValueError(
+                'The shape profile could not be '
+                'reduced to match the run range.'
+            )
+    else:
+        reshaped_shape = source_shape.clone()
+
+    reshaped_shape_sum: float = sum(reshaped_shape)
+
+    if reshaped_shape_sum <= 0:
+        raise ValueError(
+            'The shape must have a positive sum.'
+        )
+
+    # Normalise the shape so that its values sum to one.
+    reshaped_shape /= reshaped_shape_sum
+
+    return reshaped_shape
+
+
 @dataclass
 class TimeConstants:
     SECONDS_PER_HOUR: int
