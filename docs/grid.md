@@ -62,12 +62,28 @@ This provides two constraints. One at transformer level, and one at each level
 so issues could come at the whole neighbourhood level, as well as at a more
 local level (e.g. a street has many EVs and their users charge at the same time
 as they have elecxtricity demand for other purposes)
-### Line capacity determination
-AVerage per line is capacity divided by amount of lines
-Fluctuations around this determined by
-[drawing](monte-carlo.md#drawing-bounded-parameter-values)
-gives variations around that average
-with total capaicty still equal to transformer capacity
+### Power line capacities
+
+The model distributes the transformer capacity over its connected power lines. For each power line, a relative capacity weight is drawn from a [bounded beta distribution](monte-carlo.md#drawing-bounded-parameter-values). These weights are subsequently normalised and multiplied by the transformer capacity. This introduces variation between the capacities assigned to individual power lines while ensuring that the sum of all line capacities remains equal to the transformer capacity:
+
+$$
+P_{\mathrm{line},i}
+=
+P_{\mathrm{transformer}}
+\frac{w_i}{\sum_j w_j}
+$$
+
+and therefore:
+
+$$
+\sum_i P_{\mathrm{line},i}
+=
+P_{\mathrm{transformer}}
+$$
+
+This represents a deliberately conservative modelling assumption. The available transformer capacity is effectively divided between the individual power lines, and the model subsequently tests the power demand on each line against its assigned capacity. Because the line capacities sum to the transformer capacity, satisfying the capacity restriction of every individual line also guarantees that the total transformer-capacity restriction is satisfied.
+
+In an actual distribution grid, the physical capacities of the outgoing power lines do not necessarily sum to the transformer capacity and may collectively exceed it. If one line is lightly loaded, another line may therefore carry a larger share of the transformer load, provided that its own physical capacity and the total transformer capacity are not exceeded. The model does not currently represent such dynamic sharing of transformer capacity between lines. Instead, each line receives a fixed share of the transformer capacity. This results in a conservative representation of the line-level capacity restrictions.
 
 
 ### Non-EV demand

@@ -1,18 +1,13 @@
 import uuid
 from dataclasses import dataclass
-from enum import StrEnum
 
 import numpy as np
-import numpy.typing as npt
 import polars as pl
 from box import Box
 from rich import print
 
 from ChaProEV.stochastic_new.define import User
-from ChaProEV.stochastic_new.monte_carlo import (
-    RandomGenerators,
-    draw_beta_value,
-)
+from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
 
 
 @dataclass
@@ -296,6 +291,65 @@ class LocalGrid:
 
         return chargers
 
+    @staticmethod
+    def get_line_powers(
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+    ) -> list[float]:
+        '''
+        Distribute the transformer capacity among its power lines.
+
+        A capacity weight is drawn for each power line from a bounded beta
+        distribution. These weights determine the relative capacities assigned
+        to the individual power lines.
+
+        The drawn weights are normalised so that the resulting line capacities
+        sum to the transformer capacity.
+
+        '''
+
+        transformer_capacity_kW: float = (
+            grid_parameters.transformer_capacity_kW
+        )
+        amount_of_lines: int = grid_parameters.amount_of_power_lines
+        line_capacity_weight_min: float = (
+            grid_parameters.line_capacity_weight_min
+        )
+        line_capacity_weight_typical: float = (
+            grid_parameters.line_capacity_weight_typical
+        )
+        line_capacity_weight_max: float = (
+            grid_parameters.line_capacity_weight_max
+        )
+
+        line_capacity_weights: list[float] = [
+            draw_beta_value(
+                minimum=line_capacity_weight_min,
+                typical=line_capacity_weight_typical,
+                maximum=line_capacity_weight_max,
+                random_generator=random_generator,
+                shape=beta_shape,
+            )
+            for _ in range(amount_of_lines)
+        ]
+
+        # Normalise the weights so that all line capacities together equal
+        # the transformer capacity.
+        total_capacity_weight: float = sum(line_capacity_weights)
+
+        line_capacity_ratios: list[float] = [
+            capacity_weight / total_capacity_weight
+            for capacity_weight in line_capacity_weights
+        ]
+
+        line_powers_kW: list[float] = [
+            capacity_ratio * transformer_capacity_kW
+            for capacity_ratio in line_capacity_ratios
+        ]
+
+        return line_powers_kW
+
     @classmethod
     def initialise(
         cls,
@@ -306,9 +360,7 @@ class LocalGrid:
         random_generator: np.random.Generator,
     ) -> LocalGrid:
 
-        transformer_capacity_kW: float = (
-            grid_parameters.transformer_capacity_kW
-        )
+        beta_shape: float = scenario.monte_carlo.beta_shape
 
         # We set the home chargers (own driveway and street parking).
         chargers: list[Charger] = LocalGrid.create_chargers(
@@ -321,11 +373,27 @@ class LocalGrid:
         # We create the household nodes
         household_nodes: list[Node] = []  # LocalGrid.create_nodes()
 
-        # We create the power lines
-        amount_of_lines: int = grid_parameters.amount_of_power_lines
-        average_line_capacity_kW: float = (
-            transformer_capacity_kW / amount_of_lines
+        # We create the power lines.
+        # First, we distribute the transformer capacity among the lines.
+        # The resulting line capacities are subsequently used to distribute
+        # chargers and household nodes among the lines.
+
+        line_powers_kW: list[float] = LocalGrid.get_line_powers(
+            grid_parameters=grid_parameters,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
         )
+
+        # draw line proportion of power at 1+/x renormalised
+        # OUR PLAN and MIDDEN and review
+        # shuffle then draw (or get directly) amount per line (proportionally to power)
+        # common function
+
+        # amounts per line function (prop to power)
+        # depends on transformator power, lines amount, power of line
+
+        # or rank lines by power_lines
+        # repeat in rank?
 
         # Shuffle/ or draw/pop wtrh power
         lines_chargers: list[Charger] = []  # LocalGrid.get_chargers_per_line()
@@ -348,7 +416,7 @@ class LocalGrid:
         # Assign chargers to lines
 
         return cls(
-            transformer_capacity_kW=transformer_capacity_kW,
+            transformer_capacity_kW=grid_parameters.transformer_capacity_kW,
             power_lines=power_lines,
         )
 

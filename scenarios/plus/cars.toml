@@ -823,9 +823,9 @@ driven_header = 'Kilometers driven'
 # line_amount_to_transformer_capacity_ratio_min = 0.05
 # line_amount_to_transformer_capacity_ratio_typical = 0.10
 # line_amount_to_transformer_capacity_ratio_max = 0.15
-# line_capacity_to_average_ratio_min = 0.8
-# line_capacity_to_average_ratio_typical = 1.0
-# line_capacity_to_average_ratio_max = 1.2
+# line_capacity_weight_min = 0.8
+# line_capacity_weight_typical = 1.0
+# line_capacity_weight_max = 1.2
 
 [households]
 yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
@@ -851,6 +851,6 @@ own_driveway_name = 'own_driveway'
 street_parking_name = 'street_parking'
 transformer_capacity_kW = 200
 amount_of_power_lines = 10
-line_capacity_to_average_ratio_min = 0.8
-line_capacity_to_average_ratio_typical = 1.0
-line_capacity_to_average_ratio_max = 1.2
+line_capacity_weight_min = 0.5
+line_capacity_weight_typical = 1.0
+line_capacity_weight_max = 4.2
