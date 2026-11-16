@@ -855,3 +855,4 @@ line_capacity_weight_min = 0.8
 line_capacity_weight_typical = 1.0
 line_capacity_weight_max = 4.2
 amount_of_households = 200
+non_EV_demand_header = 'Non EV demand (kW)'

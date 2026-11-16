@@ -8,6 +8,7 @@ from rich import print
 
 from ChaProEV.stochastic_new.define import User
 from ChaProEV.stochastic_new.monte_carlo import draw_beta_value
+from ChaProEV.stochastic_new.time import TimeRange
 
 
 @dataclass
@@ -15,6 +16,26 @@ class HouseholdBasicDemand:
     non_BEV_HP_yearly_demand_kWh: float
     demand_shape: pl.Series
     profile: pl.Series
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+        time_ranges: TimeRange,
+    ) -> HouseholdBasicDemand:
+
+        non_BEV_HP_yearly_demand_kWh: float = 0.0
+        demand_shape: pl.Series = pl.Series()
+        profile: pl.Series = non_BEV_HP_yearly_demand_kWh * demand_shape
+
+        return cls(
+            non_BEV_HP_yearly_demand_kWh=non_BEV_HP_yearly_demand_kWh,
+            demand_shape=demand_shape,
+            profile=profile,
+        )
 
 
 @dataclass
@@ -24,12 +45,55 @@ class HeatPumpDemand:
     COP: float
     profile: pl.Series
 
+    @classmethod
+    def create(
+        cls,
+        *,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+        time_ranges: TimeRange,
+    ) -> HeatPumpDemand:
+
+        yearly_heat_demand_kWh: float = 0.0
+        heat_demand_shape: pl.Series = pl.Series()
+        COP: float = 4.0
+        profile: pl.Series = (yearly_heat_demand_kWh / COP) * heat_demand_shape
+
+        return cls(
+            yearly_heat_demand_kWh=yearly_heat_demand_kWh,
+            heat_demand_shape=heat_demand_shape,
+            COP=COP,
+            profile=profile,
+        )
+
 
 @dataclass
 class SolarPanels:
     yearly_production_kWh: float
     production_shape: pl.Series
     profile: pl.Series
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+        time_ranges: TimeRange,
+    ) -> SolarPanels:
+
+        yearly_production_kWh: float = 0.0
+        production_shape: pl.Series = pl.Series()
+        profile: pl.Series = -yearly_production_kWh * production_shape
+        # Negative sign because it is a production, the opposite
+        # of a demand
+        return cls(
+            yearly_production_kWh=yearly_production_kWh,
+            production_shape=production_shape,
+            profile=profile,
+        )
 
 
 @dataclass
@@ -38,6 +102,31 @@ class HomeBattery:
     charge_power_kW: float
     discharge_power_kW: float
     charge_level_kWh: pl.Series
+    profile: pl.Series
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+        time_ranges: TimeRange,
+    ) -> HomeBattery:
+
+        capacity_kWh: float = 0.0
+        charge_power_kW: float = 0.0
+        discharge_power_kW: float = 0.0
+        charge_level_kWh: pl.Series = pl.Series()
+        profile: pl.Series = pl.Series()
+
+        return cls(
+            capacity_kWh=capacity_kWh,
+            charge_power_kW=charge_power_kW,
+            discharge_power_kW=discharge_power_kW,
+            charge_level_kWh=charge_level_kWh,
+            profile=profile,
+        )
 
 
 @dataclass
@@ -46,7 +135,60 @@ class Node:
     heat_pump: HeatPumpDemand
     solar_panels: SolarPanels
     home_battery: HomeBattery
-    power_line_index: int
+
+    def get_net_non_EV_profile(self) -> pl.Series:
+        '''
+        Return the net non-EV power profile of the household node.
+
+        Positive values represent net electricity demand, while negative
+        values represent net electricity supply to the grid.
+        '''
+
+        return (
+            self.household.profile
+            + self.heat_pump.profile
+            + self.solar_panels.profile
+            + self.home_battery.profile
+        )
+
+    @classmethod
+    def create(
+        cls,
+        *,
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        beta_shape: float,
+        time_ranges: TimeRange,
+    ) -> Node:
+        '''
+        Create a household node and its non-EV demand components.
+        '''
+        return cls(
+            household=HouseholdBasicDemand.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            ),
+            heat_pump=HeatPumpDemand.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            ),
+            solar_panels=SolarPanels.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            ),
+            home_battery=HomeBattery.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            ),
+        )
 
 
 @dataclass
@@ -429,6 +571,100 @@ class LocalGrid:
 
         return charger_line_indices
 
+    @staticmethod
+    def get_nodes_per_line(
+        line_powers_kW: list[float],
+        amount_of_households: int,
+    ) -> list[int]:
+        '''
+        Distribute household nodes over the power lines proportionally to
+        their capacities.
+
+        The ideal number of nodes per line is calculated from each line's
+        share of the total line capacity. These values are rounded down first.
+        Any remaining nodes are subsequently assigned to the lines with the
+        largest fractional remainders.
+
+        This ensures that the total number of assigned nodes equals the total
+        number of households while keeping the distribution as close as
+        possible to proportional to the line capacities.
+        '''
+        line_powers: np.ndarray = np.asarray(line_powers_kW, dtype=float)
+
+        ideal_nodes_per_line: np.ndarray = (
+            amount_of_households * line_powers / line_powers.sum()
+        )
+
+        nodes_per_line: np.ndarray = np.floor(ideal_nodes_per_line).astype(int)
+
+        amount_of_remaining_nodes: int = (
+            amount_of_households - nodes_per_line.sum()
+        )
+
+        remainders: np.ndarray = ideal_nodes_per_line - nodes_per_line
+
+        lines_by_descending_remainder: np.ndarray = np.argsort(-remainders)
+
+        nodes_per_line[
+            lines_by_descending_remainder[:amount_of_remaining_nodes]
+        ] += 1
+
+        return nodes_per_line.tolist()
+
+    @staticmethod
+    def assign_non_EV_demand_to_lines(
+        *,
+        node_non_EV_profiles: list[pl.Series],
+        line_powers_kW: list[float],
+        grid_parameters: Box,
+        time_ranges: TimeRange,
+    ) -> list[pl.Series]:
+        '''
+        Assign the non-EV demand of household nodes to the power lines.
+
+        The number of household nodes assigned to each line is proportional
+        to its capacity. The corresponding non-EV demand profiles are then
+        summed to obtain the total non-EV demand profile for each line.
+
+        No additional randomisation is required because the household demand
+        profiles were already created using random draws.
+        '''
+        amount_of_households: int = grid_parameters.amount_of_households
+
+        if len(node_non_EV_profiles) != amount_of_households:
+            raise ValueError(
+                f'The number of non-EV profiles ({len(node_non_EV_profiles)}) '
+                f'does not equal the number of households '
+                f'({amount_of_households}).'
+            )
+
+        amounts_of_nodes_per_line: list[int] = LocalGrid.get_nodes_per_line(
+            line_powers_kW=line_powers_kW,
+            amount_of_households=amount_of_households,
+        )
+
+        zero_non_EV_demand: pl.Series = pl.Series(
+            grid_parameters.non_EV_demand_header,
+            np.zeros(len(time_ranges.run_stamps)),
+        )
+
+        lines_non_EV_net_profiles: list[pl.Series] = [
+            zero_non_EV_demand.clone() for _ in line_powers_kW
+        ]
+
+        node_list_index: int = 0
+
+        for line_index, nodes_for_this_line in enumerate(
+            amounts_of_nodes_per_line
+        ):
+            for _ in range(nodes_for_this_line):
+                lines_non_EV_net_profiles[line_index] += node_non_EV_profiles[
+                    node_list_index
+                ]
+                node_list_index += 1
+
+        return lines_non_EV_net_profiles
+
     @classmethod
     def initialise(
         cls,
@@ -436,6 +672,7 @@ class LocalGrid:
         users_pool: list[User],
         grid_parameters: Box,
         scenario: Box,
+        time_ranges: TimeRange,
         random_generator: np.random.Generator,
     ) -> LocalGrid:
 
@@ -469,7 +706,21 @@ class LocalGrid:
             )
 
         # We create the household nodes
-        household_nodes: list[Node] = []  # LocalGrid.create_nodes()
+        household_nodes: list[Node] = [
+            Node.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            )
+            for _ in range(grid_parameters.amount_of_households)
+        ]
+
+        # We get the (net) non-EV demand profile per node
+        node_non_EV_profiles: list[pl.Series] = [
+            household_node.get_net_non_EV_profile()
+            for household_node in household_nodes
+        ]
 
         # We create the power lines.
         # First, we distribute the transformer capacity among the lines.
@@ -499,15 +750,28 @@ class LocalGrid:
         ):
             line_EV_user_IDs[charger_line_index].extend(charger.IDs_of_users)
 
+        line_non_EV_net_profiles: list[pl.Series] = (
+            LocalGrid.assign_non_EV_demand_to_lines(
+                node_non_EV_profiles=node_non_EV_profiles,
+                line_powers_kW=line_powers_kW,
+                grid_parameters=grid_parameters,
+                time_ranges=time_ranges,
+            )
+        )
+
         power_lines: list[PowerLine] = [
             PowerLine(
                 index=line_index,
                 capacity_kW=line_capacity_kW,
-                non_EV_demand_profile=pl.Series(),
+                non_EV_demand_profile=line_non_EV_net_profile,
                 EV_users=line_EV_users,
             )
-            for line_index, (line_capacity_kW, line_EV_users) in enumerate(
-                zip(line_powers_kW, line_EV_user_IDs)
+            for line_index, (
+                line_capacity_kW,
+                line_non_EV_net_profile,
+                line_EV_users,
+            ) in enumerate(
+                zip(line_powers_kW, line_non_EV_net_profiles, line_EV_user_IDs)
             )
         ]
 

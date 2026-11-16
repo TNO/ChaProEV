@@ -122,7 +122,13 @@ Finally, the model looks up the EV users associated with each charger and assign
 >   between users, reducing the number of chargers required.
 > - **Reduce the street charger connectivity.** More users then share each
 >   street charger, also reducing the number of chargers required.
-### Non-EV demand
+
+
+
+
+
+
+
 
 #Draw amounts of the below per line (based on line capacity/transfomer capacity)
 One on one, or another draw level?
@@ -181,6 +187,112 @@ which results in three physical chargers. The users are then distributed as 4, 4
 
 The updated connectivity is stored on the user's home `Location`. The charging DataFrame is deliberately created only **after** the local grid and charger assignment have been constructed. This ensures that the stochastic charging-session availability draws use the final connectivity resulting from the actual charger allocation, rather than the original scenario-level connectivity.
 
+### Non-EV demand
+
+
+
+#### Household node demand profiles
+
+To determine the electricity demand on each power line, the model first creates
+an individual non-EV electricity profile for every household node. This profile
+represents the net electricity exchange between the household node and the grid
+at each time step, excluding EV charging.
+
+Each household node can contain four components that contribute to its net
+non-EV profile:
+
+- Basic household electricity demand
+- Heat-pump electricity demand
+- Solar-panel production
+- Home-battery charging and discharging
+
+Demand from the household and heat pump is represented as positive power,
+whereas electricity production from the solar panels is represented as negative
+power. Similarly, charging of the home battery represents positive power and
+discharging represents negative power. The net non-EV profile of a household
+node is therefore calculated as:
+
+$$
+P_{\mathrm{non\text{-}EV},n}(t)
+=
+P_{\mathrm{household},n}(t)
++
+P_{\mathrm{heat\ pump},n}(t)
++
+P_{\mathrm{solar},n}(t)
++
+P_{\mathrm{battery},n}(t)
+$$
+
+A positive value indicates that the household node has a net electricity demand
+from the grid at that time step, while a negative value indicates that the
+household node is supplying electricity to the grid.
+
+The model creates each household node by independently creating its basic
+household demand, heat pump, solar panels, and home battery. The stochastic
+properties of these components are therefore determined at the individual
+household level. Once the four component profiles have been created, they are
+added together to obtain the net non-EV profile of that household node.
+
+These node-level profiles are subsequently assigned to the power lines based on
+the number of household nodes allocated to each line. The profiles of the nodes
+connected to a line are summed to obtain the line-level non-EV demand profile.
+
+#### Basic household electricity demand
+
+TODO: Describe how the yearly basic household electricity demand is drawn and
+how this yearly demand is converted into a time-dependent demand profile.
+
+#### Heat-pump demand
+
+TODO: Describe how the presence and characteristics of heat pumps are
+determined, how household heat demand is calculated, and how the coefficient
+of performance (COP) is used to convert heat demand into an electricity demand
+profile.
+
+#### Solar-panel production
+
+TODO: Describe how the presence and characteristics of solar panels are
+determined and how their electricity-production profile is calculated. Solar
+production is represented by negative power because it supplies electricity
+rather than consuming it.
+
+#### Home-battery demand
+
+TODO: Describe how the presence, capacity, charging power, and discharging
+power of home batteries are determined, and how their state of charge and
+resulting power profile are calculated. Battery charging is represented as
+positive power demand, while battery discharging is represented as negative
+power demand.
+
+#### Assigning household nodes to lines
+
+The household nodes are distributed over the power lines proportionally to their capacities. For each line, the ideal number of household nodes is first calculated from its share of the total line capacity:
+
+$$
+n_i^*
+=
+N_{\mathrm{households}}
+\frac{P_{\mathrm{line},i}}
+{\sum_j P_{\mathrm{line},j}}
+$$
+
+Since the number of household nodes assigned to a line must be an integer, these ideal values cannot generally be used directly. The model therefore applies the **largest remainder method**. First, the ideal number of nodes for each line is rounded down to the nearest integer. This generally leaves a small number of household nodes unassigned. These remaining nodes are assigned, one by one, to the lines with the largest fractional remainders in their ideal allocations. This ensures that the total number of assigned nodes is exactly equal to the number of households, while keeping the distribution as close as possible to proportional to the line capacities. A line may receive no household nodes if the number of households is small relative to the number of lines or its proportional allocation is sufficiently small.
+
+
+#### Assigning non-EV demand to lines
+
+After determining the number of household nodes connected to each power line, the corresponding non-EV demand profiles are assigned to these lines. The household profiles have already been generated using random draws, so no additional randomisation is applied during this assignment. Instead, the profiles are assigned sequentially according to the previously determined number of nodes per line.
+
+For each power line, the non-EV demand profiles of all household nodes assigned to that line are summed to obtain a single line-level non-EV demand profile:
+
+$$
+P_{\mathrm{non\text{-}EV},i}(t)
+=
+\sum_{n \in N_i} P_{\mathrm{non\text{-}EV},n}(t)
+$$
+
+where $N_i$ is the set of household nodes assigned to line $i$. The resulting profile therefore represents the total non-EV household demand connected to that power line at each time step. These line-level profiles can subsequently be combined with the EV charging demand assigned to the same lines to determine the total line load and assess whether the line capacity is exceeded.
 
 #### Own driveway chargers
 Users x Own driveway proportion

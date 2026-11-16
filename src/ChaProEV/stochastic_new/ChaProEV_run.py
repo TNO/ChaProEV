@@ -208,8 +208,11 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             users_pool=users_pool,
             grid_parameters=grid_parameters,
             scenario=scenario,
+            time_ranges=time_ranges,
             random_generator=random_generators.local_grid,
         )
+        print(local_grid)
+        exit()
 
     # Residential-grid creation may have changed home connectivity for users
     # with street parking. Therefore, the charging DataFrame can only be
