@@ -184,6 +184,36 @@ P_{\mathrm{transformer}}
 $$</p>
 <p>This represents a deliberately conservative modelling assumption. The available transformer capacity is effectively divided between the individual power lines, and the model subsequently tests the power demand on each line against its assigned capacity. Because the line capacities sum to the transformer capacity, satisfying the capacity restriction of every individual line also guarantees that the total transformer-capacity restriction is satisfied.</p>
 <p>In an actual distribution grid, the physical capacities of the outgoing power lines do not necessarily sum to the transformer capacity and may collectively exceed it. If one line is lightly loaded, another line may therefore carry a larger share of the transformer load, provided that its own physical capacity and the total transformer capacity are not exceeded. The model does not currently represent such dynamic sharing of transformer capacity between lines. Instead, each line receives a fixed share of the transformer capacity. This results in a conservative representation of the line-level capacity restrictions.</p>
+<h3 id="assigning-ev-users-to-lines">Assigning EV users to lines</h3>
+<p>To determine whether the individual power lines can support the EV charging demand connected to them, the model needs to know which EV users are connected to each line. This is done in two steps. First, the EV chargers are assigned to power lines. The users associated with each charger are then assigned to the same line.</p>
+<p>Chargers are assigned while respecting the capacity of each power line. A charger can only be assigned to a line if the remaining line capacity is at least equal to the rated power of the charger. The sum of the rated powers of all chargers assigned to a line can therefore never exceed that line's capacity.</p>
+<p>The chargers are processed from highest to lowest rated power. Assigning the largest chargers first reduces the risk of filling the lines with smaller chargers in such a way that insufficient capacity remains for a larger charger, even though a feasible allocation could otherwise have existed.</p>
+<p>For each charger, the model determines which lines have sufficient remaining capacity. The charger is then randomly assigned to one of these eligible lines, with the probability of selecting a line proportional to its remaining capacity:</p>
+<p>$$
+p_i =
+\frac{P_{\mathrm{remaining},i}}
+{\sum_{j \in E} P_{\mathrm{remaining},j}}
+$$</p>
+<p>where $E$ is the set of lines with sufficient remaining capacity for the charger. After assigning a charger, its rated power is subtracted from the remaining capacity of the selected line. Consequently, lines with more available capacity are more likely to receive chargers, while lines that are becoming more heavily occupied become progressively less likely to receive additional chargers.</p>
+<p>This procedure allows both situations in which some lines have no EV chargers and situations in which multiple chargers are connected to the same line. If no line has sufficient remaining capacity for a charger, the assignment fails. The method is a greedy stochastic allocation: processing the largest chargers first reduces the chance of an unsuccessful allocation, but does not mathematically guarantee finding a feasible allocation whenever one exists.</p>
+<p>Finally, the model looks up the EV users associated with each charger and assigns these users to the same power line as their charger. This provides the mapping between EV users and power lines that is subsequently used to aggregate their charging profiles and test the line-level capacity restrictions.</p>
+<blockquote>
+<p><strong>Note:</strong> The sum of the nominal powers of all chargers cannot exceed the
+transformer capacity. This is a conservative modelling assumption that ensures
+that all chargers connected to the transformer could operate simultaneously at
+their nominal power without exceeding the transformer capacity.</p>
+<p>If the total charger power exceeds the transformer capacity, the model cannot
+assign all chargers within the available capacity. The following model inputs
+can be adjusted:</p>
+<ul>
+<li><strong>Increase the transformer capacity.</strong></li>
+<li><strong>Reduce the nominal power of the chargers.</strong></li>
+<li><strong>Increase the proportion of street chargers.</strong> Street chargers are shared
+  between users, reducing the number of chargers required.</li>
+<li><strong>Reduce the street charger connectivity.</strong> More users then share each
+  street charger, also reducing the number of chargers required.</li>
+</ul>
+</blockquote>
 <h3 id="non-ev-demand">Non-EV demand</h3>
 <h1 id="draw-amounts-of-the-below-per-line-based-on-line-capacitytransfomer-capacity">Draw amounts of the below per line (based on line capacity/transfomer capacity)</h1>
 <p>One on one, or another draw level?
