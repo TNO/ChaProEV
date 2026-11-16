@@ -54,6 +54,7 @@ class Charger:
     ID: uuid.UUID
     type: str
     power_kW: float
+    IDs_of_users: list[uuid.UUID]
 
 
 @dataclass
@@ -61,52 +62,9 @@ class PowerLine:
     index: int
     capacity_kW: float
     non_EV_demand_profile: pl.Series
-    EV_users: list[User]  # Will give us charging demand profiles in the line
-
-    @staticmethod
-    def get_non_EV_demand_profile(household_nodes: list[Node]) -> pl.Series:
-        # SUm of profiles
-        return pl.Series()  # Placeholder!
-
-    @staticmethod
-    def draw_capacity(
-        *,
-        average_line_capacity_kW: float,
-        grid_parameters: Box,
-        random_generator: np.random.Generator,
-    ) -> float:
-
-        return 1989.0  # placeholder!
-
-    @classmethod
-    def draw(
-        cls,
-        *,
-        average_line_capacity_kW: float,
-        line_index: int,
-        grid_parameters: Box,
-        household_nodes: list[Node],
-        EV_users: list[User],
-        random_generator: np.random.Generator,
-    ) -> PowerLine:
-
-        capacity_kW: float = PowerLine.draw_capacity(
-            average_line_capacity_kW=average_line_capacity_kW,
-            grid_parameters=grid_parameters,
-            random_generator=random_generator,
-        )
-        # Draw nodes and chargers
-        # nodes amount and such connected to capacity?
-        non_EV_demand_profile: pl.Series = PowerLine.get_non_EV_demand_profile(
-            household_nodes=household_nodes
-        )
-
-        return cls(
-            index=line_index,
-            capacity_kW=capacity_kW,
-            non_EV_demand_profile=non_EV_demand_profile,
-            EV_users=EV_users,
-        )
+    EV_users: list[
+        uuid.UUID
+    ]  # Will give us charging demand profiles in the line
 
 
 @dataclass
@@ -190,6 +148,7 @@ class LocalGrid:
                 power_kW=own_driveway_user.locations[
                     home_location_name
                 ].charging_power_kW,
+                IDs_of_users=[own_driveway_user.ID],
             )
             chargers.append(driveway_charger)
             charger_ID_user_IDs[driveway_charger.ID] = [own_driveway_user.ID]
@@ -242,13 +201,14 @@ class LocalGrid:
         )
 
         # We now create the chargers. We put them in the main list, but also
-        # in a sperate list that will allow us to attribute user to them
+        # in a separate list that will allow us to attribute user to them
         street_chargers: list[Charger] = []
         for _ in range(amount_of_street_chargers):
             street_charger: Charger = Charger(
                 ID=uuid.uuid4(),
                 type=street_parking_name,
                 power_kW=street_charger_power_kW,
+                IDs_of_users=[],
             )
             chargers.append(street_charger)
             street_chargers.append(street_charger)
@@ -272,6 +232,7 @@ class LocalGrid:
             charger_ID_user_IDs[street_charger.ID].append(
                 street_parking_user.ID
             )
+            street_charger.IDs_of_users.append(street_parking_user.ID)
             # And set the charger of that user
             user_ID_charger_IDs[street_parking_user.ID] = street_charger.ID
 
@@ -350,6 +311,124 @@ class LocalGrid:
 
         return line_powers_kW
 
+    @staticmethod
+    def assign_chargers_to_lines(
+        chargers: list[Charger],
+        line_powers_kW: list[float],
+        random_generator: np.random.Generator,
+    ) -> list[int]:
+        '''
+        Assign chargers to power lines subject to their capacity limits.
+
+        Chargers are processed from highest to lowest power. For each charger,
+        the eligible power lines are those whose remaining capacity is at least
+        equal to the charger power. One of these lines is selected randomly,
+        weighted by its remaining capacity.
+
+        This causes lines with more remaining capacity to be more likely to
+        receive a charger, while ensuring that the total rated charger power
+        assigned to a line does not exceed that line's capacity.
+
+        Parameters
+        ----------
+        chargers
+            EV chargers to assign to the power lines.
+        line_powers_kW
+            Capacities of the power lines.
+        random_generator
+            Random-number generator used for the weighted selection.
+
+        Returns
+        -------
+        list[int]
+            Power-line index assigned to each charger. The returned list follows
+            the original order of ``chargers``.
+
+        Raises
+        ------
+        ValueError
+            If the charger powers or line capacities are invalid, or if a charger
+            cannot be assigned without exceeding a line's capacity.
+        '''
+        charger_powers_kW: list[float] = [
+            charger.power_kW for charger in chargers
+        ]
+
+        if not line_powers_kW and chargers:
+            raise ValueError(
+                'Chargers cannot be assigned because no power lines are available.'
+            )
+
+        if any(
+            charger_power_kW <= 0 for charger_power_kW in charger_powers_kW
+        ):
+            raise ValueError('All charger powers must be greater than zero.')
+
+        if any(line_power_kW <= 0 for line_power_kW in line_powers_kW):
+            raise ValueError('All line capacities must be greater than zero.')
+
+        remaining_line_powers_kW: np.ndarray = np.asarray(
+            line_powers_kW,
+            dtype=float,
+        )
+
+        # Initialise all indices as unassigned. Each value is replaced when
+        # the corresponding charger is assigned to a power line.
+        charger_line_indices: list[int] = [-1] * len(chargers)
+
+        # Assign larger chargers first to reduce the risk of leaving fragmented
+        # capacity that cannot accommodate them.
+        charger_indices_by_descending_power: list[int] = sorted(
+            range(len(chargers)),
+            key=charger_powers_kW.__getitem__,
+            reverse=True,
+        )
+
+        for charger_index in charger_indices_by_descending_power:
+            charger_power_kW: float = charger_powers_kW[charger_index]
+
+            eligible_line_indices: np.ndarray = np.flatnonzero(
+                remaining_line_powers_kW >= charger_power_kW
+            )
+
+            if eligible_line_indices.size == 0:
+                largest_remaining_capacity_kW: float = float(
+                    remaining_line_powers_kW.max()
+                )
+
+                raise ValueError(
+                    f'Charger {charger_index} with a power of '
+                    f'{charger_power_kW:.2f} kW cannot be assigned to a power '
+                    f'line. The largest remaining line capacity is '
+                    f'{largest_remaining_capacity_kW:.2f} kW.'
+                    f'Increasing the trnsformer capacity, reducing the '
+                    f'amount of power lines or increasing '
+                    f'line_capacity_weight_min might help'
+                )
+
+            eligible_remaining_powers_kW: np.ndarray = (
+                remaining_line_powers_kW[eligible_line_indices]
+            )
+
+            # Select an eligible line randomly. Lines with more remaining
+            # capacity have a proportionally higher selection probability.
+            selection_probabilities: np.ndarray = (
+                eligible_remaining_powers_kW
+                / eligible_remaining_powers_kW.sum()
+            )
+
+            selected_line_index: int = int(
+                random_generator.choice(
+                    eligible_line_indices,
+                    p=selection_probabilities,
+                )
+            )
+
+            charger_line_indices[charger_index] = selected_line_index
+            remaining_line_powers_kW[selected_line_index] -= charger_power_kW
+
+        return charger_line_indices
+
     @classmethod
     def initialise(
         cls,
@@ -360,6 +439,9 @@ class LocalGrid:
         random_generator: np.random.Generator,
     ) -> LocalGrid:
 
+        transformer_capacity_kW: float = (
+            grid_parameters.transformer_capacity_kW
+        )
         beta_shape: float = scenario.monte_carlo.beta_shape
 
         # We set the home chargers (own driveway and street parking).
@@ -369,6 +451,22 @@ class LocalGrid:
             scenario=scenario,
             random_generator=random_generator,
         )
+
+        total_charging_power_kW: float = sum(
+            charger.power_kW for charger in chargers
+        )
+
+        if total_charging_power_kW > transformer_capacity_kW:
+            raise ValueError(
+                f'The total charger power ({total_charging_power_kW:.2f} kW) '
+                f'islarger than the transformer capacity '
+                f'({transformer_capacity_kW:.2f} kW). '
+                'Either increase the transformer capacity or reduce the total '
+                'charger power. The latter can be done by reducing the '
+                'nominal charger powers, increasing the proportion of street '
+                'chargers (as these are shared), and/or decreasing the street '
+                'charger connectivity.'
+            )
 
         # We create the household nodes
         household_nodes: list[Node] = []  # LocalGrid.create_nodes()
@@ -384,39 +482,37 @@ class LocalGrid:
             beta_shape=beta_shape,
         )
 
-        # draw line proportion of power at 1+/x renormalised
-        # OUR PLAN and MIDDEN and review
-        # shuffle then draw (or get directly) amount per line (proportionally to power)
-        # common function
+        # Assign the chargers to the power lines.
+        charger_line_indices: list[int] = LocalGrid.assign_chargers_to_lines(
+            chargers=chargers,
+            line_powers_kW=line_powers_kW,
+            random_generator=random_generator,
+        )
 
-        # amounts per line function (prop to power)
-        # depends on transformator power, lines amount, power of line
+        # Assign the users connected to each charger to the same power line.
+        line_EV_user_IDs: list[list[uuid.UUID]] = [[] for _ in line_powers_kW]
 
-        # or rank lines by power_lines
-        # repeat in rank?
-
-        # Shuffle/ or draw/pop wtrh power
-        lines_chargers: list[Charger] = []  # LocalGrid.get_chargers_per_line()
-        lines_EV_users: list[list[User]] = []  # LocalGrid.get_lines_EV_users()
-        # shuffle (or draw and drop with probability proportiuonal to power)
-        line_household_nodes: list[list[Node]] = []  # LocalGrid.create_nodes()
+        for charger_line_index, charger in zip(
+            charger_line_indices,
+            chargers,
+            strict=True,
+        ):
+            line_EV_user_IDs[charger_line_index].extend(charger.IDs_of_users)
 
         power_lines: list[PowerLine] = [
-            PowerLine.draw(
-                average_line_capacity_kW=average_line_capacity_kW,
-                line_index=line_index,
-                grid_parameters=grid_parameters,
-                household_nodes=line_household_nodes[line_index],
-                EV_users=lines_EV_users[line_index],
-                random_generator=random_generator,
+            PowerLine(
+                index=line_index,
+                capacity_kW=line_capacity_kW,
+                non_EV_demand_profile=pl.Series(),
+                EV_users=line_EV_users,
             )
-            for line_index in range(amount_of_lines)
+            for line_index, (line_capacity_kW, line_EV_users) in enumerate(
+                zip(line_powers_kW, line_EV_user_IDs)
+            )
         ]
 
-        # Assign chargers to lines
-
         return cls(
-            transformer_capacity_kW=grid_parameters.transformer_capacity_kW,
+            transformer_capacity_kW=transformer_capacity_kW,
             power_lines=power_lines,
         )
 
