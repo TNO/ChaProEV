@@ -184,13 +184,25 @@ class SolarPanels:
     def create(
         cls,
         *,
-        grid_parameters: Box,
+        solar_panels_parameters: Box,
         random_generator: np.random.Generator,
         beta_shape: float,
         time_ranges: TimeRange,
+        household_run_demand_kWh: float,
+        has_home_battery: bool,
     ) -> SolarPanels:
 
-        run_production_kWh: float = 0.0
+        if has_home_battery:
+            production_demand_ratio: float = (
+                solar_panels_parameters.run_production_as_proportion_of_demand_if_battery  # noqa:E501
+            )
+        else:
+            production_demand_ratio = (
+                solar_panels_parameters.run_production_as_proportion_of_demand_if_no_battery  # noqa:E501
+            )
+        run_production_kWh: float = (
+            household_run_demand_kWh * production_demand_ratio
+        )
         production_shape: pl.Series = pl.Series(
             np.zeros(len(time_ranges.run_stamps))
         )
@@ -284,25 +296,73 @@ class Node:
                 profiles_shapes_source_households
             ),
         )
+        zero_shape: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
+        has_solar_panels: bool = (
+            random_generator.random()
+            < grid_parameters.solar_panels.adoption_rate_solar_panels
+        )
+        if has_solar_panels:
+            has_home_battery: bool = (
+                random_generator.random
+                < grid_parameters.home_batteries.adoption_rate_home_batteries_if_solar_panels  # noqa:E501
+            )
+        else:
+            has_home_battery = (
+                random_generator.random
+                < grid_parameters.home_batteries.adoption_rate_home_batteries_if_not_solar_panels  # noqa:E501
+            )
+        if has_solar_panels:
+            solar_panels: SolarPanels = SolarPanels.create(
+                solar_panels_parameters=grid_parameters.solar_panels,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+                household_run_demand_kWh=household.non_BEV_HP_run_demand_kWh,
+                has_home_battery=has_home_battery,
+            )
+        else:
+            solar_panels = SolarPanels(
+                run_production_kWh=0.0,
+                production_shape=zero_shape,
+                profile=zero_shape,
+            )
 
-        heat_pump: HeatPumpDemand = HeatPumpDemand.create(
-            grid_parameters=grid_parameters,
-            random_generator=random_generator,
-            beta_shape=beta_shape,
-            time_ranges=time_ranges,
+        has_heat_pump: bool = (
+            random_generator.random() < grid_parameters.heat_pumps
         )
-        solar_panels: SolarPanels = SolarPanels.create(
-            grid_parameters=grid_parameters,
-            random_generator=random_generator,
-            beta_shape=beta_shape,
-            time_ranges=time_ranges,
-        )
-        home_battery: HomeBattery = HomeBattery.create(
-            grid_parameters=grid_parameters,
-            random_generator=random_generator,
-            beta_shape=beta_shape,
-            time_ranges=time_ranges,
-        )
+
+        if has_heat_pump:
+            heat_pump: HeatPumpDemand = HeatPumpDemand.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            )
+        else:
+            heat_pump = HeatPumpDemand(
+                run_heat_demand_kWh=0.0,
+                heat_demand_shape=zero_shape,
+                COP=1.0,
+                profile=zero_shape,
+            )
+
+        if has_home_battery:
+            home_battery: HomeBattery = HomeBattery.create(
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                beta_shape=beta_shape,
+                time_ranges=time_ranges,
+            )
+        else:
+            home_battery = HomeBattery(
+                capacity_kWh=0.0,
+                charge_power_kW=0.0,
+                discharge_power_kW=0.0,
+                charge_level_kWh=zero_shape,
+                profile=zero_shape,
+            )
         return cls(
             household=household,
             heat_pump=heat_pump,
