@@ -107,18 +107,88 @@ class HeatPumpDemand:
     def create(
         cls,
         *,
-        grid_parameters: Box,
+        heat_pump_parameters: Box,
         random_generator: np.random.Generator,
         beta_shape: float,
         time_ranges: TimeRange,
+        time_constants: TimeConstants,
+        demand_shapes_source_heat: pl.DataFrame,
     ) -> HeatPumpDemand:
+        '''
+        Create the electricity-demand profile of a household heat pump.
 
-        run_heat_demand_kWh: float = 0.0
-        heat_demand_shape: pl.Series = pl.Series(
-            np.zeros(len(time_ranges.run_stamps))
+        The total heat demand for the run is drawn in kWh from user-defined
+        bounds. The coefficient of performance (COP) of the heat pump is
+        drawn separately and is used to convert the heat demand into
+        electricity demand.
+
+        A heat-demand shape is randomly selected from the available profile
+        shapes using user-defined selection weights. The selected shape is
+        resized to match the model run range, if necessary, and normalised
+        so that its values sum to one.
+
+        The normalised shape is scaled to the total heat demand for the run.
+        This thermal energy demand is divided by the COP to obtain electrical
+        energy demand and by the time-step duration in hours to obtain the
+        average electrical power demand in kW for each time step.
+        '''
+        MINUTES_PER_HOUR: int = time_constants.MINUTES_PER_HOUR
+
+        if time_ranges.frequency_type != 'm':
+            raise ValueError('You need to use minutes for the frequency!')
+
+        run_frequency_size: int = time_ranges.frequency_size
+        run_time_resolution_hours: float = (
+            run_frequency_size / MINUTES_PER_HOUR
         )
-        COP: float = 4.0
-        profile: pl.Series = (run_heat_demand_kWh / COP) * heat_demand_shape
+
+        # Draw the total household heat demand for the run.
+        run_heat_demand_kWh: float = draw_beta_value(
+            minimum=heat_pump_parameters.run_heat_pump_consumption_heat_kWh_min,  # noqa: E501
+            typical=heat_pump_parameters.run_heat_pump_consumption_heat_kWh_typical,  # noqa: E501
+            maximum=heat_pump_parameters.run_heat_pump_consumption_heat_kWh_max,  # noqa: E501
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
+        # Draw the heat pump's coefficient of performance.
+        COP: float = draw_beta_value(
+            minimum=heat_pump_parameters.COP_min,
+            typical=heat_pump_parameters.COP_typical,
+            maximum=heat_pump_parameters.COP_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
+        # Select a heat-demand shape according to the user-defined
+        # probabilities.
+        profile_variants: list[str] = heat_pump_parameters.profile_variants
+        profile_proportions: list[float] = (
+            heat_pump_parameters.profile_proportions
+        )
+        chosen_variant: str = random_generator.choice(
+            profile_variants,
+            p=profile_proportions,
+        )
+
+        heat_demand_shape: pl.Series = demand_shapes_source_heat[
+            chosen_variant
+        ]
+        run_stamps_amount: int = len(time_ranges.run_stamps)
+
+        # Match the heat-demand shape to the model run range and normalise it.
+        heat_demand_shape = reshape(
+            source_shape=heat_demand_shape,
+            run_stamps_amount=run_stamps_amount,
+        )
+
+        # Convert the thermal energy demand to electrical energy using the
+        # COP, distribute it over time, and convert it to average power in kW.
+        profile: pl.Series = (
+            (run_heat_demand_kWh / COP)
+            * heat_demand_shape
+            / run_time_resolution_hours
+        )
 
         return cls(
             run_heat_demand_kWh=run_heat_demand_kWh,
@@ -289,6 +359,7 @@ class Node:
         time_constants: TimeConstants,
         profiles_shapes_source_households: pl.DataFrame,
         profiles_shapes_source_solar: pl.DataFrame,
+        demand_shapes_source_heat: pl.DataFrame,
     ) -> Node:
         '''
         Create a household node and its non-EV demand components.
@@ -321,22 +392,6 @@ class Node:
                 random_generator.random()
                 < grid_parameters.home_batteries.adoption_rate_home_batteries_if_not_solar_panels  # noqa:E501
             )
-        if has_solar_panels:
-            solar_panels: SolarPanels = SolarPanels.create(
-                solar_panels_parameters=grid_parameters.solar_panels,
-                random_generator=random_generator,
-                time_ranges=time_ranges,
-                time_constants=time_constants,
-                household_run_demand_kWh=household.non_BEV_HP_run_demand_kWh,
-                has_home_battery=has_home_battery,
-                profiles_shapes_source_solar=profiles_shapes_source_solar,
-            )
-        else:
-            solar_panels = SolarPanels(
-                run_production_kWh=0.0,
-                production_shape=zero_shape,
-                profile=zero_shape,
-            )
 
         has_heat_pump: bool = (
             random_generator.random()
@@ -345,16 +400,39 @@ class Node:
 
         if has_heat_pump:
             heat_pump: HeatPumpDemand = HeatPumpDemand.create(
-                grid_parameters=grid_parameters,
+                heat_pump_parameters=grid_parameters.heat_pumps,
                 random_generator=random_generator,
                 beta_shape=beta_shape,
                 time_ranges=time_ranges,
+                time_constants=time_constants,
+                demand_shapes_source_heat=demand_shapes_source_heat,
             )
         else:
             heat_pump = HeatPumpDemand(
                 run_heat_demand_kWh=0.0,
                 heat_demand_shape=zero_shape,
                 COP=1.0,
+                profile=zero_shape,
+            )
+
+        if has_solar_panels:
+            run_demand_for_solar_panels_scale_kWh: float = (
+                household.non_BEV_HP_run_demand_kWh
+                + heat_pump.run_heat_demand_kWh / heat_pump.COP
+            )
+            solar_panels: SolarPanels = SolarPanels.create(
+                solar_panels_parameters=grid_parameters.solar_panels,
+                random_generator=random_generator,
+                time_ranges=time_ranges,
+                time_constants=time_constants,
+                household_run_demand_kWh=run_demand_for_solar_panels_scale_kWh,
+                has_home_battery=has_home_battery,
+                profiles_shapes_source_solar=profiles_shapes_source_solar,
+            )
+        else:
+            solar_panels = SolarPanels(
+                run_production_kWh=0.0,
+                production_shape=zero_shape,
                 profile=zero_shape,
             )
 
@@ -673,13 +751,15 @@ class LocalGrid:
         Returns
         -------
         list[int]
-            Power-line index assigned to each charger. The returned list follows
+            Power-line index assigned to each charger. The returned
+            list follows
             the original order of ``chargers``.
 
         Raises
         ------
         ValueError
-            If the charger powers or line capacities are invalid, or if a charger
+            If the charger powers or line capacities are invalid, or if
+            a charger
             cannot be assigned without exceeding a line's capacity.
         '''
         charger_powers_kW: list[float] = [
@@ -688,7 +768,8 @@ class LocalGrid:
 
         if not line_powers_kW and chargers:
             raise ValueError(
-                'Chargers cannot be assigned because no power lines are available.'
+                'Chargers cannot be assigned because no power lines '
+                'are available.'
             )
 
         if any(
@@ -904,6 +985,9 @@ class LocalGrid:
         profiles_shapes_source_solar: pl.DataFrame = pl.read_csv(
             Path(grid_parameters.solar_panels.profile_shapes_source)
         )
+        demand_shapes_source_heat: pl.DataFrame = pl.read_csv(
+            Path(grid_parameters.heat_pumps.profiles_shape_source)
+        )
 
         household_nodes: list[Node] = [
             Node.create(
@@ -916,6 +1000,7 @@ class LocalGrid:
                     profiles_shapes_source_households
                 ),
                 profiles_shapes_source_solar=profiles_shapes_source_solar,
+                demand_shapes_source_heat=demand_shapes_source_heat,
             )
             for _ in range(grid_parameters.amount_of_households)
         ]
@@ -1002,16 +1087,19 @@ class LocalGrid:
 # driveway
 # street
 
-# 8. Connection-level checks do not necessarily require every connection profile
+# 8. Connection-level checks do not necessarily require every connection
+# profile
 
-# You only need a connection-level profile where EV charging can occur and where the connection limit matters.
+# You only need a connection-level profile where EV charging can occur and
+# where the connection limit matters.
 
 # For example:
 
 # household connection with private charging: connection check required;
 # street-charging connection: connection check required;
 # household without EV charging: only contributes fixed load to the line;
-# ordinary non-EV connection: individual connection state may not be needed during the charging algorithm.
+# ordinary non-EV connection: individual connection state may not be needed
+# during the charging algorithm.
 
 # This suggests a hybrid approach:
 
@@ -1032,7 +1120,9 @@ class LocalGrid:
 # EV_connection_non_EV_power_kW
 # EV_connection_EV_power_kW
 
-# only for connections that can host charging, together with full line and transformer arrays.
+# only for connections that can host charging, together with full line and
+#
+# transformer arrays.
 
 # Each EV-capable connection then has a simulation index into this subset.
 
@@ -1114,7 +1204,8 @@ class LocalGrid:
 # time_slice,
 # ] += proposed_power_kW
 
-# This keeps the checks fast because you process only the active session horizon.
+# This keeps the checks fast because you process only the active session
+#  horizon.
 
 # 10. Supporting vehicles that should bypass the grid
 
@@ -1138,9 +1229,11 @@ class LocalGrid:
 # if charging_infrastructure.grid_connection_id is None:
 # # No modeled grid-capacity restriction
 
-# That can represent dedicated infrastructure for trucks, ships, aircraft, or other modelled modes.
+# That can represent dedicated infrastructure for trucks, ships, aircraft, or
+# other modelled modes.
 
-# A cleaner long-term design is to give the charging infrastructure a capacity-management strategy:
+# A cleaner long-term design is to give the charging infrastructure a
+# capacity-management strategy:
 
 # Python
 # class ChargingCapacityManager(Protocol):
@@ -1162,7 +1255,8 @@ class LocalGrid:
 # DedicatedCapacityManager
 # checks only the dedicated site capacity
 
-# I would not introduce this protocol immediately. For the first version, an optional grid connection is sufficient:
+# I would not introduce this protocol immediately. For the first version,
+# an optional grid connection is sufficient:
 
 # Python
 # grid_connection_id: uuid.UUID | None
@@ -1179,13 +1273,21 @@ class LocalGrid:
 # Decide which connection-level profiles must remain in memory.
 # Define GridState.
 # Implement the connection → line → transformer capacity check.
-# Add alternative charging profiles only after the basic accept/reject flow works.
+# Add alternative charging profiles only after the basic accept/reject flow
+# works.
 
-# The most important design correction is: draw or select a connection for the user, not a transformer and line independently. The chosen connection already uniquely determines the upstream line and transformer, preventing inconsistent assignments.
+# The most important design correction is: draw or select a connection for the
+# user, not a transformer and line independently. The chosen connection
+# already uniquely determines the upstream line and transformer, preventing
+# inconsistent assignments.
 
-# Define the Grid, GridConnection, and updated PowerLine classesShow how to create household and street-charging connectionsDesign user assignment for private and public charging
+# Define the Grid, GridConnection, and updated PowerLine classesShow how to
+# create household and street-charging connectionsDesign user assignment for
+# private and public charging
 
-# I would initially make Grid a domain object only. The optimized arrays remain separate:
+# I would initially make Grid a domain object only. The optimized arrays
+#
+#  separate:
 
 # grid = Grid.create(...)
 # grid_topology = GridTopology.create(grid=grid)
@@ -1215,7 +1317,8 @@ class LocalGrid:
 
 # Line and transformer values can be aggregated from the connections.
 
-# However, I would not automatically store all six full arrays without considering memory:
+# However, I would not automatically store all six full arrays without
+# considering memory:
 
 # Plain Text
 # connection non-EV
@@ -1252,7 +1355,9 @@ class LocalGrid:
 # * np.dtype(np.float64).itemsize
 # )
 
-# For example, 10,000 connections and 525,600 minute steps would require approximately 42 GB for one float64 array. In that case, full-year connection-level arrays would be infeasible.
+# For example, 10,000 connections and 525,600 minute steps would require
+# approximately 42 GB for one float64 array. In that case, full-year
+# connection-level arrays would be infeasible.
 
 # Possible remedies are:
 
@@ -1261,7 +1366,8 @@ class LocalGrid:
 # rolling windows;
 # storing fixed profiles externally and loading the relevant horizon;
 # storing only connections that can host EV charging;
-# aggregating non-EV load at line level where connection-level checking is unnecessary.
+# aggregating non-EV load at line level where connection-level checking is
+# unnecessary.
 
 # def get_grid_indices(
 #     self,
@@ -1316,16 +1422,19 @@ class LocalGrid:
 # aggregate at line and tarnsfor does
 # so have line/transformer profiles
 # transfo is sum of lines
-# and lines is # connected X individual profiles (with draw about kWh per year and connection type, etc.
+# and lines is # connected X individual profiles (with draw about kWh per year
+# and connection type, etc.
 
 
 # We have N home chargers per line (baed on ratio in pparamters)) so exhaust
 # draws for home chargers
 
 
-# for street also somethingsimilar? but based on connectivity  1 charger = 1/connectivity spots
+# for street also somethingsimilar? but based on connectivity  1 charger =
+# 1/connectivity spots
 
-# Or have EV users per line (separate home/street) and then draw and within pool (i.e. make it so
+# Or have EV users per line (separate home/street) and then draw and within
+# pool (i.e. make it so
 # that cannot draw if supply is exhausted)
 # @dataclass
 # class PowerLine:
@@ -1345,7 +1454,9 @@ class LocalGrid:
 # class Grid:
 #     transformers: list[Transformer]
 
-# # While writing get_non_EV_power_demand_per_line_kW, I thought of the following (not the change from network --> grid):      # Go through lines and draw powers by:
+# # While writing get_non_EV_power_demand_per_line_kW, I thought of the
+# following (not the change from network --> grid):      # Go through lines
+#  and draw powers by:
 # # setting an amount of connections per line
 # # (ransdom draw between zero and line_power/power per connection)
 # # Then for each connection, draw a run consumption adn profile
@@ -1366,7 +1477,17 @@ class LocalGrid:
 # # where we need to do these checks only for the horizon at hand
 # # and where all the non-EV parts are fixed anyway?
 # # Also, this grid would be for the homes of the users.
-# # We assume that other locations are fine (dedicated charging infrastrure)                                                       This means, I will take a step back. I first want to create a grid that has transfromers to which lines are attached, to which connections are attached.  Some of the connections will be street chargers. Some will be household chargers (in own driveways). Then, when we create users, they will get a transformer and line drawn to them. If they have own driveways, then they will get a hosuehold connection drawn for them. The amount of street chargers per line is given by the connectivity of street parking (need to think that all through). I also need spme kind of way to avoid this whole grid thing if looking at things other than cars (as they will have their own infrastructure).
+# # We assume that other locations are fine (dedicated charging infrastrure)
+#  This means, I will take a step back. I first want to create a grid that has
+#  to which lines are attached, to which connections are attached.
+# Some of the connections will be street chargers. Some will be household
+#  chargers (in own driveways). Then, when we create users, they will get
+# a transformer and line drawn to them. If they have own driveways, then they
+# will get a hosuehold connection drawn for them. The amount of street
+# chargers per line is given by the connectivity of street parking (need
+# to think that all through). I also need spme kind of way to avoid this
+# whole grid thing if looking at things other than cars (as they will have
+# their own infrastructure).
 
 
 # # User gets a line (street) and if charge at home--> connection
@@ -1561,7 +1682,8 @@ class LocalGrid:
 #     ) -> GridTopology:
 #         transformer_id_to_index: dict[uuid.UUID, int] = {
 #             transformer.ID: transformer_index
-#             for transformer_index, transformer in enumerate(transformers_pool)
+#             for transformer_index, transformer in
+# enumerate(transformers_pool)
 #         }
 
 #         transformer_capacities_kW: npt.NDArray[np.float64] = np.array(
@@ -1621,7 +1743,8 @@ class LocalGrid:
 
 #         if not 0 <= line_index < amount_of_lines:
 #             raise IndexError(
-#                 'Power-line index is outside the range for this transformer: '
+#                 'Power-line index is outside the range for
+#  this transformer: '
 #                 f'{transformer_id=}, '
 #                 f'{line_index=}, '
 #                 f'{amount_of_lines=}.'
@@ -1666,7 +1789,8 @@ class LocalGrid:
 #             len(topology.transformer_capacities_kW)
 #         ):
 #             start: int = topology.transformer_line_offsets[transformer_index]
-#             end: int = topology.transformer_line_offsets[transformer_index + 1]
+#             end: int = topology.transformer_line_offsets[transformer_index
+# + 1]
 
 #             transformer_non_EV_power_kW[transformer_index] = (
 #                 line_non_EV_power_kW[start:end].sum(axis=0)
@@ -1788,7 +1912,8 @@ class LocalGrid:
 #     #             p=proportions_of_users,
 #     #         )
 #     #     )
-#     #     user_transformer: Transformer = transformers_pool[transformer_index]
+#     #     user_transformer: Transformer =
+# transformers_pool[transformer_index]
 
 #     #     if not user_transformer.power_lines:
 #     #         raise ValueError(
@@ -1829,7 +1954,8 @@ class LocalGrid:
 #     #     beta_shape: float,
 #     # ) -> tuple[Household, HeatPump, HomeBattery, SolarPanels]:
 
-#     #     yearly_consumption_kWh_excluding_EV_heat_pump_home_battery: float = (
+#     #     yearly_consumption_kWh_excluding_EV_heat_pump_home_battery:
+# float = (
 #     #         draw_beta_value(
 #     #             minimum=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_min,  # noqa: E501
 #     #             typical=households_settings.yearly_consumption_kWh_excluding_EV_heat_pump_home_battery_typical,  # noqa: E501
@@ -1840,8 +1966,10 @@ class LocalGrid:
 #     #     )
 
 #     #     demand_profile_shape_name: str = random_generator.choice(
-#     #         np.array(households_settings.possible_profile_shape_references),
-#     #         p=households_settings.possible_profile_shape_references_weights,
+#     #         np.array(
+# households_settings.possible_profile_shape_references),
+#     #         p=
+# households_settings.possible_profile_shape_references_weights,
 #     #     )
 
 #     #     profiles_shapes_source: pl.DataFrame = pl.read_csv(
@@ -1890,7 +2018,8 @@ class LocalGrid:
 #     #     has_solar_panels: bool = bool(
 #     #         random_generator.choice(
 #     #             [True, False],
-#     #             p=[adoption_rate_solar_panels, 1 - adoption_rate_solar_panels],
+#     #             p=[adoption_rate_solar_panels,
+# 1 - adoption_rate_solar_panels],
 #     #         )
 #     #     )
 #     #     if has_solar_panels:
@@ -1908,7 +2037,8 @@ class LocalGrid:
 
 #     #     solar_shape: pl.Series = pl.Series()
 #     #     solar_panels: SolarPanels = SolarPanels(
-#     #         yearly_production_kWh=solar_production, profile_shape=solar_shape
+#     #         yearly_production_kWh=solar_production,
+# profile_shape=solar_shape
 #     #     )
 #     #     has_home_battery: bool = bool(
 #     #         random_generator.choice(

@@ -212,26 +212,24 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
             time_constants=time_constants,
             random_generator=random_generators.local_grid,
         )
-        for line_index in range(len(local_grid.power_lines)):
-            print(line_index)
-            min_demand = local_grid.power_lines[
-                line_index
-            ].non_EV_demand_profile.min()
-            mean_demand = local_grid.power_lines[
-                line_index
-            ].non_EV_demand_profile.mean()
-            max_demand = local_grid.power_lines[
-                line_index
-            ].non_EV_demand_profile.max()
-            capacity = local_grid.power_lines[line_index].capacity_kW
-            print(min_demand, mean_demand, max_demand)
-            print(
-                capacity - min_demand,
-                capacity - mean_demand,
-                capacity - max_demand,
-            )
-
-        exit()
+        # for line_index in range(len(local_grid.power_lines)):
+        #     print(line_index)
+        #     min_demand = min(
+        #         local_grid.power_lines[line_index].non_EV_demand_profile
+        #     )
+        #     mean_demand = sum(
+        #         local_grid.power_lines[line_index].non_EV_demand_profile
+        #     ) / (8760 * 60)
+        #     max_demand = max(
+        #         local_grid.power_lines[line_index].non_EV_demand_profile
+        #     )
+        #     capacity = local_grid.power_lines[line_index].capacity_kW
+        #     print(min_demand, mean_demand, max_demand)
+        #     print(
+        #         capacity - min_demand,
+        #         capacity - mean_demand,
+        #         capacity - max_demand,
+        #     )
 
     # Residential-grid creation may have changed home connectivity for users
     # with street parking. Therefore, the charging DataFrame can only be

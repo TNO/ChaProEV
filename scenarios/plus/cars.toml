@@ -832,7 +832,7 @@ driven_header = 'Kilometers driven'
 
 
 [grid]
-include_residential_grid_congestion = true
+include_residential_grid_congestion = true 
 home_location_name = 'home'
 own_driveway_name = 'own_driveway'
 street_parking_name = 'street_parking'
@@ -853,9 +853,16 @@ possible_profile_shape_references_weights = [0.8, 0.2]
 profiles_shapes_source = 'input/household_profiles.csv'
 [grid.heat_pumps]
 adoption_rate_heat_pumps = 0.25
-run_heat_pump_consumption_kWh_min = 1_000
-run_heat_pump_consumption_kWh_typical = 1_200
-run_heat_pump_consumption_kWh_max = 1_400
+run_heat_pump_consumption_heat_kWh_min = 1_000
+run_heat_pump_consumption_heat_kWh_typical = 1_200
+run_heat_pump_consumption_heat_kWh_max = 1_400
+COP_min = 2.5
+COP_typical = 2.7
+COP_max = 3.0
+profiles_shape_source = 'input/heat_shapes.csv'
+profile_variants = ['Ref1', 'Ref2']
+profile_proportions =  [0.42, 0.58]
+
 [grid.solar_panels]
 adoption_rate_solar_panels = 0.26
 run_production_as_proportion_of_demand_if_no_battery = 1.00

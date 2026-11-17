@@ -304,10 +304,76 @@ non-EV power profile.
 
 #### Heat-pump demand
 
-TODO: Describe how the presence and characteristics of heat pumps are
-determined, how household heat demand is calculated, and how the coefficient
-of performance (COP) is used to convert heat demand into an electricity demand
-profile.
+Heat pumps are included as an additional source of household electricity demand.
+Whether a household has a heat pump is determined stochastically using a
+user-defined heat-pump adoption rate.
+
+For households with a heat pump, the total heat demand over the simulation
+period is drawn from a bounded beta distribution. The minimum, typical, and
+maximum heat demands are provided as model inputs. The resulting demand
+represents useful thermal energy and is therefore expressed in kWh of heat.
+
+The coefficient of performance (COP) of the heat pump is also drawn from a
+bounded beta distribution. The COP describes the ratio between the useful heat
+delivered by the heat pump and its electricity consumption. The total
+electricity consumption required to provide the drawn heat demand is therefore:
+
+$$
+E_{\mathrm{HP,run}}
+=
+\frac{
+Q_{\mathrm{heat,run}}
+}{
+COP
+}
+$$
+
+where $Q_{\mathrm{heat,run}}$ is the total heat demand during the simulation
+period and $E_{\mathrm{HP,run}}$ is the corresponding heat-pump electricity
+demand.
+
+The temporal distribution of the heat demand is determined using a set of
+heat-demand profile shapes provided as model input. One profile is randomly
+selected for each household with a heat pump using user-defined probabilities.
+The selected profile is resized to match the simulation period and temporal
+resolution, if necessary, and normalised so that its values sum to one.
+
+The heat-pump electricity-demand profile is then calculated as:
+
+$$
+P_{\mathrm{HP}}(t)
+=
+\frac{
+Q_{\mathrm{heat,run}} \, s_{\mathrm{heat}}(t)
+}{
+COP \, \Delta t
+}
+$$
+
+where $s_{\mathrm{heat}}(t)$ is the normalised heat-demand shape and $\Delta t$
+is the model time-step duration in hours. The resulting profile therefore
+represents the average electrical power demand of the heat pump in kW at every
+model time step.
+
+The electricity consumed by the heat pump is also included in the household
+electricity-demand reference used to determine solar-panel production. The
+reference demand for sizing solar production therefore consists of the basic
+household electricity demand plus the heat pump's electrical energy demand:
+
+$$
+E_{\mathrm{reference}}
+=
+E_{\mathrm{household,run}}
++
+\frac{
+Q_{\mathrm{heat,run}}
+}{
+COP
+}
+$$
+
+For households without a heat pump, both the heat demand and heat-pump
+electricity-demand profile are zero.
 
 #### Solar-panel production
 
@@ -317,7 +383,8 @@ using a user-defined solar-panel adoption rate. Each household therefore has a
 probability of receiving solar panels equal to the specified adoption rate.
 
 For households with solar panels, the total solar production over the simulation
-period is determined relative to the basic household electricity demand:
+period is determined relative to the basic household electricity demand plus 
+the demand for the heat pump (if present):
 
 $$
 E_{\mathrm{solar,run}}
@@ -327,7 +394,8 @@ r_{\mathrm{solar}}
 $$
 
 where $E_{\mathrm{household,run}}$ is the basic household electricity demand
-over the simulation period and $r_{\mathrm{solar}}$ is the assumed ratio
+over the simulation period plus the demand for the heat pump (if present) 
+and $r_{\mathrm{solar}}$ is the assumed ratio
 between solar production and basic household electricity demand.
 
 The model allows this ratio to depend on whether the household also has a home
