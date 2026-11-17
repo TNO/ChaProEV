@@ -14,7 +14,7 @@ Look at residnetial neighbourhood because it is likely that such conflicts will
 occur (simultaeous demand, also the fact that in other locations the
 grid might besolely dedicated to EV charging)
 
-## WHen to use
+## When to use
 The parameter include_residential_grid_congestion (set to either `true` or `false`)
 in the `[grid]`  section of your scenario tells if you are using this modelling or not.
 
@@ -122,31 +122,6 @@ Finally, the model looks up the EV users associated with each charger and assign
 >   between users, reducing the number of chargers required.
 > - **Reduce the street charger connectivity.** More users then share each
 >   street charger, also reducing the number of chargers required.
-
-
-
-
-
-
-
-
-#Draw amounts of the below per line (based on line capacity/transfomer capacity)
-One on one, or another draw level?
-Each has a draw --> sum
-Time conversion
-#### Households
-consumption beta draw
-shape depends on connection type? MFFBAS
-#### Heat pumps
-Heat demand profile (wramteprofilengenrator)
-+ size (beta draw)
-#### Solar panels
-production=consumption
-shape entso-e
-```python
-clsss Grid:
-    soo: int
-```
 
 
 ### Assignment of home chargers and connectivity
@@ -485,15 +460,3 @@ P_{\mathrm{non\text{-}EV},i}(t)
 $$
 
 where $N_i$ is the set of household nodes assigned to line $i$. The resulting profile therefore represents the total non-EV household demand connected to that power line at each time step. These line-level profiles can subsequently be combined with the EV charging demand assigned to the same lines to determine the total line load and assess whether the line capacity is exceeded.
-
-#### Own driveway chargers
-Users x Own driveway proportion
-
-also power?
-
-
-
-Trafo --> Lines 
-Non EV profiles
-
-EV cpacities
