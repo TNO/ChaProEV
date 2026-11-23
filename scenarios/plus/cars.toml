@@ -844,7 +844,7 @@ line_capacity_weight_max = 4.2
 amount_of_households = 200
 non_EV_demand_header = 'Non EV demand (kW)'
 [grid.households]
-# THose are values over the whole tun (typically, a year)
+# THose are values over the whole run (typically, a year)
 run_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
 run_consumption_kWh_excluding_EV_heat_pump_home_battery_typical = 2_500
 run_consumption_kWh_excluding_EV_heat_pump_home_battery_max = 3_000
@@ -872,8 +872,16 @@ profile_proportions = [0.8, 0.2]
 profile_shapes_source='input/solar.csv'
 
 [grid.home_batteries]
+adoption_rate_for_EV_chargers = 0.89
+EV_reserve_hours = 2.6
 adoption_rate_home_batteries_if_solar_panels = 0.42
 adoption_rate_home_batteries_if_not_solar_panels = 0.06
+charging_power_kW = 6.0
+discharging_power_kW = 6.0
+reserve_days_basic = 1.0
+reserve_days_heat_pump =  0.8
+reserve_days_solar_panels = 1.5
+reserve_days_EV = 0.25
 
 # run_demand_min_typical_max
 # profiles_shapes

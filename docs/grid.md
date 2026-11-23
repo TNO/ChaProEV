@@ -36,17 +36,17 @@ They are in the `[grid]` section of your scenario
 [grid]
 include_residential_grid_congestion = true
 transformer_capacity_kW = 200
-amount_of_lines = 10
-line_capacity_to_average_ratio_min = 0.8
-line_capacity_to_average_ratio_typical = 1.0
-line_capacity_to_average_ratio_max = 1.2
+amount_of_power_lines = 10
+line_capacity_weight_min = 0.8
+line_capacity_weight_typical = 1.0
+line_capacity_weight_max = 1.2
 ```
 
 ### Transformer capacity
 The capacity of the transformer (in kW)
 ### Amount of lines
 The amounts of lines connected to the transformer. 
-### Line capacity to average ratio
+### Line capacity weights
 These three parameters provide a range for 
 [drawing](monte-carlo.md#drawing-bounded-parameter-values)
 each line's capacity by fluctuating around dividing the transformer equally
@@ -165,27 +165,25 @@ The updated connectivity is stored on the user's home `Location`. The charging D
 ### Non-EV demand
 
 
-
 #### Household node demand profiles
 
 To determine the electricity demand on each power line, the model first creates
-an individual non-EV electricity profile for every household node. This profile
-represents the net electricity exchange between the household node and the grid
-at each time step, excluding EV charging.
+an individual fixed non-EV electricity profile for every household node. This
+profile represents the net electricity exchange between the household node and
+the grid at each time step before EV charging and stationary-battery operation
+are taken into account.
 
-Each household node can contain four components that contribute to its net
-non-EV profile:
+Each household node can contain three components that contribute directly to
+this initial non-EV profile:
 
 - Basic household electricity demand
 - Heat-pump electricity demand
 - Solar-panel production
-- Home-battery charging and discharging
 
 Demand from the household and heat pump is represented as positive power,
 whereas electricity production from the solar panels is represented as negative
-power. Similarly, charging of the home battery represents positive power and
-discharging represents negative power. The net non-EV profile of a household
-node is therefore calculated as:
+power. The initial net non-EV profile of a household node is therefore
+calculated as:
 
 $$
 P_{\mathrm{non\text{-}EV},n}(t)
@@ -195,23 +193,30 @@ P_{\mathrm{household},n}(t)
 P_{\mathrm{heat\ pump},n}(t)
 +
 P_{\mathrm{solar},n}(t)
-+
-P_{\mathrm{battery},n}(t)
 $$
 
 A positive value indicates that the household node has a net electricity demand
 from the grid at that time step, while a negative value indicates that the
 household node is supplying electricity to the grid.
 
-The model creates each household node by independently creating its basic
-household demand, heat pump, solar panels, and home battery. The stochastic
-properties of these components are therefore determined at the individual
-household level. Once the four component profiles have been created, they are
-added together to obtain the net non-EV profile of that household node.
+A household node can additionally contain a stationary battery. However, the
+stationary-battery power profile cannot yet be determined when the household
+node is created. Battery charging and discharging depend on the complete power
+situation, including EV charging. The battery is therefore initially represented
+by its capacity, charging-power limit, and discharging-power limit, while its
+power profile and charge level are initialised at zero.
+
+The model creates the basic household demand, heat pump, solar panels, and
+stationary battery separately for each household node. Their stochastic
+properties are therefore determined at the individual household level. Only the
+basic household, heat-pump, and solar-panel profiles are combined at this stage
+to obtain the initial net non-EV profile.
 
 These node-level profiles are subsequently assigned to the power lines based on
 the number of household nodes allocated to each line. The profiles of the nodes
 connected to a line are summed to obtain the line-level non-EV demand profile.
+At the same time, the stationary batteries belonging to these nodes are added
+to the stationary-battery capacity available on the corresponding power line.
 
 #### Basic household electricity demand
 
@@ -273,9 +278,10 @@ E_{\mathrm{household,run}}
 $$
 
 The resulting profile represents the basic household electricity demand in kW
-at every model time step and is subsequently combined with the heat-pump,
-solar-panel, and home-battery profiles to obtain the household node's net
-non-EV power profile.
+at every model time step and is subsequently combined with the heat-pump and
+solar-panel profiles to obtain the household node's initial net non-EV power
+profile. Stationary-battery operation is determined separately at a later stage,
+once the complete power demand, including EV charging, is known.
 
 #### Heat-pump demand
 
@@ -358,20 +364,33 @@ using a user-defined solar-panel adoption rate. Each household therefore has a
 probability of receiving solar panels equal to the specified adoption rate.
 
 For households with solar panels, the total solar production over the simulation
-period is determined relative to the basic household electricity demand plus 
-the demand for the heat pump (if present):
+period is determined relative to the household electricity demand, including
+heat-pump electricity demand if a heat pump is present:
+
+$$
+E_{\mathrm{reference}}
+=
+E_{\mathrm{household,run}}
++
+\frac{
+Q_{\mathrm{heat,run}}
+}{
+COP
+}
+$$
+
+The total solar production is then:
 
 $$
 E_{\mathrm{solar,run}}
 =
-E_{\mathrm{household,run}}
+E_{\mathrm{reference}}
 r_{\mathrm{solar}}
 $$
 
-where $E_{\mathrm{household,run}}$ is the basic household electricity demand
-over the simulation period plus the demand for the heat pump (if present) 
-and $r_{\mathrm{solar}}$ is the assumed ratio
-between solar production and basic household electricity demand.
+where $E_{\mathrm{reference}}$ is the household electricity-demand reference
+over the simulation period and $r_{\mathrm{solar}}$ is the assumed ratio
+between solar production and household electricity demand.
 
 The model allows this ratio to depend on whether the household also has a home
 battery. Separate solar-production-to-demand ratios can therefore be provided
@@ -421,16 +440,200 @@ $$
 
 For households without solar panels, both solar production and the corresponding
 power profile are zero. The solar-production profile is subsequently combined
-with the basic household demand, heat-pump demand, and home-battery profile to
-obtain the net non-EV power profile of the household node.
+with the basic household and heat-pump demand profiles to obtain the household
+node's initial net non-EV power profile.
 
-#### Home-battery demand
+#### Stationary batteries
 
-TODO: Describe how the presence, capacity, charging power, and discharging
-power of home batteries are determined, and how their state of charge and
-resulting power profile are calculated. Battery charging is represented as
-positive power demand, while battery discharging is represented as negative
-power demand.
+Stationary batteries can be present both at household nodes and in combination
+with EV chargers. Unlike basic household demand, heat-pump demand, and solar
+production, a stationary battery does not receive a fixed power profile when
+the residential grid is initialised. Its charging and discharging behaviour
+depends on the complete power situation, including EV charging, and can
+therefore only be determined at a later stage.
+
+During grid initialisation, the model consequently determines the battery's
+energy capacity in kWh and its maximum charging and discharging powers in kW.
+Its charge-level and power-profile series are initially set to zero.
+
+##### Household stationary batteries
+
+Whether a household has a stationary battery is determined stochastically.
+Different adoption rates can be specified for households with and without
+solar panels.
+
+For a household that receives a stationary battery, its capacity is based on
+the household's average daily electricity demand and solar production during
+the simulation period. Three separate contributions are considered:
+
+- basic household electricity demand;
+- heat-pump electricity demand;
+- solar-panel production.
+
+The duration of the simulation period in days is:
+
+$$
+D_{\mathrm{run}}
+=
+\frac{
+N_{\mathrm{steps}} \Delta t
+}{
+24
+}
+$$
+
+where $N_{\mathrm{steps}}$ is the number of model time steps and $\Delta t$ is
+the time-step duration in hours.
+
+The capacity associated with basic household demand is:
+
+$$
+C_{\mathrm{basic}}
+=
+\frac{
+E_{\mathrm{household,run}}
+}{
+D_{\mathrm{run}}
+}
+d_{\mathrm{basic}}
+$$
+
+where $d_{\mathrm{basic}}$ is the configured number of reserve days for basic
+household demand.
+
+For heat-pump demand, the thermal energy demand is first converted to electrical
+energy using the heat pump's COP:
+
+$$
+C_{\mathrm{HP}}
+=
+\frac{
+Q_{\mathrm{heat,run}} / COP
+}{
+D_{\mathrm{run}}
+}
+d_{\mathrm{HP}}
+$$
+
+where $d_{\mathrm{HP}}$ is the configured number of reserve days for heat-pump
+electricity demand.
+
+The solar-production contribution is:
+
+$$
+C_{\mathrm{solar}}
+=
+\frac{
+E_{\mathrm{solar,run}}
+}{
+D_{\mathrm{run}}
+}
+d_{\mathrm{solar}}
+$$
+
+where $d_{\mathrm{solar}}$ is the configured number of reserve days associated
+with solar production.
+
+The total stationary-battery capacity of the household is then:
+
+$$
+C_{\mathrm{battery}}
+=
+C_{\mathrm{basic}}
++
+C_{\mathrm{HP}}
++
+C_{\mathrm{solar}}
+$$
+
+The maximum charging and discharging powers of household stationary batteries
+are specified directly by the grid parameters.
+
+##### Stationary batteries associated with EV chargers
+
+EV chargers can also receive a stationary battery. Whether this occurs is
+determined stochastically using the configured adoption rate for stationary
+batteries associated with EV chargers.
+
+The capacity of such a battery is based on the rated EV-charging power and a
+configured number of reserve hours:
+
+$$
+C_{\mathrm{charger\ battery}}
+=
+P_{\mathrm{charger}}
+t_{\mathrm{reserve}}
+$$
+
+This means that a fully charged stationary battery contains enough energy to
+provide the charger's rated charging power for the configured reserve duration,
+or a lower power for a correspondingly longer duration.
+
+The stationary battery's maximum discharging power is equal to the charger's
+EV-charging power:
+
+$$
+P_{\mathrm{battery,discharge,max}}
+=
+P_{\mathrm{charger,charge}}
+$$
+
+The stationary battery's maximum charging power is equal to the charger's
+reverse-power capability:
+
+$$
+P_{\mathrm{battery,charge,max}}
+=
+P_{\mathrm{charger,reverse}}
+$$
+
+The latter represents the reverse power direction through the charger.
+
+##### Aggregation of stationary batteries on power lines
+
+Stationary batteries are ultimately represented at power-line level. Batteries
+associated with EV chargers are assigned directly to the line containing the
+corresponding charger. Household stationary batteries are assigned to the line
+to which their household node is allocated.
+
+For all stationary batteries connected to a line, their capacities and power
+limits are added:
+
+$$
+C_{\mathrm{battery,line},i}
+=
+\sum_{b \in B_i} C_b
+$$
+
+$$
+P_{\mathrm{charge,max},i}
+=
+\sum_{b \in B_i} P_{\mathrm{charge,max},b}
+$$
+
+$$
+P_{\mathrm{discharge,max},i}
+=
+\sum_{b \in B_i} P_{\mathrm{discharge,max},b}
+$$
+
+where $B_i$ is the set of stationary batteries assigned to line $i$.
+
+The charge-level and battery-power series are aggregated in the same way.
+Because no battery dispatch has yet taken place during grid initialisation,
+these series initially contain zeros.
+
+The resulting line-level stationary battery therefore represents the combined
+stationary-battery capacity and power capability connected to that power line.
+Its actual charge level and power profile are determined later, when the
+complete line load, including EV charging, is known.
+
+> **Modelling assumption:** The batteries connected to a power line are treated
+> as a single aggregated stationary battery at line level. Their capacities,
+> charging powers, discharging powers, charge levels, and power profiles are
+> added together. This means that the model does not preserve constraints
+> associated with the distribution of stored energy between the individual
+> physical batteries once they have been aggregated.
 
 #### Assigning household nodes to lines
 
@@ -459,4 +662,32 @@ P_{\mathrm{non\text{-}EV},i}(t)
 \sum_{n \in N_i} P_{\mathrm{non\text{-}EV},n}(t)
 $$
 
-where $N_i$ is the set of household nodes assigned to line $i$. The resulting profile therefore represents the total non-EV household demand connected to that power line at each time step. These line-level profiles can subsequently be combined with the EV charging demand assigned to the same lines to determine the total line load and assess whether the line capacity is exceeded.
+where $N_i$ is the set of household nodes assigned to line $i$. The resulting
+profile represents the initial non-EV household demand connected to that power
+line at each time step, before stationary-battery operation is included.
+
+At the same time, the stationary batteries belonging to the assigned household
+nodes are added to the stationary-battery object of the corresponding power
+line. Their capacities, charging-power limits, discharging-power limits,
+charge levels, and power profiles are summed. Any stationary batteries
+associated with EV chargers have already been assigned to their chargers'
+respective power lines.
+
+The resulting power line therefore contains both an initial fixed non-EV power
+profile and an aggregated stationary battery. The battery power profile is
+initially zero and is determined later together with EV charging. The eventual
+power on a line can therefore be represented conceptually as:
+
+$$
+P_{\mathrm{line},i}(t)
+=
+P_{\mathrm{non\text{-}EV},i}(t)
++
+P_{\mathrm{EV},i}(t)
++
+P_{\mathrm{battery},i}(t)
+$$
+
+using the model convention that electricity demand is positive and electricity
+supply is negative. Battery charging therefore contributes positive power,
+whereas battery discharging contributes negative power.

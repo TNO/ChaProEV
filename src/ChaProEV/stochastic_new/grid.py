@@ -32,7 +32,7 @@ class HouseholdBasicDemand:
         '''
         Create the basic electricity-demand profile of a household.
 
-        This demand excludes heat pumps, home batteries, and EV charging.
+        This demand excludes heat pumps, stationary batteries, and EV charging.
 
         The total household electricity demand for the run is drawn in kWh from
         user-defined bounds. A demand shape is then randomly selected from the
@@ -213,14 +213,15 @@ class SolarPanels:
         time_ranges: TimeRange,
         time_constants: TimeConstants,
         household_run_demand_kWh: float,
-        has_home_battery: bool,
+        has_stationary_battery: bool,
         profiles_shapes_source_solar: pl.DataFrame,
     ) -> SolarPanels:
         '''
         Create the solar-production profile of a household.
 
         The total solar production for the run is determined as a proportion
-        of the basic household electricity demand. A different proportion can
+        of the household electricity demand (including heat pumps, if present).
+        A different proportion can
         be specified depending on whether the household has a home battery.
 
         A solar-production shape is randomly selected from the available
@@ -243,7 +244,7 @@ class SolarPanels:
 
         # Select the solar-production-to-demand ratio based on whether
         # the household also has a home battery.
-        if has_home_battery:
+        if has_stationary_battery:
             production_demand_ratio: float = (
                 solar_panels_parameters.run_production_as_proportion_of_demand_if_battery  # noqa:E501
             )
@@ -294,27 +295,145 @@ class SolarPanels:
 
 
 @dataclass
-class HomeBattery:
+class StationaryBattery:
     capacity_kWh: float
     charge_power_kW: float
     discharge_power_kW: float
     charge_level_kWh: pl.Series
     profile: pl.Series
 
+    def __add__(self, other):
+        if not isinstance(other, StationaryBattery):
+            return NotImplemented
+
+        if len(self.profile) != len(other.profile):
+            raise ValueError(
+                'Stationary-battery profiles must have equal lengths: '
+                f'{len(self.profile)=}, {len(other.profile)=}.'
+            )
+
+        if len(self.charge_level_kWh) != len(other.charge_level_kWh):
+            raise ValueError(
+                'Stationary-battery charge-level series must have '
+                'equal lengths: '
+                f'{len(self.charge_level_kWh)=}, '
+                f'{len(other.charge_level_kWh)=}.'
+            )
+
+        return StationaryBattery(
+            capacity_kWh=self.capacity_kWh + other.capacity_kWh,
+            charge_power_kW=self.charge_power_kW + other.charge_power_kW,
+            discharge_power_kW=(
+                self.discharge_power_kW + other.discharge_power_kW
+            ),
+            charge_level_kWh=(self.charge_level_kWh + other.charge_level_kWh),
+            profile=self.profile + other.profile,
+        )
+
     @classmethod
-    def create(
+    def for_EV_charger(
+        cls,
+        *,
+        charger_charge_power_kW: float,
+        charger_reverse_power_kW: float,
+        reserve_hours: float,
+        time_ranges: TimeRange,
+    ) -> StationaryBattery:
+        '''
+        Creates a stationary battery for an EV charger.
+        Essentially, this battry can replace the charger at full
+        power for reserve_hours (or longr at lower power) if using its
+        full capcity.
+        '''
+
+        charge_level_kWh: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
+        profile: pl.Series = pl.Series(np.zeros(len(time_ranges.run_stamps)))
+
+        return cls(
+            capacity_kWh=charger_charge_power_kW * reserve_hours,
+            charge_power_kW=charger_reverse_power_kW,
+            # The stationary battery discharges through the charger at the
+            # charger's maximum EV-charging power.
+            discharge_power_kW=charger_charge_power_kW,
+            charge_level_kWh=charge_level_kWh,
+            profile=profile,
+        )
+
+    @classmethod
+    def for_non_EV(
         cls,
         *,
         grid_parameters: Box,
-        random_generator: np.random.Generator,
-        beta_shape: float,
+        household: HouseholdBasicDemand,
+        heat_pump: HeatPumpDemand,
+        solar_panels: SolarPanels,
         time_ranges: TimeRange,
-    ) -> HomeBattery:
+        time_constants: TimeConstants,
+    ) -> StationaryBattery:
+        '''
+        Create a stationary battery for non-EV household demand.
 
-        capacity_kWh: float = 0.0
-        charge_power_kW: float = 0.0
-        discharge_power_kW: float = 0.0
-        charge_level_kWh: pl.Series = pl.Series()
+        The battery profile cannot be determined during grid initialisation
+        because battery charging and discharging depend on the complete
+        power profile, including EV charging. This method therefore only
+        determines the battery capacity and its charging and discharging
+        power limits.
+
+        The battery capacity is based on the average daily basic household
+        demand, heat-pump electricity demand, and solar production during
+        the model run.
+        A separate reserve-days factor is applied to each component.
+        The component capacities are then added to obtain the
+        total battery capacity.
+        '''
+        HOURS_IN_A_DAY: int = time_constants.HOURS_IN_A_DAY
+
+        run_duration_hours: float = (
+            len(time_ranges.run_stamps)
+            * time_ranges.frequency_size
+            / time_constants.MINUTES_PER_HOUR
+        )
+
+        run_duration_days: float = run_duration_hours / HOURS_IN_A_DAY
+
+        reserve_days_basic: float = (
+            grid_parameters.home_batteries.reserve_days_basic
+        )
+        reserve_days_heat_pump: float = (
+            grid_parameters.home_batteries.reserve_days_heat_pump
+        )
+        reserve_days_solar_panels: float = (
+            grid_parameters.home_batteries.reserve_days_solar_panels
+        )
+
+        capacity_for_basic_kWh: float = (
+            household.non_BEV_HP_run_demand_kWh / run_duration_days
+        ) * reserve_days_basic
+
+        capacity_for_heat_pump_kWh: float = (
+            heat_pump.run_heat_demand_kWh / heat_pump.COP / run_duration_days
+        ) * reserve_days_heat_pump
+
+        capacity_for_solar_panels_kWh: float = (
+            solar_panels.run_production_kWh / run_duration_days
+        ) * reserve_days_solar_panels
+
+        capacity_kWh: float = (
+            capacity_for_basic_kWh
+            + capacity_for_heat_pump_kWh
+            + capacity_for_solar_panels_kWh
+        )
+        charge_power_kW: float = (
+            grid_parameters.home_batteries.charging_power_kW
+        )
+        discharge_power_kW: float = (
+            grid_parameters.home_batteries.discharging_power_kW
+        )
+        charge_level_kWh: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
         profile: pl.Series = pl.Series(np.zeros(len(time_ranges.run_stamps)))
 
         return cls(
@@ -331,7 +450,7 @@ class Node:
     household: HouseholdBasicDemand
     heat_pump: HeatPumpDemand
     solar_panels: SolarPanels
-    home_battery: HomeBattery
+    stationary_battery: StationaryBattery
 
     def get_net_non_EV_profile(self) -> pl.Series:
         '''
@@ -340,12 +459,10 @@ class Node:
         Positive values represent net electricity demand, while negative
         values represent net electricity supply to the grid.
         '''
-
         return (
             self.household.profile
             + self.heat_pump.profile
             + self.solar_panels.profile
-            + self.home_battery.profile
         )
 
     @classmethod
@@ -383,12 +500,12 @@ class Node:
             < grid_parameters.solar_panels.adoption_rate_solar_panels
         )
         if has_solar_panels:
-            has_home_battery: bool = (
+            has_stationary_battery: bool = (
                 random_generator.random()
                 < grid_parameters.home_batteries.adoption_rate_home_batteries_if_solar_panels  # noqa:E501
             )
         else:
-            has_home_battery = (
+            has_stationary_battery = (
                 random_generator.random()
                 < grid_parameters.home_batteries.adoption_rate_home_batteries_if_not_solar_panels  # noqa:E501
             )
@@ -426,7 +543,7 @@ class Node:
                 time_ranges=time_ranges,
                 time_constants=time_constants,
                 household_run_demand_kWh=run_demand_for_solar_panels_scale_kWh,
-                has_home_battery=has_home_battery,
+                has_stationary_battery=has_stationary_battery,
                 profiles_shapes_source_solar=profiles_shapes_source_solar,
             )
         else:
@@ -436,26 +553,31 @@ class Node:
                 profile=zero_shape,
             )
 
-        if has_home_battery:
-            home_battery: HomeBattery = HomeBattery.create(
-                grid_parameters=grid_parameters,
-                random_generator=random_generator,
-                beta_shape=beta_shape,
-                time_ranges=time_ranges,
+        if has_stationary_battery:
+            stationary_battery: StationaryBattery = (
+                StationaryBattery.for_non_EV(
+                    grid_parameters=grid_parameters,
+                    household=household,
+                    heat_pump=heat_pump,
+                    solar_panels=solar_panels,
+                    time_ranges=time_ranges,
+                    time_constants=time_constants,
+                )
             )
         else:
-            home_battery = HomeBattery(
+            stationary_battery = StationaryBattery(
                 capacity_kWh=0.0,
                 charge_power_kW=0.0,
                 discharge_power_kW=0.0,
                 charge_level_kWh=zero_shape,
                 profile=zero_shape,
             )
+
         return cls(
             household=household,
             heat_pump=heat_pump,
             solar_panels=solar_panels,
-            home_battery=home_battery,
+            stationary_battery=stationary_battery,
         )
 
 
@@ -464,6 +586,7 @@ class Charger:
     ID: uuid.UUID
     type: str
     power_kW: float
+    discharge_power_kW: float
     IDs_of_users: list[uuid.UUID]
 
 
@@ -475,6 +598,9 @@ class PowerLine:
     EV_users: list[
         uuid.UUID
     ]  # Will give us charging demand profiles in the line
+    stationary_battery_for_line: StationaryBattery
+    # Can be made of seceral physically separated batetries, but they count
+    # as one for the line
 
 
 @dataclass
@@ -558,6 +684,9 @@ class LocalGrid:
                 power_kW=own_driveway_user.locations[
                     home_location_name
                 ].charging_power_kW,
+                discharge_power_kW=own_driveway_user.locations[
+                    home_location_name
+                ].discharge_power_kW,
                 IDs_of_users=[own_driveway_user.ID],
             )
             chargers.append(driveway_charger)
@@ -597,6 +726,10 @@ class LocalGrid:
             home_location_name
         ][street_parking_name].charging_power_kW
 
+        street_charger__discharge_power_kW: float = scenario.locations[
+            home_location_name
+        ][street_parking_name].discharge_power_kW
+
         # We want 0.5 to round up instead of Python's banker's rounding
         expected_street_chargers: float = (
             len(street_parking_users) * street_parking_connectivity
@@ -618,6 +751,7 @@ class LocalGrid:
                 ID=uuid.uuid4(),
                 type=street_parking_name,
                 power_kW=street_charger_power_kW,
+                discharge_power_kW=street_charger__discharge_power_kW,
                 IDs_of_users=[],
             )
             chargers.append(street_charger)
@@ -889,7 +1023,9 @@ class LocalGrid:
         line_powers_kW: list[float],
         grid_parameters: Box,
         time_ranges: TimeRange,
-    ) -> list[pl.Series]:
+        lines_stationary_batteries: list[StationaryBattery],
+        nodes_stationary_batteries: list[StationaryBattery],
+    ) -> tuple[list[pl.Series], list[StationaryBattery]]:
         '''
         Assign the non-EV demand of household nodes to the power lines.
 
@@ -899,6 +1035,7 @@ class LocalGrid:
 
         No additional randomisation is required because the household demand
         profiles were already created using random draws.
+        We also add the node stationary batteries to their corresponding lines.
         '''
         amount_of_households: int = grid_parameters.amount_of_households
 
@@ -932,9 +1069,46 @@ class LocalGrid:
                 lines_non_EV_net_profiles[line_index] += node_non_EV_profiles[
                     node_list_index
                 ]
+                lines_stationary_batteries[
+                    line_index
+                ] += nodes_stationary_batteries[node_list_index]
                 node_list_index += 1
 
-        return lines_non_EV_net_profiles
+        return lines_non_EV_net_profiles, lines_stationary_batteries
+
+    @staticmethod
+    def get_line_stationary_batteries_for_EV_chargers(
+        *,
+        chargers: list[Charger],
+        charger_line_indices: list[int],
+        line_stationary_batteries: list[StationaryBattery],
+        grid_parameters: Box,
+        random_generator: np.random.Generator,
+        time_ranges: TimeRange,
+    ) -> list[StationaryBattery]:
+
+        for charger, charger_line_index in zip(
+            chargers, charger_line_indices, strict=True
+        ):
+            if (
+                random_generator.random()
+                < grid_parameters.home_batteries.adoption_rate_for_EV_chargers
+            ):
+                charger_battery: StationaryBattery = (
+                    StationaryBattery.for_EV_charger(
+                        charger_charge_power_kW=charger.power_kW,
+                        charger_reverse_power_kW=charger.discharge_power_kW,
+                        reserve_hours=(
+                            grid_parameters.home_batteries.EV_reserve_hours
+                        ),
+                        time_ranges=time_ranges,
+                    )
+                )
+                line_stationary_batteries[
+                    charger_line_index
+                ] += charger_battery
+
+        return line_stationary_batteries
 
     @classmethod
     def initialise(
@@ -977,6 +1151,59 @@ class LocalGrid:
                 'charger connectivity.'
             )
 
+        # We create the power lines.
+        # First, we distribute the transformer capacity among the lines.
+        # The resulting line capacities are subsequently used to distribute
+        # chargers and household nodes among the lines.
+
+        line_powers_kW: list[float] = LocalGrid.get_line_powers(
+            grid_parameters=grid_parameters,
+            random_generator=random_generator,
+            beta_shape=beta_shape,
+        )
+
+        # Assign the chargers to the power lines.
+        charger_line_indices: list[int] = LocalGrid.assign_chargers_to_lines(
+            chargers=chargers,
+            line_powers_kW=line_powers_kW,
+            random_generator=random_generator,
+        )
+
+        empty_lines_stationary_batteries: list[StationaryBattery] = [
+            StationaryBattery(
+                capacity_kWh=0.0,
+                charge_power_kW=0.0,
+                discharge_power_kW=0.0,
+                charge_level_kWh=pl.Series(
+                    np.zeros(len(time_ranges.run_stamps))
+                ),
+                profile=pl.Series(np.zeros(len(time_ranges.run_stamps))),
+            )
+            for _ in line_powers_kW
+        ]
+
+        lines_stationary_batteries: list[StationaryBattery] = (
+            LocalGrid.get_line_stationary_batteries_for_EV_chargers(
+                chargers=chargers,
+                charger_line_indices=charger_line_indices,
+                line_stationary_batteries=empty_lines_stationary_batteries,
+                grid_parameters=grid_parameters,
+                random_generator=random_generator,
+                time_ranges=time_ranges,
+            )
+        )
+
+        # Assign the users connected to each charger to the same power line.
+        line_EV_user_IDs: list[list[uuid.UUID]] = [[] for _ in line_powers_kW]
+
+        for charger_line_index, charger in zip(
+            charger_line_indices,
+            chargers,
+            strict=True,
+        ):
+
+            line_EV_user_IDs[charger_line_index].extend(charger.IDs_of_users)
+
         # We create the household nodes
         # We read the shape file to avoid doing it for each node:
         profiles_shapes_source_households: pl.DataFrame = pl.read_csv(
@@ -988,7 +1215,6 @@ class LocalGrid:
         demand_shapes_source_heat: pl.DataFrame = pl.read_csv(
             Path(grid_parameters.heat_pumps.profiles_shape_source)
         )
-
         household_nodes: list[Node] = [
             Node.create(
                 grid_parameters=grid_parameters,
@@ -1010,41 +1236,19 @@ class LocalGrid:
             household_node.get_net_non_EV_profile()
             for household_node in household_nodes
         ]
+        nodes_stationary_batteries: list[StationaryBattery] = [
+            household_node.stationary_battery
+            for household_node in household_nodes
+        ]
 
-        # We create the power lines.
-        # First, we distribute the transformer capacity among the lines.
-        # The resulting line capacities are subsequently used to distribute
-        # chargers and household nodes among the lines.
-
-        line_powers_kW: list[float] = LocalGrid.get_line_powers(
-            grid_parameters=grid_parameters,
-            random_generator=random_generator,
-            beta_shape=beta_shape,
-        )
-
-        # Assign the chargers to the power lines.
-        charger_line_indices: list[int] = LocalGrid.assign_chargers_to_lines(
-            chargers=chargers,
-            line_powers_kW=line_powers_kW,
-            random_generator=random_generator,
-        )
-
-        # Assign the users connected to each charger to the same power line.
-        line_EV_user_IDs: list[list[uuid.UUID]] = [[] for _ in line_powers_kW]
-
-        for charger_line_index, charger in zip(
-            charger_line_indices,
-            chargers,
-            strict=True,
-        ):
-            line_EV_user_IDs[charger_line_index].extend(charger.IDs_of_users)
-
-        line_non_EV_net_profiles: list[pl.Series] = (
+        line_non_EV_net_profiles, lines_stationary_batteries = (
             LocalGrid.assign_non_EV_demand_to_lines(
                 node_non_EV_profiles=node_non_EV_profiles,
                 line_powers_kW=line_powers_kW,
                 grid_parameters=grid_parameters,
                 time_ranges=time_ranges,
+                lines_stationary_batteries=lines_stationary_batteries,
+                nodes_stationary_batteries=nodes_stationary_batteries,
             )
         )
 
@@ -1054,13 +1258,21 @@ class LocalGrid:
                 capacity_kW=line_capacity_kW,
                 non_EV_demand_profile=line_non_EV_net_profile,
                 EV_users=line_EV_users,
+                stationary_battery_for_line=line_stationary_battery,
             )
             for line_index, (
                 line_capacity_kW,
                 line_non_EV_net_profile,
                 line_EV_users,
+                line_stationary_battery,
             ) in enumerate(
-                zip(line_powers_kW, line_non_EV_net_profiles, line_EV_user_IDs)
+                zip(
+                    line_powers_kW,
+                    line_non_EV_net_profiles,
+                    line_EV_user_IDs,
+                    lines_stationary_batteries,
+                    strict=True,
+                )
             )
         ]
 
@@ -1068,6 +1280,14 @@ class LocalGrid:
             transformer_capacity_kW=transformer_capacity_kW,
             power_lines=power_lines,
         )
+
+
+# def get_stationary_batteries() -> list[StationaryBattery]:
+#     per line  or go back to per node?
+#     print(1602)
+#     exit()
+#     lines_stationary_batteries: list[StationaryBattery] = []
+#     return lines_stationary_batteries
 
 
 # create list of chargers
@@ -1604,7 +1824,7 @@ class LocalGrid:
 #         line_capacity_weights: list[float] = [
 #             draw_beta_value(
 #                 minimum=(
-#                     transformers_settings.line_capacity_to_average_ratio_min
+#                 transformers_settings.line_capacity_to_average_ratio_min
 #                 ),
 #                 typical=(
 #                     transformers_settings.line_capacity_to_average_ratio_typical  # noqa:E501
@@ -1864,7 +2084,7 @@ class LocalGrid:
 
 
 # @dataclass
-# class HomeBattery:
+# class StationaryBattery:
 #     charge_profile: pl.Series
 #     discharge_profile: pl.Series
 
@@ -1952,7 +2172,7 @@ class LocalGrid:
 #     #     households_settings: Box,
 #     #     random_generator: np.random.Generator,
 #     #     beta_shape: float,
-#     # ) -> tuple[Household, HeatPump, HomeBattery, SolarPanels]:
+#     # ) -> tuple[Household, HeatPump, StationaryBattery, SolarPanels]:
 
 #     #     yearly_consumption_kWh_excluding_EV_heat_pump_home_battery:
 # float = (
@@ -2056,7 +2276,7 @@ class LocalGrid:
 #     #         home_battery_charge_profile = pl.Series()
 #     #         home_battery_discharge_profile = pl.Series()
 
-#     #     home_battery: HomeBattery = HomeBattery(
+#     #     home_battery: StationaryBattery = StationaryBattery(
 #     #         charge_profile=home_battery_charge_profile,
 #     #         discharge_profile=home_battery_discharge_profile,
 #     #     )

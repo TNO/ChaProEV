@@ -24,6 +24,7 @@ nav:
     - Writing: writing.md
     - Scenarios: scenarios_module.md
     - Profiles: profiles.md
+    - Grid: grid.md
   - Programming matters:
     - Parallel processing: parallel_processing.md
 

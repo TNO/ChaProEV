@@ -23,7 +23,6 @@ charging strategies.png
 charging_infra.png
 eu-emblem-low-res.jpg
 grid_models.png
-memory.md
 mkdocs-PC-28624.yml
 mkdocs.yml
 moot.png
@@ -36,6 +35,7 @@ requirements_obsolete.txt
 run_to_OPERA.csv
 siec.csv
 todo.txt
+todo_Grid.,txt
 uv.lock
 .github/workflows/black-format.yml
 .github/workflows/deploy-docs.yml
@@ -49,8 +49,11 @@ dist/chaproev-2.0.0-py3-none-any.whl
 dist/chaproev-2.0.0.tar.gz
 docs/ChaProEV_workflow.png
 docs/Legs.png
+docs/Local_grid.png
+docs/Local_grid.svg
 docs/Locations.png
 docs/Makefile
+docs/Picture2.svg
 docs/Trips.png
 docs/Vehicle_Temperature_correction_factor.svg
 docs/_config.yml
@@ -61,6 +64,7 @@ docs/define-PC-28624.md
 docs/define.md
 docs/general_parameters-PC-28624.md
 docs/general_parameters.md
+docs/grid.md
 docs/index-PC-28624.md
 docs/index.md
 docs/input.md
@@ -79,6 +83,7 @@ docs/running_model.md
 docs/scenario-PC-28624.md
 docs/scenario.md
 docs/scenarios_module.md
+docs/session_allocating.md
 docs/using-PC-28624.md
 docs/using.md
 docs/variants-PC-28624.md
@@ -175,10 +180,13 @@ src/ChaProEV/stochastic/monte_carlo.py
 src/ChaProEV/stochastic/scenarios_module.py
 src/ChaProEV/stochastic_new/ChaProEV_run.py
 src/ChaProEV/stochastic_new/activities.py
+src/ChaProEV/stochastic_new/auxiliary.py
 src/ChaProEV/stochastic_new/charging.py
 src/ChaProEV/stochastic_new/dashboard.py
 src/ChaProEV/stochastic_new/define.py
+src/ChaProEV/stochastic_new/grid.py
 src/ChaProEV/stochastic_new/monte_carlo.py
+src/ChaProEV/stochastic_new/non_EV.py
 src/ChaProEV/stochastic_new/time.py
 test_bus_moility_matrices/bus_weekday_in_holiday_week.csv
 test_bus_moility_matrices/bus_weekday_in_workweek.csv

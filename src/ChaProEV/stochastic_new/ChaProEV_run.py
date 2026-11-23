@@ -171,6 +171,14 @@ def test_run() -> None:
     print('[magenta] Document pickling as a cache of sorts with warnings')
     print('[yellow] Households for non-cars (skip?) and shape per minute')
     print('[blue] Get shapes of demand, heat_pumps, solar, battery')
+    print('Add EV cap to batteries here!')
+    print('Check and document batt and grid')
+    print('Then add conflict counting')
+    print('STeps towards sessions')
+    print('session demand and counter-proposals')
+    print('Maybe queues and alts')
+    print('New metrics')
+    print('AMount of users sliders (and display EV users per HH)')
 
 
 @cook.function_timer
