@@ -15,7 +15,7 @@ occur (simultaeous demand, also the fact that in other locations the
 grid might besolely dedicated to EV charging)
 
 ## When to use
-The parameter include_residential_grid_congestion (set to either `true` or `false`)
+The parameters  include_residential_grid_congestion (set to either `true` or `false`)
 in the `[grid]`  section of your scenario tells if you are using this modelling or not.
 
 Set it to `true` if you want to add residetial grid congestion issues to our profile.
@@ -24,33 +24,10 @@ If you don't want to include such effects, or if you want to investigate them in
 model (fr example an optimisation one) using the profiles provided by ChaProEV,
 or if it is not relevant (e.g. vehicles such as busses that charge in dedidcated locations)
 
-This is mostly meant for cars
+This is mostly meant for cars.
 
 
 
-## Parameters
-They are in the `[grid]` section of your scenario
-
-```TOML
-
-[grid]
-include_residential_grid_congestion = true
-transformer_capacity_kW = 200
-amount_of_power_lines = 10
-line_capacity_weight_min = 0.8
-line_capacity_weight_typical = 1.0
-line_capacity_weight_max = 1.2
-```
-
-### Transformer capacity
-The capacity of the transformer (in kW)
-### Amount of lines
-The amounts of lines connected to the transformer. 
-### Line capacity weights
-These three parameters provide a range for 
-[drawing](monte-carlo.md#drawing-bounded-parameter-values)
-each line's capacity by fluctuating around dividing the transformer equally
-within the lines.
 
 
 ## Approach
@@ -691,3 +668,443 @@ $$
 using the model convention that electricity demand is positive and electricity
 supply is negative. Battery charging therefore contributes positive power,
 whereas battery discharging contributes negative power.
+
+
+
+## Parameters
+They are in the `[grid]` section of your scenario
+
+```TOML
+[grid]
+include_residential_grid_congestion = true 
+home_location_name = 'home'
+own_driveway_name = 'own_driveway'
+street_parking_name = 'street_parking'
+transformer_capacity_kW = 250
+amount_of_power_lines = 10
+line_capacity_weight_min = 0.8
+line_capacity_weight_typical = 1.0
+line_capacity_weight_max = 4.2
+amount_of_households = 200
+non_EV_demand_header = 'Non EV demand (kW)'
+[grid.households]
+# THose are values over the whole run (typically, a year)
+run_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
+run_consumption_kWh_excluding_EV_heat_pump_home_battery_typical = 2_500
+run_consumption_kWh_excluding_EV_heat_pump_home_battery_max = 3_000
+possible_profile_shape_references = ['1.00_E1A_AZI_A', '1.00_E1A_AMI_A']
+possible_profile_shape_references_weights = [0.8, 0.2]
+profiles_shapes_source = 'input/household_profiles.csv'
+[grid.heat_pumps]
+adoption_rate_heat_pumps = 0.25
+run_heat_pump_consumption_heat_kWh_min = 1_000
+run_heat_pump_consumption_heat_kWh_typical = 1_200
+run_heat_pump_consumption_heat_kWh_max = 1_400
+COP_min = 2.5
+COP_typical = 2.7
+COP_max = 3.0
+profiles_shape_source = 'input/heat_shapes.csv'
+profile_variants = ['Ref1', 'Ref2']
+profile_proportions =  [0.42, 0.58]
+
+[grid.solar_panels]
+adoption_rate_solar_panels = 0.26
+run_production_as_proportion_of_demand_if_no_battery = 1.00
+run_production_as_proportion_of_demand_if_battery = 1.00
+profile_variants = ['South', 'East-West']
+profile_proportions = [0.8, 0.2]
+profile_shapes_source='input/solar.csv'
+
+[grid.home_batteries]
+adoption_rate_for_EV_chargers = 0.89
+EV_reserve_hours = 2.6
+adoption_rate_home_batteries_if_solar_panels = 0.42
+adoption_rate_home_batteries_if_not_solar_panels = 0.06
+charging_power_kW = 6.0
+discharging_power_kW = 6.0
+reserve_days_basic = 1.0
+reserve_days_heat_pump =  0.8
+reserve_days_solar_panels = 1.5
+reserve_days_EV = 0.25
+
+```
+
+
+### Residential grid congestion
+
+`include_residential_grid_congestion` determines whether residential grid
+congestion is included in the simulation.
+
+Set this parameter to `true` to model the effect of residential transformer and
+power-line capacity restrictions on EV charging. Set it to `false` if these
+effects should not be included.
+
+### Home location name
+
+`home_location_name` specifies the name of the location at which the residential
+grid model applies. This is generally the home or base location of the cars.
+
+The value must correspond to the name used for this location elsewhere in the
+scenario.
+
+### Own driveway name
+
+`own_driveway_name` specifies the home-location variant representing users with
+their own driveway and therefore an individual home charger.
+
+The value must correspond to the variant name used in the location
+configuration.
+
+### Street parking name
+
+`street_parking_name` specifies the home-location variant representing users
+who park on the street and use shared street chargers.
+
+The value must correspond to the variant name used in the location
+configuration.
+
+### Transformer capacity
+
+`transformer_capacity_kW` specifies the capacity of the neighbourhood
+transformer in kW.
+
+The transformer capacity is distributed over the power lines connected to the
+transformer.
+
+### Amount of power lines
+
+`amount_of_power_lines` specifies the number of power lines connected to the
+transformer.
+
+### Line capacity weights
+
+`line_capacity_weight_min`, `line_capacity_weight_typical`, and
+`line_capacity_weight_max` define the range used for
+[drawing](monte-carlo.md#drawing-bounded-parameter-values) the relative
+capacity weight of each power line.
+
+A separate weight is drawn for every line. The resulting weights are normalised
+so that the capacities assigned to all power lines together equal the
+transformer capacity.
+
+#### Minimum line capacity weight
+
+`line_capacity_weight_min` specifies the minimum value of the bounded
+distribution from which the line capacity weights are drawn.
+
+#### Typical line capacity weight
+
+`line_capacity_weight_typical` specifies the typical value of the bounded
+distribution from which the line capacity weights are drawn.
+
+#### Maximum line capacity weight
+
+`line_capacity_weight_max` specifies the maximum value of the bounded
+distribution from which the line capacity weights are drawn.
+
+### Amount of households
+
+`amount_of_households` specifies the number of household nodes represented in
+the neighbourhood.
+
+These households are distributed over the power lines proportionally to the
+capacities of the lines.
+
+### Non-EV demand header
+
+`non_EV_demand_header` specifies the name used for the line-level non-EV demand
+profile series.
+
+
+### Households
+
+The `[grid.households]` section defines the basic household electricity demand.
+This excludes EV charging, heat-pump demand, and stationary-battery operation.
+
+#### Minimum basic household demand
+
+`run_consumption_kWh_excluding_EV_heat_pump_home_battery_min` specifies the
+minimum basic household electricity demand over the complete simulation period,
+in kWh.
+
+#### Typical basic household demand
+
+`run_consumption_kWh_excluding_EV_heat_pump_home_battery_typical` specifies the
+typical basic household electricity demand over the complete simulation period,
+in kWh.
+
+#### Maximum basic household demand
+
+`run_consumption_kWh_excluding_EV_heat_pump_home_battery_max` specifies the
+maximum basic household electricity demand over the complete simulation period,
+in kWh.
+
+The minimum, typical, and maximum values are used to
+[draw](monte-carlo.md#drawing-bounded-parameter-values) the total basic
+electricity demand of each household.
+
+These values refer to the complete model run. When the model represents one
+year, they therefore represent annual electricity consumption.
+
+#### Possible household profile shapes
+
+`possible_profile_shape_references` specifies the names of the profile shapes
+that can be selected to distribute the total basic household electricity demand
+over time.
+
+The names must correspond to columns in the household profile-shape source
+file.
+
+#### Household profile-shape weights
+
+`possible_profile_shape_references_weights` specifies the probabilities with
+which the corresponding household profile shapes are selected.
+
+The order of these probabilities must correspond to the order in
+`possible_profile_shape_references`.
+
+#### Household profile-shape source
+
+`profiles_shapes_source` specifies the path to the CSV file containing the
+available basic household electricity-demand shapes.
+
+
+### Heat pumps
+
+The `[grid.heat_pumps]` section defines the adoption, heat demand, COP, and
+temporal demand shapes of household heat pumps.
+
+#### Heat-pump adoption rate
+
+`adoption_rate_heat_pumps` specifies the probability that a household has a
+heat pump.
+
+#### Minimum heat demand
+
+`run_heat_pump_consumption_heat_kWh_min` specifies the minimum household heat
+demand over the complete simulation period, in kWh of thermal energy.
+
+#### Typical heat demand
+
+`run_heat_pump_consumption_heat_kWh_typical` specifies the typical household
+heat demand over the complete simulation period, in kWh of thermal energy.
+
+#### Maximum heat demand
+
+`run_heat_pump_consumption_heat_kWh_max` specifies the maximum household heat
+demand over the complete simulation period, in kWh of thermal energy.
+
+The minimum, typical, and maximum heat demands are used to draw the total heat
+demand of each household that has a heat pump. The corresponding electricity
+demand is obtained by dividing this heat demand by the heat pump's COP.
+
+#### Minimum COP
+
+`COP_min` specifies the minimum coefficient of performance that can be drawn
+for a heat pump.
+
+#### Typical COP
+
+`COP_typical` specifies the typical coefficient of performance used when
+drawing the COP of a heat pump.
+
+#### Maximum COP
+
+`COP_max` specifies the maximum coefficient of performance that can be drawn
+for a heat pump.
+
+#### Heat profile-shape source
+
+`profiles_shape_source` specifies the path to the CSV file containing the
+available heat-demand profile shapes.
+
+#### Heat profile variants
+
+`profile_variants` specifies the names of the heat-demand profile variants that
+can be selected for households with heat pumps.
+
+The names must correspond to columns in the heat profile-shape source file.
+
+#### Heat profile proportions
+
+`profile_proportions` specifies the probabilities with which the corresponding
+heat-demand profile variants are selected.
+
+The order of the probabilities must correspond to the order in
+`profile_variants`.
+
+
+### Solar panels
+
+The `[grid.solar_panels]` section defines the adoption, total production, and
+temporal production profiles of household solar panels.
+
+#### Solar-panel adoption rate
+
+`adoption_rate_solar_panels` specifies the probability that a household has
+solar panels.
+
+#### Production-to-demand ratio without stationary battery
+
+`run_production_as_proportion_of_demand_if_no_battery` specifies total solar
+production over the simulation period as a proportion of household electricity
+demand for households without a stationary battery.
+
+Household electricity demand includes heat-pump electricity demand when a heat
+pump is present.
+
+For example, a value of `1.0` means that total solar production over the
+simulation period is equal to the household electricity-demand reference used
+for solar production.
+
+#### Production-to-demand ratio with stationary battery
+
+`run_production_as_proportion_of_demand_if_battery` specifies total solar
+production over the simulation period as a proportion of household electricity
+demand for households with a stationary battery.
+
+Using a separate value for households with stationary batteries makes it
+possible to represent a relationship between stationary-battery adoption and
+installed solar generation.
+
+#### Solar profile variants
+
+`profile_variants` specifies the names of the solar-production profile variants
+that can be selected for households with solar panels.
+
+The names must correspond to columns in the solar profile-shape source file.
+
+#### Solar profile proportions
+
+`profile_proportions` specifies the probabilities with which the corresponding
+solar-production profile variants are selected.
+
+The order of these probabilities must correspond to the order in
+`profile_variants`.
+
+#### Solar profile-shape source
+
+`profile_shapes_source` specifies the path to the CSV file containing the
+available solar-production profile shapes.
+
+
+### Stationary batteries
+
+The `[grid.home_batteries]` section defines the adoption, capacity sizing, and
+power limits of stationary batteries.
+
+Stationary-battery power profiles are not determined during grid
+initialisation. Their operation depends on the complete power situation,
+including EV charging, and is therefore determined later.
+
+#### Adoption rate for EV-charger batteries
+
+`adoption_rate_for_EV_chargers` specifies the probability that an EV charger
+has an associated stationary battery.
+
+#### EV-charger battery reserve hours
+
+`EV_reserve_hours` specifies the number of hours for which a fully charged
+stationary battery associated with an EV charger should be able to provide the
+rated charging power of that charger.
+
+Its battery capacity is therefore calculated as:
+
+$$
+C_{\mathrm{battery}}
+=
+P_{\mathrm{charger}}
+t_{\mathrm{reserve}}
+$$
+
+For example, a 7.4 kW charger with `EV_reserve_hours = 2.0` results in a
+stationary-battery capacity of 14.8 kWh.
+
+The battery's maximum discharge power is equal to the charger's charging power,
+while its maximum charging power is equal to the charger's reverse-power
+capability.
+
+#### Household battery adoption rate with solar panels
+
+`adoption_rate_home_batteries_if_solar_panels` specifies the probability that
+a household with solar panels also has a stationary battery.
+
+#### Household battery adoption rate without solar panels
+
+`adoption_rate_home_batteries_if_not_solar_panels` specifies the probability
+that a household without solar panels has a stationary battery.
+
+Separate adoption rates make it possible to represent the relationship between
+solar-panel ownership and stationary-battery ownership.
+
+#### Charging power
+
+`charging_power_kW` specifies the maximum charging power in kW of a household
+stationary battery.
+
+This parameter applies to household stationary batteries. The charging power
+of a stationary battery associated with an EV charger is instead derived from
+the reverse-power capability of that charger.
+
+#### Discharging power
+
+`discharging_power_kW` specifies the maximum discharging power in kW of a
+household stationary battery.
+
+This parameter applies to household stationary batteries. The discharging
+power of a stationary battery associated with an EV charger is instead derived
+from the rated charging power of that charger.
+
+#### Reserve days for basic household demand
+
+`reserve_days_basic` determines the contribution of basic household electricity
+demand to stationary-battery capacity.
+
+The model first calculates the household's average daily basic electricity
+demand over the simulation period. This is multiplied by
+`reserve_days_basic` to determine the corresponding contribution to battery
+capacity.
+
+#### Reserve days for heat-pump demand
+
+`reserve_days_heat_pump` determines the contribution of heat-pump electricity
+demand to stationary-battery capacity.
+
+The total heat demand is first divided by the heat pump's COP to obtain
+electricity demand. The average daily heat-pump electricity demand is then
+multiplied by `reserve_days_heat_pump`.
+
+#### Reserve days for solar production
+
+`reserve_days_solar_panels` determines the contribution of solar production to
+stationary-battery capacity.
+
+The model calculates the average daily solar production over the simulation
+period and multiplies this value by `reserve_days_solar_panels`.
+
+The complete capacity of a household stationary battery is the sum of the
+capacity contributions from basic household demand, heat-pump electricity
+demand, and solar-panel production.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 

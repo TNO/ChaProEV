@@ -881,18 +881,3 @@ discharging_power_kW = 6.0
 reserve_days_basic = 1.0
 reserve_days_heat_pump =  0.8
 reserve_days_solar_panels = 1.5
-reserve_days_EV = 0.25
-
-# run_demand_min_typical_max
-# profiles_shapes
-# profile_shapes_probabilities
-# [grid_solar_panels]
-# production_as_proportion_of_demand = 1.0
-# shape_source (orientation?)
-# [grid.heat_pump]
-# COP_min_typical_max 
-# heat_demand_total_min_typical_max 
-# profile_shapes 
-# probabilities
-# [grid.home_batteries]
-# TBD
