@@ -5,14 +5,14 @@
 
 
 ## Goal
-model impact of residnetial grid connection issues on charging profiles
+We want to model the  impact of residential grid connection issues on charging profiles
 charging demand can be high a the same time as other demand is high,
 so chargign session demands might be delayed, reduced or outrighht denied
-This will impact they way vehicles charge and change the charging profiles
+This will impact they way vehicles charge and change the charging .
 
-Look at residnetial neighbourhood because it is likely that such conflicts will
+We look at residential neighbourhood because it is likely that such conflicts will
 occur (simultaeous demand, also the fact that in other locations the
-grid might besolely dedicated to EV charging)
+grid might besolely dedicated to EV charging).
 
 ## When to use
 The parameters  include_residential_grid_congestion (set to either `true` or `false`)
