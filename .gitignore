@@ -12,4 +12,6 @@ reference_run_prev/
 reference_run_previous/
 non-road-output/
 test_outputs/
+build/
+dist/
 

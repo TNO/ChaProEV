@@ -1,0 +1,92 @@
+name: Publish package to PyPI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - pyproject.toml
+
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    name: Check whether the package version changed
+    runs-on: ubuntu-latest
+
+    outputs:
+      version-changed: ${{ steps.version-check.outputs.version-changed }}
+      package-version: ${{ steps.version-check.outputs.package-version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Check project version
+        id: version-check
+        shell: bash
+        run: |
+          new_version="$(
+            python -c "
+          import tomllib
+          from pathlib import Path
+
+          with Path('pyproject.toml').open('rb') as file:
+              pyproject = tomllib.load(file)
+
+          print(pyproject['project']['version'])
+          "
+          )"
+
+          old_version="$(
+            git show HEAD^:pyproject.toml |
+            python -c "
+          import sys
+          import tomllib
+
+          pyproject = tomllib.loads(sys.stdin.read())
+          print(pyproject['project']['version'])
+          "
+          )"
+
+          echo "Previous version: ${old_version}"
+          echo "Current version: ${new_version}"
+
+          echo "package-version=${new_version}" >> "${GITHUB_OUTPUT}"
+
+          if [ "${new_version}" = "${old_version}" ]; then
+            echo "The package version did not change."
+            echo "version-changed=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "The package version changed."
+            echo "version-changed=true" >> "${GITHUB_OUTPUT}"
+          fi
+
+  build:
+    name: Build package distributions
+    needs:
+      - check-version
+
+    if: needs.check-version.outputs.version-changed == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install build tools
+        run: 
