@@ -1,4 +1,5 @@
 name: Deploy docs
+
 on:
   push:
     paths:
@@ -6,14 +7,12 @@ on:
       - .github/workflows/deploy-docs.yml
       - 'mkdocs.yml'
 
-
 jobs:
-
     build-and-deploy:
         runs-on: ubuntu-latest
 
         steps:
-        
+
         -   name: Checkout repository
             uses: actions/checkout@v4
             with:
@@ -26,13 +25,13 @@ jobs:
                 python-version: '3.13'
 
         -   name: Install MkDocs
-            run: 
-                pip install mkdocs
-
+            run:
+                pip install mkdocs pymdown-extensions
 
         -   name: Build
             run:
                 mkdocs build
+
         -   name: Deploy
-            run: 
+            run:
                 mkdocs gh-deploy
