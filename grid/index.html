@@ -99,16 +99,6 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#when-to-use">When to use</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#parameters">Parameters</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#transformer-capacity">Transformer capacity</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#amount-of-lines">Amount of lines</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#line-capacity-weights">Line capacity weights</a>
-    </li>
-        </ul>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#approach">Approach</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#scope">Scope</a>
@@ -134,6 +124,114 @@
     <li class="toctree-l4"><a class="reference internal" href="#assigning-household-nodes-to-lines">Assigning household nodes to lines</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#assigning-non-ev-demand-to-lines">Assigning non-EV demand to lines</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parameters">Parameters</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#residential-grid-congestion_1">Residential grid congestion</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#home-location-name">Home location name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#own-driveway-name">Own driveway name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#street-parking-name">Street parking name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#transformer-capacity">Transformer capacity</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#amount-of-power-lines">Amount of power lines</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#line-capacity-weights">Line capacity weights</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#minimum-line-capacity-weight">Minimum line capacity weight</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#typical-line-capacity-weight">Typical line capacity weight</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#maximum-line-capacity-weight">Maximum line capacity weight</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#amount-of-households">Amount of households</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#non-ev-demand-header">Non-EV demand header</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#households">Households</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#minimum-basic-household-demand">Minimum basic household demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#typical-basic-household-demand">Typical basic household demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#maximum-basic-household-demand">Maximum basic household demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#possible-household-profile-shapes">Possible household profile shapes</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#household-profile-shape-weights">Household profile-shape weights</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#household-profile-shape-source">Household profile-shape source</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#heat-pumps">Heat pumps</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#heat-pump-adoption-rate">Heat-pump adoption rate</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#minimum-heat-demand">Minimum heat demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#typical-heat-demand">Typical heat demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#maximum-heat-demand">Maximum heat demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#minimum-cop">Minimum COP</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#typical-cop">Typical COP</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#maximum-cop">Maximum COP</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#heat-profile-shape-source">Heat profile-shape source</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#heat-profile-variants">Heat profile variants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#heat-profile-proportions">Heat profile proportions</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#solar-panels">Solar panels</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#solar-panel-adoption-rate">Solar-panel adoption rate</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#production-to-demand-ratio-without-stationary-battery">Production-to-demand ratio without stationary battery</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#production-to-demand-ratio-with-stationary-battery">Production-to-demand ratio with stationary battery</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#solar-profile-variants">Solar profile variants</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#solar-profile-proportions">Solar profile proportions</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#solar-profile-shape-source">Solar profile-shape source</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stationary-batteries_1">Stationary batteries</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#adoption-rate-for-ev-charger-batteries">Adoption rate for EV-charger batteries</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#ev-charger-battery-reserve-hours">EV-charger battery reserve hours</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#household-battery-adoption-rate-with-solar-panels">Household battery adoption rate with solar panels</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#household-battery-adoption-rate-without-solar-panels">Household battery adoption rate without solar panels</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#charging-power">Charging power</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#discharging-power">Discharging power</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#reserve-days-for-basic-household-demand">Reserve days for basic household demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#reserve-days-for-heat-pump-demand">Reserve days for heat-pump demand</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#reserve-days-for-solar-production">Reserve days for solar production</a>
     </li>
         </ul>
     </li>
@@ -182,33 +280,13 @@ This will impact they way vehicles charge and change the charging profiles</p>
 occur (simultaeous demand, also the fact that in other locations the
 grid might besolely dedicated to EV charging)</p>
 <h2 id="when-to-use">When to use</h2>
-<p>The parameter include_residential_grid_congestion (set to either <code>true</code> or <code>false</code>)
+<p>The parameters  include_residential_grid_congestion (set to either <code>true</code> or <code>false</code>)
 in the <code>[grid]</code>  section of your scenario tells if you are using this modelling or not.</p>
 <p>Set it to <code>true</code> if you want to add residetial grid congestion issues to our profile.</p>
 <p>If you don't want to include such effects, or if you want to investigate them in another
 model (fr example an optimisation one) using the profiles provided by ChaProEV,
 or if it is not relevant (e.g. vehicles such as busses that charge in dedidcated locations)</p>
-<p>This is mostly meant for cars</p>
-<h2 id="parameters">Parameters</h2>
-<p>They are in the <code>[grid]</code> section of your scenario</p>
-<pre><code class="language-TOML">
-[grid]
-include_residential_grid_congestion = true
-transformer_capacity_kW = 200
-amount_of_power_lines = 10
-line_capacity_weight_min = 0.8
-line_capacity_weight_typical = 1.0
-line_capacity_weight_max = 1.2
-</code></pre>
-<h3 id="transformer-capacity">Transformer capacity</h3>
-<p>The capacity of the transformer (in kW)</p>
-<h3 id="amount-of-lines">Amount of lines</h3>
-<p>The amounts of lines connected to the transformer. </p>
-<h3 id="line-capacity-weights">Line capacity weights</h3>
-<p>These three parameters provide a range for 
-<a href="../monte-carlo/#drawing-bounded-parameter-values">drawing</a>
-each line's capacity by fluctuating around dividing the transformer equally
-within the lines.</p>
+<p>This is mostly meant for cars.</p>
 <h2 id="approach">Approach</h2>
 <h3 id="scope">Scope</h3>
 <p>One transformer for the neighbourhood with a given capacity and
@@ -712,6 +790,288 @@ P_{\mathrm{battery},i}(t)
 <p>using the model convention that electricity demand is positive and electricity
 supply is negative. Battery charging therefore contributes positive power,
 whereas battery discharging contributes negative power.</p>
+<h2 id="parameters">Parameters</h2>
+<p>They are in the <code>[grid]</code> section of your scenario</p>
+<pre><code class="language-TOML">[grid]
+include_residential_grid_congestion = true 
+home_location_name = 'home'
+own_driveway_name = 'own_driveway'
+street_parking_name = 'street_parking'
+transformer_capacity_kW = 250
+amount_of_power_lines = 10
+line_capacity_weight_min = 0.8
+line_capacity_weight_typical = 1.0
+line_capacity_weight_max = 4.2
+amount_of_households = 200
+non_EV_demand_header = 'Non EV demand (kW)'
+[grid.households]
+# THose are values over the whole run (typically, a year)
+run_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
+run_consumption_kWh_excluding_EV_heat_pump_home_battery_typical = 2_500
+run_consumption_kWh_excluding_EV_heat_pump_home_battery_max = 3_000
+possible_profile_shape_references = ['1.00_E1A_AZI_A', '1.00_E1A_AMI_A']
+possible_profile_shape_references_weights = [0.8, 0.2]
+profiles_shapes_source = 'input/household_profiles.csv'
+[grid.heat_pumps]
+adoption_rate_heat_pumps = 0.25
+run_heat_pump_consumption_heat_kWh_min = 1_000
+run_heat_pump_consumption_heat_kWh_typical = 1_200
+run_heat_pump_consumption_heat_kWh_max = 1_400
+COP_min = 2.5
+COP_typical = 2.7
+COP_max = 3.0
+profiles_shape_source = 'input/heat_shapes.csv'
+profile_variants = ['Ref1', 'Ref2']
+profile_proportions =  [0.42, 0.58]
+
+[grid.solar_panels]
+adoption_rate_solar_panels = 0.26
+run_production_as_proportion_of_demand_if_no_battery = 1.00
+run_production_as_proportion_of_demand_if_battery = 1.00
+profile_variants = ['South', 'East-West']
+profile_proportions = [0.8, 0.2]
+profile_shapes_source='input/solar.csv'
+
+[grid.home_batteries]
+adoption_rate_for_EV_chargers = 0.89
+EV_reserve_hours = 2.6
+adoption_rate_home_batteries_if_solar_panels = 0.42
+adoption_rate_home_batteries_if_not_solar_panels = 0.06
+charging_power_kW = 6.0
+discharging_power_kW = 6.0
+reserve_days_basic = 1.0
+reserve_days_heat_pump =  0.8
+reserve_days_solar_panels = 1.5
+reserve_days_EV = 0.25
+
+</code></pre>
+<h3 id="residential-grid-congestion_1">Residential grid congestion</h3>
+<p><code>include_residential_grid_congestion</code> determines whether residential grid
+congestion is included in the simulation.</p>
+<p>Set this parameter to <code>true</code> to model the effect of residential transformer and
+power-line capacity restrictions on EV charging. Set it to <code>false</code> if these
+effects should not be included.</p>
+<h3 id="home-location-name">Home location name</h3>
+<p><code>home_location_name</code> specifies the name of the location at which the residential
+grid model applies. This is generally the home or base location of the cars.</p>
+<p>The value must correspond to the name used for this location elsewhere in the
+scenario.</p>
+<h3 id="own-driveway-name">Own driveway name</h3>
+<p><code>own_driveway_name</code> specifies the home-location variant representing users with
+their own driveway and therefore an individual home charger.</p>
+<p>The value must correspond to the variant name used in the location
+configuration.</p>
+<h3 id="street-parking-name">Street parking name</h3>
+<p><code>street_parking_name</code> specifies the home-location variant representing users
+who park on the street and use shared street chargers.</p>
+<p>The value must correspond to the variant name used in the location
+configuration.</p>
+<h3 id="transformer-capacity">Transformer capacity</h3>
+<p><code>transformer_capacity_kW</code> specifies the capacity of the neighbourhood
+transformer in kW.</p>
+<p>The transformer capacity is distributed over the power lines connected to the
+transformer.</p>
+<h3 id="amount-of-power-lines">Amount of power lines</h3>
+<p><code>amount_of_power_lines</code> specifies the number of power lines connected to the
+transformer.</p>
+<h3 id="line-capacity-weights">Line capacity weights</h3>
+<p><code>line_capacity_weight_min</code>, <code>line_capacity_weight_typical</code>, and
+<code>line_capacity_weight_max</code> define the range used for
+<a href="../monte-carlo/#drawing-bounded-parameter-values">drawing</a> the relative
+capacity weight of each power line.</p>
+<p>A separate weight is drawn for every line. The resulting weights are normalised
+so that the capacities assigned to all power lines together equal the
+transformer capacity.</p>
+<h4 id="minimum-line-capacity-weight">Minimum line capacity weight</h4>
+<p><code>line_capacity_weight_min</code> specifies the minimum value of the bounded
+distribution from which the line capacity weights are drawn.</p>
+<h4 id="typical-line-capacity-weight">Typical line capacity weight</h4>
+<p><code>line_capacity_weight_typical</code> specifies the typical value of the bounded
+distribution from which the line capacity weights are drawn.</p>
+<h4 id="maximum-line-capacity-weight">Maximum line capacity weight</h4>
+<p><code>line_capacity_weight_max</code> specifies the maximum value of the bounded
+distribution from which the line capacity weights are drawn.</p>
+<h3 id="amount-of-households">Amount of households</h3>
+<p><code>amount_of_households</code> specifies the number of household nodes represented in
+the neighbourhood.</p>
+<p>These households are distributed over the power lines proportionally to the
+capacities of the lines.</p>
+<h3 id="non-ev-demand-header">Non-EV demand header</h3>
+<p><code>non_EV_demand_header</code> specifies the name used for the line-level non-EV demand
+profile series.</p>
+<h3 id="households">Households</h3>
+<p>The <code>[grid.households]</code> section defines the basic household electricity demand.
+This excludes EV charging, heat-pump demand, and stationary-battery operation.</p>
+<h4 id="minimum-basic-household-demand">Minimum basic household demand</h4>
+<p><code>run_consumption_kWh_excluding_EV_heat_pump_home_battery_min</code> specifies the
+minimum basic household electricity demand over the complete simulation period,
+in kWh.</p>
+<h4 id="typical-basic-household-demand">Typical basic household demand</h4>
+<p><code>run_consumption_kWh_excluding_EV_heat_pump_home_battery_typical</code> specifies the
+typical basic household electricity demand over the complete simulation period,
+in kWh.</p>
+<h4 id="maximum-basic-household-demand">Maximum basic household demand</h4>
+<p><code>run_consumption_kWh_excluding_EV_heat_pump_home_battery_max</code> specifies the
+maximum basic household electricity demand over the complete simulation period,
+in kWh.</p>
+<p>The minimum, typical, and maximum values are used to
+<a href="../monte-carlo/#drawing-bounded-parameter-values">draw</a> the total basic
+electricity demand of each household.</p>
+<p>These values refer to the complete model run. When the model represents one
+year, they therefore represent annual electricity consumption.</p>
+<h4 id="possible-household-profile-shapes">Possible household profile shapes</h4>
+<p><code>possible_profile_shape_references</code> specifies the names of the profile shapes
+that can be selected to distribute the total basic household electricity demand
+over time.</p>
+<p>The names must correspond to columns in the household profile-shape source
+file.</p>
+<h4 id="household-profile-shape-weights">Household profile-shape weights</h4>
+<p><code>possible_profile_shape_references_weights</code> specifies the probabilities with
+which the corresponding household profile shapes are selected.</p>
+<p>The order of these probabilities must correspond to the order in
+<code>possible_profile_shape_references</code>.</p>
+<h4 id="household-profile-shape-source">Household profile-shape source</h4>
+<p><code>profiles_shapes_source</code> specifies the path to the CSV file containing the
+available basic household electricity-demand shapes.</p>
+<h3 id="heat-pumps">Heat pumps</h3>
+<p>The <code>[grid.heat_pumps]</code> section defines the adoption, heat demand, COP, and
+temporal demand shapes of household heat pumps.</p>
+<h4 id="heat-pump-adoption-rate">Heat-pump adoption rate</h4>
+<p><code>adoption_rate_heat_pumps</code> specifies the probability that a household has a
+heat pump.</p>
+<h4 id="minimum-heat-demand">Minimum heat demand</h4>
+<p><code>run_heat_pump_consumption_heat_kWh_min</code> specifies the minimum household heat
+demand over the complete simulation period, in kWh of thermal energy.</p>
+<h4 id="typical-heat-demand">Typical heat demand</h4>
+<p><code>run_heat_pump_consumption_heat_kWh_typical</code> specifies the typical household
+heat demand over the complete simulation period, in kWh of thermal energy.</p>
+<h4 id="maximum-heat-demand">Maximum heat demand</h4>
+<p><code>run_heat_pump_consumption_heat_kWh_max</code> specifies the maximum household heat
+demand over the complete simulation period, in kWh of thermal energy.</p>
+<p>The minimum, typical, and maximum heat demands are used to draw the total heat
+demand of each household that has a heat pump. The corresponding electricity
+demand is obtained by dividing this heat demand by the heat pump's COP.</p>
+<h4 id="minimum-cop">Minimum COP</h4>
+<p><code>COP_min</code> specifies the minimum coefficient of performance that can be drawn
+for a heat pump.</p>
+<h4 id="typical-cop">Typical COP</h4>
+<p><code>COP_typical</code> specifies the typical coefficient of performance used when
+drawing the COP of a heat pump.</p>
+<h4 id="maximum-cop">Maximum COP</h4>
+<p><code>COP_max</code> specifies the maximum coefficient of performance that can be drawn
+for a heat pump.</p>
+<h4 id="heat-profile-shape-source">Heat profile-shape source</h4>
+<p><code>profiles_shape_source</code> specifies the path to the CSV file containing the
+available heat-demand profile shapes.</p>
+<h4 id="heat-profile-variants">Heat profile variants</h4>
+<p><code>profile_variants</code> specifies the names of the heat-demand profile variants that
+can be selected for households with heat pumps.</p>
+<p>The names must correspond to columns in the heat profile-shape source file.</p>
+<h4 id="heat-profile-proportions">Heat profile proportions</h4>
+<p><code>profile_proportions</code> specifies the probabilities with which the corresponding
+heat-demand profile variants are selected.</p>
+<p>The order of the probabilities must correspond to the order in
+<code>profile_variants</code>.</p>
+<h3 id="solar-panels">Solar panels</h3>
+<p>The <code>[grid.solar_panels]</code> section defines the adoption, total production, and
+temporal production profiles of household solar panels.</p>
+<h4 id="solar-panel-adoption-rate">Solar-panel adoption rate</h4>
+<p><code>adoption_rate_solar_panels</code> specifies the probability that a household has
+solar panels.</p>
+<h4 id="production-to-demand-ratio-without-stationary-battery">Production-to-demand ratio without stationary battery</h4>
+<p><code>run_production_as_proportion_of_demand_if_no_battery</code> specifies total solar
+production over the simulation period as a proportion of household electricity
+demand for households without a stationary battery.</p>
+<p>Household electricity demand includes heat-pump electricity demand when a heat
+pump is present.</p>
+<p>For example, a value of <code>1.0</code> means that total solar production over the
+simulation period is equal to the household electricity-demand reference used
+for solar production.</p>
+<h4 id="production-to-demand-ratio-with-stationary-battery">Production-to-demand ratio with stationary battery</h4>
+<p><code>run_production_as_proportion_of_demand_if_battery</code> specifies total solar
+production over the simulation period as a proportion of household electricity
+demand for households with a stationary battery.</p>
+<p>Using a separate value for households with stationary batteries makes it
+possible to represent a relationship between stationary-battery adoption and
+installed solar generation.</p>
+<h4 id="solar-profile-variants">Solar profile variants</h4>
+<p><code>profile_variants</code> specifies the names of the solar-production profile variants
+that can be selected for households with solar panels.</p>
+<p>The names must correspond to columns in the solar profile-shape source file.</p>
+<h4 id="solar-profile-proportions">Solar profile proportions</h4>
+<p><code>profile_proportions</code> specifies the probabilities with which the corresponding
+solar-production profile variants are selected.</p>
+<p>The order of these probabilities must correspond to the order in
+<code>profile_variants</code>.</p>
+<h4 id="solar-profile-shape-source">Solar profile-shape source</h4>
+<p><code>profile_shapes_source</code> specifies the path to the CSV file containing the
+available solar-production profile shapes.</p>
+<h3 id="stationary-batteries_1">Stationary batteries</h3>
+<p>The <code>[grid.home_batteries]</code> section defines the adoption, capacity sizing, and
+power limits of stationary batteries.</p>
+<p>Stationary-battery power profiles are not determined during grid
+initialisation. Their operation depends on the complete power situation,
+including EV charging, and is therefore determined later.</p>
+<h4 id="adoption-rate-for-ev-charger-batteries">Adoption rate for EV-charger batteries</h4>
+<p><code>adoption_rate_for_EV_chargers</code> specifies the probability that an EV charger
+has an associated stationary battery.</p>
+<h4 id="ev-charger-battery-reserve-hours">EV-charger battery reserve hours</h4>
+<p><code>EV_reserve_hours</code> specifies the number of hours for which a fully charged
+stationary battery associated with an EV charger should be able to provide the
+rated charging power of that charger.</p>
+<p>Its battery capacity is therefore calculated as:</p>
+<div class="arithmatex">\[
+C_{\mathrm{battery}}
+=
+P_{\mathrm{charger}}
+t_{\mathrm{reserve}}
+\]</div>
+<p>For example, a 7.4 kW charger with <code>EV_reserve_hours = 2.0</code> results in a
+stationary-battery capacity of 14.8 kWh.</p>
+<p>The battery's maximum discharge power is equal to the charger's charging power,
+while its maximum charging power is equal to the charger's reverse-power
+capability.</p>
+<h4 id="household-battery-adoption-rate-with-solar-panels">Household battery adoption rate with solar panels</h4>
+<p><code>adoption_rate_home_batteries_if_solar_panels</code> specifies the probability that
+a household with solar panels also has a stationary battery.</p>
+<h4 id="household-battery-adoption-rate-without-solar-panels">Household battery adoption rate without solar panels</h4>
+<p><code>adoption_rate_home_batteries_if_not_solar_panels</code> specifies the probability
+that a household without solar panels has a stationary battery.</p>
+<p>Separate adoption rates make it possible to represent the relationship between
+solar-panel ownership and stationary-battery ownership.</p>
+<h4 id="charging-power">Charging power</h4>
+<p><code>charging_power_kW</code> specifies the maximum charging power in kW of a household
+stationary battery.</p>
+<p>This parameter applies to household stationary batteries. The charging power
+of a stationary battery associated with an EV charger is instead derived from
+the reverse-power capability of that charger.</p>
+<h4 id="discharging-power">Discharging power</h4>
+<p><code>discharging_power_kW</code> specifies the maximum discharging power in kW of a
+household stationary battery.</p>
+<p>This parameter applies to household stationary batteries. The discharging
+power of a stationary battery associated with an EV charger is instead derived
+from the rated charging power of that charger.</p>
+<h4 id="reserve-days-for-basic-household-demand">Reserve days for basic household demand</h4>
+<p><code>reserve_days_basic</code> determines the contribution of basic household electricity
+demand to stationary-battery capacity.</p>
+<p>The model first calculates the household's average daily basic electricity
+demand over the simulation period. This is multiplied by
+<code>reserve_days_basic</code> to determine the corresponding contribution to battery
+capacity.</p>
+<h4 id="reserve-days-for-heat-pump-demand">Reserve days for heat-pump demand</h4>
+<p><code>reserve_days_heat_pump</code> determines the contribution of heat-pump electricity
+demand to stationary-battery capacity.</p>
+<p>The total heat demand is first divided by the heat pump's COP to obtain
+electricity demand. The average daily heat-pump electricity demand is then
+multiplied by <code>reserve_days_heat_pump</code>.</p>
+<h4 id="reserve-days-for-solar-production">Reserve days for solar production</h4>
+<p><code>reserve_days_solar_panels</code> determines the contribution of solar production to
+stationary-battery capacity.</p>
+<p>The model calculates the average daily solar production over the simulation
+period and multiplies this value by <code>reserve_days_solar_panels</code>.</p>
+<p>The complete capacity of a household stationary battery is the sum of the
+capacity contributions from basic household demand, heat-pump electricity
+demand, and solar-panel production.</p>
               
             </div>
           </div><footer>
