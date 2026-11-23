@@ -219,18 +219,18 @@ local level (e.g. a street has many EVs and their users charge at the same time
 as they have elecxtricity demand for other purposes)</p>
 <h3 id="power-line-capacities">Power line capacities</h3>
 <p>The model distributes the transformer capacity over its connected power lines. For each power line, a relative capacity weight is drawn from a <a href="../monte-carlo/#drawing-bounded-parameter-values">bounded beta distribution</a>. These weights are subsequently normalised and multiplied by the transformer capacity. This introduces variation between the capacities assigned to individual power lines while ensuring that the sum of all line capacities remains equal to the transformer capacity:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{line},i}
 =
 P_{\mathrm{transformer}}
 \frac{w_i}{\sum_j w_j}
-$$</p>
+\]</div>
 <p>and therefore:</p>
-<p>$$
+<div class="arithmatex">\[
 \sum_i P_{\mathrm{line},i}
 =
 P_{\mathrm{transformer}}
-$$</p>
+\]</div>
 <p>This represents a deliberately conservative modelling assumption. The available transformer capacity is effectively divided between the individual power lines, and the model subsequently tests the power demand on each line against its assigned capacity. Because the line capacities sum to the transformer capacity, satisfying the capacity restriction of every individual line also guarantees that the total transformer-capacity restriction is satisfied.</p>
 <p>In an actual distribution grid, the physical capacities of the outgoing power lines do not necessarily sum to the transformer capacity and may collectively exceed it. If one line is lightly loaded, another line may therefore carry a larger share of the transformer load, provided that its own physical capacity and the total transformer capacity are not exceeded. The model does not currently represent such dynamic sharing of transformer capacity between lines. Instead, each line receives a fixed share of the transformer capacity. This results in a conservative representation of the line-level capacity restrictions.</p>
 <h3 id="assigning-ev-users-to-lines">Assigning EV users to lines</h3>
@@ -238,12 +238,12 @@ $$</p>
 <p>Chargers are assigned while respecting the capacity of each power line. A charger can only be assigned to a line if the remaining line capacity is at least equal to the rated power of the charger. The sum of the rated powers of all chargers assigned to a line can therefore never exceed that line's capacity.</p>
 <p>The chargers are processed from highest to lowest rated power. Assigning the largest chargers first reduces the risk of filling the lines with smaller chargers in such a way that insufficient capacity remains for a larger charger, even though a feasible allocation could otherwise have existed.</p>
 <p>For each charger, the model determines which lines have sufficient remaining capacity. The charger is then randomly assigned to one of these eligible lines, with the probability of selecting a line proportional to its remaining capacity:</p>
-<p>$$
+<div class="arithmatex">\[
 p_i =
 \frac{P_{\mathrm{remaining},i}}
 {\sum_{j \in E} P_{\mathrm{remaining},j}}
-$$</p>
-<p>where $E$ is the set of lines with sufficient remaining capacity for the charger. After assigning a charger, its rated power is subtracted from the remaining capacity of the selected line. Consequently, lines with more available capacity are more likely to receive chargers, while lines that are becoming more heavily occupied become progressively less likely to receive additional chargers.</p>
+\]</div>
+<p>where <span class="arithmatex">\(E\)</span> is the set of lines with sufficient remaining capacity for the charger. After assigning a charger, its rated power is subtracted from the remaining capacity of the selected line. Consequently, lines with more available capacity are more likely to receive chargers, while lines that are becoming more heavily occupied become progressively less likely to receive additional chargers.</p>
 <p>This procedure allows both situations in which some lines have no EV chargers and situations in which multiple chargers are connected to the same line. If no line has sufficient remaining capacity for a charger, the assignment fails. The method is a greedy stochastic allocation: processing the largest chargers first reduces the chance of an unsuccessful allocation, but does not mathematically guarantee finding a feasible allocation whenever one exists.</p>
 <p>Finally, the model looks up the EV users associated with each charger and assigns these users to the same power line as their charger. This provides the mapping between EV users and power lines that is subsequently used to aggregate their charging profiles and test the line-level capacity restrictions.</p>
 <blockquote>
@@ -265,26 +265,26 @@ can be adjusted:</p>
 </blockquote>
 <h3 id="assignment-of-home-chargers-and-connectivity">Assignment of home chargers and connectivity</h3>
 <p>Home chargers are created after the users have been generated. The procedure distinguishes between users with their own driveway and users who park on the street. A user with an own driveway receives an individual home charger and therefore has a home connectivity of 1. Whenever the vehicle is at home, the home charger is available to that user.</p>
-<p>For street parking, chargers are shared between multiple users. The configured street-parking connectivity is used to determine the number of chargers that should be available. For (N) street-parking users with a configured connectivity (c), the expected number of chargers is
+<p>For street parking, chargers are shared between multiple users. The configured street-parking connectivity is used to determine the number of chargers that should be available. For <span class="arithmatex">\(N\)</span> street-parking users with a configured connectivity <span class="arithmatex">\(c\)</span>, the expected number of chargers is
 $$
 N_{\mathrm{chargers, expected}} = N_{\mathrm{users}} \times c.
 $$
 Because the model must create a discrete number of physical chargers, this value is rounded to the nearest integer, with half values rounded upwards. If there are street-parking users, at least one charger is created. A connectivity of zero is therefore not allowed when street-parking users are present.</p>
 <p>For example, with 12 street-parking users and a configured connectivity of 0.25:</p>
-<p>$$
+<div class="arithmatex">\[
 12 \times 0.25 = 3
-$$</p>
+\]</div>
 <p>and three street chargers are created.</p>
 <p>The street-parking users are first randomly shuffled and are subsequently assigned to the available chargers in round-robin order. This makes the assignment stochastic while distributing the users as evenly as possible over the chargers: the numbers of users assigned to any two chargers can differ by at most one.</p>
 <p>After the users have been assigned, their actual home connectivity is recalculated from the number of users sharing their charger:</p>
-<p>$$
+<div class="arithmatex">\[
 c_{\mathrm{user}} = \frac{1}{N_{\mathrm{users\ on\ charger}}}.
-$$</p>
+\]</div>
 <p>For example, a charger shared by four users gives each of those users a connectivity of 0.25, while a charger shared by three users gives each user a connectivity of approximately 0.333.</p>
 <p>The recalculation is necessary because the configured connectivity represents the desired average availability, whereas the model contains a finite number of users and a discrete number of chargers. The exact configured connectivity can therefore not always be reproduced. For example, if 11 street-parking users have a configured connectivity of 0.25, the expected number of chargers is</p>
-<p>$$
+<div class="arithmatex">\[
 11 \times 0.25 = 2.75,
-$$</p>
+\]</div>
 <p>which results in three physical chargers. The users are then distributed as 4, 4 and 3 users over these chargers, giving individual connectivities of 0.25, 0.25 and approximately 0.333, respectively. This preserves the physical interpretation of connectivity: it represents the probability that the shared charger assigned to a user is available when that user wants to charge.</p>
 <p>The updated connectivity is stored on the user's home <code>Location</code>. The charging DataFrame is deliberately created only <strong>after</strong> the local grid and charger assignment have been constructed. This ensures that the stochastic charging-session availability draws use the final connectivity resulting from the actual charger allocation, rather than the original scenario-level connectivity.</p>
 <h3 id="non-ev-demand">Non-EV demand</h3>
@@ -305,7 +305,7 @@ this initial non-EV profile:</p>
 whereas electricity production from the solar panels is represented as negative
 power. The initial net non-EV profile of a household node is therefore
 calculated as:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{non\text{-}EV},n}(t)
 =
 P_{\mathrm{household},n}(t)
@@ -313,7 +313,7 @@ P_{\mathrm{household},n}(t)
 P_{\mathrm{heat\ pump},n}(t)
 +
 P_{\mathrm{solar},n}(t)
-$$</p>
+\]</div>
 <p>A positive value indicates that the household node has a net electricity demand
 from the grid at that time step, while a negative value indicates that the
 household node is supplying electricity to the grid.</p>
@@ -355,13 +355,13 @@ profile by repeating each value 15 times. If the demand shape has a higher
 temporal resolution, consecutive values are averaged. The two resolutions must
 have an integer ratio; otherwise, the model raises an error.</p>
 <p>After any required resolution conversion, the demand shape is normalised:</p>
-<p>$$
+<div class="arithmatex">\[
 \sum_t s(t) = 1
-$$</p>
-<p>where $s(t)$ is the normalised household demand shape. It is then scaled using
+\]</div>
+<p>where <span class="arithmatex">\(s(t)\)</span> is the normalised household demand shape. It is then scaled using
 the total electricity demand drawn for that household and converted from energy
 per time step to average power in kW:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{household}}(t)
 =
 \frac{
@@ -369,17 +369,17 @@ E_{\mathrm{household,run}} \, s(t)
 }{
 \Delta t
 }
-$$</p>
-<p>where $E_{\mathrm{household,run}}$ is the total basic household electricity
-demand over the simulation period in kWh and $\Delta t$ is the model time-step
+\]</div>
+<p>where <span class="arithmatex">\(E_{\mathrm{household,run}}\)</span> is the total basic household electricity
+demand over the simulation period in kWh and <span class="arithmatex">\(\Delta t\)</span> is the model time-step
 duration in hours.</p>
 <p>This ensures that integrating the resulting power profile over the complete
 simulation period reproduces the drawn household electricity demand:</p>
-<p>$$
+<div class="arithmatex">\[
 \sum_t P_{\mathrm{household}}(t)\Delta t
 =
 E_{\mathrm{household,run}}
-$$</p>
+\]</div>
 <p>The resulting profile represents the basic household electricity demand in kW
 at every model time step and is subsequently combined with the heat-pump and
 solar-panel profiles to obtain the household node's initial net non-EV power
@@ -397,7 +397,7 @@ represents useful thermal energy and is therefore expressed in kWh of heat.</p>
 bounded beta distribution. The COP describes the ratio between the useful heat
 delivered by the heat pump and its electricity consumption. The total
 electricity consumption required to provide the drawn heat demand is therefore:</p>
-<p>$$
+<div class="arithmatex">\[
 E_{\mathrm{HP,run}}
 =
 \frac{
@@ -405,9 +405,9 @@ Q_{\mathrm{heat,run}}
 }{
 COP
 }
-$$</p>
-<p>where $Q_{\mathrm{heat,run}}$ is the total heat demand during the simulation
-period and $E_{\mathrm{HP,run}}$ is the corresponding heat-pump electricity
+\]</div>
+<p>where <span class="arithmatex">\(Q_{\mathrm{heat,run}}\)</span> is the total heat demand during the simulation
+period and <span class="arithmatex">\(E_{\mathrm{HP,run}}\)</span> is the corresponding heat-pump electricity
 demand.</p>
 <p>The temporal distribution of the heat demand is determined using a set of
 heat-demand profile shapes provided as model input. One profile is randomly
@@ -415,7 +415,7 @@ selected for each household with a heat pump using user-defined probabilities.
 The selected profile is resized to match the simulation period and temporal
 resolution, if necessary, and normalised so that its values sum to one.</p>
 <p>The heat-pump electricity-demand profile is then calculated as:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{HP}}(t)
 =
 \frac{
@@ -423,8 +423,8 @@ Q_{\mathrm{heat,run}} \, s_{\mathrm{heat}}(t)
 }{
 COP \, \Delta t
 }
-$$</p>
-<p>where $s_{\mathrm{heat}}(t)$ is the normalised heat-demand shape and $\Delta t$
+\]</div>
+<p>where <span class="arithmatex">\(s_{\mathrm{heat}}(t)\)</span> is the normalised heat-demand shape and <span class="arithmatex">\(\Delta t\)</span>
 is the model time-step duration in hours. The resulting profile therefore
 represents the average electrical power demand of the heat pump in kW at every
 model time step.</p>
@@ -432,7 +432,7 @@ model time step.</p>
 electricity-demand reference used to determine solar-panel production. The
 reference demand for sizing solar production therefore consists of the basic
 household electricity demand plus the heat pump's electrical energy demand:</p>
-<p>$$
+<div class="arithmatex">\[
 E_{\mathrm{reference}}
 =
 E_{\mathrm{household,run}}
@@ -442,7 +442,7 @@ Q_{\mathrm{heat,run}}
 }{
 COP
 }
-$$</p>
+\]</div>
 <p>For households without a heat pump, both the heat demand and heat-pump
 electricity-demand profile are zero.</p>
 <h4 id="solar-panel-production">Solar-panel production</h4>
@@ -453,7 +453,7 @@ probability of receiving solar panels equal to the specified adoption rate.</p>
 <p>For households with solar panels, the total solar production over the simulation
 period is determined relative to the household electricity demand, including
 heat-pump electricity demand if a heat pump is present:</p>
-<p>$$
+<div class="arithmatex">\[
 E_{\mathrm{reference}}
 =
 E_{\mathrm{household,run}}
@@ -463,16 +463,16 @@ Q_{\mathrm{heat,run}}
 }{
 COP
 }
-$$</p>
+\]</div>
 <p>The total solar production is then:</p>
-<p>$$
+<div class="arithmatex">\[
 E_{\mathrm{solar,run}}
 =
 E_{\mathrm{reference}}
 r_{\mathrm{solar}}
-$$</p>
-<p>where $E_{\mathrm{reference}}$ is the household electricity-demand reference
-over the simulation period and $r_{\mathrm{solar}}$ is the assumed ratio
+\]</div>
+<p>where <span class="arithmatex">\(E_{\mathrm{reference}}\)</span> is the household electricity-demand reference
+over the simulation period and <span class="arithmatex">\(r_{\mathrm{solar}}\)</span> is the assumed ratio
 between solar production and household electricity demand.</p>
 <p>The model allows this ratio to depend on whether the household also has a home
 battery. Separate solar-production-to-demand ratios can therefore be provided
@@ -486,13 +486,13 @@ probabilities for the different variants.</p>
 <p>The selected profile is resized to match the temporal resolution and length of
 the simulation, if necessary, using the same profile-reshaping procedure as for
 the basic household demand. The resulting production shape is normalised:</p>
-<p>$$
+<div class="arithmatex">\[
 \sum_t s_{\mathrm{solar}}(t) = 1
-$$</p>
+\]</div>
 <p>The normalised shape is subsequently scaled to the total solar production over
 the simulation period. The resulting energy per time step is converted from kWh
 to average power in kW by dividing it by the model time-step duration in hours:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{solar}}(t)
 =
 -
@@ -501,16 +501,16 @@ E_{\mathrm{solar,run}} s_{\mathrm{solar}}(t)
 }{
 \Delta t
 }
-$$</p>
-<p>where $\Delta t$ is the model time-step duration in hours.</p>
+\]</div>
+<p>where <span class="arithmatex">\(\Delta t\)</span> is the model time-step duration in hours.</p>
 <p>Solar production is represented as negative power because the grid convention
 used in the model considers electricity consumption to be positive and
 electricity production to be negative. Consequently:</p>
-<p>$$
+<div class="arithmatex">\[
 -\sum_t P_{\mathrm{solar}}(t)\Delta t
 =
 E_{\mathrm{solar,run}}
-$$</p>
+\]</div>
 <p>For households without solar panels, both solar production and the corresponding
 power profile are zero. The solar-production profile is subsequently combined
 with the basic household and heat-pump demand profiles to obtain the household
@@ -538,7 +538,7 @@ the simulation period. Three separate contributions are considered:</p>
 <li>solar-panel production.</li>
 </ul>
 <p>The duration of the simulation period in days is:</p>
-<p>$$
+<div class="arithmatex">\[
 D_{\mathrm{run}}
 =
 \frac{
@@ -546,11 +546,11 @@ N_{\mathrm{steps}} \Delta t
 }{
 24
 }
-$$</p>
-<p>where $N_{\mathrm{steps}}$ is the number of model time steps and $\Delta t$ is
+\]</div>
+<p>where <span class="arithmatex">\(N_{\mathrm{steps}}\)</span> is the number of model time steps and <span class="arithmatex">\(\Delta t\)</span> is
 the time-step duration in hours.</p>
 <p>The capacity associated with basic household demand is:</p>
-<p>$$
+<div class="arithmatex">\[
 C_{\mathrm{basic}}
 =
 \frac{
@@ -559,12 +559,12 @@ E_{\mathrm{household,run}}
 D_{\mathrm{run}}
 }
 d_{\mathrm{basic}}
-$$</p>
-<p>where $d_{\mathrm{basic}}$ is the configured number of reserve days for basic
+\]</div>
+<p>where <span class="arithmatex">\(d_{\mathrm{basic}}\)</span> is the configured number of reserve days for basic
 household demand.</p>
 <p>For heat-pump demand, the thermal energy demand is first converted to electrical
 energy using the heat pump's COP:</p>
-<p>$$
+<div class="arithmatex">\[
 C_{\mathrm{HP}}
 =
 \frac{
@@ -573,11 +573,11 @@ Q_{\mathrm{heat,run}} / COP
 D_{\mathrm{run}}
 }
 d_{\mathrm{HP}}
-$$</p>
-<p>where $d_{\mathrm{HP}}$ is the configured number of reserve days for heat-pump
+\]</div>
+<p>where <span class="arithmatex">\(d_{\mathrm{HP}}\)</span> is the configured number of reserve days for heat-pump
 electricity demand.</p>
 <p>The solar-production contribution is:</p>
-<p>$$
+<div class="arithmatex">\[
 C_{\mathrm{solar}}
 =
 \frac{
@@ -586,11 +586,11 @@ E_{\mathrm{solar,run}}
 D_{\mathrm{run}}
 }
 d_{\mathrm{solar}}
-$$</p>
-<p>where $d_{\mathrm{solar}}$ is the configured number of reserve days associated
+\]</div>
+<p>where <span class="arithmatex">\(d_{\mathrm{solar}}\)</span> is the configured number of reserve days associated
 with solar production.</p>
 <p>The total stationary-battery capacity of the household is then:</p>
-<p>$$
+<div class="arithmatex">\[
 C_{\mathrm{battery}}
 =
 C_{\mathrm{basic}}
@@ -598,7 +598,7 @@ C_{\mathrm{basic}}
 C_{\mathrm{HP}}
 +
 C_{\mathrm{solar}}
-$$</p>
+\]</div>
 <p>The maximum charging and discharging powers of household stationary batteries
 are specified directly by the grid parameters.</p>
 <h5 id="stationary-batteries-associated-with-ev-chargers">Stationary batteries associated with EV chargers</h5>
@@ -607,29 +607,29 @@ determined stochastically using the configured adoption rate for stationary
 batteries associated with EV chargers.</p>
 <p>The capacity of such a battery is based on the rated EV-charging power and a
 configured number of reserve hours:</p>
-<p>$$
+<div class="arithmatex">\[
 C_{\mathrm{charger\ battery}}
 =
 P_{\mathrm{charger}}
 t_{\mathrm{reserve}}
-$$</p>
+\]</div>
 <p>This means that a fully charged stationary battery contains enough energy to
 provide the charger's rated charging power for the configured reserve duration,
 or a lower power for a correspondingly longer duration.</p>
 <p>The stationary battery's maximum discharging power is equal to the charger's
 EV-charging power:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{battery,discharge,max}}
 =
 P_{\mathrm{charger,charge}}
-$$</p>
+\]</div>
 <p>The stationary battery's maximum charging power is equal to the charger's
 reverse-power capability:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{battery,charge,max}}
 =
 P_{\mathrm{charger,reverse}}
-$$</p>
+\]</div>
 <p>The latter represents the reverse power direction through the charger.</p>
 <h5 id="aggregation-of-stationary-batteries-on-power-lines">Aggregation of stationary batteries on power lines</h5>
 <p>Stationary batteries are ultimately represented at power-line level. Batteries
@@ -638,22 +638,22 @@ corresponding charger. Household stationary batteries are assigned to the line
 to which their household node is allocated.</p>
 <p>For all stationary batteries connected to a line, their capacities and power
 limits are added:</p>
-<p>$$
+<div class="arithmatex">\[
 C_{\mathrm{battery,line},i}
 =
 \sum_{b \in B_i} C_b
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 P_{\mathrm{charge,max},i}
 =
 \sum_{b \in B_i} P_{\mathrm{charge,max},b}
-$$</p>
-<p>$$
+\]</div>
+<div class="arithmatex">\[
 P_{\mathrm{discharge,max},i}
 =
 \sum_{b \in B_i} P_{\mathrm{discharge,max},b}
-$$</p>
-<p>where $B_i$ is the set of stationary batteries assigned to line $i$.</p>
+\]</div>
+<p>where <span class="arithmatex">\(B_i\)</span> is the set of stationary batteries assigned to line <span class="arithmatex">\(i\)</span>.</p>
 <p>The charge-level and battery-power series are aggregated in the same way.
 Because no battery dispatch has yet taken place during grid initialisation,
 these series initially contain zeros.</p>
@@ -671,23 +671,23 @@ physical batteries once they have been aggregated.</p>
 </blockquote>
 <h4 id="assigning-household-nodes-to-lines">Assigning household nodes to lines</h4>
 <p>The household nodes are distributed over the power lines proportionally to their capacities. For each line, the ideal number of household nodes is first calculated from its share of the total line capacity:</p>
-<p>$$
+<div class="arithmatex">\[
 n_i^*
 =
 N_{\mathrm{households}}
 \frac{P_{\mathrm{line},i}}
 {\sum_j P_{\mathrm{line},j}}
-$$</p>
+\]</div>
 <p>Since the number of household nodes assigned to a line must be an integer, these ideal values cannot generally be used directly. The model therefore applies the <strong>largest remainder method</strong>. First, the ideal number of nodes for each line is rounded down to the nearest integer. This generally leaves a small number of household nodes unassigned. These remaining nodes are assigned, one by one, to the lines with the largest fractional remainders in their ideal allocations. This ensures that the total number of assigned nodes is exactly equal to the number of households, while keeping the distribution as close as possible to proportional to the line capacities. A line may receive no household nodes if the number of households is small relative to the number of lines or its proportional allocation is sufficiently small.</p>
 <h4 id="assigning-non-ev-demand-to-lines">Assigning non-EV demand to lines</h4>
 <p>After determining the number of household nodes connected to each power line, the corresponding non-EV demand profiles are assigned to these lines. The household profiles have already been generated using random draws, so no additional randomisation is applied during this assignment. Instead, the profiles are assigned sequentially according to the previously determined number of nodes per line.</p>
 <p>For each power line, the non-EV demand profiles of all household nodes assigned to that line are summed to obtain a single line-level non-EV demand profile:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{non\text{-}EV},i}(t)
 =
 \sum_{n \in N_i} P_{\mathrm{non\text{-}EV},n}(t)
-$$</p>
-<p>where $N_i$ is the set of household nodes assigned to line $i$. The resulting
+\]</div>
+<p>where <span class="arithmatex">\(N_i\)</span> is the set of household nodes assigned to line <span class="arithmatex">\(i\)</span>. The resulting
 profile represents the initial non-EV household demand connected to that power
 line at each time step, before stationary-battery operation is included.</p>
 <p>At the same time, the stationary batteries belonging to the assigned household
@@ -700,7 +700,7 @@ respective power lines.</p>
 profile and an aggregated stationary battery. The battery power profile is
 initially zero and is determined later together with EV charging. The eventual
 power on a line can therefore be represented conceptually as:</p>
-<p>$$
+<div class="arithmatex">\[
 P_{\mathrm{line},i}(t)
 =
 P_{\mathrm{non\text{-}EV},i}(t)
@@ -708,7 +708,7 @@ P_{\mathrm{non\text{-}EV},i}(t)
 P_{\mathrm{EV},i}(t)
 +
 P_{\mathrm{battery},i}(t)
-$$</p>
+\]</div>
 <p>using the model convention that electricity demand is positive and electricity
 supply is negative. Battery charging therefore contributes positive power,
 whereas battery discharging contributes negative power.</p>
@@ -751,6 +751,8 @@ whereas battery discharging contributes negative power.</p>
     <script>var base_url = "..";</script>
     <script src="../js/theme_extra.js"></script>
     <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       <script src="../search/main.js"></script>
     <script>
         jQuery(function () {
