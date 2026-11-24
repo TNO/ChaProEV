@@ -675,6 +675,7 @@ whereas battery discharging contributes negative power.
 They are in the `[grid]` section of your scenario
 
 ```TOML
+
 [grid]
 include_residential_grid_congestion = true 
 home_location_name = 'home'
@@ -687,6 +688,16 @@ line_capacity_weight_typical = 1.0
 line_capacity_weight_max = 4.2
 amount_of_households = 200
 non_EV_demand_header = 'Non EV demand (kW)'
+[grid.EV_demand_matching_DF]
+time_header = 'Time tag'
+non_EV_demand_header =  'Non-EV demand (kW)'
+EV_demand_header = 'EV demand from grid (kW)'
+capacity_exceeded_header = 'Capacoty exceeded?'
+extra_capacity_needed_header = 'Extra capacity needed (kW)'
+columns = [
+    'Time tag', 'Non-EV demand (kW)', 'EV demand from grid (kW)',
+    'Capacity excceed?', 'Extra capacity needed (kW)']
+
 [grid.households]
 # THose are values over the whole run (typically, a year)
 run_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
@@ -725,7 +736,7 @@ discharging_power_kW = 6.0
 reserve_days_basic = 1.0
 reserve_days_heat_pump =  0.8
 reserve_days_solar_panels = 1.5
-reserve_days_EV = 0.25
+
 
 ```
 
@@ -814,6 +825,20 @@ capacities of the lines.
 
 `non_EV_demand_header` specifies the name used for the line-level non-EV demand
 profile series.
+
+### EV dmeand matching DF
+Settings related to the DataFrame from EV demand matching
+#### Time header
+Name of the column where time tags appear
+#### Non EV demand header
+Name of the column where the non-EV demand appears
+#### EV demand header
+Name of the column where the EV demand(from the grid)  appears
+#### Capacity exceeded header
+Name of the clumn where a boolean telling us if we exceeded the line capacity
+appears
+#### Extra capacoity needed header
+Name of thecolumn where the size of the extra capacity needed appears
 
 
 ### Households

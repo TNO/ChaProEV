@@ -1,12 +1,15 @@
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import fmean
 
+import numpy as np
 import polars as pl
 from box import Box
 from ETS_CookBook import ETS_CookBook as cook
 from rich import print
 
+from ChaProEV.stochastic_new.benchmark import benchmark
 from ChaProEV.stochastic_new.charging import compute_fleet_charging
 from ChaProEV.stochastic_new.define import User, get_users_pool
 from ChaProEV.stochastic_new.grid import LocalGrid
@@ -17,6 +20,167 @@ from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 #     process: psutil.Process = psutil.Process(os.getpid())
 #     memory_gb: float = process.memory_info().rss / 1024**3
 #     print(f'{label}: {memory_gb:.2f} GB')
+
+
+def compute_EV_matching(
+    local_grid: LocalGrid,
+    users_by_ID: dict[uuid.UUID, User],
+    time_ranges: TimeRange,
+    scenario: Box,
+    grid_parameters: Box,
+) -> None:
+    '''
+    Match residential EV charging demand to power lines.
+
+    For each power line, aggregate the power drawn from the grid by EVs
+    charging at home. Add this EV demand to the line's EV-demand-matching
+    DataFrame and combine it with non-EV demand to determine whether
+    the line capacity is exceeded at each timestep.
+
+    For overloaded timesteps, also calculate the additional capacity required
+    to accommodate the total demand. The results are stored in each power
+    line's EV-demand-matching DataFrame.
+    '''
+
+    for power_line in local_grid.power_lines:
+        line_EV_demand_from_grid: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
+        print(line_EV_demand_from_grid.sum())
+        for user_ID in power_line.EV_users:
+
+            home_power: pl.Series = (
+                users_by_ID[user_ID]
+                .charge.with_columns(
+                    pl.when(
+                        pl.col(scenario.charging_dataframe.location_header)
+                        == grid_parameters.home_location_name
+                    )
+                    .then(
+                        pl.col(
+                            scenario.charging_dataframe.power_from_grid_header  # noqa:E501
+                        )
+                    )
+                    .otherwise(0.0)
+                    .alias('home_power')
+                )
+                .get_column('home_power')
+            )
+
+            line_EV_demand_from_grid += home_power
+        non_EV_header: str = (
+            grid_parameters.EV_demand_matching_DF.non_EV_demand_header
+        )
+        EV_header: str = grid_parameters.EV_demand_matching_DF.EV_demand_header
+        capacity_exceeded_header: str = (
+            grid_parameters.EV_demand_matching_DF.capacity_exceeded_header
+        )
+        extra_capacity_needed_header: str = (
+            grid_parameters.EV_demand_matching_DF.extra_capacity_needed_header  # noqa:E501
+        )
+
+        # First add the EV demand because subsequent
+        # alculations depend on it.
+        power_line.EV_demand_matching = (
+            power_line.EV_demand_matching.with_columns(
+                line_EV_demand_from_grid.alias(EV_header),
+            )
+        )
+
+        # Determine whether total demand exceeds the line capacity.
+        power_line.EV_demand_matching = (
+            power_line.EV_demand_matching.with_columns(
+                (
+                    pl.col(non_EV_header) + pl.col(EV_header)
+                    > power_line.capacity_kW
+                ).alias(capacity_exceeded_header),
+                pl.when(
+                    pl.col(non_EV_header) + pl.col(EV_header)
+                    > power_line.capacity_kW
+                )
+                .then(
+                    pl.col(non_EV_header)
+                    + pl.col(EV_header)
+                    - power_line.capacity_kW
+                )
+                .otherwise(0.0)
+                .alias(extra_capacity_needed_header),
+            )
+        )
+
+
+def get_excesses(
+    local_grid: LocalGrid, grid_parameters: Box
+) -> tuple[pl.Series, float, float, pl.DataFrame]:
+    """
+    Calculate residential power-line congestion statistics.
+
+    For each timestep, determine how many power lines exceed their capacity and
+    whether at least one line is overloaded. Aggregate these results over the
+    complete simulation and by hour of day.
+
+    The calculated statistics distinguish between the average number of
+    overloaded lines per timestep and the proportion of timesteps during which
+    at least one line is overloaded.
+    """
+
+    capacity_exceeded_series: list[pl.Series] = [
+        power_line.EV_demand_matching.get_column(
+            grid_parameters.EV_demand_matching_DF.capacity_exceeded_header
+        ).cast(pl.Int64)
+        for power_line in local_grid.power_lines
+    ]
+
+    # Determine the number of overloaded power lines at each timestep.
+    excess_occurrences: pl.Series = capacity_exceeded_series[0]
+
+    for series in capacity_exceeded_series[1:]:
+        excess_occurrences = excess_occurrences + series
+
+    # Calculate statistics over the complete simulation.
+    average_overloaded_lines: float = sum(excess_occurrences) / len(
+        excess_occurrences
+    )
+
+    proportion_timesteps_with_overload: float = sum(
+        excess_occurrences > 0
+    ) / len(excess_occurrences)
+
+    time_header = grid_parameters.EV_demand_matching_DF.time_header
+
+    # Calculate the same congestion statistics by hour of day.
+    excess_per_hour: pl.DataFrame = (
+        pl.DataFrame(
+            {
+                'time': local_grid.power_lines[
+                    0
+                ].EV_demand_matching.get_column(time_header),
+                'excess_occurrences': excess_occurrences,
+            }
+        )
+        .with_columns(pl.col('time').dt.hour().alias('hour'))
+        .group_by('hour')
+        .agg(
+            pl.col('excess_occurrences').sum().alias('excess_occurrences'),
+            (pl.col('excess_occurrences').sum() / pl.len()).alias(
+                'average_overloaded_lines'
+            ),
+            (pl.col('excess_occurrences') > 0)
+            .sum()
+            .alias('timesteps_with_overload'),
+            ((pl.col('excess_occurrences') > 0).sum() / pl.len()).alias(
+                'proportion_timesteps_with_overload'
+            ),
+        )
+        .sort('hour')
+    )
+
+    return (
+        excess_occurrences,
+        average_overloaded_lines,
+        proportion_timesteps_with_overload,
+        excess_per_hour,
+    )
 
 
 @dataclass
@@ -38,7 +202,10 @@ class UsersPoolStatistics:
 
     @classmethod
     def compute(
-        cls, *, users_pool: list[User], location_types: list[str]
+        cls,
+        *,
+        users_pool: list[User],
+        location_types: list[str],
     ) -> UsersPoolStatistics:
         average_kilometrage: float = fmean(
             user.run_metrics.kilometrage for user in users_pool
@@ -169,9 +336,6 @@ def test_run() -> None:
     scenario.case_name = case_name
     run_scenario(scenario)
     print('[magenta] Document pickling as a cache of sorts with warnings')
-    print('[yellow] Households for non-cars (skip?) and shape per minute')
-    print('[blue] Get shapes of demand, heat_pumps, solar, battery')
-    print('Add EV cap to batteries here!')
     print('Check and document batt and grid')
     print('Then add conflict counting')
     print('STeps towards sessions')
@@ -208,11 +372,13 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         time_ranges=time_ranges,
         time_constants=time_constants,
     )
+    users_by_ID: dict[uuid.UUID, User] = {user.ID: user for user in users_pool}
 
     # We check if we include the residential grid congestion
+    local_grid: LocalGrid | None = None
     grid_parameters: Box = scenario.grid
     if grid_parameters.include_residential_grid_congestion:
-        local_grid: LocalGrid = LocalGrid.initialise(
+        local_grid = LocalGrid.initialise(
             users_pool=users_pool,
             grid_parameters=grid_parameters,
             scenario=scenario,
@@ -277,13 +443,42 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
         run_time_stamps=time_ranges.run_stamps.to_list(),
     )
 
+    if local_grid is not None:
+        compute_EV_matching(
+            local_grid=local_grid,
+            users_by_ID=users_by_ID,
+            time_ranges=time_ranges,
+            scenario=scenario,
+            grid_parameters=grid_parameters,
+        )
+
     users_pool_statistics: UsersPoolStatistics = UsersPoolStatistics.compute(
         users_pool=users_pool, location_types=scenario.metrics.location_types
     )
+
+    if local_grid is not None:
+
+        (
+            excess_occurrences,
+            excess_occurrences_ratio,
+            propotion_at_least_one_overload,
+            excess_per_hour,
+        ) = get_excesses(
+            local_grid=local_grid, grid_parameters=grid_parameters
+        )
+
+        with pl.Config(tbl_rows=26):
+            print(excess_per_hour)
+        exit()
+
     # with pl.Config(tbl_rows=26):
     #     print(users_pool_statistics)
 
     return users_pool_statistics
+
+
+def run_benchmark() -> None:
+    benchmark(test_run)
 
 
 @cook.function_timer

@@ -601,6 +601,35 @@ class PowerLine:
     stationary_battery_for_line: StationaryBattery
     # Can be made of seceral physically separated batetries, but they count
     # as one for the line
+    EV_demand_matching: pl.DataFrame
+
+    @staticmethod
+    def create_EV_demand_matching_DF(
+        non_EV_net_profile: pl.Series,
+        run_range: pl.Series,
+        matching_DF_settings: Box,
+    ) -> pl.DataFrame:
+
+        EV_demand_matching: pl.DataFrame = pl.DataFrame(
+            {
+                matching_DF_settings.time_header: run_range.cast(pl.Datetime),
+                matching_DF_settings.non_EV_demand_header: (
+                    non_EV_net_profile.cast(pl.Float64)
+                ),
+            }
+        ).with_columns(
+            pl.lit(None, dtype=pl.Float64).alias(
+                matching_DF_settings.EV_demand_header
+            ),
+            pl.lit(None, dtype=pl.Boolean).alias(
+                matching_DF_settings.capacity_exceeded_header
+            ),
+            pl.lit(None, dtype=pl.Float64).alias(
+                matching_DF_settings.extra_capacity_needed_header
+            ),
+        )
+
+        return EV_demand_matching
 
 
 @dataclass
@@ -1142,7 +1171,7 @@ class LocalGrid:
         if total_charging_power_kW > transformer_capacity_kW:
             raise ValueError(
                 f'The total charger power ({total_charging_power_kW:.2f} kW) '
-                f'islarger than the transformer capacity '
+                f'is larger than the transformer capacity '
                 f'({transformer_capacity_kW:.2f} kW). '
                 'Either increase the transformer capacity or reduce the total '
                 'charger power. The latter can be done by reducing the '
@@ -1241,7 +1270,7 @@ class LocalGrid:
             for household_node in household_nodes
         ]
 
-        line_non_EV_net_profiles, lines_stationary_batteries = (
+        lines_non_EV_net_profiles, lines_stationary_batteries = (
             LocalGrid.assign_non_EV_demand_to_lines(
                 node_non_EV_profiles=node_non_EV_profiles,
                 line_powers_kW=line_powers_kW,
@@ -1251,6 +1280,14 @@ class LocalGrid:
                 nodes_stationary_batteries=nodes_stationary_batteries,
             )
         )
+        lines_EV_matching_DFs: list[pl.DataFrame] = [
+            PowerLine.create_EV_demand_matching_DF(
+                non_EV_net_profile=non_EV_net_profile,
+                run_range=time_ranges.run_stamps,
+                matching_DF_settings=grid_parameters.EV_demand_matching_DF,
+            )
+            for non_EV_net_profile in lines_non_EV_net_profiles
+        ]
 
         power_lines: list[PowerLine] = [
             PowerLine(
@@ -1259,18 +1296,21 @@ class LocalGrid:
                 non_EV_demand_profile=line_non_EV_net_profile,
                 EV_users=line_EV_users,
                 stationary_battery_for_line=line_stationary_battery,
+                EV_demand_matching=line_EV_demand_matching_DF,
             )
             for line_index, (
                 line_capacity_kW,
                 line_non_EV_net_profile,
                 line_EV_users,
                 line_stationary_battery,
+                line_EV_demand_matching_DF,
             ) in enumerate(
                 zip(
                     line_powers_kW,
-                    line_non_EV_net_profiles,
+                    lines_non_EV_net_profiles,
                     line_EV_user_IDs,
                     lines_stationary_batteries,
+                    lines_EV_matching_DFs,
                     strict=True,
                 )
             )
@@ -1281,31 +1321,6 @@ class LocalGrid:
             power_lines=power_lines,
         )
 
-
-# def get_stationary_batteries() -> list[StationaryBattery]:
-#     per line  or go back to per node?
-#     print(1602)
-#     exit()
-#     lines_stationary_batteries: list[StationaryBattery] = []
-#     return lines_stationary_batteries
-
-
-# create list of chargers
-# create list on Nodes
-# create list of license
-# create LocalGrid
-
-# Placeholders?
-
-
-# draw non_EV
-# HHs
-# HPs (WPgenerator)
-# SPs
-
-# draw_chargers
-# driveway
-# street
 
 # 8. Connection-level checks do not necessarily require every connection
 # profile
