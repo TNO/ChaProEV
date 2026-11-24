@@ -157,6 +157,20 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#non-ev-demand-header">Non-EV demand header</a>
     </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ev-dmeand-matching-df">EV dmeand matching DF</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#time-header">Time header</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#non-ev-demand-header_1">Non EV demand header</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#ev-demand-header">EV demand header</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#capacity-exceeded-header">Capacity exceeded header</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#extra-capacoity-needed-header">Extra capacoity needed header</a>
+    </li>
+        </ul>
+    </li>
     <li class="toctree-l3"><a class="reference internal" href="#households">Households</a>
         <ul>
     <li class="toctree-l4"><a class="reference internal" href="#minimum-basic-household-demand">Minimum basic household demand</a>
@@ -792,7 +806,8 @@ supply is negative. Battery charging therefore contributes positive power,
 whereas battery discharging contributes negative power.</p>
 <h2 id="parameters">Parameters</h2>
 <p>They are in the <code>[grid]</code> section of your scenario</p>
-<pre><code class="language-TOML">[grid]
+<pre><code class="language-TOML">
+[grid]
 include_residential_grid_congestion = true 
 home_location_name = 'home'
 own_driveway_name = 'own_driveway'
@@ -804,6 +819,16 @@ line_capacity_weight_typical = 1.0
 line_capacity_weight_max = 4.2
 amount_of_households = 200
 non_EV_demand_header = 'Non EV demand (kW)'
+[grid.EV_demand_matching_DF]
+time_header = 'Time tag'
+non_EV_demand_header =  'Non-EV demand (kW)'
+EV_demand_header = 'EV demand from grid (kW)'
+capacity_exceeded_header = 'Capacoty exceeded?'
+extra_capacity_needed_header = 'Extra capacity needed (kW)'
+columns = [
+    'Time tag', 'Non-EV demand (kW)', 'EV demand from grid (kW)',
+    'Capacity excceed?', 'Extra capacity needed (kW)']
+
 [grid.households]
 # THose are values over the whole run (typically, a year)
 run_consumption_kWh_excluding_EV_heat_pump_home_battery_min = 1_500
@@ -842,7 +867,7 @@ discharging_power_kW = 6.0
 reserve_days_basic = 1.0
 reserve_days_heat_pump =  0.8
 reserve_days_solar_panels = 1.5
-reserve_days_EV = 0.25
+
 
 </code></pre>
 <h3 id="residential-grid-congestion_1">Residential grid congestion</h3>
@@ -899,6 +924,19 @@ capacities of the lines.</p>
 <h3 id="non-ev-demand-header">Non-EV demand header</h3>
 <p><code>non_EV_demand_header</code> specifies the name used for the line-level non-EV demand
 profile series.</p>
+<h3 id="ev-dmeand-matching-df">EV dmeand matching DF</h3>
+<p>Settings related to the DataFrame from EV demand matching</p>
+<h4 id="time-header">Time header</h4>
+<p>Name of the column where time tags appear</p>
+<h4 id="non-ev-demand-header_1">Non EV demand header</h4>
+<p>Name of the column where the non-EV demand appears</p>
+<h4 id="ev-demand-header">EV demand header</h4>
+<p>Name of the column where the EV demand(from the grid)  appears</p>
+<h4 id="capacity-exceeded-header">Capacity exceeded header</h4>
+<p>Name of the clumn where a boolean telling us if we exceeded the line capacity
+appears</p>
+<h4 id="extra-capacoity-needed-header">Extra capacoity needed header</h4>
+<p>Name of thecolumn where the size of the extra capacity needed appears</p>
 <h3 id="households">Households</h3>
 <p>The <code>[grid.households]</code> section defines the basic household electricity demand.
 This excludes EV charging, heat-pump demand, and stationary-battery operation.</p>

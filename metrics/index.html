@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Metrics - ChaProEV</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Metrics";
+        var mkdocs_page_input_path = "metrics.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ChaProEV
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Approach</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../non_road/">Non-road</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../consumption/">Consumption</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../make_variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running_model/">Running model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multiprocessing/">Multiprocessing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../writing/">Writing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../grid/">Grid</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Programming matters</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../parallel_processing/">Parallel processing</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChaProEV</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Metrics</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h3 id="matching-ev-demand-to-the-residential-grid">Matching EV demand to the residential grid</h3>
+<p>After EV charging has been simulated, the resulting charging demand is matched
+to the residential power lines to which the EV users are connected.</p>
+<p>For each power line, the model considers all EV users assigned to that line.
+Only charging taking place at <strong>home</strong> is included in the residential-grid
+demand. Charging at other locations is not assigned to the residential power
+line.</p>
+<p>The home-charging demand of all EV users connected to a line is summed for
+each timestep:</p>
+<div class="arithmatex">\[
+P_{\mathrm{EV},t} = \sum_i P_{\mathrm{EV},i,t}
+\]</div>
+<p>where <span class="arithmatex">\(P_{\mathrm{EV},i,t}\)</span> is the power drawn from the grid by EV user <span class="arithmatex">\(i\)</span> at
+home during timestep <span class="arithmatex">\(t\)</span>.</p>
+<p>This EV demand is combined with the existing non-EV demand of the power line:</p>
+<div class="arithmatex">\[
+P_{\mathrm{total},t}
+=
+P_{\mathrm{non-EV},t}
++
+P_{\mathrm{EV},t}
+\]</div>
+<p>The total demand is compared with the capacity of the power line. The line is
+considered overloaded when:</p>
+<div class="arithmatex">\[
+P_{\mathrm{total},t} &gt; P_{\mathrm{capacity}}
+\]</div>
+<p>For an overloaded timestep, the additional capacity required is calculated as:</p>
+<div class="arithmatex">\[
+P_{\mathrm{additional},t}
+=
+P_{\mathrm{total},t}
+-
+P_{\mathrm{capacity}}
+\]</div>
+<p>If the capacity is not exceeded, the additional capacity required is zero.</p>
+<p>For example, consider a power line with a capacity of 100 kW. If non-EV demand
+is 70 kW and home EV charging contributes another 45 kW, total demand is
+115 kW:</p>
+<div class="arithmatex">\[
+70 + 45 = 115\ \mathrm{kW}
+\]</div>
+<p>The power line is therefore overloaded. The additional capacity required is:</p>
+<div class="arithmatex">\[
+115 - 100 = 15\ \mathrm{kW}
+\]</div>
+<p>The resulting EV demand, overload status, and additional capacity requirement
+are stored for every timestep in the power line's EV-demand-matching DataFrame.
+These results can subsequently be aggregated across power lines to calculate
+the residential grid-congestion statistics.</p>
+<h3 id="residential-grid-congestion-statistics">Residential grid congestion statistics</h3>
+<p>Residential grid congestion is evaluated for each power line and timestep.
+A power line is considered overloaded when its total electricity demand exceeds
+its available capacity.</p>
+<p>Two related but distinct measures of congestion are calculated:</p>
+<ol>
+<li><strong>Number of overloaded lines</strong></li>
+</ol>
+<p>For every timestep, the number of power lines exceeding their capacity is
+   counted. Because multiple lines can be overloaded simultaneously, this value
+   can be larger than one.</p>
+<p>The average number of overloaded lines per timestep is calculated over the
+   simulation.</p>
+<ol>
+<li><strong>Timesteps with an overload</strong></li>
+</ol>
+<p>A timestep is considered congested when at least one power line exceeds its
+   capacity. The proportion of congested timesteps therefore represents how
+   often residential grid congestion occurs, irrespective of how many lines
+   are overloaded simultaneously.</p>
+<p>For example, consider four timesteps with the following numbers of overloaded
+lines:</p>
+<table>
+<thead>
+<tr>
+<th>Timestep</th>
+<th>Overloaded lines</th>
+<th>At least one overloaded</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>No</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>There are three line-overload occurrences in total. The average number of
+overloaded lines per timestep is therefore <code>3 / 4 = 0.75</code>.</p>
+<p>However, an overload occurs during only two of the four timesteps. The
+proportion of timesteps with at least one overloaded line is therefore
+<code>2 / 4 = 0.50</code>.</p>
+<p>Both measures are also calculated separately for each hour of the day
+(0–23). This makes it possible to identify both when congestion occurs most
+frequently and when multiple power lines tend to be overloaded simultaneously.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        });
+    </script>
+
+</body>
+</html>
