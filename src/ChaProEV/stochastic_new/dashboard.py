@@ -11,10 +11,8 @@ from ETS_CookBook import ETS_CookBook as cook
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from ChaProEV.stochastic_new.ChaProEV_run import (
-    UsersPoolStatistics,
-    run_scenario,
-)
+from ChaProEV.stochastic_new.ChaProEV_run import run_scenario
+from ChaProEV.stochastic_new.metrics import UsersPoolStatistics
 
 
 def get_grid_congestion_figure(

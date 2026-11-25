@@ -7,10 +7,8 @@ import numpy.typing as npt
 import polars as pl
 from box import Box
 
-# from ChaProEV.stochastic_new.auxiliary import print_memory
+# from ChaProEV.stochastic_new.benchmark import print_memory
 from ChaProEV.stochastic_new.define import User
-
-# class GrisStatus
 
 
 @dataclass

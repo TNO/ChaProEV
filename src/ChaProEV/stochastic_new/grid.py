@@ -1321,6 +1321,92 @@ class LocalGrid:
         )
 
 
+def compute_EV_matching(
+    local_grid: LocalGrid,
+    users_by_ID: dict[uuid.UUID, User],
+    time_ranges: TimeRange,
+    scenario: Box,
+    grid_parameters: Box,
+) -> None:
+    '''
+    Match residential EV charging demand to power lines.
+
+    For each power line, aggregate the power drawn from the grid by EVs
+    charging at home. Add this EV demand to the line's EV-demand-matching
+    DataFrame and combine it with non-EV demand to determine whether
+    the line capacity is exceeded at each timestep.
+
+    For overloaded timesteps, also calculate the additional capacity required
+    to accommodate the total demand. The results are stored in each power
+    line's EV-demand-matching DataFrame.
+    '''
+
+    for power_line in local_grid.power_lines:
+        line_EV_demand_from_grid: pl.Series = pl.Series(
+            np.zeros(len(time_ranges.run_stamps))
+        )
+        for user_ID in power_line.EV_users:
+
+            home_power: pl.Series = (
+                users_by_ID[user_ID]
+                .charge.with_columns(
+                    pl.when(
+                        pl.col(scenario.charging_dataframe.location_header)
+                        == grid_parameters.home_location_name
+                    )
+                    .then(
+                        pl.col(
+                            scenario.charging_dataframe.power_from_grid_header  # noqa:E501
+                        )
+                    )
+                    .otherwise(0.0)
+                    .alias('home_power')
+                )
+                .get_column('home_power')
+            )
+
+            line_EV_demand_from_grid += home_power
+        non_EV_header: str = (
+            grid_parameters.EV_demand_matching_DF.non_EV_demand_header
+        )
+        EV_header: str = grid_parameters.EV_demand_matching_DF.EV_demand_header
+        capacity_exceeded_header: str = (
+            grid_parameters.EV_demand_matching_DF.capacity_exceeded_header
+        )
+        extra_capacity_needed_header: str = (
+            grid_parameters.EV_demand_matching_DF.extra_capacity_needed_header  # noqa:E501
+        )
+
+        # First add the EV demand because subsequent
+        # alculations depend on it.
+        power_line.EV_demand_matching = (
+            power_line.EV_demand_matching.with_columns(
+                line_EV_demand_from_grid.alias(EV_header),
+            )
+        )
+
+        # Determine whether total demand exceeds the line capacity.
+        power_line.EV_demand_matching = (
+            power_line.EV_demand_matching.with_columns(
+                (
+                    pl.col(non_EV_header) + pl.col(EV_header)
+                    > power_line.capacity_kW
+                ).alias(capacity_exceeded_header),
+                pl.when(
+                    pl.col(non_EV_header) + pl.col(EV_header)
+                    > power_line.capacity_kW
+                )
+                .then(
+                    pl.col(non_EV_header)
+                    + pl.col(EV_header)
+                    - power_line.capacity_kW
+                )
+                .otherwise(0.0)
+                .alias(extra_capacity_needed_header),
+            )
+        )
+
+
 # 8. Connection-level checks do not necessarily require every connection
 # profile
 
