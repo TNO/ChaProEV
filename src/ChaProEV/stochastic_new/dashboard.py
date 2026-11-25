@@ -301,6 +301,16 @@ def make_dashboard() -> None:
             sliders_A, sliders_B = st.columns(2)
             with sliders_A:
                 st.subheader('Scenario A')
+                if scenario.grid.include_residential_grid_congestion:
+                    users_pool_size_A: int = st.slider(
+                        label='Amount of EVs in neighbourhood',
+                        min_value=1,
+                        max_value=250,
+                        value=12,
+                        step=1,
+                        key='users_pool_size_A',
+                    )
+                    scenario_A.users.users_pool_size = users_pool_size_A
                 adaptive_proportion_A: float = st.slider(
                     label='Adaptive proportion',
                     min_value=0.0,
@@ -505,6 +515,16 @@ def make_dashboard() -> None:
 
             with sliders_B:
                 st.subheader('Scenario B')
+                if scenario.grid.include_residential_grid_congestion:
+                    users_pool_size_B: int = st.slider(
+                        label='Amount of EVs in neighbourhood',
+                        min_value=1,
+                        max_value=250,
+                        value=12,
+                        step=1,
+                        key='users_pool_size_B',
+                    )
+                    scenario_B.users.users_pool_size = users_pool_size_B
                 adaptive_proportion_B: float = st.slider(
                     label='Adaptive proportion',
                     min_value=0.0,
@@ -1075,40 +1095,45 @@ def make_dashboard() -> None:
             st.session_state.initial_average_consumption_kWh_B = (
                 st.session_state.statistics_B.average_consumption_kWh
             )
-        if 'initial_average_overloaded_lines_A' not in st.session_state:
-            if scenario.grid.include_residential_grid_congestion:
+
+        if scenario.grid.include_residential_grid_congestion:
+            if 'initial_average_overloaded_lines_A' not in st.session_state:
+
                 st.session_state.initial_average_overloaded_lines_A = (
                     st.session_state.statistics_A.capacity_overloads.average_overloaded_lines  # noqa:E501
                 )
-            else:
-                st.session_state.initial_average_overloaded_lines_A = 0.0
-        if (
-            'initial_proportion_timesteps_with_overload_A'
-            not in st.session_state
-        ):
-            if scenario.grid.include_residential_grid_congestion:
-                st.session_state.proportion_timesteps_with_overload_A = (
+
+            if (
+                'initial_proportion_timesteps_with_overload_A'
+                not in st.session_state
+            ):
+                st.session_state.initial_proportion_timesteps_with_overload_A = (  # noqa:E501
                     st.session_state.statistics_A.capacity_overloads.proportion_timesteps_with_overload  # noqa:E501
                 )
-            else:
-                st.session_state.proportion_timesteps_with_overload_A = 0.0
-        if 'initial_average_overloaded_lines_B' not in st.session_state:
-            if scenario.grid.include_residential_grid_congestion:
+            if 'initial_EV_proportion_A' not in st.session_state:
+                st.session_state.initial_EV_proportion_A = (
+                    scenario_A.users.users_pool_size
+                    / scenario_A.grid.amount_of_households
+                )
+
+            if 'initial_average_overloaded_lines_B' not in st.session_state:
+
                 st.session_state.initial_average_overloaded_lines_B = (
                     st.session_state.statistics_B.capacity_overloads.average_overloaded_lines  # noqa:E501
                 )
-            else:
-                st.session_state.initial_average_overloaded_lines_B = 0.0
-        if (
-            'initial_proportion_timesteps_with_overload_B'
-            not in st.session_state
-        ):
-            if scenario.grid.include_residential_grid_congestion:
-                st.session_state.proportion_timesteps_with_overload_B = (
+
+            if (
+                'initial_proportion_timesteps_with_overload_B'
+                not in st.session_state
+            ):
+                st.session_state.initial_proportion_timesteps_with_overload_B = (  # noqa:E501
                     st.session_state.statistics_B.capacity_overloads.proportion_timesteps_with_overload  # noqa:E501
                 )
-            else:
-                st.session_state.proportion_timesteps_with_overload_B = 0.0
+            if 'initial_EV_proportion_B' not in st.session_state:
+                st.session_state.initial_EV_proportion_B = (
+                    scenario_B.users.users_pool_size
+                    / scenario_B.grid.amount_of_households
+                )
 
     statistics_A: UsersPoolStatistics = st.session_state.statistics_A
     statistics_B: UsersPoolStatistics = st.session_state.statistics_B
@@ -1157,29 +1182,62 @@ def make_dashboard() -> None:
     if scenario.grid.include_residential_grid_congestion:
         assert statistics_A.capacity_overloads is not None
         with grid_metrics_A:
-            grid_metrics_A_1, grid_metrics_A_2 = st.columns(2)
+            grid_metrics_A_1, grid_metrics_A_2, grid_metrics_A_3 = st.columns(
+                3
+            )
             with grid_metrics_A_1:
                 st.metric(
-                    label='Average overlaoded lines',
+                    label='Average overloaded lines',
                     value=f'{statistics_A.capacity_overloads.average_overloaded_lines:.4f}',  # noqa:E501
+                    delta=f'{statistics_A.capacity_overloads.average_overloaded_lines - st.session_state.initial_average_overloaded_lines_A:+.4f}',  # noqa:E501
                 )
             with grid_metrics_A_2:
                 st.metric(
                     label='Percentage timesteps with overload',
-                    value=f'{statistics_A.capacity_overloads.average_overloaded_lines:.2%}',  # noqa:E501
+                    value=f'{statistics_A.capacity_overloads.proportion_timesteps_with_overload:.2%}',  # noqa:E501
+                    delta=f'{statistics_A.capacity_overloads.proportion_timesteps_with_overload - st.session_state.initial_proportion_timesteps_with_overload_A:.2%}',  # noqa:E501
+                )
+            with grid_metrics_A_3:
+                EV_proportion_A: float = (
+                    scenario_A.users.users_pool_size
+                    / scenario_A.grid.amount_of_households
+                )
+                st.metric(
+                    label='Amount of EVs per household',
+                    value=f'{EV_proportion_A: .2f}',  # noqa:E501
+                    delta=(
+                        f'{EV_proportion_A - st.session_state.initial_EV_proportion_A:+.2f}'  # noqa:E501
+                    ),
                 )
         assert statistics_B.capacity_overloads is not None
         with grid_metrics_B:
-            grid_metrics_B_1, grid_metrics_B_2 = st.columns(2)
+            grid_metrics_B_1, grid_metrics_B_2, grid_metrics_B_3 = st.columns(
+                3
+            )
             with grid_metrics_B_1:
                 st.metric(
-                    label='Average overlaoded lines',
+                    label='Average overloaded lines',
                     value=f'{statistics_B.capacity_overloads.average_overloaded_lines:.4f}',  # noqa:E501
+                    delta=f'{statistics_B.capacity_overloads.average_overloaded_lines - st.session_state.initial_average_overloaded_lines_B:+.4f}',  # noqa:E501
                 )
             with grid_metrics_B_2:
                 st.metric(
                     label='Percentage timesteps with overload',
-                    value=f'{statistics_B.capacity_overloads.average_overloaded_lines:.2%}',  # noqa:E501
+                    value=f'{statistics_B.capacity_overloads.proportion_timesteps_with_overload:.2%}',  # noqa:E501
+                    delta=f'{statistics_B.capacity_overloads.proportion_timesteps_with_overload - st.session_state.initial_proportion_timesteps_with_overload_B:.2%}',  # noqa:E501
+                )
+
+            with grid_metrics_B_3:
+                EV_proportion_B: float = (
+                    scenario_B.users.users_pool_size
+                    / scenario_B.grid.amount_of_households
+                )
+                st.metric(
+                    label='Amount of EVs per household',
+                    value=f'{EV_proportion_B: .2f}',  # noqa:E501
+                    delta=(
+                        f'{EV_proportion_B - st.session_state.initial_EV_proportion_A:+.2f}'  # noqa:E501
+                    ),
                 )
 
     plt.style.use('fivethirtyeight')
