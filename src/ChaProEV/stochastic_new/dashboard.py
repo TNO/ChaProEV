@@ -1459,26 +1459,3 @@ def run_dashboard() -> None:
 if __name__ == '__main__':
 
     make_dashboard()
-
-    # Adjust km (including commute days, holiday, WE factors)
-    # Demo cases show how things are related
-    # slider selection in TOML
-    # weekday commutre factir nd/or commute day probabilities
-    # Session data (start, duration, kWh needed)
-    # step(user) computation
-    # power requested and power allocated (or queue?)
-    # Does power requested increase?
-
-    # slider defaults in TOML
-    # slider trigger button
-    # powere per location type! filter street
-    # required kWH and obtained
-    # based on trafo ID and line id
-    # and a queueu of available powers
-    # first comes in
-    # You will be allowed if there is space
-    # Alllow queuing (waiting --> tolerance (e.g. leave queue
-    # if 25% of the session time is done)
-    # ) queueu
-
-    # add more sliders

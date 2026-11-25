@@ -1621,8 +1621,3 @@ def get_users_pool(
             time_constants=time_constants,
         )
     return users_pool
-
-
-#     Attribute to user bassed on draw (ranges. For demand_profles: draw
-# in MFFBAS)
-# warning/error for non-cars

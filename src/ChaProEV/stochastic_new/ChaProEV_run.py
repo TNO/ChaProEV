@@ -44,6 +44,8 @@ def test_run() -> None:
     print('Slide grid elements?')
     print('Invert color for delta for overload? Fro all?')
     print('RUn ChaProEV thing')
+    print('Model maintenance')
+    print('Slider defaults in TOML')
 
 
 @cook.function_timer
@@ -151,5 +153,3 @@ if __name__ == '__main__':
 
     case_name: str = 'plus'
     run_ChaProEV(case_name=case_name)
-    # MOdel maintenance
-    # iterate on time stamps too if we need time
