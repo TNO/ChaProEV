@@ -12,7 +12,7 @@ from rich import print
 from ChaProEV.stochastic_new.benchmark import benchmark
 from ChaProEV.stochastic_new.charging import compute_fleet_charging
 from ChaProEV.stochastic_new.define import User, get_users_pool
-from ChaProEV.stochastic_new.grid import LocalGrid
+from ChaProEV.stochastic_new.grid import CapacityOverloads, LocalGrid
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
 from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
@@ -111,7 +111,7 @@ def compute_EV_matching(
 
 def get_excesses(
     local_grid: LocalGrid, grid_parameters: Box
-) -> tuple[pl.Series, float, float, pl.DataFrame]:
+) -> CapacityOverloads:
     """
     Calculate residential power-line congestion statistics.
 
@@ -175,11 +175,11 @@ def get_excesses(
         .sort('hour')
     )
 
-    return (
-        excess_occurrences,
-        average_overloaded_lines,
-        proportion_timesteps_with_overload,
-        excess_per_hour,
+    return CapacityOverloads(
+        excess_occurrences == excess_occurrences,
+        average_overloaded_lines=average_overloaded_lines,
+        proportion_timesteps_with_overload=proportion_timesteps_with_overload,
+        excess_per_hour=excess_per_hour,
     )
 
 
@@ -458,18 +458,12 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
 
     if local_grid is not None:
 
-        (
-            excess_occurrences,
-            excess_occurrences_ratio,
-            propotion_at_least_one_overload,
-            excess_per_hour,
-        ) = get_excesses(
+        local_grid.capacity_overloads = get_excesses(
             local_grid=local_grid, grid_parameters=grid_parameters
         )
 
         with pl.Config(tbl_rows=26):
-            print(excess_per_hour)
-        exit()
+            print(local_grid.capacity_overloads)
 
     # with pl.Config(tbl_rows=26):
     #     print(users_pool_statistics)
