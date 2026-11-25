@@ -12,7 +12,7 @@ from rich import print
 from ChaProEV.stochastic_new.benchmark import benchmark
 from ChaProEV.stochastic_new.charging import compute_fleet_charging
 from ChaProEV.stochastic_new.define import User, get_users_pool
-from ChaProEV.stochastic_new.grid import CapacityOverloads, LocalGrid
+from ChaProEV.stochastic_new.grid import LocalGrid
 from ChaProEV.stochastic_new.monte_carlo import MonteCarlo, RandomGenerators
 from ChaProEV.stochastic_new.time import TimeConstants, TimeRange
 
@@ -184,6 +184,14 @@ def get_excesses(
 
 
 @dataclass
+class CapacityOverloads:
+    excess_occurrences: pl.Series
+    average_overloaded_lines: float
+    proportion_timesteps_with_overload: float
+    excess_per_hour: pl.DataFrame
+
+
+@dataclass
 class UsersPoolStatistics:
     average_kilometrage: float
     average_consumption_kWh: float
@@ -199,6 +207,7 @@ class UsersPoolStatistics:
     ]
     pool_average_electricity_costs_eur_kWh: float
     pool_average_travel_costs_eur_km: float
+    capacity_overloads: CapacityOverloads | None = None
 
     @classmethod
     def compute(
@@ -458,12 +467,12 @@ def run_scenario(scenario: Box) -> UsersPoolStatistics:
 
     if local_grid is not None:
 
-        local_grid.capacity_overloads = get_excesses(
+        users_pool_statistics.capacity_overloads = get_excesses(
             local_grid=local_grid, grid_parameters=grid_parameters
         )
 
         with pl.Config(tbl_rows=26):
-            print(local_grid.capacity_overloads)
+            print(users_pool_statistics.capacity_overloads)
 
     # with pl.Config(tbl_rows=26):
     #     print(users_pool_statistics)

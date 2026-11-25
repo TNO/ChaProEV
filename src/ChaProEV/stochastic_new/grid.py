@@ -12,13 +12,6 @@ from ChaProEV.stochastic_new.time import TimeConstants, TimeRange, reshape
 
 
 @dataclass
-class CapacityOverloads:
-    excess_occurrences: pl.Series
-    average_overloaded_lines: float
-    proportion_timesteps_with_overload: float
-    excess_per_hour: pl.DataFrame
-
-@dataclass
 class HouseholdBasicDemand:
     non_BEV_HP_run_demand_kWh: float
     demand_shape: pl.Series
@@ -642,7 +635,6 @@ class PowerLine:
 class LocalGrid:
     transformer_capacity_kW: float
     power_lines: list[PowerLine]
-    capacity_overloads: CapacityOverloads
 
     # @staticmethod
     # def create_nodes() -> list[Node]:
@@ -1323,17 +1315,9 @@ class LocalGrid:
             )
         ]
 
-        # Set capacity overloads to empty/zero for now
-        capacity_overloads: CapacityOverloads = CapacityOverloads(
-            excess_occurrences=pl.Series(),
-            average_overloaded_lines=0.0,
-            proportion_timesteps_with_overload=0.0,
-            excess_per_hour=pl.DataFrame()
-        )
         return cls(
             transformer_capacity_kW=transformer_capacity_kW,
             power_lines=power_lines,
-            capacity_overloads=capacity_overloads
         )
 
 
