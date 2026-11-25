@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 import polars as pl
 import streamlit as st
 from box import Box
@@ -16,6 +17,63 @@ from ChaProEV.stochastic_new.ChaProEV_run import (
 )
 
 
+def get_grid_congestion_figure(
+    *,
+    congestion_type: str,
+    congestion_data_A: pl.DataFrame,
+    congestion_data_B: pl.DataFrame,
+    color_A: tuple[float, float, float],
+    color_B: tuple[float, float, float],
+    metrics_text_color: tuple[float, float, float],
+) -> Figure:
+
+    grid_congestion_figure, grid_congestion_plot = plt.subplots(
+        1, 1, figsize=(16, 9)
+    )
+
+    hours: int = congestion_data_A.height
+
+    grid_congestion_plot.bar(
+        x=range(hours),
+        height=congestion_data_A[congestion_type],
+        label='Scenario A',
+        width=1.0,
+        color=color_A,
+    )
+    grid_congestion_plot.bar(
+        x=range(hours),
+        height=congestion_data_B[congestion_type],
+        label='Scenario B',
+        width=0.5,
+        color=color_B,
+    )
+    grid_congestion_plot.set_title(
+        f'{congestion_type}',
+        color=metrics_text_color,
+    )
+    grid_congestion_plot.set_xlabel('Hour in day', color=metrics_text_color)
+    grid_congestion_plot.set_ylabel(congestion_type, color=metrics_text_color)
+    grid_congestion_plot.legend(frameon=False, labelcolor=metrics_text_color)
+
+    if congestion_type == 'proportion_timesteps_with_overload':
+        grid_congestion_plot.yaxis.set_major_formatter(
+            mtick.PercentFormatter(1.0)
+        )
+
+    grid_congestion_plot.tick_params(axis='x', colors=metrics_text_color)
+    grid_congestion_plot.tick_params(axis='y', colors=metrics_text_color)
+    grid_congestion_plot.spines['left'].set_color(metrics_text_color)
+    grid_congestion_plot.spines['top'].set_visible(False)
+    grid_congestion_plot.spines['right'].set_visible(False)
+    grid_congestion_plot.spines['bottom'].set_color(metrics_text_color)
+    grid_congestion_plot.set_facecolor('none')
+
+    grid_congestion_figure.patch.set_alpha(0)
+    grid_congestion_figure.tight_layout()
+
+    return grid_congestion_figure
+
+
 def get_grid_power_figure(
     *,
     location_type: str,
@@ -26,9 +84,7 @@ def get_grid_power_figure(
     metrics_text_color: tuple[float, float, float],
 ) -> Figure:
 
-    grid_power_figure, grid_power_plot = plt.subplots(
-        1, 1, figsize=(16, 9)
-    )
+    grid_power_figure, grid_power_plot = plt.subplots(1, 1, figsize=(16, 9))
 
     hours: int = len(power_from_grid_W_A)
 
@@ -231,11 +287,14 @@ def make_dashboard() -> None:
 
     st.set_page_config(layout='wide')
 
-    metrics_A, metrics_B = st.columns(2)
+    mobility_metrics_A, mobility_metrics_B = st.columns(2)
+
+    grid_metrics_A, grid_metrics_B = st.columns(2)
 
     metric_plots_A, metric_plots_B = st.columns(2)
     grid_A, grid_B = st.columns(2)
-    _, plot_box_1, _ = st.columns([1, 2, 1])
+    _, charging_plot_box, _ = st.columns([1, 2, 1])
+    _, grid_plot_box, _ = st.columns([1, 2, 1])
 
     with st.sidebar:
         with st.form('scenario_settings'):
@@ -1016,14 +1075,48 @@ def make_dashboard() -> None:
             st.session_state.initial_average_consumption_kWh_B = (
                 st.session_state.statistics_B.average_consumption_kWh
             )
+        if 'initial_average_overloaded_lines_A' not in st.session_state:
+            if scenario.grid.include_residential_grid_congestion:
+                st.session_state.initial_average_overloaded_lines_A = (
+                    st.session_state.statistics_A.capacity_overloads.average_overloaded_lines  # noqa:E501
+                )
+            else:
+                st.session_state.initial_average_overloaded_lines_A = 0.0
+        if (
+            'initial_proportion_timesteps_with_overload_A'
+            not in st.session_state
+        ):
+            if scenario.grid.include_residential_grid_congestion:
+                st.session_state.proportion_timesteps_with_overload_A = (
+                    st.session_state.statistics_A.capacity_overloads.proportion_timesteps_with_overload  # noqa:E501
+                )
+            else:
+                st.session_state.proportion_timesteps_with_overload_A = 0.0
+        if 'initial_average_overloaded_lines_B' not in st.session_state:
+            if scenario.grid.include_residential_grid_congestion:
+                st.session_state.initial_average_overloaded_lines_B = (
+                    st.session_state.statistics_B.capacity_overloads.average_overloaded_lines  # noqa:E501
+                )
+            else:
+                st.session_state.initial_average_overloaded_lines_B = 0.0
+        if (
+            'initial_proportion_timesteps_with_overload_B'
+            not in st.session_state
+        ):
+            if scenario.grid.include_residential_grid_congestion:
+                st.session_state.proportion_timesteps_with_overload_B = (
+                    st.session_state.statistics_B.capacity_overloads.proportion_timesteps_with_overload  # noqa:E501
+                )
+            else:
+                st.session_state.proportion_timesteps_with_overload_B = 0.0
 
     statistics_A: UsersPoolStatistics = st.session_state.statistics_A
     statistics_B: UsersPoolStatistics = st.session_state.statistics_B
 
-    with metrics_A:
+    with mobility_metrics_A:
         st.subheader('Scenario A')
-        metrics_A_1, metrics_A_2 = st.columns(2)
-        with metrics_A_1:
+        mobility_metrics_A_1, mobility_metrics_A_2 = st.columns(2)
+        with mobility_metrics_A_1:
 
             st.metric(
                 label='Kilometrage',
@@ -1032,7 +1125,7 @@ def make_dashboard() -> None:
                     f'{statistics_A.average_kilometrage - st.session_state.initial_average_kilometrage_A:+.0f} km'  # noqa:E501
                 ),
             )
-        with metrics_A_2:
+        with mobility_metrics_A_2:
             st.metric(
                 label='Consumption',
                 value=f'{statistics_A.average_consumption_kWh:.0F} kWh',
@@ -1041,10 +1134,10 @@ def make_dashboard() -> None:
                 ),
             )
 
-    with metrics_B:
+    with mobility_metrics_B:
         st.subheader('Scenario B')
-        metrics_B_1, metrics_B_2 = st.columns(2)
-        with metrics_B_1:
+        mobility_metrics_B_1, mobility_metrics_B_2 = st.columns(2)
+        with mobility_metrics_B_1:
             st.metric(
                 label='Kilometrage',
                 value=f'{statistics_B.average_kilometrage:.0f} km',
@@ -1052,7 +1145,7 @@ def make_dashboard() -> None:
                     f'{statistics_B.average_kilometrage - st.session_state.initial_average_kilometrage_B:+.0f} km'  # noqa:E501
                 ),
             )
-        with metrics_B_2:
+        with mobility_metrics_B_2:
             st.metric(
                 label='Consumption',
                 value=f'{statistics_B.average_consumption_kWh:.0f} kWh',
@@ -1060,6 +1153,34 @@ def make_dashboard() -> None:
                     f'{statistics_B.average_consumption_kWh - st.session_state.initial_average_consumption_kWh_B:+.0f} kWh'  # noqa:E501
                 ),
             )
+
+    if scenario.grid.include_residential_grid_congestion:
+        assert statistics_A.capacity_overloads is not None
+        with grid_metrics_A:
+            grid_metrics_A_1, grid_metrics_A_2 = st.columns(2)
+            with grid_metrics_A_1:
+                st.metric(
+                    label='Average overlaoded lines',
+                    value=f'{statistics_A.capacity_overloads.average_overloaded_lines:.4f}',  # noqa:E501
+                )
+            with grid_metrics_A_2:
+                st.metric(
+                    label='Percentage timesteps with overload',
+                    value=f'{statistics_A.capacity_overloads.average_overloaded_lines:.2%}',  # noqa:E501
+                )
+        assert statistics_B.capacity_overloads is not None
+        with grid_metrics_B:
+            grid_metrics_B_1, grid_metrics_B_2 = st.columns(2)
+            with grid_metrics_B_1:
+                st.metric(
+                    label='Average overlaoded lines',
+                    value=f'{statistics_B.capacity_overloads.average_overloaded_lines:.4f}',  # noqa:E501
+                )
+            with grid_metrics_B_2:
+                st.metric(
+                    label='Percentage timesteps with overload',
+                    value=f'{statistics_B.capacity_overloads.average_overloaded_lines:.2%}',  # noqa:E501
+                )
 
     plt.style.use('fivethirtyeight')
 
@@ -1229,7 +1350,7 @@ def make_dashboard() -> None:
         color_B=color_B,
         metrics_text_color=metrics_text_color,
     )
-    with plot_box_1:
+    with charging_plot_box:
 
         location_type_for_power: str = st.selectbox(
             'Location type',
@@ -1239,6 +1360,37 @@ def make_dashboard() -> None:
         st.pyplot(grid_power_figures[location_type_for_power])
 
         plt.close(grid_power_figures[location_type_for_power])
+
+    with grid_plot_box:
+        if scenario.grid.include_residential_grid_congestion:
+            assert statistics_A.capacity_overloads is not None
+            assert statistics_B.capacity_overloads is not None
+            congestion_types: list[str] = [
+                congestion_type
+                for congestion_type in (
+                    statistics_A.capacity_overloads.excess_per_hour.columns
+                )
+                if congestion_type != 'hour'
+            ]
+            chosen_congestion_type: str = st.selectbox(
+                'Congestion type',
+                options=congestion_types,
+                index=len(congestion_types) - 1,
+            )
+            congestion_figure: Figure = get_grid_congestion_figure(
+                congestion_type=chosen_congestion_type,
+                congestion_data_A=(
+                    statistics_A.capacity_overloads.excess_per_hour
+                ),
+                congestion_data_B=(
+                    statistics_B.capacity_overloads.excess_per_hour
+                ),
+                color_A=color_A,
+                color_B=color_B,
+                metrics_text_color=metrics_text_color,
+            )
+            st.pyplot(congestion_figure)
+            plt.close(congestion_figure)
 
 
 def run_dashboard() -> None:
