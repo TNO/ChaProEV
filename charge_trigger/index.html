@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Chrge trigger - ChaProEV</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Chrge trigger";
+        var mkdocs_page_input_path = "charge_trigger.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ChaProEV
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">User guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../using/">How to use</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenario/">Creating scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general_parameters/">General parameters</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >Inputs</a>
+    <ul>
+                <li class="toctree-l2"><a class="" href="../car_home_own_driveway.md">Own driveway percentages</a>
+                </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Approach</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../outputs/">Outputs</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../weather/">Weather</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../run_time/">Run time</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../define/">Define</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mobility/">Mobility</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../non_road/">Non-road</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../charging/">Charging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../consumption/">Consumption</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../make_variants/">Variants</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../running_model/">Running model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../multiprocessing/">Multiprocessing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../writing/">Writing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../scenarios_module/">Scenarios</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../profiles/">Profiles</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../grid/">Grid</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Programming matters</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../parallel_processing/">Parallel processing</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Other</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Chrge trigger</a>
+    <ul class="current">
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ChaProEV</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Other</li>
+      <li class="breadcrumb-item active">Chrge trigger</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="determine-the-desire-to-charge">Determine the desire to charge</h1>
+<p>Whether a user wants to charge depends on the current battery charge level, the
+user's charge and stop triggers, and, where applicable, the charging price.</p>
+<p>Three regions are distinguished:</p>
+<ul>
+<li><strong>At or below the charge trigger</strong>, the user wants to charge irrespective of
+  the charging price.</li>
+<li><strong>At or above the stop trigger</strong>, the user does not want to charge,
+  irrespective of the charging price.</li>
+<li><strong>Between the charge and stop triggers</strong>, the decision depends on the balance
+  between the user's charging need and the charging price.</li>
+</ul>
+<p><img alt="want_charge_figure\label{fig:want_charge}" src="../want_charge.svg" title="Want charge" /></p>
+<p>The charging need describes how strongly a user wants to charge at a given
+battery charge level. For battery proportion <span class="arithmatex">\(b\)</span>, charge trigger <span class="arithmatex">\(b_t\)</span>, and
+stop trigger <span class="arithmatex">\(b_s\)</span>, the charging need between the two triggers is</p>
+<div class="arithmatex">\[
+N(b) = \frac{b_s - b}{b - b_t}.
+\]</div>
+<p>The charging need increases as the battery level approaches the charge trigger
+and approaches zero as the battery level approaches the stop trigger. At the
+midpoint between the two triggers,</p>
+<div class="arithmatex">\[
+b = \frac{b_t + b_s}{2},
+\]</div>
+<p>the charging need is equal to one:</p>
+<div class="arithmatex">\[
+N(b) = 1.
+\]</div>
+<p>Above the charge trigger, the charging need is compared with the price pain.
+The price pain is the actual charging price <span class="arithmatex">\(p\)</span> relative to the user's
+reference price <span class="arithmatex">\(p_{\mathrm{ref}}\)</span>:</p>
+<div class="arithmatex">\[
+P = \frac{p}{p_{\mathrm{ref}}}.
+\]</div>
+<p>The user wants to charge when the charging need is at least as large as the
+price pain:</p>
+<div class="arithmatex">\[
+N(b) \geq P.
+\]</div>
+<p>Equivalently, the maximum charging price that the user is willing to pay at a
+given battery charge level is</p>
+<div class="arithmatex">\[
+p_{\max}(b)
+=
+p_{\mathrm{ref}}
+\frac{b_s - b}{b - b_t}.
+\]</div>
+<p>This is the boundary shown by the black curve in the figure. Below the curve,
+the charging price is sufficiently low and the user wants to charge. Above the
+curve, the user does not want to charge.</p>
+<p>The reference price therefore has a direct interpretation. When the actual
+charging price is equal to the reference price,</p>
+<div class="arithmatex">\[
+p = p_{\mathrm{ref}},
+\]</div>
+<p>the user is just willing to charge at the midpoint between the charge and stop
+triggers.</p>
+<p>A reference price of zero disables price-sensitive charging. In that case, the
+user wants to charge only when the battery level is at or below the charge
+trigger. This reproduces threshold-only charging behaviour.</p>
+<p>For normal charging, the charging decision is evaluated at the start of a
+charging session. If the user decides to charge, the decision is not
+reevaluated as the battery level rises during that session. Charging continues
+until the stop level is reached. Consequently, the charging decision is based
+on the charging price at the start of the session; subsequent price changes
+during the same session do not causee charging-desire formulation is used for fast charging, using separate
+fast-charging charge and stop triggers, charging prices, and reference prices.
+Setting the fast-charging reference price to zero restricts fast charging to
+the automatic fast-charge trigger. A small positive fast-charging reference
+price allows sufficiently attractive fast-charging prices to trigger fast
+charging above the automatic trigger as well.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../parallel_processing/" class="btn btn-neutral float-left" title="Parallel processing"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../parallel_processing/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../javascripts/mathjax.js"></script>
+      <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(false);
+        });
+    </script>
+
+</body>
+</html>
