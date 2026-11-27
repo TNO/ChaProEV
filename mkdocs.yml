@@ -27,6 +27,8 @@ nav:
     - Grid: grid.md
   - Programming matters:
     - Parallel processing: parallel_processing.md
+  - Other:
+    - Chrge trigger: charge_trigger.md
 
 theme: 
   name: readthedocs

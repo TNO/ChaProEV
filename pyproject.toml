@@ -49,6 +49,7 @@ dashboard = 'ChaProEV.stochastic.dashboard:run_dashboard'
 stochastic_new = 'ChaProEV.stochastic_new.ChaProEV_run:test_run'
 dashboard_new = 'ChaProEV.stochastic_new.dashboard:run_dashboard'
 benchmark = 'ChaProEV.stochastic_new.ChaProEV_run:run_benchmark'
+explanation_plots = 'ChaProEV.explanations.plots:make_plots'
 
 [project.urls]
 'Homepage' = 'https://github.com/TNO/ChaProEV'

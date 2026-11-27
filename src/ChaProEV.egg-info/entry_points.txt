@@ -3,5 +3,6 @@ benchmark = ChaProEV.stochastic_new.ChaProEV_run:run_benchmark
 classic = ChaProEV.classic.ChaProEV_run:test_run
 dashboard = ChaProEV.stochastic.dashboard:run_dashboard
 dashboard_new = ChaProEV.stochastic_new.dashboard:run_dashboard
+explanation_plots = ChaProEV.explanations.plots:make_plots
 stochastic = ChaProEV.stochastic.ChaProEV_run:test_run
 stochastic_new = ChaProEV.stochastic_new.ChaProEV_run:test_run

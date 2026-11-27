@@ -172,6 +172,7 @@ src/ChaProEV/classic/run_time.py
 src/ChaProEV/classic/scenarios_module.py
 src/ChaProEV/classic/weather.py
 src/ChaProEV/classic/writing.py
+src/ChaProEV/explanations/plots.py
 src/ChaProEV/stochastic/ChaProEV_run.py
 src/ChaProEV/stochastic/charging.py
 src/ChaProEV/stochastic/dashboard.py
