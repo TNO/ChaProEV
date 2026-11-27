@@ -391,6 +391,138 @@ def make_dashboard() -> None:
                     format='%.0f%%',
                     key='fast_charge_stop_proportion_trigger_A',
                 )
+                (
+                    low_tariff_home_own_driveway_A,
+                    high_tariff_home_own_driveway_A,
+                ) = st.slider(
+                    label='Own driveway charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.25, 0.35),
+                    step=0.01,
+                    key='tariffs_home_own_driveway_A',
+                )
+                hourly_prices_home_own_driveway_A: list[float] = (
+                    get_hourly_prices(
+                        low_tariff=low_tariff_home_own_driveway_A,
+                        high_tariff=high_tariff_home_own_driveway_A,
+                        dashboard_charging_price_settings=(
+                            scenario_A.dashboard.charging_prices
+                        ),
+                    )
+                )
+                (
+                    low_tariff_home_street_parking_A,
+                    high_tariff_home_street_parking_A,
+                ) = st.slider(
+                    label='Street parking charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_home_street_parking_A',
+                )
+                hourly_prices_home_street_parking_A: list[float] = (
+                    get_hourly_prices(
+                        low_tariff=low_tariff_home_street_parking_A,
+                        high_tariff=high_tariff_home_street_parking_A,
+                        dashboard_charging_price_settings=(
+                            scenario_A.dashboard.charging_prices
+                        ),
+                    )
+                )
+                (
+                    low_tariff_work_A,
+                    high_tariff_work_A,
+                ) = st.slider(
+                    label='Work charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.0, 0.0),
+                    step=0.01,
+                    key='tariffs_work_A',
+                )
+                hourly_prices_work_A: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_work_A,
+                    high_tariff=high_tariff_work_A,
+                    dashboard_charging_price_settings=(
+                        scenario_A.dashboard.charging_prices
+                    ),
+                )
+
+                (
+                    low_tariff_leisure_A,
+                    high_tariff_leisure_A,
+                ) = st.slider(
+                    label='Leisure charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_leisure_A',
+                )
+                hourly_prices_leisure_A: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_leisure_A,
+                    high_tariff=high_tariff_leisure_A,
+                    dashboard_charging_price_settings=(
+                        scenario_A.dashboard.charging_prices
+                    ),
+                )
+                (
+                    low_tariff_weekend_A,
+                    high_tariff_weekend_A,
+                ) = st.slider(
+                    label='Weekend charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_weekend_A',
+                )
+                hourly_prices_weekend_A: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_weekend_A,
+                    high_tariff=high_tariff_weekend_A,
+                    dashboard_charging_price_settings=(
+                        scenario_A.dashboard.charging_prices
+                    ),
+                )
+
+                (
+                    low_tariff_holiday_A,
+                    high_tariff_holiday_A,
+                ) = st.slider(
+                    label='Holiday charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_holiday_A',
+                )
+                hourly_prices_holiday_A: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_holiday_A,
+                    high_tariff=high_tariff_holiday_A,
+                    dashboard_charging_price_settings=(
+                        scenario_A.dashboard.charging_prices
+                    ),
+                )
+                (
+                    low_tariff_fast_A,
+                    high_tariff_fast_A,
+                ) = st.slider(
+                    label='Fast charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.89, 0.89),
+                    step=0.01,
+                    key='tariffs_fast_A',
+                )
+                hourly_prices_fast_A: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_fast_A,
+                    high_tariff=high_tariff_fast_A,
+                    dashboard_charging_price_settings=(
+                        scenario_A.dashboard.charging_prices
+                    ),
+                )
 
                 reference_price_min_A, reference_price_max_A = st.slider(
                     label='Reference price',
@@ -625,6 +757,139 @@ def make_dashboard() -> None:
                     step=1.0,
                     format='%.0f%%',
                     key='fast_charge_stop_proportion_trigger_B',
+                )
+
+                (
+                    low_tariff_home_own_driveway_B,
+                    high_tariff_home_own_driveway_B,
+                ) = st.slider(
+                    label='Own driveway charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.25, 0.35),
+                    step=0.01,
+                    key='tariffs_home_own_driveway_B',
+                )
+                hourly_prices_home_own_driveway_B: list[float] = (
+                    get_hourly_prices(
+                        low_tariff=low_tariff_home_own_driveway_B,
+                        high_tariff=high_tariff_home_own_driveway_B,
+                        dashboard_charging_price_settings=(
+                            scenario_B.dashboard.charging_prices
+                        ),
+                    )
+                )
+                (
+                    low_tariff_home_street_parking_B,
+                    high_tariff_home_street_parking_B,
+                ) = st.slider(
+                    label='Street parking charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_home_street_parking_B',
+                )
+                hourly_prices_home_street_parking_B: list[float] = (
+                    get_hourly_prices(
+                        low_tariff=low_tariff_home_street_parking_B,
+                        high_tariff=high_tariff_home_street_parking_B,
+                        dashboard_charging_price_settings=(
+                            scenario_B.dashboard.charging_prices
+                        ),
+                    )
+                )
+                (
+                    low_tariff_work_B,
+                    high_tariff_work_B,
+                ) = st.slider(
+                    label='Work charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.0, 0.0),
+                    step=0.01,
+                    key='tariffs_work_B',
+                )
+                hourly_prices_work_B: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_work_B,
+                    high_tariff=high_tariff_work_B,
+                    dashboard_charging_price_settings=(
+                        scenario_B.dashboard.charging_prices
+                    ),
+                )
+
+                (
+                    low_tariff_leisure_B,
+                    high_tariff_leisure_B,
+                ) = st.slider(
+                    label='Leisure charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_leisure_B',
+                )
+                hourly_prices_leisure_B: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_leisure_B,
+                    high_tariff=high_tariff_leisure_B,
+                    dashboard_charging_price_settings=(
+                        scenario_B.dashboard.charging_prices
+                    ),
+                )
+                (
+                    low_tariff_weekend_B,
+                    high_tariff_weekend_B,
+                ) = st.slider(
+                    label='Weekend charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_weekend_B',
+                )
+                hourly_prices_weekend_B: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_weekend_B,
+                    high_tariff=high_tariff_weekend_B,
+                    dashboard_charging_price_settings=(
+                        scenario_B.dashboard.charging_prices
+                    ),
+                )
+
+                (
+                    low_tariff_holiday_B,
+                    high_tariff_holiday_B,
+                ) = st.slider(
+                    label='Holiday charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.35, 0.55),
+                    step=0.01,
+                    key='tariffs_holiday_B',
+                )
+                hourly_prices_holiday_B: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_holiday_B,
+                    high_tariff=high_tariff_holiday_B,
+                    dashboard_charging_price_settings=(
+                        scenario_B.dashboard.charging_prices
+                    ),
+                )
+                (
+                    low_tariff_fast_B,
+                    high_tariff_fast_B,
+                ) = st.slider(
+                    label='Fast charging price (€/kWh)',
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=(0.89, 0.89),
+                    step=0.01,
+                    key='tariffs_fast_B',
+                )
+                hourly_prices_fast_B: list[float] = get_hourly_prices(
+                    low_tariff=low_tariff_fast_B,
+                    high_tariff=high_tariff_fast_B,
+                    dashboard_charging_price_settings=(
+                        scenario_B.dashboard.charging_prices
+                    ),
                 )
 
                 reference_price_min_B, reference_price_max_B = st.slider(
@@ -1175,6 +1440,44 @@ def make_dashboard() -> None:
         lunch_leisure_proportion_B,
         1 - lunch_leisure_proportion_B,
     ]
+
+    scenario_A.locations.home.own_driveway.charging_price_eur_kWh = (
+        hourly_prices_home_own_driveway_A
+    )
+    scenario_A.locations.home.street_parking.charging_price_eur_kWh = (
+        hourly_prices_home_street_parking_A
+    )
+
+    scenario_A.locations.work.charging_price_eur_kWh = hourly_prices_work_A
+    scenario_A.locations.leisure.charging_price_eur_kWh = (
+        hourly_prices_leisure_A
+    )
+    scenario_A.locations.weekend.charging_price_eur_kWh = (
+        hourly_prices_weekend_A
+    )
+    scenario_A.locations.holiday.charging_price_eur_kWh = (
+        hourly_prices_holiday_A
+    )
+    scenario_A.locations.fast.charging_price_eur_kWh = hourly_prices_fast_A
+
+    scenario_B.locations.home.own_driveway.charging_price_eur_kWh = (
+        hourly_prices_home_own_driveway_B
+    )
+    scenario_B.locations.home.street_parking.charging_price_eur_kWh = (
+        hourly_prices_home_street_parking_B
+    )
+
+    scenario_B.locations.work.charging_price_eur_kWh = hourly_prices_work_B
+    scenario_B.locations.leisure.charging_price_eur_kWh = (
+        hourly_prices_leisure_B
+    )
+    scenario_B.locations.weekend.charging_price_eur_kWh = (
+        hourly_prices_weekend_B
+    )
+    scenario_B.locations.holiday.charging_price_eur_kWh = (
+        hourly_prices_holiday_B
+    )
+    scenario_B.locations.fast.charging_price_eur_kWh = hourly_prices_fast_B
     if (
         'statistics_A' not in st.session_state
         or 'statistics_B' not in st.session_state
@@ -1527,7 +1830,7 @@ def make_dashboard() -> None:
         plt.close(grid_power_figures[location_type_for_power])
 
     for figure in grid_power_figures.values():
-        plt.close(figure)   
+        plt.close(figure)
 
     with grid_plot_box:
         if scenario.grid.include_residential_grid_congestion:
