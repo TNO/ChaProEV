@@ -641,6 +641,8 @@ class ChargingBehaviour:
     charge_stop_proportion_trigger: float
     fast_charge_desire_proportion_trigger: float
     fast_charge_stop_proportion_trigger: float
+    reference_price: float
+    reference_price_fast: float
 
     @classmethod
     def draw(
@@ -768,6 +770,62 @@ class ChargingBehaviour:
             shape=beta_shape,
         )
 
+        if charge_desire_proportion_trigger > charge_stop_proportion_trigger:
+            raise ValueError(
+                f'{charge_desire_proportion_trigger=} must be below '
+                f'(or equal to) {charge_stop_proportion_trigger=}'
+            )
+
+        if (
+            fast_charge_desire_proportion_trigger
+            > fast_charge_stop_proportion_trigger
+        ):
+            raise ValueError(
+                f'{fast_charge_desire_proportion_trigger=} must be below '
+                f'(or equal to) {fast_charge_stop_proportion_trigger=}'
+            )
+
+        reference_price_min: float = (
+            charging_behaviour_parameters.reference_price_min
+        )
+        reference_price_typical: float = (
+            charging_behaviour_parameters.reference_price_typical
+        )
+        reference_price_max: float = (
+            charging_behaviour_parameters.reference_price_max
+        )
+        reference_price_fast_min: float = (
+            charging_behaviour_parameters.reference_price_fast_min
+        )
+        reference_price_fast_typical: float = (
+            charging_behaviour_parameters.reference_price_fast_typical
+        )
+        reference_price_fast_max: float = (
+            charging_behaviour_parameters.reference_price_fast_max
+        )
+
+        if reference_price_min < 0:
+            raise ValueError(f'{reference_price_min=} must be >= 0.')
+
+        if reference_price_fast_min < 0:
+            raise ValueError(f'{reference_price_fast_min=} must be >= 0.')
+
+        reference_price: float = draw_beta_value(
+            minimum=reference_price_min,
+            typical=reference_price_typical,
+            maximum=reference_price_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
+        reference_price_fast: float = draw_beta_value(
+            minimum=reference_price_fast_min,
+            typical=reference_price_fast_typical,
+            maximum=reference_price_fast_max,
+            random_generator=random_generator,
+            shape=beta_shape,
+        )
+
         return cls(
             adaptive=adaptive,
             charge_desire_proportion_trigger=charge_desire_proportion_trigger,
@@ -778,6 +836,8 @@ class ChargingBehaviour:
             fast_charge_stop_proportion_trigger=(
                 fast_charge_stop_proportion_trigger
             ),
+            reference_price=reference_price,
+            reference_price_fast=reference_price_fast,
         )
 
 

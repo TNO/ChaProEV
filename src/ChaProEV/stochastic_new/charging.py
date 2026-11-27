@@ -11,6 +11,53 @@ from box import Box
 from ChaProEV.stochastic_new.define import User
 
 
+def check_charging_desire(
+    *,
+    tested_battery_proportion: float,
+    threshold_trigger: float,
+    stop_trigger: float,
+    price_to_pay: float,
+    reference_price: float,
+) -> bool:
+
+    if tested_battery_proportion >= stop_trigger:
+        # The battery is already at or above the desired stop level.
+        return False
+
+    if tested_battery_proportion <= threshold_trigger:
+        # If we are below or at the threshold trigger, then the user
+        # wants to charge.
+        return True
+
+    if reference_price == 0:
+        # If there is no price sensitivity and we are
+        # above the threshold, then the user does not want to charge.
+        # This reproduces a model where price does not come into account
+        # and the user wants to charge below or at the threshold, but does
+        # not want to charge above it.
+        return False
+
+    # If the charge level is above the threshold that automatically
+    # triggers charging and if the user is price-sensitive,
+    # they will charge if their charging need is above the price pain.
+    # The charging need is a function that grows as the charge level
+    # approaches the threshold and goes to zero as the battery approaches
+    # the desired stop level.
+    # The price pain is the price to pay divided by the reference price.
+    # That reference price is chosen so that charging is triggered halfway
+    # between the threshold and the stop trigger if the price to pay is
+    # equal to that reference price.
+    # This holds for normal charging and for fast charging.
+    # If you want to have fast charging only as an emergency, then
+    # set all reference_price_fast (min, typical, max) to zero (or a 
+    # small value if you only want to broaden the trigger a little bit).
+    charging_need: float = (stop_trigger - tested_battery_proportion) / (
+        tested_battery_proportion - threshold_trigger
+    )
+    price_pain: float = price_to_pay / reference_price
+    return charging_need >= price_pain
+
+
 @dataclass
 class PreCharge:
     locations: list[str] | npt.NDArray[np.str_]
@@ -120,11 +167,29 @@ class TrackingVariables:
     ) -> TrackingVariables:
 
         current_battery_level_kWh: float = user.vehicle.battery_size_kWh
+        start_location_name: str = user.mobility[
+            scenario.mobility.location_header
+        ][0]
+        start_hour_number: int = user.mobility[
+            scenario.mobility.time_index_name
+        ][0].hour
+        price_to_pay: float = user.locations[
+            start_location_name
+        ].charging_price_eur_kWh[start_hour_number]
 
-        wants_to_charge: bool = (
-            current_battery_level_kWh
-            < user.vehicle.battery_size_kWh
-            * user.charging_behaviour.charge_desire_proportion_trigger
+        reference_price: float = user.charging_behaviour.reference_price
+
+        wants_to_charge: bool = check_charging_desire(
+            tested_battery_proportion=current_battery_level_kWh
+            / user.vehicle.battery_size_kWh,
+            threshold_trigger=(
+                user.charging_behaviour.charge_desire_proportion_trigger
+            ),
+            stop_trigger=(
+                user.charging_behaviour.charge_stop_proportion_trigger
+            ),
+            price_to_pay=price_to_pay,
+            reference_price=reference_price,
         )
 
         previous_step_power_to_vehicle_kW: float = 0
@@ -322,10 +387,29 @@ def update_tracking(
         pre_charge.available_charge_powers_from_grid[run_index]
     )
 
-    if (
-        tracking.current_battery_level_kWh - consumption
-        <= user.charging_behaviour.fast_charge_desire_proportion_trigger
-        * user.vehicle.battery_size_kWh
+    hour_number: int = user.charge[
+        scenario.charging_dataframe.time_index_name
+    ][run_index].hour
+
+    price_to_pay_fast: float = user.locations[
+        user.vehicle.fast_charging_location_name
+    ].charging_price_eur_kWh[hour_number]
+
+    reference_price_fast: float = user.charging_behaviour.reference_price_fast
+
+    if check_charging_desire(
+        tested_battery_proportion=(
+            tracking.current_battery_level_kWh - consumption
+        )
+        / user.vehicle.battery_size_kWh,
+        threshold_trigger=(
+            user.charging_behaviour.fast_charge_desire_proportion_trigger
+        ),
+        stop_trigger=(
+            user.charging_behaviour.fast_charge_stop_proportion_trigger
+        ),
+        price_to_pay=price_to_pay_fast,
+        reference_price=reference_price_fast,
     ):
         if not tracking.at_fast_station and not tracking.catching_up:
             tracking.at_fast_station = True
@@ -389,10 +473,22 @@ def update_tracking(
             # session, the battery might go above the threshold at
             # which the user wants to charge, but still below the maximal
             # charge they want (charge_stop_proportion_trigger).
-            tracking.wants_to_charge = (
-                tracking.current_battery_level_kWh
-                < user.charging_behaviour.charge_desire_proportion_trigger
-                * user.vehicle.battery_size_kWh
+            price_to_pay: float = user.locations[
+                location
+            ].charging_price_eur_kWh[hour_number]
+            reference_price: float = user.charging_behaviour.reference_price
+
+            tracking.wants_to_charge = check_charging_desire(
+                tested_battery_proportion=tracking.current_battery_level_kWh
+                / user.vehicle.battery_size_kWh,
+                threshold_trigger=(
+                    user.charging_behaviour.charge_desire_proportion_trigger
+                ),
+                stop_trigger=(
+                    user.charging_behaviour.charge_stop_proportion_trigger
+                ),
+                price_to_pay=price_to_pay,
+                reference_price=reference_price,
             )
 
             if user.charging_behaviour.adaptive:

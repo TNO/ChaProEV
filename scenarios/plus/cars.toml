@@ -672,6 +672,13 @@ fast_charge_stop_proportion_trigger_min = 0.7
 fast_charge_stop_proportion_trigger_typical = 0.75
 fast_charge_stop_proportion_trigger_max = 0.8
 
+reference_price_min = 0.0
+reference_price_typical = 0.0
+reference_price_max = 0.0
+reference_price_fast_min = 0.0
+reference_price_fast_typical = 0.0
+reference_price_fast_max = 0.0
+
 
 [time]
 SECONDS_PER_HOUR = 3600
@@ -889,3 +896,20 @@ discharging_power_kW = 6.0
 reserve_days_basic = 1.0
 reserve_days_heat_pump =  0.8
 reserve_days_solar_panels = 1.5
+
+
+[dashboard]
+[dashboard.charging_prices]
+low_tariff_mask = [
+    1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 1,
+]
+
+
+high_tariff_mask = [
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1, 1, 0,
+]
+

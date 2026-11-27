@@ -15,6 +15,30 @@ from ChaProEV.stochastic_new.ChaProEV_run import run_scenario
 from ChaProEV.stochastic_new.metrics import UsersPoolStatistics
 
 
+def get_hourly_prices(
+    *,
+    low_tariff: float,
+    high_tariff: float,
+    dashboard_charging_price_settings: Box,
+) -> list[float]:
+
+    low_tariff_mask: list[float] = (
+        dashboard_charging_price_settings.low_tariff_mask
+    )
+    high_tariff_mask: list[float] = (
+        dashboard_charging_price_settings.high_tariff_mask
+    )
+
+    hourly_prices: list[float] = [
+        low_tariff * low_mask + high_tariff * high_mask
+        for (low_mask, high_mask) in zip(
+            low_tariff_mask, high_tariff_mask, strict=True
+        )
+    ]
+
+    return hourly_prices
+
+
 def get_grid_congestion_figure(
     *,
     congestion_type: str,
@@ -368,6 +392,26 @@ def make_dashboard() -> None:
                     key='fast_charge_stop_proportion_trigger_A',
                 )
 
+                reference_price_min_A, reference_price_max_A = st.slider(
+                    label='Refeence price',
+                    min_value=0.0,
+                    max_value=1.00,
+                    value=(0.0, 0.0),
+                    step=0.01,
+                    key='reference_price_A',
+                )
+
+                reference_price_fast_min_A, reference_price_fast_max_A = (
+                    st.slider(
+                        label='Refeence price fast charging',
+                        min_value=0.0,
+                        max_value=1.00,
+                        value=(0.0, 0.0),
+                        step=0.01,
+                        key='reference_price_fast_A',
+                    )
+                )
+
                 proportion_own_driveway_A: float = st.slider(
                     label='Percentage of households with own driveways',
                     min_value=0.0,
@@ -582,6 +626,27 @@ def make_dashboard() -> None:
                     format='%.0f%%',
                     key='fast_charge_stop_proportion_trigger_B',
                 )
+
+                reference_price_min_B, reference_price_max_B = st.slider(
+                    label='Refeence price',
+                    min_value=0.0,
+                    max_value=1.00,
+                    value=(0.0, 0.0),
+                    step=0.01,
+                    key='reference_price_B',
+                )
+
+                reference_price_fast_min_B, reference_price_fast_max_B = (
+                    st.slider(
+                        label='Refeence price fast charging',
+                        min_value=0.0,
+                        max_value=1.00,
+                        value=(0.0, 0.0),
+                        step=0.01,
+                        key='reference_price_fast_B',
+                    )
+                )
+
                 proportion_own_driveway_B: float = st.slider(
                     label='Percentage of households with own driveways',
                     min_value=0.0,
@@ -777,6 +842,20 @@ def make_dashboard() -> None:
         fast_charge_stop_proportion_trigger_min_B
         + fast_charge_stop_proportion_trigger_max_B
     ) / 2
+
+    reference_price_typical_A: float = (
+        reference_price_min_A + reference_price_max_A
+    ) / 2
+    reference_price_fast_typical_A: float = (
+        reference_price_fast_min_A + reference_price_fast_max_A
+    ) / 2
+
+    reference_price_typical_B: float = (
+        reference_price_min_B + reference_price_max_B
+    ) / 2
+    reference_price_fast_typical_B: float = (
+        reference_price_fast_min_B + reference_price_fast_max_B
+    ) / 2
     own_driveway_variant_weights_A: list[float] = [
         proportion_own_driveway_A,
         1 - proportion_own_driveway_A,
@@ -912,6 +991,36 @@ def make_dashboard() -> None:
     )
     scenario_B.charging_behaviour.fast_charge_stop_proportion_trigger_max = (
         fast_charge_stop_proportion_trigger_max_B
+    )
+
+    scenario_A.charging_behaviour.reference_price_min = reference_price_min_A
+    scenario_A.charging_behaviour.reference_price_typical = (
+        reference_price_typical_A
+    )
+    scenario_A.charging_behaviour.reference_price_max = reference_price_max_A
+    scenario_A.charging_behaviour.reference_price_fast_min = (
+        reference_price_fast_min_A
+    )
+    scenario_A.charging_behaviour.reference_price_fast_typical = (
+        reference_price_fast_typical_A
+    )
+    scenario_A.charging_behaviour.reference_price_fast_max = (
+        reference_price_fast_max_A
+    )
+
+    scenario_B.charging_behaviour.reference_price_min = reference_price_min_B
+    scenario_B.charging_behaviour.reference_price_typical = (
+        reference_price_typical_B
+    )
+    scenario_B.charging_behaviour.reference_price_max = reference_price_max_B
+    scenario_B.charging_behaviour.reference_price_fast_min = (
+        reference_price_fast_min_B
+    )
+    scenario_B.charging_behaviour.reference_price_fast_typical = (
+        reference_price_fast_typical_B
+    )
+    scenario_B.charging_behaviour.reference_price_fast_max = (
+        reference_price_fast_max_B
     )
 
     scenario_A.locations.home.variant_weights = own_driveway_variant_weights_A
