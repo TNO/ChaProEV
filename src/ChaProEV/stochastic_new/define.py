@@ -1550,6 +1550,43 @@ class User:
             .alias(session_start_header)
         )
 
+        location_hourly_charging_prices: dict[str, list[float]] = {
+            location_name: self.locations[location_name].charging_price_eur_kWh
+            for location_name in self.locations
+        }
+        location_hourly_charging_prices[
+            charging_settings.driving_location_name
+        ] = charging_settings.HOURS_IN_A_DAY * [0.0]
+        hourly_fast_charging_prices: list[float] = self.locations[
+            charging_settings.fast_charging_location_name
+        ].charging_price_eur_kWh
+        charging_dataframe = (
+            charging_dataframe.with_columns(
+                pl.col(charging_settings.location_header)
+                .replace_strict(location_hourly_charging_prices)
+                .alias('Hourly charging prices')
+            )
+            .with_columns(
+                pl.col('Hourly charging prices')
+                .list.get(pl.col(charging_settings.time_index_name).dt.hour())
+                .alias(charging_settings.price_to_pay_column)
+            )
+            .drop('Hourly charging prices')
+        )
+        charging_dataframe = (
+            charging_dataframe.with_columns(
+                pl.lit(hourly_fast_charging_prices).alias(
+                    'Hourly fast charging prices'
+                )
+            )
+            .with_columns(
+                pl.col('Hourly fast charging prices')
+                .list.get(pl.col(charging_settings.time_index_name).dt.hour())
+                .alias(charging_settings.price_to_pay_fast_column)
+            )
+            .drop('Hourly fast charging prices')
+        )
+
         self.charge = charging_dataframe
 
     @classmethod

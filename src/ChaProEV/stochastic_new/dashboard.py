@@ -393,7 +393,7 @@ def make_dashboard() -> None:
                 )
 
                 reference_price_min_A, reference_price_max_A = st.slider(
-                    label='Refeence price',
+                    label='Reference price',
                     min_value=0.0,
                     max_value=1.00,
                     value=(0.0, 0.0),
@@ -403,7 +403,7 @@ def make_dashboard() -> None:
 
                 reference_price_fast_min_A, reference_price_fast_max_A = (
                     st.slider(
-                        label='Refeence price fast charging',
+                        label='Reference price fast charging',
                         min_value=0.0,
                         max_value=1.00,
                         value=(0.0, 0.0),
@@ -628,7 +628,7 @@ def make_dashboard() -> None:
                 )
 
                 reference_price_min_B, reference_price_max_B = st.slider(
-                    label='Refeence price',
+                    label='Reference price',
                     min_value=0.0,
                     max_value=1.00,
                     value=(0.0, 0.0),
@@ -638,7 +638,7 @@ def make_dashboard() -> None:
 
                 reference_price_fast_min_B, reference_price_fast_max_B = (
                     st.slider(
-                        label='Refeence price fast charging',
+                        label='Reference price fast charging',
                         min_value=0.0,
                         max_value=1.00,
                         value=(0.0, 0.0),
@@ -1343,7 +1343,7 @@ def make_dashboard() -> None:
                     label='Amount of EVs per household',
                     value=f'{EV_proportion_B: .2f}',  # noqa:E501
                     delta=(
-                        f'{EV_proportion_B - st.session_state.initial_EV_proportion_A:+.2f}'  # noqa:E501
+                        f'{EV_proportion_B - st.session_state.initial_EV_proportion_B:+.2f}'  # noqa:E501
                     ),
                 )
 
@@ -1525,6 +1525,9 @@ def make_dashboard() -> None:
         st.pyplot(grid_power_figures[location_type_for_power])
 
         plt.close(grid_power_figures[location_type_for_power])
+
+    for figure in grid_power_figures.values():
+        plt.close(figure)   
 
     with grid_plot_box:
         if scenario.grid.include_residential_grid_congestion:

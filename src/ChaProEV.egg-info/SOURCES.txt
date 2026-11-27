@@ -69,6 +69,7 @@ docs/index.md
 docs/input.md
 docs/make.bat
 docs/make_variants.md
+docs/metrics.md
 docs/mobility-PC-28624.md
 docs/mobility.md
 docs/monte-carlo.md
@@ -186,6 +187,7 @@ src/ChaProEV/stochastic_new/charging.py
 src/ChaProEV/stochastic_new/dashboard.py
 src/ChaProEV/stochastic_new/define.py
 src/ChaProEV/stochastic_new/grid.py
+src/ChaProEV/stochastic_new/metrics.py
 src/ChaProEV/stochastic_new/monte_carlo.py
 src/ChaProEV/stochastic_new/non_EV.py
 src/ChaProEV/stochastic_new/time.py

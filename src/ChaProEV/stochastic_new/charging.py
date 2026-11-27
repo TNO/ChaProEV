@@ -49,7 +49,7 @@ def check_charging_desire(
     # equal to that reference price.
     # This holds for normal charging and for fast charging.
     # If you want to have fast charging only as an emergency, then
-    # set all reference_price_fast (min, typical, max) to zero (or a 
+    # set all reference_price_fast (min, typical, max) to zero (or a
     # small value if you only want to broaden the trigger a little bit).
     charging_need: float = (stop_trigger - tested_battery_proportion) / (
         tested_battery_proportion - threshold_trigger
@@ -68,6 +68,8 @@ class PreCharge:
     session_durations_hours: list[float] | npt.NDArray[np.float64]
     available_charge_powers_to_vehicle: list[float] | npt.NDArray[np.float64]
     available_charge_powers_from_grid: list[float] | npt.NDArray[np.float64]
+    prices_to_pay: list[float] | npt.NDArray[np.float64]
+    prices_to_pay_fast: list[float] | npt.NDArray[np.float64]
 
     @classmethod
     def initialise(cls, *, user: User, scenario: Box) -> PreCharge:
@@ -88,6 +90,10 @@ class PreCharge:
         session_duration_header: str = (
             charging_settings.session_duration_header
         )
+        price_to_pay_column: str = charging_settings.price_to_pay_column
+        price_to_pay_fast_column: str = (
+            charging_settings.price_to_pay_fast_column
+        )
 
         storage_type: str = scenario.execution.pre_charge_storage
 
@@ -107,6 +113,10 @@ class PreCharge:
                 available_charge_powers_from_grid=user.charge[
                     available_charge_power_from_grid_header
                 ].to_list(),
+                prices_to_pay=user.charge[price_to_pay_column].to_list(),
+                prices_to_pay_fast=user.charge[
+                    price_to_pay_fast_column
+                ].to_list(),
             )
 
         if storage_type == 'numpy':
@@ -124,6 +134,10 @@ class PreCharge:
                 ].to_numpy(),
                 available_charge_powers_from_grid=user.charge[
                     available_charge_power_from_grid_header
+                ].to_numpy(),
+                prices_to_pay=user.charge[price_to_pay_column].to_numpy(),
+                prices_to_pay_fast=user.charge[
+                    price_to_pay_fast_column
                 ].to_numpy(),
             )
 
@@ -167,15 +181,9 @@ class TrackingVariables:
     ) -> TrackingVariables:
 
         current_battery_level_kWh: float = user.vehicle.battery_size_kWh
-        start_location_name: str = user.mobility[
-            scenario.mobility.location_header
+        price_to_pay: float = user.charge[
+            scenario.charging_dataframe.price_to_pay_column
         ][0]
-        start_hour_number: int = user.mobility[
-            scenario.mobility.time_index_name
-        ][0].hour
-        price_to_pay: float = user.locations[
-            start_location_name
-        ].charging_price_eur_kWh[start_hour_number]
 
         reference_price: float = user.charging_behaviour.reference_price
 
@@ -365,7 +373,6 @@ def update_tracking(
     pre_charge: PreCharge,
     tracking: TrackingVariables,
     run_time_resolution_hours: float,
-    scenario: Box,
 ) -> TrackingVariables:
 
     # We use a run index allocation instead of an iteration to be able to
@@ -387,13 +394,7 @@ def update_tracking(
         pre_charge.available_charge_powers_from_grid[run_index]
     )
 
-    hour_number: int = user.charge[
-        scenario.charging_dataframe.time_index_name
-    ][run_index].hour
-
-    price_to_pay_fast: float = user.locations[
-        user.vehicle.fast_charging_location_name
-    ].charging_price_eur_kWh[hour_number]
+    price_to_pay_fast: float = pre_charge.prices_to_pay_fast[run_index]
 
     reference_price_fast: float = user.charging_behaviour.reference_price_fast
 
@@ -473,9 +474,8 @@ def update_tracking(
             # session, the battery might go above the threshold at
             # which the user wants to charge, but still below the maximal
             # charge they want (charge_stop_proportion_trigger).
-            price_to_pay: float = user.locations[
-                location
-            ].charging_price_eur_kWh[hour_number]
+            price_to_pay: float = pre_charge.prices_to_pay[run_index]
+
             reference_price: float = user.charging_behaviour.reference_price
 
             tracking.wants_to_charge = check_charging_desire(
@@ -687,7 +687,6 @@ def compute_fleet_charging(
                 pre_charge=pre_charge,
                 tracking=tracking,
                 run_time_resolution_hours=run_time_resolution_hours,
-                scenario=scenario,
             )
 
     # print_memory('After simulation')
